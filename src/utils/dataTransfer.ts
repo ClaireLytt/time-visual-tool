@@ -1,8 +1,9 @@
 import { format } from 'date-fns'
+import i18n from '../i18n'
 import { DEFAULT_CATEGORY_LIST } from '../constants'
 import type { StorageData, TimeEntry, Category } from '../types'
 
-function isValidEntry(e: unknown): e is TimeEntry {
+export function isValidEntry(e: unknown): e is TimeEntry {
   if (typeof e !== 'object' || e === null) return false
   const obj = e as Record<string, unknown>
   return (
@@ -16,7 +17,7 @@ function isValidEntry(e: unknown): e is TimeEntry {
   )
 }
 
-function isValidCategory(c: unknown): c is Category {
+export function isValidCategory(c: unknown): c is Category {
   if (typeof c !== 'object' || c === null) return false
   const obj = c as Record<string, unknown>
   return typeof obj.name === 'string' && typeof obj.color === 'string'
@@ -61,15 +62,15 @@ export function readImportFile(file: File): Promise<StorageData> {
         const parsed = JSON.parse(reader.result as string)
         const validated = validateImportData(parsed)
         if (!validated) {
-          reject(new Error('文件格式无效'))
+          reject(new Error(i18n.t('dataTransferError.invalidFormat')))
           return
         }
         resolve(validated)
       } catch {
-        reject(new Error('文件解析失败'))
+        reject(new Error(i18n.t('dataTransferError.parseFailed')))
       }
     }
-    reader.onerror = () => reject(new Error('文件读取失败'))
+    reader.onerror = () => reject(new Error(i18n.t('dataTransferError.readFailed')))
     reader.readAsText(file)
   })
 }

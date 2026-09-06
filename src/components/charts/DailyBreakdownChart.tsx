@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import type { DailyDataPoint } from '../../types'
 import { useTheme } from '../../hooks/useTheme'
@@ -8,6 +9,7 @@ interface DailyBreakdownChartProps {
 }
 
 function DailyBreakdownChart({ dailyBreakdown }: DailyBreakdownChartProps) {
+  const { t } = useTranslation()
   const { isDark } = useTheme()
   const hasData = dailyBreakdown.some(d => d.totalMinutes > 0)
 
@@ -18,7 +20,7 @@ function DailyBreakdownChart({ dailyBreakdown }: DailyBreakdownChartProps) {
   if (!hasData) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center">
-        <p className="text-gray-400 dark:text-gray-500 text-sm">暂无数据</p>
+        <p className="text-gray-400 dark:text-gray-500 text-sm">{t('chart.noData')}</p>
       </div>
     )
   }
@@ -27,7 +29,7 @@ function DailyBreakdownChart({ dailyBreakdown }: DailyBreakdownChartProps) {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">每日分布</h3>
+      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('chart.dailyBreakdown')}</h3>
 
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={dailyBreakdown} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
@@ -46,7 +48,7 @@ function DailyBreakdownChart({ dailyBreakdown }: DailyBreakdownChartProps) {
             tickFormatter={(value: number) => value >= 60 ? `${(value / 60).toFixed(0)}h` : `${value}m`}
           />
           <Tooltip
-            formatter={(value: number) => [formatDuration(value), '总时长']}
+            formatter={(value: number) => [formatDuration(value), t('chart.totalDuration')]}
             contentStyle={{
               borderRadius: '8px',
               border: `1px solid ${gridColor}`,

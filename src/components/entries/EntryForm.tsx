@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useCategories } from '../../contexts/CategoryContext'
 import { parseDurationInput } from '../../utils/time'
 import type { TimeEntry } from '../../types'
@@ -12,22 +13,19 @@ interface EntryFormProps {
 }
 
 function EntryForm({ selectedDate, onAdd, editingEntry, onUpdate, onCancelEdit }: EntryFormProps) {
+  const { t } = useTranslation()
   const { categories } = useCategories()
   const [activity, setActivity] = useState('')
   const [durationInput, setDurationInput] = useState('')
   const [weight, setWeight] = useState('1')
   const [category, setCategory] = useState<string>(categories[0]?.name ?? '')
   const [error, setError] = useState('')
+  const [prevEditingEntry, setPrevEditingEntry] = useState(editingEntry)
 
   const isEditing = !!editingEntry
 
-  useEffect(() => {
-    if (categories.length > 0 && !categories.some(c => c.name === category)) {
-      setCategory(categories[0].name)
-    }
-  }, [categories, category])
-
-  useEffect(() => {
+  if (prevEditingEntry !== editingEntry) {
+    setPrevEditingEntry(editingEntry)
     if (editingEntry) {
       setActivity(editingEntry.activity)
       setDurationInput(String(editingEntry.duration))
@@ -41,26 +39,28 @@ function EntryForm({ selectedDate, onAdd, editingEntry, onUpdate, onCancelEdit }
       setCategory(categories[0]?.name ?? '')
       setError('')
     }
-  }, [editingEntry])
+  }
+
+  const effectiveCategory = categories.some(c => c.name === category) ? category : (categories[0]?.name ?? '')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
     if (!activity.trim()) {
-      setError('请输入活动名称')
+      setError(t('entry.errorActivity'))
       return
     }
 
     const duration = parseDurationInput(durationInput)
     if (duration === null || duration <= 0) {
-      setError('请输入有效时长（如 90、1:30、1.5h）')
+      setError(t('entry.errorDuration'))
       return
     }
 
     const w = parseFloat(weight)
     if (isNaN(w) || w < 0.1 || w > 10) {
-      setError('权重需在 0.1 - 10 之间')
+      setError(t('entry.errorWeight'))
       return
     }
 
@@ -69,7 +69,7 @@ function EntryForm({ selectedDate, onAdd, editingEntry, onUpdate, onCancelEdit }
         activity: activity.trim(),
         duration,
         weight: w,
-        category,
+        category: effectiveCategory,
       })
       onCancelEdit?.()
     } else {
@@ -78,7 +78,7 @@ function EntryForm({ selectedDate, onAdd, editingEntry, onUpdate, onCancelEdit }
         activity: activity.trim(),
         duration,
         weight: w,
-        category,
+        category: effectiveCategory,
       })
       setActivity('')
       setDurationInput('')
@@ -90,7 +90,7 @@ function EntryForm({ selectedDate, onAdd, editingEntry, onUpdate, onCancelEdit }
   return (
     <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-4">
       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
-        {isEditing ? '编辑时间记录' : '添加时间记录'}
+        {isEditing ? t('entry.editTitle') : t('entry.addTitle')}
       </h3>
 
       <div className="grid grid-cols-2 gap-3 mb-3">
@@ -99,10 +99,9 @@ function EntryForm({ selectedDate, onAdd, editingEntry, onUpdate, onCancelEdit }
             type="text"
             value={activity}
             onChange={e => setActivity(e.target.value)}
-            placeholder="活动名称"
-            aria-label="活动名称"
-            aria-invalid={error === '请输入活动名称' || undefined}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            placeholder={t('entry.activityPlaceholder')}
+            aria-label={t('entry.activityLabel')}
+            className="input-base"
             maxLength={100}
           />
         </div>
@@ -112,9 +111,9 @@ function EntryForm({ selectedDate, onAdd, editingEntry, onUpdate, onCancelEdit }
             type="text"
             value={durationInput}
             onChange={e => setDurationInput(e.target.value)}
-            placeholder="时长（如 90、1:30、1.5h）"
-            aria-label="时长"
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            placeholder={t('entry.durationPlaceholder')}
+            aria-label={t('entry.durationLabel')}
+            className="input-base"
           />
         </div>
 
@@ -123,21 +122,21 @@ function EntryForm({ selectedDate, onAdd, editingEntry, onUpdate, onCancelEdit }
             type="number"
             value={weight}
             onChange={e => setWeight(e.target.value)}
-            placeholder="权重"
-            aria-label="权重"
+            placeholder={t('entry.weightPlaceholder')}
+            aria-label={t('entry.weightLabel')}
             step="0.1"
             min="0.1"
             max="10"
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="input-base"
           />
         </div>
 
         <div className="col-span-2">
           <select
-            value={category}
+            value={effectiveCategory}
             onChange={e => setCategory(e.target.value)}
-            aria-label="分类"
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            aria-label={t('entry.categoryLabel')}
+            className="input-base"
           >
             {categories.map(cat => (
               <option key={cat.name} value={cat.name}>{cat.name}</option>
@@ -153,7 +152,7 @@ function EntryForm({ selectedDate, onAdd, editingEntry, onUpdate, onCancelEdit }
           type="submit"
           className={`${isEditing ? 'flex-1' : 'w-full'} py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors`}
         >
-          {isEditing ? '保存修改' : '添加记录'}
+          {isEditing ? t('entry.saveButton') : t('entry.addButton')}
         </button>
         {isEditing && (
           <button
@@ -161,7 +160,7 @@ function EntryForm({ selectedDate, onAdd, editingEntry, onUpdate, onCancelEdit }
             onClick={onCancelEdit}
             className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
-            取消
+            {t('entry.cancelButton')}
           </button>
         )}
       </div>

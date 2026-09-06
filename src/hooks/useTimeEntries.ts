@@ -1,25 +1,33 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useLocalStorage } from './useLocalStorage'
 import { STORAGE_KEY, DEFAULT_CATEGORY_LIST } from '../constants'
 import { computeDaySummary, computePeriodSummary } from '../utils/summary'
+import { isValidEntry, isValidCategory } from '../utils/dataTransfer'
 import type { TimeEntry, DaySummary, Category, StorageData, ViewMode, PeriodSummary } from '../types'
 
-export function useTimeEntries() {
-  const [data, setData] = useLocalStorage<StorageData>(STORAGE_KEY, {
+function validateStorageData(raw: unknown): StorageData | null {
+  if (typeof raw !== 'object' || raw === null) return null
+  const obj = raw as Record<string, unknown>
+  if (!Array.isArray(obj.entries)) return null
+  const entries = obj.entries.filter(isValidEntry)
+  const categories = Array.isArray(obj.categories)
+    ? obj.categories.filter(isValidCategory)
+    : DEFAULT_CATEGORY_LIST
+  return {
     version: 2,
-    entries: [],
-    categories: DEFAULT_CATEGORY_LIST,
-  })
+    entries,
+    categories: categories.length > 0 ? categories : DEFAULT_CATEGORY_LIST,
+  }
+}
 
-  useEffect(() => {
-    if (data.version === 1) {
-      setData(prev => ({
-        ...prev,
-        version: 2,
-        categories: DEFAULT_CATEGORY_LIST,
-      }))
-    }
-  }, [])
+const INITIAL_DATA: StorageData = {
+  version: 2,
+  entries: [],
+  categories: DEFAULT_CATEGORY_LIST,
+}
+
+export function useTimeEntries() {
+  const [data, setData] = useLocalStorage<StorageData>(STORAGE_KEY, INITIAL_DATA, validateStorageData)
 
   const entries = data.entries
   const categories = data.categories ?? DEFAULT_CATEGORY_LIST

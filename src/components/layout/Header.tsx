@@ -1,25 +1,36 @@
+import { useTranslation } from 'react-i18next'
 import { useTheme } from '../../hooks/useTheme'
+import { ClockIcon } from '../icons'
 
 function Header() {
+  const { t, i18n } = useTranslation()
   const { theme, cycleTheme } = useTheme()
 
-  const themeLabel = theme === 'light' ? '浅色模式' : theme === 'dark' ? '深色模式' : '跟随系统'
+  const themeLabel = t(`theme.${theme}`)
+
+  const toggleLang = () => {
+    i18n.changeLanguage(i18n.language === 'zh' ? 'en' : 'zh')
+  }
 
   return (
     <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
       <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-3">
-        <svg className="w-8 h-8 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="10"/>
-          <polyline points="12 6 12 12 16 14"/>
-        </svg>
+        <ClockIcon className="w-8 h-8 text-blue-500" />
         <div className="flex-1">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">TimeVisual</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">可视化你的每一天</p>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">{t('app.title')}</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{t('app.subtitle')}</p>
         </div>
+        <button
+          onClick={toggleLang}
+          className="px-2 py-1 rounded-lg text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          aria-label={t('lang.label')}
+        >
+          {t('lang.toggle')}
+        </button>
         <button
           onClick={cycleTheme}
           className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          aria-label={`切换主题（当前：${themeLabel}）`}
+          aria-label={t('theme.toggle', { mode: themeLabel })}
           title={themeLabel}
         >
           {theme === 'dark' ? (

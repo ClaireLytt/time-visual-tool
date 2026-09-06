@@ -1,3 +1,5 @@
+import type { Category } from '../types'
+
 export const STORAGE_KEY = 'time-visual-entries'
 
 export const DEFAULT_CATEGORIES = [
@@ -9,7 +11,9 @@ export const DEFAULT_CATEGORIES = [
   '其他',
 ] as const
 
-export const CATEGORY_COLORS: Record<string, string> = {
+export type DefaultCategory = (typeof DEFAULT_CATEGORIES)[number]
+
+export const CATEGORY_COLORS: Record<DefaultCategory, string> = {
   '工作': '#3b82f6',
   '学习': '#8b5cf6',
   '运动': '#10b981',
@@ -21,8 +25,6 @@ export const CATEGORY_COLORS: Record<string, string> = {
 export function getCategoryColor(category: string): string {
   return (CATEGORY_COLORS as Record<string, string>)[category] ?? '#94a3b8'
 }
-
-import type { Category } from '../types'
 
 export const DEFAULT_CATEGORY_LIST: Category[] = DEFAULT_CATEGORIES.map(name => ({
   name,

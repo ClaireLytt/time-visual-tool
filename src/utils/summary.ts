@@ -1,7 +1,6 @@
 import { parseISO, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, format, getDay } from 'date-fns'
+import i18n from '../i18n'
 import type { TimeEntry, DaySummary, CategoryBreakdown, ViewMode, PeriodSummary, DailyDataPoint } from '../types'
-
-const DAY_LABELS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
 
 function computeSummaryFromEntries(entries: TimeEntry[]) {
   const totalMinutes = entries.reduce((sum, e) => sum + e.duration, 0)
@@ -59,11 +58,12 @@ export function computeWeekSummary(allEntries: TimeEntry[], dateInWeek: string):
   const filtered = allEntries.filter(e => e.date >= startStr && e.date <= endStr)
   const summary = computeSummaryFromEntries(filtered)
 
+  const dayLabels = i18n.t('date.dayLabels', { returnObjects: true }) as string[]
   const days = eachDayOfInterval({ start, end })
   const dailyBreakdown = buildDailyBreakdown(filtered, days)
-  dailyBreakdown.forEach((point, _i) => {
+  dailyBreakdown.forEach((point) => {
     const dayOfWeek = getDay(parseISO(point.date))
-    point.label = DAY_LABELS[dayOfWeek]
+    point.label = dayLabels[dayOfWeek]
   })
 
   return { ...summary, dailyBreakdown }
@@ -83,7 +83,7 @@ export function computeMonthSummary(allEntries: TimeEntry[], dateInMonth: string
   const dailyBreakdown = buildDailyBreakdown(filtered, days)
   dailyBreakdown.forEach((point) => {
     const dayOfMonth = parseISO(point.date).getDate()
-    point.label = `${dayOfMonth}日`
+    point.label = i18n.t('date.daySuffix', { day: dayOfMonth })
   })
 
   return { ...summary, dailyBreakdown }
