@@ -19,5 +19,5 @@ export const CATEGORY_COLORS: Record<string, string> = {
 }
 
 export function getCategoryColor(category: string): string {
-  return CATEGORY_COLORS[category] ?? '#94a3b8'
+  return (CATEGORY_COLORS as Record<string, string>)[category] ?? '#94a3b8'
 }
