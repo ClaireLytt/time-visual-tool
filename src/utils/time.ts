@@ -13,7 +13,9 @@ export function parseDurationInput(input: string): number | null {
   // "1:30" format
   const colonMatch = trimmed.match(/^(\d+):(\d{1,2})$/)
   if (colonMatch) {
-    return parseInt(colonMatch[1]) * 60 + parseInt(colonMatch[2])
+    const mins = parseInt(colonMatch[2])
+    if (mins >= 60) return null
+    return parseInt(colonMatch[1]) * 60 + mins
   }
 
   // "1.5h" or "1.5小时" format

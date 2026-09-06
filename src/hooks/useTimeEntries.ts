@@ -2,12 +2,7 @@ import { useCallback, useMemo } from 'react'
 import { useLocalStorage } from './useLocalStorage'
 import { STORAGE_KEY } from '../constants'
 import { computeDaySummary, computePeriodSummary } from '../utils/summary'
-import type { TimeEntry, DaySummary, ViewMode, PeriodSummary } from '../types'
-
-interface StorageData {
-  version: number
-  entries: TimeEntry[]
-}
+import type { TimeEntry, DaySummary, ViewMode, PeriodSummary, StorageData } from '../types'
 
 export function useTimeEntries() {
   const [data, setData] = useLocalStorage<StorageData>(STORAGE_KEY, {
