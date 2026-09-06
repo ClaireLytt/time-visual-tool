@@ -1,6 +1,6 @@
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import type { CategoryBreakdown } from '../../types'
-import { getCategoryColor } from '../../constants'
+import { useCategories } from '../../contexts/CategoryContext'
 import { formatDuration } from '../../utils/time'
 import ChartLegend from './ChartLegend'
 
@@ -10,6 +10,7 @@ interface TimeProportionChartProps {
 }
 
 function TimeProportionChart({ categoryBreakdown, totalMinutes }: TimeProportionChartProps) {
+  const { getColor } = useCategories()
   const chartData = Object.entries(categoryBreakdown).map(([name, data]) => ({
     name,
     value: data.totalMinutes,
@@ -45,7 +46,7 @@ function TimeProportionChart({ categoryBreakdown, totalMinutes }: TimeProportion
             dataKey="value"
           >
             {chartData.map(entry => (
-              <Cell key={entry.name} fill={getCategoryColor(entry.name)} />
+              <Cell key={entry.name} fill={getColor(entry.name)} />
             ))}
           </Pie>
           <Tooltip

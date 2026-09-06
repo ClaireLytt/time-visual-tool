@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { DEFAULT_CATEGORIES } from '../../constants'
+import { useCategories } from '../../contexts/CategoryContext'
 import { parseDurationInput } from '../../utils/time'
 import type { TimeEntry } from '../../types'
 
@@ -12,13 +12,20 @@ interface EntryFormProps {
 }
 
 function EntryForm({ selectedDate, onAdd, editingEntry, onUpdate, onCancelEdit }: EntryFormProps) {
+  const { categories } = useCategories()
   const [activity, setActivity] = useState('')
   const [durationInput, setDurationInput] = useState('')
   const [weight, setWeight] = useState('1')
-  const [category, setCategory] = useState<string>(DEFAULT_CATEGORIES[0])
+  const [category, setCategory] = useState<string>(categories[0]?.name ?? '')
   const [error, setError] = useState('')
 
   const isEditing = !!editingEntry
+
+  useEffect(() => {
+    if (categories.length > 0 && !categories.some(c => c.name === category)) {
+      setCategory(categories[0].name)
+    }
+  }, [categories, category])
 
   useEffect(() => {
     if (editingEntry) {
@@ -31,7 +38,7 @@ function EntryForm({ selectedDate, onAdd, editingEntry, onUpdate, onCancelEdit }
       setActivity('')
       setDurationInput('')
       setWeight('1')
-      setCategory(DEFAULT_CATEGORIES[0])
+      setCategory(categories[0]?.name ?? '')
       setError('')
     }
   }, [editingEntry])
@@ -127,8 +134,8 @@ function EntryForm({ selectedDate, onAdd, editingEntry, onUpdate, onCancelEdit }
             onChange={e => setCategory(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
           >
-            {DEFAULT_CATEGORIES.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
+            {categories.map(cat => (
+              <option key={cat.name} value={cat.name}>{cat.name}</option>
             ))}
           </select>
         </div>
