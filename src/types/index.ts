@@ -32,9 +32,15 @@ export interface DailyDataPoint {
   weightedMinutes: number
 }
 
+export interface Category {
+  name: string
+  color: string
+}
+
 export interface StorageData {
   version: number
   entries: TimeEntry[]
+  categories: Category[]
 }
 
 export interface PeriodSummary {
