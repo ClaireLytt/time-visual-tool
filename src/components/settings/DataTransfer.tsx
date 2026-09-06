@@ -34,39 +34,41 @@ function DataTransfer({ data, onImport }: DataTransferProps) {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-      <h3 className="text-sm font-semibold text-gray-700 mb-3">数据管理</h3>
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">数据管理</h3>
 
       <div className="space-y-3">
         <div>
-          <p className="text-xs text-gray-500 mb-2">将所有数据导出为 JSON 文件</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">将所有数据导出为 JSON 文件</p>
           <button
             onClick={() => exportToFile(data)}
-            className="w-full py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+            className="w-full py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
           >
             导出数据
           </button>
         </div>
 
-        <div className="border-t border-gray-100 pt-3">
-          <p className="text-xs text-gray-500 mb-2">从 JSON 文件导入数据</p>
+        <div className="border-t border-gray-100 dark:border-gray-700 pt-3">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">从 JSON 文件导入数据</p>
           <input
             ref={fileRef}
             type="file"
             accept=".json"
             onChange={handleFileChange}
             className="hidden"
+            aria-hidden="true"
           />
           <button
             onClick={() => fileRef.current?.click()}
-            className="w-full py-2 bg-blue-50 text-blue-600 text-sm font-medium rounded-lg hover:bg-blue-100 transition-colors"
+            className="w-full py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-sm font-medium rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+            aria-label="选择导入文件"
           >
             导入数据
           </button>
         </div>
 
         {status && (
-          <p className={`text-xs ${status.type === 'success' ? 'text-green-600' : 'text-red-500'}`}>
+          <p className={`text-xs ${status.type === 'success' ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`} role="status">
             {status.message}
           </p>
         )}

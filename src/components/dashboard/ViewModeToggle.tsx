@@ -13,15 +13,16 @@ interface ViewModeToggleProps {
 
 function ViewModeToggle({ viewMode, onViewModeChange }: ViewModeToggleProps) {
   return (
-    <div className="flex rounded-lg overflow-hidden border border-gray-200 w-fit mb-4">
+    <div className="flex rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 w-fit" role="group" aria-label="视图模式">
       {MODES.map(mode => (
         <button
           key={mode.value}
           onClick={() => onViewModeChange(mode.value)}
-          className={`px-4 py-1.5 text-sm font-medium transition-colors ${
+          aria-pressed={viewMode === mode.value}
+          className={`px-3 sm:px-4 py-1.5 text-sm font-medium transition-colors ${
             viewMode === mode.value
               ? 'bg-blue-500 text-white'
-              : 'bg-white text-gray-600 hover:bg-gray-50'
+              : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
           }`}
         >
           {mode.label}

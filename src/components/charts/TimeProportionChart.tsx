@@ -1,6 +1,7 @@
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import type { CategoryBreakdown } from '../../types'
 import { useCategories } from '../../contexts/CategoryContext'
+import { useTheme } from '../../hooks/useTheme'
 import { formatDuration } from '../../utils/time'
 import ChartLegend from './ChartLegend'
 
@@ -11,6 +12,7 @@ interface TimeProportionChartProps {
 
 function TimeProportionChart({ categoryBreakdown, totalMinutes }: TimeProportionChartProps) {
   const { getColor } = useCategories()
+  const { isDark } = useTheme()
   const chartData = Object.entries(categoryBreakdown).map(([name, data]) => ({
     name,
     value: data.totalMinutes,
@@ -18,21 +20,21 @@ function TimeProportionChart({ categoryBreakdown, totalMinutes }: TimeProportion
 
   if (chartData.length === 0) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
-        <div className="w-24 h-24 mx-auto mb-3 rounded-full border-4 border-dashed border-gray-200 flex items-center justify-center">
-          <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center">
+        <div className="w-24 h-24 mx-auto mb-3 rounded-full border-4 border-dashed border-gray-200 dark:border-gray-600 flex items-center justify-center">
+          <svg className="w-8 h-8 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="12" cy="12" r="10"/>
             <polyline points="12 6 12 12 16 14"/>
           </svg>
         </div>
-        <p className="text-gray-400 text-sm">暂无数据</p>
+        <p className="text-gray-400 dark:text-gray-500 text-sm">暂无数据</p>
       </div>
     )
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-      <h3 className="text-sm font-semibold text-gray-700 mb-2">时间占比</h3>
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">时间占比</h3>
 
       <ResponsiveContainer width="100%" height={220}>
         <PieChart>
@@ -51,9 +53,22 @@ function TimeProportionChart({ categoryBreakdown, totalMinutes }: TimeProportion
           </Pie>
           <Tooltip
             formatter={(value: number) => formatDuration(value)}
-            contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px' }}
+            contentStyle={{
+              borderRadius: '8px',
+              border: `1px solid ${isDark ? '#374151' : '#e5e7eb'}`,
+              backgroundColor: isDark ? '#1f2937' : '#fff',
+              color: isDark ? '#e5e7eb' : '#111827',
+              fontSize: '13px',
+            }}
           />
-          <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="text-sm fill-gray-800 font-semibold">
+          <text
+            x="50%"
+            y="50%"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fill={isDark ? '#e5e7eb' : '#1f2937'}
+            className="text-sm font-semibold"
+          >
             {formatDuration(totalMinutes)}
           </text>
         </PieChart>
