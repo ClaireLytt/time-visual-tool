@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { StorageData } from '../../types'
 import { exportToFile, readImportFile } from '../../utils/dataTransfer'
 import ConfirmDialog from '../common/ConfirmDialog'
@@ -9,6 +10,7 @@ interface DataTransferProps {
 }
 
 function DataTransfer({ data, onImport }: DataTransferProps) {
+  const { t } = useTranslation()
   const fileRef = useRef<HTMLInputElement>(null)
   const [pending, setPending] = useState<StorageData | null>(null)
   const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
@@ -22,7 +24,7 @@ function DataTransfer({ data, onImport }: DataTransferProps) {
       setPending(imported)
       setStatus(null)
     } catch (err) {
-      setStatus({ type: 'error', message: err instanceof Error ? err.message : '导入失败' })
+      setStatus({ type: 'error', message: err instanceof Error ? err.message : t('dataTransfer.importFailed') })
     }
   }
 
@@ -30,26 +32,26 @@ function DataTransfer({ data, onImport }: DataTransferProps) {
     if (!pending) return
     onImport(pending, mode)
     setPending(null)
-    setStatus({ type: 'success', message: mode === 'replace' ? '数据已覆盖导入' : '数据已合并导入' })
+    setStatus({ type: 'success', message: mode === 'replace' ? t('dataTransfer.replaceSuccess') : t('dataTransfer.mergeSuccess') })
   }
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">数据管理</h3>
+      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">{t('dataTransfer.title')}</h3>
 
       <div className="space-y-3">
         <div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">将所有数据导出为 JSON 文件</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{t('dataTransfer.exportDesc')}</p>
           <button
             onClick={() => exportToFile(data)}
             className="w-full py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
           >
-            导出数据
+            {t('dataTransfer.exportButton')}
           </button>
         </div>
 
         <div className="border-t border-gray-100 dark:border-gray-700 pt-3">
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">从 JSON 文件导入数据</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{t('dataTransfer.importDesc')}</p>
           <input
             ref={fileRef}
             type="file"
@@ -61,9 +63,9 @@ function DataTransfer({ data, onImport }: DataTransferProps) {
           <button
             onClick={() => fileRef.current?.click()}
             className="w-full py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-sm font-medium rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
-            aria-label="选择导入文件"
+            aria-label={t('dataTransfer.importFileLabel')}
           >
-            导入数据
+            {t('dataTransfer.importButton')}
           </button>
         </div>
 
@@ -76,10 +78,10 @@ function DataTransfer({ data, onImport }: DataTransferProps) {
 
       <ConfirmDialog
         open={pending !== null}
-        title="选择导入方式"
-        message={`文件包含 ${pending?.entries.length ?? 0} 条记录和 ${pending?.categories.length ?? 0} 个分类。请选择导入方式：`}
-        confirmLabel="覆盖导入"
-        cancelLabel="合并导入"
+        title={t('dataTransfer.importTitle')}
+        message={t('dataTransfer.importMessage', { entries: pending?.entries.length ?? 0, categories: pending?.categories.length ?? 0 })}
+        confirmLabel={t('dataTransfer.replaceButton')}
+        cancelLabel={t('dataTransfer.mergeButton')}
         confirmVariant="danger"
         onConfirm={() => handleImport('replace')}
         onCancel={() => handleImport('merge')}

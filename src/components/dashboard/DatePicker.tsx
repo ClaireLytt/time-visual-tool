@@ -1,5 +1,6 @@
+import { useTranslation } from 'react-i18next'
 import { format, addDays, subDays, addWeeks, subWeeks, addMonths, subMonths, isToday, isSameWeek, isSameMonth, parseISO, startOfWeek, endOfWeek } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
+import { zhCN, enUS } from 'date-fns/locale'
 import type { ViewMode } from '../../types'
 
 interface DatePickerProps {
@@ -9,7 +10,9 @@ interface DatePickerProps {
 }
 
 function DatePicker({ selectedDate, onDateChange, viewMode }: DatePickerProps) {
+  const { t, i18n } = useTranslation()
   const dateObj = parseISO(selectedDate)
+  const locale = i18n.language === 'zh' ? zhCN : enUS
 
   const goBack = () => {
     let newDate: Date
@@ -35,12 +38,14 @@ function DatePicker({ selectedDate, onDateChange, viewMode }: DatePickerProps) {
     if (viewMode === 'week') {
       const start = startOfWeek(dateObj, { weekStartsOn: 1 })
       const end = endOfWeek(dateObj, { weekStartsOn: 1 })
-      return `${format(start, 'M月d日', { locale: zhCN })} ~ ${format(end, 'M月d日', { locale: zhCN })}`
+      const fmt = t('date.weekRangeFormat')
+      const sep = t('date.weekRangeSeparator')
+      return `${format(start, fmt, { locale })}${sep}${format(end, fmt, { locale })}`
     }
     if (viewMode === 'month') {
-      return format(dateObj, 'yyyy年M月', { locale: zhCN })
+      return format(dateObj, t('date.monthFormat'), { locale })
     }
-    return format(dateObj, 'yyyy年M月d日 EEEE', { locale: zhCN })
+    return format(dateObj, t('date.dayFormat'), { locale })
   }
 
   const isCurrent = () => {
@@ -50,9 +55,9 @@ function DatePicker({ selectedDate, onDateChange, viewMode }: DatePickerProps) {
   }
 
   const navLabels = {
-    day: { back: '前一天', forward: '后一天', today: '今天' },
-    week: { back: '前一周', forward: '后一周', today: '本周' },
-    month: { back: '前一月', forward: '后一月', today: '本月' },
+    day: { back: t('nav.prevDay'), forward: t('nav.nextDay'), today: t('nav.today') },
+    week: { back: t('nav.prevWeek'), forward: t('nav.nextWeek'), today: t('nav.thisWeek') },
+    month: { back: t('nav.prevMonth'), forward: t('nav.nextMonth'), today: t('nav.thisMonth') },
   }
 
   const labels = navLabels[viewMode]

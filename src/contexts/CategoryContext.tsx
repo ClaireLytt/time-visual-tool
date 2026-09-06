@@ -27,6 +27,7 @@ export function CategoryProvider({ categories, children }: { categories: Categor
   return <CategoryContext.Provider value={value}>{children}</CategoryContext.Provider>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useCategories() {
   return useContext(CategoryContext)
 }

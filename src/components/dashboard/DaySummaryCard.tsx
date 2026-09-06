@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { formatDuration } from '../../utils/time'
 
 interface SummaryCardProps {
@@ -7,10 +8,12 @@ interface SummaryCardProps {
 }
 
 function DaySummaryCard({ totalMinutes, weightedMinutes, entryCount }: SummaryCardProps) {
+  const { t } = useTranslation()
+
   const stats = [
-    { label: '总时长', value: formatDuration(totalMinutes) },
-    { label: '加权时长', value: formatDuration(Math.round(weightedMinutes)) },
-    { label: '记录条数', value: `${entryCount} 条` },
+    { label: t('summary.totalDuration'), value: formatDuration(totalMinutes) },
+    { label: t('summary.weightedDuration'), value: formatDuration(Math.round(weightedMinutes)) },
+    { label: t('summary.entryCount'), value: t('summary.countUnit', { count: entryCount }) },
   ]
 
   return (

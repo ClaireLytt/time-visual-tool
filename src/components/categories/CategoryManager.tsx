@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { TimeEntry, Category } from '../../types'
+import { EditIcon, XIcon } from '../icons'
 import ConfirmDialog from '../common/ConfirmDialog'
 
 interface CategoryManagerProps {
@@ -11,6 +13,7 @@ interface CategoryManagerProps {
 }
 
 function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete }: CategoryManagerProps) {
+  const { t } = useTranslation()
   const [newName, setNewName] = useState('')
   const [newColor, setNewColor] = useState('#6366f1')
   const [editingName, setEditingName] = useState<string | null>(null)
@@ -46,7 +49,7 @@ function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete }: Cat
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">分类管理</h3>
+      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">{t('category.title')}</h3>
 
       <div className="space-y-2 mb-3">
         {categories.map(cat => (
@@ -58,19 +61,19 @@ function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete }: Cat
                   value={editColor}
                   onChange={e => setEditColor(e.target.value)}
                   className="w-6 h-6 rounded cursor-pointer border-0 p-0"
-                  aria-label="选择颜色"
+                  aria-label={t('category.colorLabel')}
                 />
                 <input
                   type="text"
                   value={editName}
                   onChange={e => setEditName(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && saveEdit()}
-                  className="flex-1 min-w-0 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                  aria-label="分类名称"
+                  className="input-base flex-1 min-w-0 !px-2 !py-1 !rounded"
+                  aria-label={t('category.nameLabel')}
                   autoFocus
                 />
-                <button onClick={saveEdit} className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">保存</button>
-                <button onClick={() => setEditingName(null)} className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">取消</button>
+                <button onClick={saveEdit} className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">{t('category.saveButton')}</button>
+                <button onClick={() => setEditingName(null)} className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">{t('category.cancelButton')}</button>
               </div>
             ) : (
               <>
@@ -79,21 +82,17 @@ function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete }: Cat
                 <button
                   onClick={() => startEdit(cat)}
                   className="opacity-70 hover:opacity-100 focus-visible:opacity-100 p-1 text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 transition-all"
-                  aria-label={`编辑分类 ${cat.name}`}
+                  aria-label={t('category.editAriaLabel', { name: cat.name })}
                 >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                  </svg>
+                  <EditIcon className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => !isUsed(cat.name) && setDeleteTarget(cat.name)}
                   disabled={isUsed(cat.name)}
                   className={`opacity-70 hover:opacity-100 focus-visible:opacity-100 p-1 transition-all ${isUsed(cat.name) ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' : 'text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400'}`}
-                  aria-label={isUsed(cat.name) ? `分类 ${cat.name} 有记录使用，无法删除` : `删除分类 ${cat.name}`}
+                  aria-label={isUsed(cat.name) ? t('category.deleteDisabledAriaLabel', { name: cat.name }) : t('category.deleteAriaLabel', { name: cat.name })}
                 >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <XIcon className="w-3.5 h-3.5" />
                 </button>
               </>
             )}
@@ -107,16 +106,16 @@ function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete }: Cat
           value={newColor}
           onChange={e => setNewColor(e.target.value)}
           className="w-6 h-6 rounded cursor-pointer border-0 p-0"
-          aria-label="新分类颜色"
+          aria-label={t('category.newColorLabel')}
         />
         <input
           type="text"
           value={newName}
           onChange={e => setNewName(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleAdd()}
-          placeholder="新分类名称"
-          aria-label="新分类名称"
-          className="flex-1 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          placeholder={t('category.newNamePlaceholder')}
+          aria-label={t('category.newNameLabel')}
+          className="input-base flex-1 !px-2 !py-1.5"
           maxLength={20}
         />
         <button
@@ -124,15 +123,15 @@ function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete }: Cat
           disabled={!newName.trim()}
           className="px-3 py-1.5 bg-blue-500 text-white text-xs font-medium rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          添加
+          {t('category.addButton')}
         </button>
       </div>
 
       <ConfirmDialog
         open={deleteTarget !== null}
-        title="确认删除分类"
-        message={`确定要删除分类「${deleteTarget}」吗？`}
-        confirmLabel="删除"
+        title={t('category.deleteConfirmTitle')}
+        message={t('category.deleteConfirmMessage', { name: deleteTarget })}
+        confirmLabel={t('delete.deleteButton')}
         confirmVariant="danger"
         onConfirm={() => { if (deleteTarget) onDelete(deleteTarget); setDeleteTarget(null) }}
         onCancel={() => setDeleteTarget(null)}

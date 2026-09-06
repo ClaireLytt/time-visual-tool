@@ -1,0 +1,135 @@
+{
+  "app": {
+    "title": "TimeVisual",
+    "subtitle": "可视化你的每一天"
+  },
+  "theme": {
+    "light": "浅色模式",
+    "dark": "深色模式",
+    "system": "跟随系统",
+    "toggle": "切换主题（当前：{{mode}}）"
+  },
+  "lang": {
+    "toggle": "English",
+    "label": "切换语言"
+  },
+  "viewMode": {
+    "day": "日",
+    "week": "周",
+    "month": "月",
+    "label": "视图模式"
+  },
+  "nav": {
+    "prevDay": "前一天",
+    "nextDay": "后一天",
+    "today": "今天",
+    "prevWeek": "前一周",
+    "nextWeek": "后一周",
+    "thisWeek": "本周",
+    "prevMonth": "前一月",
+    "nextMonth": "后一月",
+    "thisMonth": "本月"
+  },
+  "date": {
+    "dayFormat": "yyyy年M月d日 EEEE",
+    "monthFormat": "yyyy年M月",
+    "weekRangeFormat": "M月d日",
+    "weekRangeSeparator": " ~ ",
+    "dayLabels": ["周日", "周一", "周二", "周三", "周四", "周五", "周六"],
+    "daySuffix": "{{day}}日"
+  },
+  "summary": {
+    "totalDuration": "总时长",
+    "weightedDuration": "加权时长",
+    "entryCount": "记录条数",
+    "countUnit": "{{count}} 条"
+  },
+  "entry": {
+    "addTitle": "添加时间记录",
+    "editTitle": "编辑时间记录",
+    "activityPlaceholder": "活动名称",
+    "activityLabel": "活动名称",
+    "durationPlaceholder": "时长（如 90、1:30、1.5h）",
+    "durationLabel": "时长",
+    "weightPlaceholder": "权重",
+    "weightLabel": "权重",
+    "categoryLabel": "分类",
+    "addButton": "添加记录",
+    "saveButton": "保存修改",
+    "cancelButton": "取消",
+    "errorActivity": "请输入活动名称",
+    "errorDuration": "请输入有效时长（如 90、1:30、1.5h）",
+    "errorWeight": "权重需在 0.1 - 10 之间",
+    "editAriaLabel": "编辑 {{name}}",
+    "deleteAriaLabel": "删除 {{name}}"
+  },
+  "entryList": {
+    "title": "时间记录 ({{count}})",
+    "emptyTitle": "今天还没有记录",
+    "emptySubtitle": "添加你的第一条时间记录吧"
+  },
+  "delete": {
+    "confirmTitle": "确认删除",
+    "confirmMessage": "确定要删除「{{name}}」吗？此操作无法撤销。",
+    "deleteButton": "删除"
+  },
+  "confirm": {
+    "ok": "确认",
+    "cancel": "取消"
+  },
+  "settings": {
+    "label": "设置"
+  },
+  "category": {
+    "title": "分类管理",
+    "colorLabel": "选择颜色",
+    "nameLabel": "分类名称",
+    "newColorLabel": "新分类颜色",
+    "newNamePlaceholder": "新分类名称",
+    "newNameLabel": "新分类名称",
+    "addButton": "添加",
+    "saveButton": "保存",
+    "cancelButton": "取消",
+    "editAriaLabel": "编辑分类 {{name}}",
+    "deleteAriaLabel": "删除分类 {{name}}",
+    "deleteDisabledAriaLabel": "分类 {{name}} 有记录使用，无法删除",
+    "deleteConfirmTitle": "确认删除分类",
+    "deleteConfirmMessage": "确定要删除分类「{{name}}」吗？"
+  },
+  "dataTransfer": {
+    "title": "数据管理",
+    "exportDesc": "将所有数据导出为 JSON 文件",
+    "exportButton": "导出数据",
+    "importDesc": "从 JSON 文件导入数据",
+    "importButton": "导入数据",
+    "importFileLabel": "选择导入文件",
+    "importFailed": "导入失败",
+    "importTitle": "选择导入方式",
+    "importMessage": "文件包含 {{entries}} 条记录和 {{categories}} 个分类。请选择导入方式：",
+    "replaceButton": "覆盖导入",
+    "mergeButton": "合并导入",
+    "replaceSuccess": "数据已覆盖导入",
+    "mergeSuccess": "数据已合并导入"
+  },
+  "chart": {
+    "proportion": "时间占比",
+    "dailyBreakdown": "每日分布",
+    "noData": "暂无数据",
+    "totalDuration": "总时长"
+  },
+  "error": {
+    "title": "出了点问题",
+    "message": "应用遇到了意外错误，请尝试刷新页面。",
+    "reload": "刷新页面"
+  },
+  "duration": {
+    "minutes": "{{m}}分钟",
+    "hours": "{{h}}小时",
+    "hoursMinutes": "{{h}}小时{{m}}分钟"
+  },
+  "dataTransferError": {
+    "invalidFormat": "文件格式无效",
+    "parseFailed": "文件解析失败",
+    "readFailed": "文件读取失败"
+  }
+}

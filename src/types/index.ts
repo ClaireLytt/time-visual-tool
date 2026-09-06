@@ -3,6 +3,7 @@ export interface TimeEntry {
   date: string
   activity: string
   duration: number
+  /** Valid range: 0.1 – 10 */
   weight: number
   category: string
   createdAt: string
@@ -38,7 +39,7 @@ export interface Category {
 }
 
 export interface StorageData {
-  version: number
+  version: 2
   entries: TimeEntry[]
   categories: Category[]
 }
