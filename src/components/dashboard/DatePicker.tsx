@@ -1,12 +1,12 @@
 import { useTranslation } from 'react-i18next'
-import { format, addDays, subDays, addWeeks, subWeeks, addMonths, subMonths, isToday, isSameWeek, isSameMonth, parseISO, startOfWeek, endOfWeek } from 'date-fns'
+import { format, addDays, subDays, addWeeks, subWeeks, addMonths, subMonths, addYears, subYears, isToday, isSameWeek, isSameMonth, isSameYear, parseISO, startOfWeek, endOfWeek } from 'date-fns'
 import { zhCN, enUS } from 'date-fns/locale'
-import type { ViewMode } from '../../types'
+import type { FinanceViewMode } from '../../types/finance'
 
 interface DatePickerProps {
   selectedDate: string
   onDateChange: (date: string) => void
-  viewMode: ViewMode
+  viewMode: FinanceViewMode
 }
 
 function DatePicker({ selectedDate, onDateChange, viewMode }: DatePickerProps) {
@@ -18,6 +18,7 @@ function DatePicker({ selectedDate, onDateChange, viewMode }: DatePickerProps) {
     let newDate: Date
     if (viewMode === 'week') newDate = subWeeks(dateObj, 1)
     else if (viewMode === 'month') newDate = subMonths(dateObj, 1)
+    else if (viewMode === 'year') newDate = subYears(dateObj, 1)
     else newDate = subDays(dateObj, 1)
     onDateChange(format(newDate, 'yyyy-MM-dd'))
   }
@@ -26,6 +27,7 @@ function DatePicker({ selectedDate, onDateChange, viewMode }: DatePickerProps) {
     let newDate: Date
     if (viewMode === 'week') newDate = addWeeks(dateObj, 1)
     else if (viewMode === 'month') newDate = addMonths(dateObj, 1)
+    else if (viewMode === 'year') newDate = addYears(dateObj, 1)
     else newDate = addDays(dateObj, 1)
     onDateChange(format(newDate, 'yyyy-MM-dd'))
   }
@@ -45,12 +47,16 @@ function DatePicker({ selectedDate, onDateChange, viewMode }: DatePickerProps) {
     if (viewMode === 'month') {
       return format(dateObj, t('date.monthFormat'), { locale })
     }
+    if (viewMode === 'year') {
+      return format(dateObj, t('date.yearFormat'), { locale })
+    }
     return format(dateObj, t('date.dayFormat'), { locale })
   }
 
   const isCurrent = () => {
     if (viewMode === 'week') return isSameWeek(dateObj, new Date(), { weekStartsOn: 1 })
     if (viewMode === 'month') return isSameMonth(dateObj, new Date())
+    if (viewMode === 'year') return isSameYear(dateObj, new Date())
     return isToday(dateObj)
   }
 
@@ -58,6 +64,7 @@ function DatePicker({ selectedDate, onDateChange, viewMode }: DatePickerProps) {
     day: { back: t('nav.prevDay'), forward: t('nav.nextDay'), today: t('nav.today') },
     week: { back: t('nav.prevWeek'), forward: t('nav.nextWeek'), today: t('nav.thisWeek') },
     month: { back: t('nav.prevMonth'), forward: t('nav.nextMonth'), today: t('nav.thisMonth') },
+    year: { back: t('nav.prevYear'), forward: t('nav.nextYear'), today: t('nav.thisYear') },
   }
 
   const labels = navLabels[viewMode]

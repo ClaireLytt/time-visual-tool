@@ -12,7 +12,8 @@ import TimeProportionChart from '../charts/TimeProportionChart'
 import DailyBreakdownChart from '../charts/DailyBreakdownChart'
 import CategoryManager from '../categories/CategoryManager'
 import DataTransfer from '../settings/DataTransfer'
-import type { TimeEntry, ViewMode } from '../../types'
+import { exportToFile, readImportFile } from '../../utils/dataTransfer'
+import type { TimeEntry, ViewMode, StorageData } from '../../types'
 
 function Dashboard() {
   const { t } = useTranslation()
@@ -74,7 +75,13 @@ function Dashboard() {
               onUpdate={updateCategory}
               onDelete={deleteCategory}
             />
-            <DataTransfer data={data} onImport={importData} />
+            <DataTransfer
+              data={data}
+              onImport={importData}
+              onExport={exportToFile}
+              readFile={readImportFile}
+              getCounts={(d: StorageData) => ({ entries: d.entries.length, categories: d.categories.length })}
+            />
           </div>
         )}
 

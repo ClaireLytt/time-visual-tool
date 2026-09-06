@@ -1,25 +1,47 @@
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '../../hooks/useTheme'
-import { ClockIcon } from '../icons'
+import { ClockIcon, WalletIcon } from '../icons'
+import type { AppMode } from '../../types/finance'
 
-function Header() {
+interface HeaderProps {
+  mode: AppMode
+  onToggleMode: () => void
+}
+
+function Header({ mode, onToggleMode }: HeaderProps) {
   const { t, i18n } = useTranslation()
   const { theme, cycleTheme } = useTheme()
 
   const themeLabel = t(`theme.${theme}`)
+  const isFinance = mode === 'finance'
 
   const toggleLang = () => {
     i18n.changeLanguage(i18n.language === 'zh' ? 'en' : 'zh')
   }
 
   return (
-    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
-      <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-3">
-        <ClockIcon className="w-8 h-8 text-blue-500" />
-        <div className="flex-1">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">{t('app.title')}</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{t('app.subtitle')}</p>
+    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm pt-[env(safe-area-inset-top)]">
+      <div className="max-w-5xl mx-auto px-4 py-4 flex flex-wrap items-center gap-3">
+        {isFinance ? (
+          <WalletIcon className="w-8 h-8 text-green-500 shrink-0" />
+        ) : (
+          <ClockIcon className="w-8 h-8 text-blue-500 shrink-0" />
+        )}
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 truncate">
+            {isFinance ? t('financeApp.title') : t('app.title')}
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+            {isFinance ? t('financeApp.subtitle') : t('app.subtitle')}
+          </p>
         </div>
+        <button
+          onClick={onToggleMode}
+          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${isFinance ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50' : 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/50'}`}
+          aria-label={isFinance ? t('mode.toggleToTime') : t('mode.toggleToFinance')}
+        >
+          {isFinance ? t('mode.time') : t('mode.finance')}
+        </button>
         <button
           onClick={toggleLang}
           className="px-2 py-1 rounded-lg text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"

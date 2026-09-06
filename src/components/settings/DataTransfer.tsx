@@ -1,18 +1,19 @@
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { StorageData } from '../../types'
-import { exportToFile, readImportFile } from '../../utils/dataTransfer'
 import ConfirmDialog from '../common/ConfirmDialog'
 
-interface DataTransferProps {
-  data: StorageData
-  onImport: (data: StorageData, mode: 'replace' | 'merge') => void
+interface DataTransferProps<T> {
+  data: T
+  onImport: (data: T, mode: 'replace' | 'merge') => void
+  onExport: (data: T) => void
+  readFile: (file: File) => Promise<T>
+  getCounts: (data: T) => { entries: number; categories: number }
 }
 
-function DataTransfer({ data, onImport }: DataTransferProps) {
+function DataTransfer<T>({ data, onImport, onExport, readFile, getCounts }: DataTransferProps<T>) {
   const { t } = useTranslation()
   const fileRef = useRef<HTMLInputElement>(null)
-  const [pending, setPending] = useState<StorageData | null>(null)
+  const [pending, setPending] = useState<T | null>(null)
   const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -20,7 +21,7 @@ function DataTransfer({ data, onImport }: DataTransferProps) {
     if (!file) return
     e.target.value = ''
     try {
-      const imported = await readImportFile(file)
+      const imported = await readFile(file)
       setPending(imported)
       setStatus(null)
     } catch (err) {
@@ -29,11 +30,13 @@ function DataTransfer({ data, onImport }: DataTransferProps) {
   }
 
   const handleImport = (mode: 'replace' | 'merge') => {
-    if (!pending) return
+    if (pending === null) return
     onImport(pending, mode)
     setPending(null)
     setStatus({ type: 'success', message: mode === 'replace' ? t('dataTransfer.replaceSuccess') : t('dataTransfer.mergeSuccess') })
   }
+
+  const pendingCounts = pending !== null ? getCounts(pending) : { entries: 0, categories: 0 }
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
@@ -45,7 +48,7 @@ function DataTransfer({ data, onImport }: DataTransferProps) {
           <button
             onClick={() => {
               try {
-                exportToFile(data)
+                onExport(data)
               } catch (err) {
                 setStatus({ type: 'error', message: err instanceof Error ? err.message : t('dataTransferError.exportFailed') })
               }
@@ -85,7 +88,7 @@ function DataTransfer({ data, onImport }: DataTransferProps) {
       <ConfirmDialog
         open={pending !== null}
         title={t('dataTransfer.importTitle')}
-        message={t('dataTransfer.importMessage', { entries: pending?.entries.length ?? 0, categories: pending?.categories.length ?? 0 })}
+        message={t('dataTransfer.importMessage', { entries: pendingCounts.entries, categories: pendingCounts.categories })}
         confirmLabel={t('dataTransfer.replaceButton')}
         cancelLabel={t('dataTransfer.mergeButton')}
         confirmVariant="danger"

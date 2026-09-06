@@ -1,21 +1,28 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { TimeEntry, Category } from '../../types'
 import { EditIcon, XIcon } from '../icons'
 import ConfirmDialog from '../common/ConfirmDialog'
 
-interface CategoryManagerProps {
-  categories: Category[]
-  entries: TimeEntry[]
-  onAdd: (category: Category) => void
-  onUpdate: (oldName: string, updated: Category) => void
-  onDelete: (name: string) => void
+export interface ManagedCategory {
+  name: string
+  color: string
+  kind?: 'income' | 'expense'
 }
 
-function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete }: CategoryManagerProps) {
+interface CategoryManagerProps {
+  categories: ManagedCategory[]
+  entries: { category: string }[]
+  onAdd: (category: ManagedCategory) => void
+  onUpdate: (oldName: string, updated: ManagedCategory) => void
+  onDelete: (name: string) => void
+  withKind?: boolean
+}
+
+function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete, withKind = false }: CategoryManagerProps) {
   const { t } = useTranslation()
   const [newName, setNewName] = useState('')
   const [newColor, setNewColor] = useState('#6366f1')
+  const [newKind, setNewKind] = useState<'income' | 'expense'>('expense')
   const [editingName, setEditingName] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
   const [editColor, setEditColor] = useState('')
@@ -25,12 +32,12 @@ function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete }: Cat
     const name = newName.trim()
     if (!name) return
     if (categories.some(c => c.name === name)) return
-    onAdd({ name, color: newColor })
+    onAdd(withKind ? { name, color: newColor, kind: newKind } : { name, color: newColor })
     setNewName('')
     setNewColor('#6366f1')
   }
 
-  const startEdit = (cat: Category) => {
+  const startEdit = (cat: ManagedCategory) => {
     setEditingName(cat.name)
     setEditName(cat.name)
     setEditColor(cat.color)
@@ -41,7 +48,8 @@ function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete }: Cat
     const name = editName.trim()
     if (!name) return
     if (name !== editingName && categories.some(c => c.name === name)) return
-    onUpdate(editingName, { name, color: editColor })
+    const original = categories.find(c => c.name === editingName)
+    onUpdate(editingName, { name, color: editColor, kind: original?.kind })
     setEditingName(null)
   }
 
@@ -78,7 +86,14 @@ function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete }: Cat
             ) : (
               <>
                 <span className="w-4 h-4 rounded-sm shrink-0" style={{ backgroundColor: cat.color }} aria-hidden="true" />
-                <span className="flex-1 text-sm text-gray-700 dark:text-gray-200">{t('category.names.' + cat.name, cat.name)}</span>
+                <span className="flex-1 text-sm text-gray-700 dark:text-gray-200">
+                  {t('category.names.' + cat.name, cat.name)}
+                  {withKind && cat.kind && (
+                    <span className={`ml-2 text-[10px] px-1.5 py-0.5 rounded ${cat.kind === 'income' ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400' : 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400'}`}>
+                      {t(cat.kind === 'income' ? 'finance.income' : 'finance.expense')}
+                    </span>
+                  )}
+                </span>
                 <button
                   onClick={() => startEdit(cat)}
                   className="opacity-70 hover:opacity-100 focus-visible:opacity-100 p-1 text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 transition-all"
@@ -118,6 +133,17 @@ function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete }: Cat
           className="input-base flex-1 !px-2 !py-1.5"
           maxLength={20}
         />
+        {withKind && (
+          <select
+            value={newKind}
+            onChange={e => setNewKind(e.target.value as 'income' | 'expense')}
+            aria-label={t('category.kindLabel')}
+            className="input-base !w-auto !px-2 !py-1.5"
+          >
+            <option value="expense">{t('finance.expense')}</option>
+            <option value="income">{t('finance.income')}</option>
+          </select>
+        )}
         <button
           onClick={handleAdd}
           disabled={!newName.trim()}

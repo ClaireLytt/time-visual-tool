@@ -52,8 +52,7 @@ function TimeProportionChart({ categoryBreakdown, totalMinutes }: TimeProportion
             ))}
           </Pie>
           <Tooltip
-            formatter={(value: number) => formatDuration(value)}
-            labelFormatter={(name: string) => t('category.names.' + name, name)}
+            formatter={(value: number, name: string) => [formatDuration(value), t('category.names.' + name, name)]}
             contentStyle={{
               borderRadius: '8px',
               border: `1px solid ${isDark ? '#374151' : '#e5e7eb'}`,
