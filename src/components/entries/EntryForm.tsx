@@ -1,18 +1,40 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { DEFAULT_CATEGORIES } from '../../constants'
 import { parseDurationInput } from '../../utils/time'
+import type { TimeEntry } from '../../types'
 
 interface EntryFormProps {
   selectedDate: string
   onAdd: (entry: { date: string; activity: string; duration: number; weight: number; category: string }) => void
+  editingEntry?: TimeEntry | null
+  onUpdate?: (id: string, updates: Partial<TimeEntry>) => void
+  onCancelEdit?: () => void
 }
 
-function EntryForm({ selectedDate, onAdd }: EntryFormProps) {
+function EntryForm({ selectedDate, onAdd, editingEntry, onUpdate, onCancelEdit }: EntryFormProps) {
   const [activity, setActivity] = useState('')
   const [durationInput, setDurationInput] = useState('')
   const [weight, setWeight] = useState('1')
   const [category, setCategory] = useState<string>(DEFAULT_CATEGORIES[0])
   const [error, setError] = useState('')
+
+  const isEditing = !!editingEntry
+
+  useEffect(() => {
+    if (editingEntry) {
+      setActivity(editingEntry.activity)
+      setDurationInput(String(editingEntry.duration))
+      setWeight(String(editingEntry.weight))
+      setCategory(editingEntry.category)
+      setError('')
+    } else {
+      setActivity('')
+      setDurationInput('')
+      setWeight('1')
+      setCategory(DEFAULT_CATEGORIES[0])
+      setError('')
+    }
+  }, [editingEntry])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -35,23 +57,34 @@ function EntryForm({ selectedDate, onAdd }: EntryFormProps) {
       return
     }
 
-    onAdd({
-      date: selectedDate,
-      activity: activity.trim(),
-      duration,
-      weight: w,
-      category,
-    })
-
-    setActivity('')
-    setDurationInput('')
-    setWeight('1')
-    setError('')
+    if (isEditing && onUpdate) {
+      onUpdate(editingEntry.id, {
+        activity: activity.trim(),
+        duration,
+        weight: w,
+        category,
+      })
+      onCancelEdit?.()
+    } else {
+      onAdd({
+        date: selectedDate,
+        activity: activity.trim(),
+        duration,
+        weight: w,
+        category,
+      })
+      setActivity('')
+      setDurationInput('')
+      setWeight('1')
+      setError('')
+    }
   }
 
   return (
     <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4">
-      <h3 className="text-sm font-semibold text-gray-700 mb-3">添加时间记录</h3>
+      <h3 className="text-sm font-semibold text-gray-700 mb-3">
+        {isEditing ? '编辑时间记录' : '添加时间记录'}
+      </h3>
 
       <div className="grid grid-cols-2 gap-3 mb-3">
         <div className="col-span-2">
@@ -103,12 +136,23 @@ function EntryForm({ selectedDate, onAdd }: EntryFormProps) {
 
       {error && <p className="text-red-500 text-xs mb-2">{error}</p>}
 
-      <button
-        type="submit"
-        className="w-full py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors"
-      >
-        添加记录
-      </button>
+      <div className={isEditing ? 'flex gap-2' : ''}>
+        <button
+          type="submit"
+          className={`${isEditing ? 'flex-1' : 'w-full'} py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors`}
+        >
+          {isEditing ? '保存修改' : '添加记录'}
+        </button>
+        {isEditing && (
+          <button
+            type="button"
+            onClick={onCancelEdit}
+            className="px-4 py-2 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            取消
+          </button>
+        )}
+      </div>
     </form>
   )
 }

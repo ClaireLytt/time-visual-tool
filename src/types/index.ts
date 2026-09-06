@@ -22,3 +22,20 @@ export interface DaySummary {
   entries: TimeEntry[]
   categoryBreakdown: Record<string, CategoryBreakdown>
 }
+
+export type ViewMode = 'day' | 'week' | 'month'
+
+export interface DailyDataPoint {
+  date: string
+  label: string
+  totalMinutes: number
+  weightedMinutes: number
+}
+
+export interface PeriodSummary {
+  totalMinutes: number
+  weightedMinutes: number
+  entryCount: number
+  categoryBreakdown: Record<string, CategoryBreakdown>
+  dailyBreakdown: DailyDataPoint[]
+}

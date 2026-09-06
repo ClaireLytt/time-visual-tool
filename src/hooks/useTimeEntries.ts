@@ -1,8 +1,8 @@
 import { useCallback, useMemo } from 'react'
 import { useLocalStorage } from './useLocalStorage'
 import { STORAGE_KEY } from '../constants'
-import { computeDaySummary } from '../utils/summary'
-import type { TimeEntry, DaySummary } from '../types'
+import { computeDaySummary, computePeriodSummary } from '../utils/summary'
+import type { TimeEntry, DaySummary, ViewMode, PeriodSummary } from '../types'
 
 interface StorageData {
   version: number
@@ -51,10 +51,14 @@ export function useTimeEntries() {
     return computeDaySummary(entries, date)
   }, [entries])
 
+  const getSummaryForPeriod = useCallback((anchorDate: string, viewMode: ViewMode): PeriodSummary => {
+    return computePeriodSummary(entries, anchorDate, viewMode)
+  }, [entries])
+
   const allDates = useMemo(() => {
     const dates = new Set(entries.map(e => e.date))
     return Array.from(dates).sort()
   }, [entries])
 
-  return { entries, addEntry, deleteEntry, updateEntry, getEntriesForDate, getSummaryForDate, allDates }
+  return { entries, addEntry, deleteEntry, updateEntry, getEntriesForDate, getSummaryForDate, getSummaryForPeriod, allDates }
 }
