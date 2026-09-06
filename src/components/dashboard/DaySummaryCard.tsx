@@ -1,15 +1,16 @@
-import type { DaySummary } from '../../types'
 import { formatDuration } from '../../utils/time'
 
-interface DaySummaryCardProps {
-  summary: DaySummary
+interface SummaryCardProps {
+  totalMinutes: number
+  weightedMinutes: number
+  entryCount: number
 }
 
-function DaySummaryCard({ summary }: DaySummaryCardProps) {
+function DaySummaryCard({ totalMinutes, weightedMinutes, entryCount }: SummaryCardProps) {
   const stats = [
-    { label: '总时长', value: formatDuration(summary.totalMinutes) },
-    { label: '加权时长', value: formatDuration(Math.round(summary.weightedMinutes)) },
-    { label: '记录条数', value: `${summary.entries.length} 条` },
+    { label: '总时长', value: formatDuration(totalMinutes) },
+    { label: '加权时长', value: formatDuration(Math.round(weightedMinutes)) },
+    { label: '记录条数', value: `${entryCount} 条` },
   ]
 
   return (

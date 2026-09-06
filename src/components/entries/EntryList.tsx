@@ -4,9 +4,10 @@ import EntryItem from './EntryItem'
 interface EntryListProps {
   entries: TimeEntry[]
   onDelete: (id: string) => void
+  onEdit: (entry: TimeEntry) => void
 }
 
-function EntryList({ entries, onDelete }: EntryListProps) {
+function EntryList({ entries, onDelete, onEdit }: EntryListProps) {
   if (entries.length === 0) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
@@ -23,7 +24,7 @@ function EntryList({ entries, onDelete }: EntryListProps) {
       </h3>
       <div className="divide-y divide-gray-100">
         {entries.map(entry => (
-          <EntryItem key={entry.id} entry={entry} onDelete={onDelete} />
+          <EntryItem key={entry.id} entry={entry} onDelete={onDelete} onEdit={onEdit} />
         ))}
       </div>
     </div>
