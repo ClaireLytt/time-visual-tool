@@ -78,7 +78,7 @@ function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete }: Cat
             ) : (
               <>
                 <span className="w-4 h-4 rounded-sm shrink-0" style={{ backgroundColor: cat.color }} aria-hidden="true" />
-                <span className="flex-1 text-sm text-gray-700 dark:text-gray-200">{cat.name}</span>
+                <span className="flex-1 text-sm text-gray-700 dark:text-gray-200">{t('category.names.' + cat.name, cat.name)}</span>
                 <button
                   onClick={() => startEdit(cat)}
                   className="opacity-70 hover:opacity-100 focus-visible:opacity-100 p-1 text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 transition-all"

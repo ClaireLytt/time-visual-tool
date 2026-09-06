@@ -1,7 +1,8 @@
 {
   "app": {
     "title": "TimeVisual",
-    "subtitle": "Visualize your every day"
+    "subtitle": "Visualize your every day",
+    "skipToContent": "Skip to content"
   },
   "theme": {
     "light": "Light mode",
@@ -94,7 +95,15 @@
     "deleteAriaLabel": "Delete category {{name}}",
     "deleteDisabledAriaLabel": "Category {{name}} is in use and cannot be deleted",
     "deleteConfirmTitle": "Confirm category deletion",
-    "deleteConfirmMessage": "Are you sure you want to delete category \"{{name}}\"?"
+    "deleteConfirmMessage": "Are you sure you want to delete category \"{{name}}\"?",
+    "names": {
+      "工作": "Work",
+      "学习": "Study",
+      "运动": "Exercise",
+      "阅读": "Reading",
+      "休息": "Rest",
+      "其他": "Other"
+    }
   },
   "dataTransfer": {
     "title": "Data management",
@@ -130,6 +139,7 @@
   "dataTransferError": {
     "invalidFormat": "Invalid file format",
     "parseFailed": "Failed to parse file",
-    "readFailed": "Failed to read file"
+    "readFailed": "Failed to read file",
+    "exportFailed": "Export failed"
   }
 }
