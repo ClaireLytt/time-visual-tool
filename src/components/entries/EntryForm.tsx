@@ -139,7 +139,7 @@ function EntryForm({ selectedDate, onAdd, editingEntry, onUpdate, onCancelEdit }
             className="input-base"
           >
             {categories.map(cat => (
-              <option key={cat.name} value={cat.name}>{cat.name}</option>
+              <option key={cat.name} value={cat.name}>{t('category.names.' + cat.name, cat.name)}</option>
             ))}
           </select>
         </div>

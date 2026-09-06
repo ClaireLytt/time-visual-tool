@@ -1,9 +1,9 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { useLocalStorage } from './useLocalStorage'
 import { STORAGE_KEY, DEFAULT_CATEGORY_LIST } from '../constants'
-import { computeDaySummary, computePeriodSummary } from '../utils/summary'
+import { computePeriodSummary } from '../utils/summary'
 import { isValidEntry, isValidCategory } from '../utils/dataTransfer'
-import type { TimeEntry, DaySummary, Category, StorageData, ViewMode, PeriodSummary } from '../types'
+import type { TimeEntry, Category, StorageData, ViewMode, PeriodSummary } from '../types'
 
 function validateStorageData(raw: unknown): StorageData | null {
   if (typeof raw !== 'object' || raw === null) return null
@@ -104,17 +104,8 @@ export function useTimeEntries() {
     return entries.filter(e => e.date === date)
   }, [entries])
 
-  const getSummaryForDate = useCallback((date: string): DaySummary => {
-    return computeDaySummary(entries, date)
-  }, [entries])
-
   const getSummaryForPeriod = useCallback((anchorDate: string, viewMode: ViewMode): PeriodSummary => {
     return computePeriodSummary(entries, anchorDate, viewMode)
-  }, [entries])
-
-  const allDates = useMemo(() => {
-    const dates = new Set(entries.map(e => e.date))
-    return Array.from(dates).sort()
   }, [entries])
 
   return {
@@ -122,6 +113,6 @@ export function useTimeEntries() {
     addEntry, deleteEntry, updateEntry,
     addCategory, updateCategory, deleteCategory,
     importData,
-    getEntriesForDate, getSummaryForDate, getSummaryForPeriod, allDates,
+    getEntriesForDate, getSummaryForPeriod,
   }
 }

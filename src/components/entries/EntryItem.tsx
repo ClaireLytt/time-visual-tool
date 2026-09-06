@@ -29,7 +29,7 @@ function EntryItem({ entry, onDelete, onEdit }: EntryItemProps) {
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{entry.activity}</p>
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          {entry.category} · {formatDuration(entry.duration)}
+          {t('category.names.' + entry.category, entry.category)} · {formatDuration(entry.duration)}
           {entry.weight !== 1 && <span className="ml-1 text-amber-600 dark:text-amber-400">x{entry.weight}</span>}
         </p>
       </div>

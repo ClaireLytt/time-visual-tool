@@ -22,10 +22,6 @@ export const CATEGORY_COLORS: Record<DefaultCategory, string> = {
   '其他': '#ec4899',
 }
 
-export function getCategoryColor(category: string): string {
-  return (CATEGORY_COLORS as Record<string, string>)[category] ?? '#94a3b8'
-}
-
 export const DEFAULT_CATEGORY_LIST: Category[] = DEFAULT_CATEGORIES.map(name => ({
   name,
   color: CATEGORY_COLORS[name],

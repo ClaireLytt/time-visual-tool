@@ -43,7 +43,13 @@ function DataTransfer({ data, onImport }: DataTransferProps) {
         <div>
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{t('dataTransfer.exportDesc')}</p>
           <button
-            onClick={() => exportToFile(data)}
+            onClick={() => {
+              try {
+                exportToFile(data)
+              } catch (err) {
+                setStatus({ type: 'error', message: err instanceof Error ? err.message : t('dataTransferError.exportFailed') })
+              }
+            }}
             className="w-full py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
           >
             {t('dataTransfer.exportButton')}

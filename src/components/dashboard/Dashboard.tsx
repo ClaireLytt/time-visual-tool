@@ -49,7 +49,7 @@ function Dashboard() {
 
   return (
     <CategoryProvider categories={categories}>
-      <div>
+      <div id="main-content">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
           <ViewModeToggle viewMode={viewMode} onViewModeChange={handleViewModeChange} />
           <button

@@ -1,7 +1,8 @@
 {
   "app": {
     "title": "TimeVisual",
-    "subtitle": "可视化你的每一天"
+    "subtitle": "可视化你的每一天",
+    "skipToContent": "跳转到主要内容"
   },
   "theme": {
     "light": "浅色模式",
@@ -94,7 +95,15 @@
     "deleteAriaLabel": "删除分类 {{name}}",
     "deleteDisabledAriaLabel": "分类 {{name}} 有记录使用，无法删除",
     "deleteConfirmTitle": "确认删除分类",
-    "deleteConfirmMessage": "确定要删除分类「{{name}}」吗？"
+    "deleteConfirmMessage": "确定要删除分类「{{name}}」吗？",
+    "names": {
+      "工作": "工作",
+      "学习": "学习",
+      "运动": "运动",
+      "阅读": "阅读",
+      "休息": "休息",
+      "其他": "其他"
+    }
   },
   "dataTransfer": {
     "title": "数据管理",
@@ -130,6 +139,7 @@
   "dataTransferError": {
     "invalidFormat": "文件格式无效",
     "parseFailed": "文件解析失败",
-    "readFailed": "文件读取失败"
+    "readFailed": "文件读取失败",
+    "exportFailed": "导出失败"
   }
 }

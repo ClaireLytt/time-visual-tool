@@ -42,16 +42,20 @@ export function validateImportData(raw: unknown): StorageData | null {
 }
 
 export function exportToFile(data: StorageData) {
-  const json = JSON.stringify(data, null, 2)
-  const blob = new Blob([json], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `time-visual-backup-${format(new Date(), 'yyyy-MM-dd')}.json`
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
+  try {
+    const json = JSON.stringify(data, null, 2)
+    const blob = new Blob([json], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `time-visual-backup-${format(new Date(), 'yyyy-MM-dd')}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  } catch {
+    throw new Error(i18n.t('dataTransferError.exportFailed'))
+  }
 }
 
 export function readImportFile(file: File): Promise<StorageData> {

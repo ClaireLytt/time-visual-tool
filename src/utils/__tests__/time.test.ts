@@ -19,6 +19,18 @@ describe('formatDuration', () => {
     expect(formatDuration(90)).toBe('1小时30分钟')
     expect(formatDuration(125)).toBe('2小时5分钟')
   })
+
+  it('handles negative minutes defensively', () => {
+    expect(formatDuration(-30)).toBe('0分钟')
+  })
+
+  it('handles NaN defensively', () => {
+    expect(formatDuration(NaN)).toBe('0分钟')
+  })
+
+  it('handles Infinity defensively', () => {
+    expect(formatDuration(Infinity)).toBe('0分钟')
+  })
 })
 
 describe('parseDurationInput', () => {
@@ -71,5 +83,18 @@ describe('parseDurationInput', () => {
   it('trims whitespace', () => {
     expect(parseDurationInput('  90  ')).toBe(90)
     expect(parseDurationInput(' 1:30 ')).toBe(90)
+  })
+
+  it('rejects durations exceeding 24 hours', () => {
+    expect(parseDurationInput('1441')).toBeNull()
+    expect(parseDurationInput('99999')).toBeNull()
+    expect(parseDurationInput('25h')).toBeNull()
+    expect(parseDurationInput('24:01')).toBeNull()
+  })
+
+  it('accepts durations at the 24-hour boundary', () => {
+    expect(parseDurationInput('1440')).toBe(1440)
+    expect(parseDurationInput('24h')).toBe(1440)
+    expect(parseDurationInput('24:00')).toBe(1440)
   })
 })
