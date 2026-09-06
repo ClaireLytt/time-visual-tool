@@ -58,25 +58,38 @@ function DatePicker({ selectedDate, onDateChange, viewMode }: DatePickerProps) {
   const labels = navLabels[viewMode]
 
   return (
-    <div className="flex items-center gap-3 mb-6">
-      <button onClick={goBack} className="p-2 rounded-lg hover:bg-gray-100 text-gray-600" title={labels.back}>
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+    <div className="flex items-center gap-2 sm:gap-3 mb-6">
+      <button
+        onClick={goBack}
+        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
+        aria-label={labels.back}
+        title={labels.back}
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
         </svg>
       </button>
 
-      <h2 className="text-lg font-semibold text-gray-800">
+      <h2 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100">
         {getLabel()}
       </h2>
 
-      <button onClick={goForward} className="p-2 rounded-lg hover:bg-gray-100 text-gray-600" title={labels.forward}>
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+      <button
+        onClick={goForward}
+        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
+        aria-label={labels.forward}
+        title={labels.forward}
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
         </svg>
       </button>
 
       {!isCurrent() && (
-        <button onClick={goToNow} className="ml-2 px-3 py-1 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100">
+        <button
+          onClick={goToNow}
+          className="ml-2 px-3 py-1 text-sm bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50"
+        >
           {labels.today}
         </button>
       )}
