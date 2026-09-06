@@ -1,21 +1,28 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useLocalStorage } from './useLocalStorage'
-import { STORAGE_KEY } from '../constants'
+import { STORAGE_KEY, DEFAULT_CATEGORY_LIST } from '../constants'
 import { computeDaySummary } from '../utils/summary'
-import type { TimeEntry, DaySummary } from '../types'
-
-interface StorageData {
-  version: number
-  entries: TimeEntry[]
-}
+import type { TimeEntry, DaySummary, Category, StorageData } from '../types'
 
 export function useTimeEntries() {
   const [data, setData] = useLocalStorage<StorageData>(STORAGE_KEY, {
-    version: 1,
+    version: 2,
     entries: [],
+    categories: DEFAULT_CATEGORY_LIST,
   })
 
+  useEffect(() => {
+    if (data.version === 1) {
+      setData(prev => ({
+        ...prev,
+        version: 2,
+        categories: DEFAULT_CATEGORY_LIST,
+      }))
+    }
+  }, [])
+
   const entries = data.entries
+  const categories = data.categories ?? DEFAULT_CATEGORY_LIST
 
   const addEntry = useCallback((entry: Omit<TimeEntry, 'id' | 'createdAt'>) => {
     const newEntry: TimeEntry = {
@@ -43,6 +50,48 @@ export function useTimeEntries() {
     }))
   }, [setData])
 
+  const addCategory = useCallback((category: Category) => {
+    setData(prev => {
+      if (prev.categories.some(c => c.name === category.name)) return prev
+      return { ...prev, categories: [...prev.categories, category] }
+    })
+  }, [setData])
+
+  const updateCategory = useCallback((oldName: string, updated: Category) => {
+    setData(prev => ({
+      ...prev,
+      categories: prev.categories.map(c => c.name === oldName ? updated : c),
+      entries: oldName !== updated.name
+        ? prev.entries.map(e => e.category === oldName ? { ...e, category: updated.name } : e)
+        : prev.entries,
+    }))
+  }, [setData])
+
+  const deleteCategory = useCallback((name: string) => {
+    setData(prev => {
+      if (prev.entries.some(e => e.category === name)) return prev
+      return { ...prev, categories: prev.categories.filter(c => c.name !== name) }
+    })
+  }, [setData])
+
+  const importData = useCallback((imported: StorageData, mode: 'replace' | 'merge') => {
+    if (mode === 'replace') {
+      setData(imported)
+    } else {
+      setData(prev => {
+        const existingIds = new Set(prev.entries.map(e => e.id))
+        const newEntries = imported.entries.filter(e => !existingIds.has(e.id))
+        const existingNames = new Set(prev.categories.map(c => c.name))
+        const newCategories = imported.categories.filter(c => !existingNames.has(c.name))
+        return {
+          version: 2,
+          entries: [...prev.entries, ...newEntries],
+          categories: [...prev.categories, ...newCategories],
+        }
+      })
+    }
+  }, [setData])
+
   const getEntriesForDate = useCallback((date: string) => {
     return entries.filter(e => e.date === date)
   }, [entries])
@@ -56,5 +105,11 @@ export function useTimeEntries() {
     return Array.from(dates).sort()
   }, [entries])
 
-  return { entries, addEntry, deleteEntry, updateEntry, getEntriesForDate, getSummaryForDate, allDates }
+  return {
+    entries, categories, data,
+    addEntry, deleteEntry, updateEntry,
+    addCategory, updateCategory, deleteCategory,
+    importData,
+    getEntriesForDate, getSummaryForDate, allDates,
+  }
 }

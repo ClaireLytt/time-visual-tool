@@ -21,3 +21,10 @@ export const CATEGORY_COLORS: Record<string, string> = {
 export function getCategoryColor(category: string): string {
   return CATEGORY_COLORS[category] ?? '#94a3b8'
 }
+
+import type { Category } from '../types'
+
+export const DEFAULT_CATEGORY_LIST: Category[] = DEFAULT_CATEGORIES.map(name => ({
+  name,
+  color: CATEGORY_COLORS[name],
+}))
