@@ -4,6 +4,39 @@
     "subtitle": "Visualize your every day",
     "skipToContent": "Skip to content"
   },
+  "financeApp": {
+    "title": "MoneyVisual",
+    "subtitle": "Track every income and expense"
+  },
+  "mode": {
+    "time": "Time",
+    "finance": "Money",
+    "toggleToFinance": "Switch to money tracking",
+    "toggleToTime": "Switch to time tracking"
+  },
+  "finance": {
+    "income": "Income",
+    "expense": "Expense",
+    "balance": "Balance",
+    "countUnit": "{{count}}",
+    "addTitle": "Add transaction",
+    "editTitle": "Edit transaction",
+    "addButton": "Add transaction",
+    "typeLabel": "Transaction type",
+    "descriptionPlaceholder": "Description (optional, e.g. lunch, metro)",
+    "descriptionLabel": "Description (optional)",
+    "amountPlaceholder": "Amount (supports 12+8-3)",
+    "amountLabel": "Amount",
+    "errorAmount": "Please enter a valid amount (supports + and -, e.g. 12+8-3)",
+    "emptyTitle": "No transactions yet",
+    "emptySubtitle": "Add your first transaction",
+    "listTitle": "Transactions ({{count}})",
+    "chartProportion": "{{type}} breakdown",
+    "chartTypeLabel": "Breakdown type",
+    "chartDaily": "Daily income & expense",
+    "chartMonthly": "Monthly income & expense",
+    "chartOverview": "Overview"
+  },
   "theme": {
     "light": "Light mode",
     "dark": "Dark mode",
@@ -18,6 +51,7 @@
     "day": "Day",
     "week": "Week",
     "month": "Month",
+    "year": "Year",
     "label": "View mode"
   },
   "nav": {
@@ -29,14 +63,19 @@
     "thisWeek": "This week",
     "prevMonth": "Previous month",
     "nextMonth": "Next month",
-    "thisMonth": "This month"
+    "thisMonth": "This month",
+    "prevYear": "Previous year",
+    "nextYear": "Next year",
+    "thisYear": "This year"
   },
   "date": {
     "dayFormat": "EEEE, MMM d, yyyy",
     "monthFormat": "MMMM yyyy",
     "weekRangeFormat": "MMM d",
     "weekRangeSeparator": " – ",
+    "yearFormat": "yyyy",
     "dayLabels": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    "monthLabels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
     "daySuffix": "{{day}}"
   },
   "summary": {
@@ -96,13 +135,28 @@
     "deleteDisabledAriaLabel": "Category {{name}} is in use and cannot be deleted",
     "deleteConfirmTitle": "Confirm category deletion",
     "deleteConfirmMessage": "Are you sure you want to delete category \"{{name}}\"?",
+    "kindLabel": "Category type",
     "names": {
       "工作": "Work",
       "学习": "Study",
       "运动": "Exercise",
       "阅读": "Reading",
       "休息": "Rest",
-      "其他": "Other"
+      "其他": "Other",
+      "餐饮": "Food",
+      "交通": "Transport",
+      "购物": "Shopping",
+      "居住": "Housing",
+      "娱乐": "Entertainment",
+      "医疗": "Medical",
+      "教育": "Education",
+      "通讯": "Telecom",
+      "人情": "Gifts",
+      "其他支出": "Other expense",
+      "工资": "Salary",
+      "奖金": "Bonus",
+      "理财收益": "Investment",
+      "其他收入": "Other income"
     }
   },
   "dataTransfer": {

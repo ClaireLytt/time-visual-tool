@@ -5,6 +5,8 @@
 body {
   @apply bg-gray-50 text-gray-900 min-h-screen;
   @apply dark:bg-gray-900 dark:text-gray-100;
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 *:focus-visible {
@@ -13,7 +15,7 @@ body {
 
 @layer components {
   .input-base {
-    @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm
+    @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-base sm:text-sm
       bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
       placeholder-gray-400 dark:placeholder-gray-500
       focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500;
