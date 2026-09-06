@@ -22,3 +22,14 @@ export interface DaySummary {
   entries: TimeEntry[]
   categoryBreakdown: Record<string, CategoryBreakdown>
 }
+
+export interface Category {
+  name: string
+  color: string
+}
+
+export interface StorageData {
+  version: number
+  entries: TimeEntry[]
+  categories: Category[]
+}

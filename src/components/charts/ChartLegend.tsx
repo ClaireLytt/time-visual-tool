@@ -1,4 +1,4 @@
-import { getCategoryColor } from '../../constants'
+import { useCategories } from '../../contexts/CategoryContext'
 import { formatDuration } from '../../utils/time'
 import type { CategoryBreakdown } from '../../types'
 
@@ -7,6 +7,7 @@ interface ChartLegendProps {
 }
 
 function ChartLegend({ breakdown }: ChartLegendProps) {
+  const { getColor } = useCategories()
   const items = Object.entries(breakdown).sort((a, b) => b[1].totalMinutes - a[1].totalMinutes)
 
   return (
@@ -15,7 +16,7 @@ function ChartLegend({ breakdown }: ChartLegendProps) {
         <div key={category} className="flex items-center gap-2 text-sm">
           <span
             className="w-3 h-3 rounded-sm shrink-0"
-            style={{ backgroundColor: getCategoryColor(category) }}
+            style={{ backgroundColor: getColor(category) }}
           />
           <span className="flex-1 text-gray-700">{category}</span>
           <span className="text-gray-500 text-xs">{formatDuration(data.totalMinutes)}</span>

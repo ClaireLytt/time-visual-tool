@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import type { TimeEntry } from '../../types'
 import { formatDuration } from '../../utils/time'
-import { getCategoryColor } from '../../constants'
+import { useCategories } from '../../contexts/CategoryContext'
+import ConfirmDialog from '../common/ConfirmDialog'
 
 interface EntryItemProps {
   entry: TimeEntry
@@ -8,7 +10,9 @@ interface EntryItemProps {
 }
 
 function EntryItem({ entry, onDelete }: EntryItemProps) {
-  const color = getCategoryColor(entry.category)
+  const [showConfirm, setShowConfirm] = useState(false)
+  const { getColor } = useCategories()
+  const color = getColor(entry.category)
 
   return (
     <div className="flex items-center gap-3 py-2.5 px-3 hover:bg-gray-50 rounded-lg group">
@@ -26,7 +30,7 @@ function EntryItem({ entry, onDelete }: EntryItemProps) {
       </div>
 
       <button
-        onClick={() => onDelete(entry.id)}
+        onClick={() => setShowConfirm(true)}
         className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 transition-all"
         title="删除"
       >
@@ -34,6 +38,16 @@ function EntryItem({ entry, onDelete }: EntryItemProps) {
           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
+
+      <ConfirmDialog
+        open={showConfirm}
+        title="确认删除"
+        message={`确定要删除「${entry.activity}」吗？此操作无法撤销。`}
+        confirmLabel="删除"
+        confirmVariant="danger"
+        onConfirm={() => { onDelete(entry.id); setShowConfirm(false) }}
+        onCancel={() => setShowConfirm(false)}
+      />
     </div>
   )
 }
