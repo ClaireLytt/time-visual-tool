@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { ClockIcon, WalletIcon, UtensilsIcon, BookIcon } from '../icons'
+import { ClockIcon, WalletIcon, UtensilsIcon, BookIcon, DumbbellIcon } from '../icons'
 import type { AppMode } from '../../types'
 
 interface BottomTabBarProps {
@@ -12,6 +12,7 @@ const TABS: { mode: AppMode; icon: typeof ClockIcon; labelKey: string; activeCol
   { mode: 'finance', icon: WalletIcon, labelKey: 'mode.finance', activeColor: 'text-green-500' },
   { mode: 'eating', icon: UtensilsIcon, labelKey: 'mode.eating', activeColor: 'text-amber-500' },
   { mode: 'diary', icon: BookIcon, labelKey: 'mode.diary', activeColor: 'text-purple-500' },
+  { mode: 'sport', icon: DumbbellIcon, labelKey: 'mode.sport', activeColor: 'text-teal-500' },
 ]
 
 function BottomTabBar({ mode, onChangeMode }: BottomTabBarProps) {

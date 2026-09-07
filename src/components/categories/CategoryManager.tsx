@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { EditIcon, XIcon } from '../icons'
 import ConfirmDialog from '../common/ConfirmDialog'
@@ -15,10 +15,11 @@ interface CategoryManagerProps {
   onAdd: (category: ManagedCategory) => void
   onUpdate: (oldName: string, updated: ManagedCategory) => void
   onDelete: (name: string) => void
+  onReorder?: (categories: ManagedCategory[]) => void
   withKind?: boolean
 }
 
-function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete, withKind = false }: CategoryManagerProps) {
+function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete, onReorder, withKind = false }: CategoryManagerProps) {
   const { t } = useTranslation()
   const [newName, setNewName] = useState('')
   const [newColor, setNewColor] = useState('#6366f1')
@@ -27,6 +28,34 @@ function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete, withK
   const [editName, setEditName] = useState('')
   const [editColor, setEditColor] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+
+  const dragIndexRef = useRef<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
+
+  const handleDragStart = useCallback((index: number) => {
+    dragIndexRef.current = index
+  }, [])
+
+  const handleDragOver = useCallback((e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    setDragOverIndex(index)
+  }, [])
+
+  const handleDrop = useCallback((index: number) => {
+    const from = dragIndexRef.current
+    if (from === null || from === index || !onReorder) return
+    const reordered = [...categories]
+    const [moved] = reordered.splice(from, 1)
+    reordered.splice(index, 0, moved)
+    onReorder(reordered)
+    dragIndexRef.current = null
+    setDragOverIndex(null)
+  }, [categories, onReorder])
+
+  const handleDragEnd = useCallback(() => {
+    dragIndexRef.current = null
+    setDragOverIndex(null)
+  }, [])
 
   const handleAdd = () => {
     const name = newName.trim()
@@ -59,9 +88,17 @@ function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete, withK
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">{t('category.title')}</h3>
 
-      <div className="space-y-2 mb-3">
-        {categories.map(cat => (
-          <div key={cat.name} className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 group">
+      <div className="space-y-2 mb-3" onDragLeave={() => setDragOverIndex(null)}>
+        {categories.map((cat, index) => (
+          <div
+            key={cat.name}
+            className={`flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 group ${dragOverIndex === index ? 'ring-2 ring-teal-400 dark:ring-teal-600' : ''}`}
+            draggable={!!onReorder && editingName !== cat.name}
+            onDragStart={() => handleDragStart(index)}
+            onDragOver={e => handleDragOver(e, index)}
+            onDrop={() => handleDrop(index)}
+            onDragEnd={handleDragEnd}
+          >
             {editingName === cat.name ? (
               <div className="flex items-center gap-2 flex-wrap flex-1">
                 <input
@@ -85,6 +122,11 @@ function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete, withK
               </div>
             ) : (
               <>
+                {onReorder && (
+                  <span className="cursor-grab active:cursor-grabbing text-gray-300 dark:text-gray-600 shrink-0" aria-hidden="true">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>
+                  </span>
+                )}
                 <span className="w-4 h-4 rounded-sm shrink-0" style={{ backgroundColor: cat.color }} aria-hidden="true" />
                 <span className="flex-1 text-sm text-gray-700 dark:text-gray-200">
                   {t('category.names.' + cat.name, cat.name)}
