@@ -1,7 +1,6 @@
 import type { FinanceCategory } from '../types/finance'
 
 export const FINANCE_STORAGE_KEY = 'money-visual-entries'
-export const APP_MODE_STORAGE_KEY = 'time-visual-mode'
 
 export const DEFAULT_FINANCE_CATEGORY_LIST: FinanceCategory[] = [
   { name: '餐饮', color: '#f97316', kind: 'expense' },

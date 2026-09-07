@@ -8,11 +8,17 @@
     "title": "MoneyVisual",
     "subtitle": "记录你的每一笔收支"
   },
+  "eatingApp": {
+    "title": "EatingVisual",
+    "subtitle": "记录你的每一餐"
+  },
   "mode": {
     "time": "时间",
     "finance": "理财",
+    "eating": "饮食",
     "toggleToFinance": "切换到理财管理",
-    "toggleToTime": "切换到时间管理"
+    "toggleToTime": "切换到时间管理",
+    "toggleToEating": "切换到饮食管理"
   },
   "finance": {
     "income": "收入",
@@ -36,6 +42,40 @@
     "chartDaily": "每日收支",
     "chartMonthly": "每月收支",
     "chartOverview": "收支总览"
+  },
+  "eating": {
+    "addTitle": "添加饮食记录",
+    "editTitle": "编辑饮食记录",
+    "addButton": "添加记录",
+    "foodPlaceholder": "食物名称（如 鸡胸肉沙拉）",
+    "foodLabel": "食物名称",
+    "caloriePlaceholder": "热量（支持 200+150-50）",
+    "calorieLabel": "热量（千卡）",
+    "calorieUnit": "千卡",
+    "mealTimePlaceholder": "进食时间",
+    "mealTimeLabel": "进食时间",
+    "notePlaceholder": "备注（心情、原因等）",
+    "noteLabel": "备注",
+    "errorFood": "请输入食物名称",
+    "errorCalorie": "请输入有效热量（支持加减运算，如 200+150）",
+    "calorieRef": "查询更多食物热量",
+    "calorieRefSite": "薄荷健康",
+    "foodSearch": "搜索常见食物",
+    "foodSearchPlaceholder": "以下仅展示部分常见食物，可直接搜索你要的食物",
+    "foodSearchEmpty": "未找到匹配的食物",
+    "foodSearchHint": "点击食物可自动填入",
+    "emptyTitle": "今天还没有饮食记录",
+    "emptySubtitle": "添加你的第一条饮食记录吧",
+    "listTitle": "饮食记录 ({{count}})",
+    "totalCalories": "总热量",
+    "entryCount": "记录条数",
+    "avgPerMeal": "平均每餐",
+    "lateNightCount": "夜宵次数",
+    "countUnit": "{{count}} 条",
+    "countTimes": "{{count}} 次",
+    "chartDaily": "每日热量",
+    "chartMonthly": "每月热量",
+    "chartProportion": "热量分布"
   },
   "theme": {
     "light": "浅色模式",
@@ -156,7 +196,13 @@
       "工资": "工资",
       "奖金": "奖金",
       "理财收益": "理财收益",
-      "其他收入": "其他收入"
+      "其他收入": "其他收入",
+      "早餐": "早餐",
+      "午餐": "午餐",
+      "晚餐": "晚餐",
+      "加餐": "加餐",
+      "饮品": "饮品",
+      "夜宵": "夜宵"
     }
   },
   "dataTransfer": {

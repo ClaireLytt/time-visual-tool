@@ -1,12 +1,12 @@
 import { useTranslation } from 'react-i18next'
 import { format, addDays, subDays, addWeeks, subWeeks, addMonths, subMonths, addYears, subYears, isToday, isSameWeek, isSameMonth, isSameYear, parseISO, startOfWeek, endOfWeek } from 'date-fns'
 import { zhCN, enUS } from 'date-fns/locale'
-import type { FinanceViewMode } from '../../types/finance'
+import type { ExtendedViewMode } from '../../types'
 
 interface DatePickerProps {
   selectedDate: string
   onDateChange: (date: string) => void
-  viewMode: FinanceViewMode
+  viewMode: ExtendedViewMode
 }
 
 function DatePicker({ selectedDate, onDateChange, viewMode }: DatePickerProps) {

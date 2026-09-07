@@ -26,6 +26,10 @@ export interface DaySummary {
 
 export type ViewMode = 'day' | 'week' | 'month'
 
+export type ExtendedViewMode = ViewMode | 'year'
+
+export type AppMode = 'time' | 'finance' | 'eating'
+
 export interface DailyDataPoint {
   date: string
   label: string
