@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '../../hooks/useTheme'
+import { useAuth } from '../../contexts/AuthContext'
 import { ClockIcon, WalletIcon, UtensilsIcon, BookIcon, DumbbellIcon } from '../icons'
 import type { AppMode } from '../../types'
 
@@ -10,6 +11,7 @@ interface HeaderProps {
 function Header({ mode }: HeaderProps) {
   const { t, i18n } = useTranslation()
   const { theme, cycleTheme } = useTheme()
+  const { user, logout, switchAccount } = useAuth()
 
   const themeLabel = t(`theme.${theme}`)
   const isFinance = mode === 'finance'
@@ -72,6 +74,25 @@ function Header({ mode }: HeaderProps) {
             </svg>
           )}
         </button>
+        {user && (
+          <>
+            <span className="text-xs text-gray-400 dark:text-gray-500 truncate max-w-[120px] hidden sm:inline" title={user.email ?? ''}>
+              {user.email}
+            </span>
+            <button
+              onClick={switchAccount}
+              className="px-2 py-1 rounded-lg text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              {t('auth.switchAccount')}
+            </button>
+            <button
+              onClick={logout}
+              className="px-2 py-1 rounded-lg text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              {t('auth.logout')}
+            </button>
+          </>
+        )}
       </div>
     </header>
   )

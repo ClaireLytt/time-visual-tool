@@ -329,5 +329,31 @@
     "parseFailed": "文件解析失败",
     "readFailed": "文件读取失败",
     "exportFailed": "导出失败"
+  },
+  "auth": {
+    "login": "登录",
+    "register": "注册",
+    "logout": "退出",
+    "switchAccount": "切换账号",
+    "email": "邮箱",
+    "password": "密码",
+    "confirmPassword": "确认密码",
+    "loginButton": "登录",
+    "registerButton": "注册",
+    "noAccount": "没有账号？",
+    "hasAccount": "已有账号？",
+    "goToRegister": "去注册",
+    "goToLogin": "去登录",
+    "errorInvalidEmail": "请输入有效的邮箱地址",
+    "errorWeakPassword": "密码至少需要6个字符",
+    "errorEmailInUse": "该邮箱已被注册",
+    "errorWrongPassword": "邮箱或密码错误",
+    "errorPasswordMismatch": "两次输入的密码不一致",
+    "errorGeneric": "操作失败，请稍后重试",
+    "migratePrompt": "检测到本地数据，是否迁移到您的账号？",
+    "migrateButton": "迁移数据",
+    "migrateSkip": "跳过",
+    "rememberMe": "记住密码",
+    "loading": "加载中..."
   }
 }

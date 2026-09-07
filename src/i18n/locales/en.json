@@ -329,5 +329,31 @@
     "parseFailed": "Failed to parse file",
     "readFailed": "Failed to read file",
     "exportFailed": "Export failed"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "switchAccount": "Switch account",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "loginButton": "Login",
+    "registerButton": "Register",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "goToRegister": "Register",
+    "goToLogin": "Login",
+    "errorInvalidEmail": "Please enter a valid email address",
+    "errorWeakPassword": "Password must be at least 6 characters",
+    "errorEmailInUse": "This email is already registered",
+    "errorWrongPassword": "Invalid email or password",
+    "errorPasswordMismatch": "Passwords do not match",
+    "errorGeneric": "Operation failed, please try again",
+    "migratePrompt": "Local data detected. Migrate to your account?",
+    "migrateButton": "Migrate data",
+    "migrateSkip": "Skip",
+    "rememberMe": "Remember me",
+    "loading": "Loading..."
   }
 }

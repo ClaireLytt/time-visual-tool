@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
-import { useLocalStorage } from './useLocalStorage'
-import { FINANCE_STORAGE_KEY, DEFAULT_FINANCE_CATEGORY_LIST } from '../constants/finance'
+import { useFirestore } from './useFirestore'
+import { DEFAULT_FINANCE_CATEGORY_LIST } from '../constants/finance'
 import { computeFinancePeriodSummary } from '../utils/financeSummary'
 import { validateFinanceData } from '../utils/financeTransfer'
 import type { FinanceEntry, FinanceCategory, FinanceStorageData, FinancePeriodSummary, FinanceViewMode } from '../types/finance'
@@ -12,7 +12,7 @@ const INITIAL_DATA: FinanceStorageData = {
 }
 
 export function useFinanceEntries() {
-  const [data, setData] = useLocalStorage<FinanceStorageData>(FINANCE_STORAGE_KEY, INITIAL_DATA, validateFinanceData)
+  const { data, setData, loading } = useFirestore<FinanceStorageData>('financeData', INITIAL_DATA, validateFinanceData)
 
   const entries = data.entries
   const categories = data.categories ?? DEFAULT_FINANCE_CATEGORY_LIST
@@ -94,7 +94,7 @@ export function useFinanceEntries() {
   }, [entries])
 
   return {
-    entries, categories, data,
+    entries, categories, data, loading,
     addEntry, deleteEntry, updateEntry,
     addCategory, updateCategory, deleteCategory,
     importData,

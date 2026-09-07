@@ -25,7 +25,7 @@ function FinanceDashboard() {
   const [editingEntry, setEditingEntry] = useState<FinanceEntry | null>(null)
   const [showSettings, setShowSettings] = useState(false)
   const {
-    entries, categories, data,
+    entries, categories, data, loading,
     addEntry, deleteEntry, updateEntry,
     addCategory, updateCategory, deleteCategory,
     importData,
@@ -58,6 +58,14 @@ function FinanceDashboard() {
   const handleUpdateCategory = useCallback((oldName: string, updated: ManagedCategory) => {
     updateCategory(oldName, { name: updated.name, color: updated.color, kind: updated.kind ?? 'expense' })
   }, [updateCategory])
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-20">
+        <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
 
   return (
     <CategoryProvider categories={categories}>

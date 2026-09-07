@@ -1,41 +1,39 @@
-import { useTranslation } from 'react-i18next'
-import Header from './components/layout/Header'
-import Container from './components/layout/Container'
-import BottomTabBar from './components/layout/BottomTabBar'
-import Dashboard from './components/dashboard/Dashboard'
-import FinanceDashboard from './components/finance/FinanceDashboard'
-import EatingDashboard from './components/eating/EatingDashboard'
-import DiaryDashboard from './components/diary/DiaryDashboard'
-import SportDashboard from './components/sport/SportDashboard'
-import ErrorBoundary from './components/common/ErrorBoundary'
-import { useLocalStorage } from './hooks/useLocalStorage'
-import { APP_MODE_STORAGE_KEY } from './constants'
-import type { AppMode } from './types'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { useAuth } from './contexts/AuthContext'
+import LoginPage from './components/auth/LoginPage'
+import RegisterPage from './components/auth/RegisterPage'
+import AppShell from './components/layout/AppShell'
 
-function validateMode(raw: unknown): AppMode | null {
-  return raw === 'time' || raw === 'finance' || raw === 'eating' || raw === 'diary' || raw === 'sport' ? raw : null
+function ProtectedRoute() {
+  const { user, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (!user) return <Navigate to="/login" replace />
+  return <AppShell />
+}
+
+function PublicRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth()
+  if (loading) return null
+  if (user) return <Navigate to="/app" replace />
+  return <>{children}</>
 }
 
 function App() {
-  const { t } = useTranslation()
-  const [mode, setMode] = useLocalStorage<AppMode>(APP_MODE_STORAGE_KEY, 'time', validateMode)
-
   return (
-    <>
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-500 focus:text-white focus:rounded-lg"
-      >
-        {t('app.skipToContent')}
-      </a>
-      <Header mode={mode} />
-      <ErrorBoundary>
-        <Container>
-          {mode === 'sport' ? <SportDashboard /> : mode === 'finance' ? <FinanceDashboard /> : mode === 'eating' ? <EatingDashboard /> : mode === 'diary' ? <DiaryDashboard /> : <Dashboard />}
-        </Container>
-      </ErrorBoundary>
-      <BottomTabBar mode={mode} onChangeMode={setMode} />
-    </>
+    <Routes>
+      <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+      <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+      <Route path="/app" element={<ProtectedRoute />} />
+      <Route path="*" element={<Navigate to="/app" replace />} />
+    </Routes>
   )
 }
 

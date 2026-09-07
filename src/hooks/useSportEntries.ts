@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
-import { useLocalStorage } from './useLocalStorage'
-import { SPORT_STORAGE_KEY, DEFAULT_SPORT_CATEGORY_LIST } from '../constants/sport'
+import { useFirestore } from './useFirestore'
+import { DEFAULT_SPORT_CATEGORY_LIST } from '../constants/sport'
 import { computeSportPeriodSummary } from '../utils/sportSummary'
 import { validateSportData } from '../utils/sportTransfer'
 import type { SportEntry, SportCategory, SportReflection, SportStorageData, SportPeriodSummary, SportViewMode } from '../types/sport'
@@ -13,7 +13,7 @@ const INITIAL_DATA: SportStorageData = {
 }
 
 export function useSportEntries() {
-  const [data, setData] = useLocalStorage<SportStorageData>(SPORT_STORAGE_KEY, INITIAL_DATA, validateSportData)
+  const { data, setData, loading } = useFirestore<SportStorageData>('sportData', INITIAL_DATA, validateSportData)
 
   const entries = data.entries
   const categories = data.categories
@@ -151,7 +151,7 @@ export function useSportEntries() {
   }, [entries])
 
   return {
-    entries, categories, reflections, data,
+    entries, categories, reflections, data, loading,
     addEntry, deleteEntry, updateEntry,
     addCategory, updateCategory, deleteCategory, reorderCategories,
     getReflection, upsertReflection, deleteReflection,

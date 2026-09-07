@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
-import { useLocalStorage } from './useLocalStorage'
-import { DIARY_STORAGE_KEY } from '../constants/diary'
+import { useFirestore } from './useFirestore'
 import { validateDiaryData } from '../utils/diaryTransfer'
 import type { DiaryEntry, DiaryGoal, DiaryPeriodType, DiaryStorageData } from '../types/diary'
 
@@ -10,7 +9,7 @@ const INITIAL_DATA: DiaryStorageData = {
 }
 
 export function useDiaryEntries() {
-  const [data, setData] = useLocalStorage<DiaryStorageData>(DIARY_STORAGE_KEY, INITIAL_DATA, validateDiaryData)
+  const { data, setData, loading } = useFirestore<DiaryStorageData>('diaryData', INITIAL_DATA, validateDiaryData)
 
   const entries = data.entries
 
@@ -70,7 +69,7 @@ export function useDiaryEntries() {
   }, [setData])
 
   return {
-    entries, data,
+    entries, data, loading,
     getEntry, upsertEntry, deleteEntry,
     importData,
   }

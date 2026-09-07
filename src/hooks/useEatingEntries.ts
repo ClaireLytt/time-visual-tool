@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
-import { useLocalStorage } from './useLocalStorage'
-import { EATING_STORAGE_KEY, DEFAULT_EATING_CATEGORY_LIST } from '../constants/eating'
+import { useFirestore } from './useFirestore'
+import { DEFAULT_EATING_CATEGORY_LIST } from '../constants/eating'
 import { computeEatingPeriodSummary } from '../utils/eatingSummary'
 import { validateEatingData } from '../utils/eatingTransfer'
 import type { EatingEntry, EatingCategory, EatingStorageData, EatingPeriodSummary, EatingViewMode } from '../types/eating'
@@ -12,7 +12,7 @@ const INITIAL_DATA: EatingStorageData = {
 }
 
 export function useEatingEntries() {
-  const [data, setData] = useLocalStorage<EatingStorageData>(EATING_STORAGE_KEY, INITIAL_DATA, validateEatingData)
+  const { data, setData, loading } = useFirestore<EatingStorageData>('eatingData', INITIAL_DATA, validateEatingData)
 
   const entries = data.entries
   const categories = data.categories ?? DEFAULT_EATING_CATEGORY_LIST
@@ -94,7 +94,7 @@ export function useEatingEntries() {
   }, [entries])
 
   return {
-    entries, categories, data,
+    entries, categories, data, loading,
     addEntry, deleteEntry, updateEntry,
     addCategory, updateCategory, deleteCategory,
     importData,
