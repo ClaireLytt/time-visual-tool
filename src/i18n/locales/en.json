@@ -12,10 +12,42 @@
     "title": "EatingVisual",
     "subtitle": "Track every meal you eat"
   },
+  "diaryApp": {
+    "title": "DiaryVisual",
+    "subtitle": "Record gratitude and feelings"
+  },
+  "diary": {
+    "editorTitle": {
+      "day": "Daily Diary",
+      "week": "Weekly Summary",
+      "month": "Monthly Summary",
+      "year": "Yearly Summary"
+    },
+    "gratitudeLabel": "Gratitude",
+    "feelingsLabel": "Feelings",
+    "summaryLabel": "Summary",
+    "motivationLabel": "Motivation",
+    "goalsLabel": {
+      "week": "Weekly Goals",
+      "month": "Monthly Goals",
+      "year": "Yearly Goals"
+    },
+    "goalAdd": "Add",
+    "goalRemove": "Remove goal",
+    "saveButton": "Save",
+    "savedAt": "Saved · {{time}}",
+    "deleteButton": "Delete",
+    "deleteConfirmTitle": "Confirm Delete",
+    "deleteConfirmMessage": "Delete this entry? This cannot be undone.",
+    "listTitle": "Past Entries ({{count}})",
+    "emptyTitle": "No entries yet",
+    "emptySubtitle": "Write your first one"
+  },
   "mode": {
     "time": "Time",
     "finance": "Money",
     "eating": "Eating",
+    "diary": "Diary",
     "toggleToFinance": "Switch to money tracking",
     "toggleToTime": "Switch to time tracking",
     "toggleToEating": "Switch to eating tracker"

@@ -12,10 +12,42 @@
     "title": "EatingVisual",
     "subtitle": "记录你的每一餐"
   },
+  "diaryApp": {
+    "title": "DiaryVisual",
+    "subtitle": "记录感恩与感受"
+  },
+  "diary": {
+    "editorTitle": {
+      "day": "日记",
+      "week": "周总结",
+      "month": "月总结",
+      "year": "年总结"
+    },
+    "gratitudeLabel": "感恩",
+    "feelingsLabel": "感受",
+    "summaryLabel": "总结",
+    "motivationLabel": "激励的话",
+    "goalsLabel": {
+      "week": "本周目标",
+      "month": "本月目标",
+      "year": "本年目标"
+    },
+    "goalAdd": "添加",
+    "goalRemove": "删除目标",
+    "saveButton": "保存",
+    "savedAt": "已保存 · {{time}}",
+    "deleteButton": "删除",
+    "deleteConfirmTitle": "确认删除",
+    "deleteConfirmMessage": "确定要删除这篇记录吗?此操作无法撤销。",
+    "listTitle": "历史记录 ({{count}})",
+    "emptyTitle": "还没有记录",
+    "emptySubtitle": "写下你的第一篇吧"
+  },
   "mode": {
     "time": "时间",
     "finance": "理财",
     "eating": "饮食",
+    "diary": "日记",
     "toggleToFinance": "切换到理财管理",
     "toggleToTime": "切换到时间管理",
     "toggleToEating": "切换到饮食管理"
