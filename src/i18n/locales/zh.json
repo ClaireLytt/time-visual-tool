@@ -16,6 +16,10 @@
     "title": "DiaryVisual",
     "subtitle": "记录感恩与感受"
   },
+  "sportApp": {
+    "title": "SportVisual",
+    "subtitle": "记录你的每一次运动"
+  },
   "diary": {
     "editorTitle": {
       "day": "日记",
@@ -48,6 +52,7 @@
     "finance": "理财",
     "eating": "饮食",
     "diary": "日记",
+    "sport": "运动",
     "toggleToFinance": "切换到理财管理",
     "toggleToTime": "切换到时间管理",
     "toggleToEating": "切换到饮食管理"
@@ -108,6 +113,47 @@
     "chartDaily": "每日热量",
     "chartMonthly": "每月热量",
     "chartProportion": "热量分布"
+  },
+  "sport": {
+    "addTitle": "添加运动记录",
+    "editTitle": "编辑运动记录",
+    "addButton": "添加记录",
+    "contentPlaceholder": "训练内容（如 5公里跑步）",
+    "contentLabel": "训练内容",
+    "durationPlaceholder": "如 30、60、90",
+    "durationLabel": "运动时长",
+    "caloriePlaceholder": "消耗热量（支持 200+150）",
+    "calorieLabel": "消耗热量（千卡）",
+    "sportTypeLabel": "运动类型",
+    "notePlaceholder": "备注（感受、强度等）",
+    "noteLabel": "备注",
+    "errorContent": "请输入训练内容",
+    "errorDuration": "请输入有效的分钟数（如 30、60）",
+    "errorCalorie": "请输入有效热量",
+    "emptyTitle": "今天还没有运动记录",
+    "emptySubtitle": "添加你的第一条运动记录吧",
+    "listTitle": "运动记录 ({{count}})",
+    "totalDuration": "总时长",
+    "totalCalories": "总消耗",
+    "entryCount": "运动次数",
+    "avgPerSession": "平均每次",
+    "countUnit": "{{count}} 次",
+    "chartDaily": "每日运动时长",
+    "chartMonthly": "每月运动时长",
+    "chartProportion": "运动类型分布",
+    "calorieUnit": "千卡",
+    "reflectionTitle": {
+      "week": "本周运动感想",
+      "month": "本月运动感想",
+      "year": "本年运动感想"
+    },
+    "reflectionPlaceholder": "写下你的运动感想...",
+    "reflectionEmptyTitle": "还没有感想记录",
+    "reflectionEmptySubtitle": "写下你的第一篇运动感想吧",
+    "reflectionListTitle": "历史感想 ({{count}})",
+    "yearReviewTitle": "年度运动回顾",
+    "yearAllSports": "今年参与了 {{count}} 种运动",
+    "yearNewSports": "今年新尝试的运动 ({{count}})"
   },
   "theme": {
     "light": "浅色模式",
@@ -234,7 +280,17 @@
       "晚餐": "晚餐",
       "加餐": "加餐",
       "饮品": "饮品",
-      "夜宵": "夜宵"
+      "夜宵": "夜宵",
+      "跑步": "跑步",
+      "游泳": "游泳",
+      "瑜伽": "瑜伽",
+      "普拉提": "普拉提",
+      "舞蹈": "舞蹈",
+      "骑行": "骑行",
+      "力量训练": "力量训练",
+      "球类运动": "球类运动",
+      "徒步": "徒步",
+      "其他运动": "其他运动"
     }
   },
   "dataTransfer": {

@@ -6,13 +6,14 @@ import Dashboard from './components/dashboard/Dashboard'
 import FinanceDashboard from './components/finance/FinanceDashboard'
 import EatingDashboard from './components/eating/EatingDashboard'
 import DiaryDashboard from './components/diary/DiaryDashboard'
+import SportDashboard from './components/sport/SportDashboard'
 import ErrorBoundary from './components/common/ErrorBoundary'
 import { useLocalStorage } from './hooks/useLocalStorage'
 import { APP_MODE_STORAGE_KEY } from './constants'
 import type { AppMode } from './types'
 
 function validateMode(raw: unknown): AppMode | null {
-  return raw === 'time' || raw === 'finance' || raw === 'eating' || raw === 'diary' ? raw : null
+  return raw === 'time' || raw === 'finance' || raw === 'eating' || raw === 'diary' || raw === 'sport' ? raw : null
 }
 
 function App() {
@@ -30,7 +31,7 @@ function App() {
       <Header mode={mode} />
       <ErrorBoundary>
         <Container>
-          {mode === 'finance' ? <FinanceDashboard /> : mode === 'eating' ? <EatingDashboard /> : mode === 'diary' ? <DiaryDashboard /> : <Dashboard />}
+          {mode === 'sport' ? <SportDashboard /> : mode === 'finance' ? <FinanceDashboard /> : mode === 'eating' ? <EatingDashboard /> : mode === 'diary' ? <DiaryDashboard /> : <Dashboard />}
         </Container>
       </ErrorBoundary>
       <BottomTabBar mode={mode} onChangeMode={setMode} />

@@ -16,6 +16,10 @@
     "title": "DiaryVisual",
     "subtitle": "Record gratitude and feelings"
   },
+  "sportApp": {
+    "title": "SportVisual",
+    "subtitle": "Track every workout"
+  },
   "diary": {
     "editorTitle": {
       "day": "Daily Diary",
@@ -48,6 +52,7 @@
     "finance": "Money",
     "eating": "Eating",
     "diary": "Diary",
+    "sport": "Sport",
     "toggleToFinance": "Switch to money tracking",
     "toggleToTime": "Switch to time tracking",
     "toggleToEating": "Switch to eating tracker"
@@ -108,6 +113,47 @@
     "chartDaily": "Daily calories",
     "chartMonthly": "Monthly calories",
     "chartProportion": "Calorie breakdown"
+  },
+  "sport": {
+    "addTitle": "Add exercise entry",
+    "editTitle": "Edit exercise entry",
+    "addButton": "Add entry",
+    "contentPlaceholder": "Training content (e.g. 5km run)",
+    "contentLabel": "Training content",
+    "durationPlaceholder": "e.g. 30, 60, 90",
+    "durationLabel": "Duration",
+    "caloriePlaceholder": "Calories burned (supports 200+150)",
+    "calorieLabel": "Calories burned (kcal)",
+    "sportTypeLabel": "Sport type",
+    "notePlaceholder": "Note (feeling, intensity, etc.)",
+    "noteLabel": "Note",
+    "errorContent": "Please enter training content",
+    "errorDuration": "Please enter a valid number of minutes (e.g. 30, 60)",
+    "errorCalorie": "Please enter valid calories",
+    "emptyTitle": "No exercise entries yet",
+    "emptySubtitle": "Add your first exercise entry",
+    "listTitle": "Exercise entries ({{count}})",
+    "totalDuration": "Total Duration",
+    "totalCalories": "Calories Burned",
+    "entryCount": "Sessions",
+    "avgPerSession": "Avg per Session",
+    "countUnit": "{{count}}",
+    "chartDaily": "Daily exercise duration",
+    "chartMonthly": "Monthly exercise duration",
+    "chartProportion": "Sport type breakdown",
+    "calorieUnit": "kcal",
+    "reflectionTitle": {
+      "week": "Weekly Reflection",
+      "month": "Monthly Reflection",
+      "year": "Yearly Reflection"
+    },
+    "reflectionPlaceholder": "Write down your thoughts on training...",
+    "reflectionEmptyTitle": "No reflections yet",
+    "reflectionEmptySubtitle": "Write your first reflection",
+    "reflectionListTitle": "Past Reflections ({{count}})",
+    "yearReviewTitle": "Year in Review",
+    "yearAllSports": "Participated in {{count}} sport(s) this year",
+    "yearNewSports": "New sports tried this year ({{count}})"
   },
   "theme": {
     "light": "Light mode",
@@ -234,7 +280,17 @@
       "晚餐": "Dinner",
       "加餐": "Snack",
       "饮品": "Drink",
-      "夜宵": "Late-night"
+      "夜宵": "Late-night",
+      "跑步": "Running",
+      "游泳": "Swimming",
+      "瑜伽": "Yoga",
+      "普拉提": "Pilates",
+      "舞蹈": "Dancing",
+      "骑行": "Cycling",
+      "力量训练": "Weight Training",
+      "球类运动": "Ball Sports",
+      "徒步": "Hiking",
+      "其他运动": "Other"
     }
   },
   "dataTransfer": {
