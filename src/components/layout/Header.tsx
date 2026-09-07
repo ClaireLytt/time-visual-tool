@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '../../hooks/useTheme'
-import { ClockIcon, WalletIcon, UtensilsIcon } from '../icons'
+import { ClockIcon, WalletIcon, UtensilsIcon, BookIcon } from '../icons'
 import type { AppMode } from '../../types'
 
 interface HeaderProps {
@@ -14,6 +14,7 @@ function Header({ mode }: HeaderProps) {
   const themeLabel = t(`theme.${theme}`)
   const isFinance = mode === 'finance'
   const isEating = mode === 'eating'
+  const isDiary = mode === 'diary'
 
   const toggleLang = () => {
     i18n.changeLanguage(i18n.language === 'zh' ? 'en' : 'zh')
@@ -22,7 +23,9 @@ function Header({ mode }: HeaderProps) {
   return (
     <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm pt-[env(safe-area-inset-top)]">
       <div className="max-w-5xl mx-auto px-4 py-4 flex flex-wrap items-center gap-3">
-        {isEating ? (
+        {isDiary ? (
+          <BookIcon className="w-8 h-8 text-purple-500 shrink-0" />
+        ) : isEating ? (
           <UtensilsIcon className="w-8 h-8 text-amber-500 shrink-0" />
         ) : isFinance ? (
           <WalletIcon className="w-8 h-8 text-green-500 shrink-0" />
@@ -31,10 +34,10 @@ function Header({ mode }: HeaderProps) {
         )}
         <div className="flex-1 min-w-0">
           <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 truncate">
-            {isEating ? t('eatingApp.title') : isFinance ? t('financeApp.title') : t('app.title')}
+            {isDiary ? t('diaryApp.title') : isEating ? t('eatingApp.title') : isFinance ? t('financeApp.title') : t('app.title')}
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-            {isEating ? t('eatingApp.subtitle') : isFinance ? t('financeApp.subtitle') : t('app.subtitle')}
+            {isDiary ? t('diaryApp.subtitle') : isEating ? t('eatingApp.subtitle') : isFinance ? t('financeApp.subtitle') : t('app.subtitle')}
           </p>
         </div>
         <button
