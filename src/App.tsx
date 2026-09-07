@@ -1,15 +1,17 @@
 import { useTranslation } from 'react-i18next'
 import Header from './components/layout/Header'
 import Container from './components/layout/Container'
+import BottomTabBar from './components/layout/BottomTabBar'
 import Dashboard from './components/dashboard/Dashboard'
 import FinanceDashboard from './components/finance/FinanceDashboard'
+import EatingDashboard from './components/eating/EatingDashboard'
 import ErrorBoundary from './components/common/ErrorBoundary'
 import { useLocalStorage } from './hooks/useLocalStorage'
-import { APP_MODE_STORAGE_KEY } from './constants/finance'
-import type { AppMode } from './types/finance'
+import { APP_MODE_STORAGE_KEY } from './constants'
+import type { AppMode } from './types'
 
 function validateMode(raw: unknown): AppMode | null {
-  return raw === 'time' || raw === 'finance' ? raw : null
+  return raw === 'time' || raw === 'finance' || raw === 'eating' ? raw : null
 }
 
 function App() {
@@ -24,12 +26,13 @@ function App() {
       >
         {t('app.skipToContent')}
       </a>
-      <Header mode={mode} onToggleMode={() => setMode(prev => prev === 'time' ? 'finance' : 'time')} />
+      <Header mode={mode} />
       <ErrorBoundary>
         <Container>
-          {mode === 'finance' ? <FinanceDashboard /> : <Dashboard />}
+          {mode === 'finance' ? <FinanceDashboard /> : mode === 'eating' ? <EatingDashboard /> : <Dashboard />}
         </Container>
       </ErrorBoundary>
+      <BottomTabBar mode={mode} onChangeMode={setMode} />
     </>
   )
 }

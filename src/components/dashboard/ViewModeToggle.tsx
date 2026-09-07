@@ -1,16 +1,15 @@
 import { useTranslation } from 'react-i18next'
-import type { ViewMode } from '../../types'
-import type { FinanceViewMode } from '../../types/finance'
+import type { ViewMode, ExtendedViewMode } from '../../types'
 
 const DEFAULT_MODES: readonly ViewMode[] = ['day', 'week', 'month']
 
-interface ViewModeToggleProps<M extends FinanceViewMode> {
+interface ViewModeToggleProps<M extends ExtendedViewMode> {
   viewMode: M
   onViewModeChange: (mode: M) => void
   modes?: readonly M[]
 }
 
-function ViewModeToggle<M extends FinanceViewMode>({ viewMode, onViewModeChange, modes }: ViewModeToggleProps<M>) {
+function ViewModeToggle<M extends ExtendedViewMode>({ viewMode, onViewModeChange, modes }: ViewModeToggleProps<M>) {
   const { t } = useTranslation()
   const modeList = (modes ?? DEFAULT_MODES) as readonly M[]
 

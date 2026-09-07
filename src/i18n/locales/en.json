@@ -8,11 +8,17 @@
     "title": "MoneyVisual",
     "subtitle": "Track every income and expense"
   },
+  "eatingApp": {
+    "title": "EatingVisual",
+    "subtitle": "Track every meal you eat"
+  },
   "mode": {
     "time": "Time",
     "finance": "Money",
+    "eating": "Eating",
     "toggleToFinance": "Switch to money tracking",
-    "toggleToTime": "Switch to time tracking"
+    "toggleToTime": "Switch to time tracking",
+    "toggleToEating": "Switch to eating tracker"
   },
   "finance": {
     "income": "Income",
@@ -36,6 +42,40 @@
     "chartDaily": "Daily income & expense",
     "chartMonthly": "Monthly income & expense",
     "chartOverview": "Overview"
+  },
+  "eating": {
+    "addTitle": "Add eating entry",
+    "editTitle": "Edit eating entry",
+    "addButton": "Add entry",
+    "foodPlaceholder": "Food name (e.g. chicken salad)",
+    "foodLabel": "Food name",
+    "caloriePlaceholder": "Calories (supports 200+150-50)",
+    "calorieLabel": "Calories (kcal)",
+    "calorieUnit": "kcal",
+    "mealTimePlaceholder": "Meal time",
+    "mealTimeLabel": "Meal time",
+    "notePlaceholder": "Note (mood, reason, etc.)",
+    "noteLabel": "Note",
+    "errorFood": "Please enter a food name",
+    "errorCalorie": "Please enter valid calories (supports +/-, e.g. 200+150)",
+    "calorieRef": "Look up more food calories",
+    "calorieRefSite": "Boohee",
+    "foodSearch": "Search common foods",
+    "foodSearchPlaceholder": "Showing common foods only — search for what you need",
+    "foodSearchEmpty": "No matching foods found",
+    "foodSearchHint": "Click a food to auto-fill",
+    "emptyTitle": "No eating entries yet",
+    "emptySubtitle": "Add your first eating entry",
+    "listTitle": "Eating entries ({{count}})",
+    "totalCalories": "Total Calories",
+    "entryCount": "Entries",
+    "avgPerMeal": "Avg per Meal",
+    "lateNightCount": "Late-night",
+    "countUnit": "{{count}}",
+    "countTimes": "{{count}}",
+    "chartDaily": "Daily calories",
+    "chartMonthly": "Monthly calories",
+    "chartProportion": "Calorie breakdown"
   },
   "theme": {
     "light": "Light mode",
@@ -156,7 +196,13 @@
       "工资": "Salary",
       "奖金": "Bonus",
       "理财收益": "Investment",
-      "其他收入": "Other income"
+      "其他收入": "Other income",
+      "早餐": "Breakfast",
+      "午餐": "Lunch",
+      "晚餐": "Dinner",
+      "加餐": "Snack",
+      "饮品": "Drink",
+      "夜宵": "Late-night"
     }
   },
   "dataTransfer": {

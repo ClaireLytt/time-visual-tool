@@ -1,8 +1,6 @@
-import type { ViewMode } from './index'
+import type { ExtendedViewMode } from './index'
 
-export type AppMode = 'time' | 'finance'
-
-export type FinanceViewMode = ViewMode | 'year'
+export type FinanceViewMode = ExtendedViewMode
 
 export type FinanceEntryType = 'income' | 'expense'
 

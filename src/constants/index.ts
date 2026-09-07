@@ -1,6 +1,7 @@
 import type { Category } from '../types'
 
 export const STORAGE_KEY = 'time-visual-entries'
+export const APP_MODE_STORAGE_KEY = 'time-visual-mode'
 
 export const DEFAULT_CATEGORIES = [
   '工作',
