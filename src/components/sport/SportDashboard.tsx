@@ -28,7 +28,7 @@ function SportDashboard() {
   const [editingEntry, setEditingEntry] = useState<SportEntry | null>(null)
   const [showSettings, setShowSettings] = useState(false)
   const {
-    entries, categories, reflections, data,
+    entries, categories, reflections, data, loading,
     addEntry, deleteEntry, updateEntry,
     addCategory, updateCategory, deleteCategory, reorderCategories,
     getReflection, upsertReflection, deleteReflection,
@@ -81,6 +81,14 @@ function SportDashboard() {
   const handleReorderCategories = useCallback((reordered: ManagedCategory[]) => {
     reorderCategories(reordered.map(c => ({ name: c.name, color: c.color })))
   }, [reorderCategories])
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-20">
+        <div className="w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
 
   return (
     <CategoryProvider categories={categories}>

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
-import { useLocalStorage } from './useLocalStorage'
-import { STORAGE_KEY, DEFAULT_CATEGORY_LIST } from '../constants'
+import { useFirestore } from './useFirestore'
+import { DEFAULT_CATEGORY_LIST } from '../constants'
 import { computePeriodSummary } from '../utils/summary'
 import { isValidEntry, isValidCategory } from '../utils/dataTransfer'
 import type { TimeEntry, Category, StorageData, ViewMode, PeriodSummary } from '../types'
@@ -27,7 +27,7 @@ const INITIAL_DATA: StorageData = {
 }
 
 export function useTimeEntries() {
-  const [data, setData] = useLocalStorage<StorageData>(STORAGE_KEY, INITIAL_DATA, validateStorageData)
+  const { data, setData, loading } = useFirestore<StorageData>('timeData', INITIAL_DATA, validateStorageData)
 
   const entries = data.entries
   const categories = data.categories ?? DEFAULT_CATEGORY_LIST
@@ -109,7 +109,7 @@ export function useTimeEntries() {
   }, [entries])
 
   return {
-    entries, categories, data,
+    entries, categories, data, loading,
     addEntry, deleteEntry, updateEntry,
     addCategory, updateCategory, deleteCategory,
     importData,

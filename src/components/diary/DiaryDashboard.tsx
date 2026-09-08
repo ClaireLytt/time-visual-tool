@@ -18,7 +18,7 @@ function DiaryDashboard() {
   const [selectedDate, setSelectedDate] = useState(() => format(new Date(), 'yyyy-MM-dd'))
   const [viewMode, setViewMode] = useState<DiaryPeriodType>('day')
   const [showSettings, setShowSettings] = useState(false)
-  const { entries, data, getEntry, upsertEntry, deleteEntry, importData } = useDiaryEntries()
+  const { entries, data, loading, getEntry, upsertEntry, deleteEntry, importData } = useDiaryEntries()
 
   const periodKey = useMemo(() => getPeriodKey(selectedDate, viewMode), [selectedDate, viewMode])
   const currentEntry = getEntry(viewMode, periodKey)
@@ -30,6 +30,14 @@ function DiaryDashboard() {
   const handleSelectEntry = useCallback((entry: DiaryEntry) => {
     setSelectedDate(periodKeyToAnchorDate(entry.periodType, entry.periodKey))
   }, [])
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-20">
+        <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
 
   return (
     <div id="main-content">

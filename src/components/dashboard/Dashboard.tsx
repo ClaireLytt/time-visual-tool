@@ -22,7 +22,7 @@ function Dashboard() {
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null)
   const [showSettings, setShowSettings] = useState(false)
   const {
-    entries, categories, data,
+    entries, categories, data, loading,
     addEntry, deleteEntry, updateEntry,
     addCategory, updateCategory, deleteCategory,
     importData,
@@ -47,6 +47,14 @@ function Dashboard() {
   const handleCancelEdit = useCallback(() => {
     setEditingEntry(null)
   }, [])
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-20">
+        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
 
   return (
     <CategoryProvider categories={categories}>
