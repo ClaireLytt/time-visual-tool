@@ -3,12 +3,12 @@ import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: 'AIzaSyBANnm9MB0M4HSIf4HpJKo8HAJIUHmURXw',
+  authDomain: 'tool-for-everyday.firebaseapp.com',
+  projectId: 'tool-for-everyday',
+  storageBucket: 'tool-for-everyday.firebasestorage.app',
+  messagingSenderId: '1035375684142',
+  appId: '1:1035375684142:web:bc592010ad25509d14cdbf',
 }
 
 const app = initializeApp(firebaseConfig)
