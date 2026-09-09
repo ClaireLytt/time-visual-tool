@@ -354,6 +354,15 @@
     "migrateButton": "Migrate data",
     "migrateSkip": "Skip",
     "rememberMe": "Remember me",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "forgotPassword": "Forgot password?",
+    "resetPasswordSent": "Password reset email sent. Please check your inbox",
+    "resetPasswordFailed": "Failed to send reset email. Please check your email address"
+  },
+  "firestore": {
+    "saveFailed": "Save failed. Please check your network connection"
+  },
+  "currency": {
+    "symbol": "$"
   }
 }

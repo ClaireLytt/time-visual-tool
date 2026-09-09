@@ -3,10 +3,12 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   signOut,
   type User,
 } from 'firebase/auth'
 import { auth } from '../firebase'
+import { clearFirestoreCache } from '../hooks/useFirestore'
 
 interface AuthContextValue {
   user: User | null
@@ -15,6 +17,7 @@ interface AuthContextValue {
   register: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   switchAccount: () => Promise<void>
+  resetPassword: (email: string) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -39,17 +42,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const logout = useCallback(async () => {
+    clearFirestoreCache()
     await signOut(auth)
   }, [])
 
   const switchAccount = useCallback(async () => {
     localStorage.removeItem('time-visual-saved-email')
-    localStorage.removeItem('time-visual-saved-pwd')
+    clearFirestoreCache()
     await signOut(auth)
   }, [])
 
+  const resetPassword = useCallback(async (email: string) => {
+    await sendPasswordResetEmail(auth, email)
+  }, [])
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, switchAccount }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, switchAccount, resetPassword }}>
       {children}
     </AuthContext.Provider>
   )

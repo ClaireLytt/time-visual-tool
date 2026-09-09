@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { EatingEntry } from '../../types/eating'
 import { formatCalories } from '../../utils/calories'
@@ -12,7 +12,7 @@ interface EatingEntryItemProps {
   onEdit: (entry: EatingEntry) => void
 }
 
-function EatingEntryItem({ entry, onDelete, onEdit }: EatingEntryItemProps) {
+const EatingEntryItem = memo(function EatingEntryItem({ entry, onDelete, onEdit }: EatingEntryItemProps) {
   const { t } = useTranslation()
   const [showConfirm, setShowConfirm] = useState(false)
   const { getColor } = useCategories()
@@ -68,6 +68,6 @@ function EatingEntryItem({ entry, onDelete, onEdit }: EatingEntryItemProps) {
       />
     </div>
   )
-}
+})
 
 export default EatingEntryItem

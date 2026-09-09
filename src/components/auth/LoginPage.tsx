@@ -4,34 +4,44 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 
 const SAVED_EMAIL_KEY = 'time-visual-saved-email'
-const SAVED_PWD_KEY = 'time-visual-saved-pwd'
 
 function LoginPage() {
   const { t } = useTranslation()
-  const { login } = useAuth()
+  const { login, resetPassword } = useAuth()
   const navigate = useNavigate()
   const [email, setEmail] = useState(() => localStorage.getItem(SAVED_EMAIL_KEY) ?? '')
-  const [password, setPassword] = useState(() => {
-    const saved = localStorage.getItem(SAVED_PWD_KEY)
-    if (!saved) return ''
-    try { return atob(saved) } catch { return '' }
-  })
+  const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(true)
   const [error, setError] = useState('')
+  const [resetMsg, setResetMsg] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError(t('auth.errorInvalidEmail'))
+      return
+    }
+    setError('')
+    setResetMsg('')
+    try {
+      await resetPassword(email)
+      setResetMsg(t('auth.resetPasswordSent'))
+    } catch {
+      setError(t('auth.resetPasswordFailed'))
+    }
+  }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
+    setResetMsg('')
     setSubmitting(true)
     try {
       await login(email, password)
       if (rememberMe) {
         localStorage.setItem(SAVED_EMAIL_KEY, email)
-        localStorage.setItem(SAVED_PWD_KEY, btoa(password))
       } else {
         localStorage.removeItem(SAVED_EMAIL_KEY)
-        localStorage.removeItem(SAVED_PWD_KEY)
       }
       navigate('/app', { replace: true })
     } catch (err) {
@@ -97,6 +107,9 @@ function LoginPage() {
           {error && (
             <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
           )}
+          {resetMsg && (
+            <p className="text-sm text-green-600 dark:text-green-400">{resetMsg}</p>
+          )}
           <button
             type="submit"
             disabled={submitting}
@@ -105,6 +118,13 @@ function LoginPage() {
             {submitting ? t('auth.loading') : t('auth.loginButton')}
           </button>
         </form>
+        <button
+          type="button"
+          onClick={handleForgotPassword}
+          className="mt-3 w-full text-center text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
+        >
+          {t('auth.forgotPassword')}
+        </button>
         <p className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
           {t('auth.noAccount')}{' '}
           <Link to="/register" className="text-blue-500 hover:text-blue-600 font-medium">

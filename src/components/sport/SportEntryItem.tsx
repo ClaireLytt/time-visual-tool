@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { SportEntry } from '../../types/sport'
 import { formatDuration } from '../../utils/time'
@@ -12,7 +12,7 @@ interface SportEntryItemProps {
   onEdit: (entry: SportEntry) => void
 }
 
-function SportEntryItem({ entry, onDelete, onEdit }: SportEntryItemProps) {
+const SportEntryItem = memo(function SportEntryItem({ entry, onDelete, onEdit }: SportEntryItemProps) {
   const { t } = useTranslation()
   const [showConfirm, setShowConfirm] = useState(false)
   const { getColor } = useCategories()
@@ -70,6 +70,6 @@ function SportEntryItem({ entry, onDelete, onEdit }: SportEntryItemProps) {
       />
     </div>
   )
-}
+})
 
 export default SportEntryItem

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { FinanceEntry } from '../../types/finance'
 import { formatAmount } from '../../utils/money'
@@ -12,7 +12,7 @@ interface FinanceEntryItemProps {
   onEdit: (entry: FinanceEntry) => void
 }
 
-function FinanceEntryItem({ entry, onDelete, onEdit }: FinanceEntryItemProps) {
+const FinanceEntryItem = memo(function FinanceEntryItem({ entry, onDelete, onEdit }: FinanceEntryItemProps) {
   const { t } = useTranslation()
   const [showConfirm, setShowConfirm] = useState(false)
   const { getColor } = useCategories()
@@ -65,6 +65,6 @@ function FinanceEntryItem({ entry, onDelete, onEdit }: FinanceEntryItemProps) {
       />
     </div>
   )
-}
+})
 
 export default FinanceEntryItem

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../contexts/AuthContext'
 import { hasLocalData, migrateLocalStorageToFirestore, markMigrationDone } from '../../utils/migrateLocalData'
@@ -10,7 +10,19 @@ function DataMigrationDialog() {
   const [dismissed, setDismissed] = useState(false)
   const [migrating, setMigrating] = useState(false)
 
+  const dialogRef = useRef<HTMLDivElement>(null)
   const show = shouldShow && !dismissed
+
+  useEffect(() => {
+    if (!show) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleSkip()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    dialogRef.current?.focus()
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [show])
 
   if (!show || !user) return null
 
@@ -31,8 +43,15 @@ function DataMigrationDialog() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div className="w-full max-w-sm bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
-        <p className="text-gray-900 dark:text-gray-100 mb-4">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="migrate-dialog-title"
+        tabIndex={-1}
+        className="w-full max-w-sm bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 outline-none"
+      >
+        <p id="migrate-dialog-title" className="text-gray-900 dark:text-gray-100 mb-4">
           {t('auth.migratePrompt')}
         </p>
         <div className="flex gap-3">

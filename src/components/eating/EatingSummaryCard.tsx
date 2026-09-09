@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { formatCalories } from '../../utils/calories'
 
@@ -8,7 +9,7 @@ interface EatingSummaryCardProps {
   lateNightCount: number
 }
 
-function EatingSummaryCard({ totalCalories, entryCount, averageCaloriesPerEntry, lateNightCount }: EatingSummaryCardProps) {
+const EatingSummaryCard = memo(function EatingSummaryCard({ totalCalories, entryCount, averageCaloriesPerEntry, lateNightCount }: EatingSummaryCardProps) {
   const { t } = useTranslation()
 
   const stats = [
@@ -28,6 +29,6 @@ function EatingSummaryCard({ totalCalories, entryCount, averageCaloriesPerEntry,
       ))}
     </div>
   )
-}
+})
 
 export default EatingSummaryCard
