@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../contexts/AuthContext'
 import { hasLocalData, migrateLocalStorageToFirestore, markMigrationDone } from '../../utils/migrateLocalData'
@@ -13,6 +13,11 @@ function DataMigrationDialog() {
   const dialogRef = useRef<HTMLDivElement>(null)
   const show = shouldShow && !dismissed
 
+  const handleSkip = useCallback(() => {
+    markMigrationDone()
+    setDismissed(true)
+  }, [])
+
   useEffect(() => {
     if (!show) return
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -21,8 +26,7 @@ function DataMigrationDialog() {
     document.addEventListener('keydown', handleKeyDown)
     dialogRef.current?.focus()
     return () => document.removeEventListener('keydown', handleKeyDown)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [show])
+  }, [show, handleSkip])
 
   if (!show || !user) return null
 
@@ -34,11 +38,6 @@ function DataMigrationDialog() {
     } catch {
       setMigrating(false)
     }
-  }
-
-  const handleSkip = () => {
-    markMigrationDone()
-    setDismissed(true)
   }
 
   return (
