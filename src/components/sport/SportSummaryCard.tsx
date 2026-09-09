@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { formatDuration } from '../../utils/time'
 
@@ -8,7 +9,7 @@ interface SportSummaryCardProps {
   averageDurationPerEntry: number
 }
 
-function SportSummaryCard({ totalDuration, totalCalories, entryCount, averageDurationPerEntry }: SportSummaryCardProps) {
+const SportSummaryCard = memo(function SportSummaryCard({ totalDuration, totalCalories, entryCount, averageDurationPerEntry }: SportSummaryCardProps) {
   const { t } = useTranslation()
 
   const stats = [
@@ -28,6 +29,6 @@ function SportSummaryCard({ totalDuration, totalCalories, entryCount, averageDur
       ))}
     </div>
   )
-}
+})
 
 export default SportSummaryCard

@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { formatDuration } from '../../utils/time'
 
@@ -7,7 +8,7 @@ interface SummaryCardProps {
   entryCount: number
 }
 
-function DaySummaryCard({ totalMinutes, weightedMinutes, entryCount }: SummaryCardProps) {
+const DaySummaryCard = memo(function DaySummaryCard({ totalMinutes, weightedMinutes, entryCount }: SummaryCardProps) {
   const { t } = useTranslation()
 
   const stats = [
@@ -26,6 +27,6 @@ function DaySummaryCard({ totalMinutes, weightedMinutes, entryCount }: SummaryCa
       ))}
     </div>
   )
-}
+})
 
 export default DaySummaryCard

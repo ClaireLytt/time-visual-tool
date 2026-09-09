@@ -5,6 +5,10 @@ import { useAuth } from '../contexts/AuthContext'
 
 const cache = new Map<string, unknown>()
 
+export function clearFirestoreCache() {
+  cache.clear()
+}
+
 function cacheKey(uid: string, collection: string): string {
   return `${uid}/${collection}`
 }
@@ -13,7 +17,7 @@ export function useFirestore<T>(
   collectionName: string,
   initialValue: T,
   validate?: (data: unknown) => T | null,
-): { data: T; setData: (value: T | ((prev: T) => T)) => void; loading: boolean } {
+): { data: T; setData: (value: T | ((prev: T) => T)) => void; loading: boolean; error: string | null } {
   const { user } = useAuth()
   const uid = user?.uid
 
@@ -26,6 +30,7 @@ export function useFirestore<T>(
 
   const [data, setDataState] = useState<T>(resolve)
   const [loading, setLoading] = useState(() => !!uid && !cache.has(cacheKey(uid!, collectionName)))
+  const [error, setError] = useState<string | null>(null)
   const dataRef = useRef<T>(data)
 
   useEffect(() => {
@@ -74,15 +79,16 @@ export function useFirestore<T>(
       dataRef.current = newValue
       cache.set(cacheKey(uid, collectionName), newValue)
 
+      setError(null)
       const docRef = doc(db, 'users', uid, collectionName, 'data')
       setDoc(docRef, newValue as Record<string, unknown>).catch(() => {
-        // onSnapshot will correct the state on next server event
+        setError('save_failed')
       })
     },
     [uid, collectionName],
   )
 
-  if (!uid) return { data: initialValue, setData, loading: false }
+  if (!uid) return { data: initialValue, setData, loading: false, error: null }
 
-  return { data, setData, loading }
+  return { data, setData, loading, error }
 }

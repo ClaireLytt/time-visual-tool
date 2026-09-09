@@ -353,7 +353,16 @@
     "migratePrompt": "检测到本地数据，是否迁移到您的账号？",
     "migrateButton": "迁移数据",
     "migrateSkip": "跳过",
-    "rememberMe": "记住密码",
-    "loading": "加载中..."
+    "rememberMe": "记住我",
+    "loading": "加载中...",
+    "forgotPassword": "忘记密码？",
+    "resetPasswordSent": "重置密码邮件已发送，请检查您的邮箱",
+    "resetPasswordFailed": "发送重置邮件失败，请检查邮箱地址"
+  },
+  "firestore": {
+    "saveFailed": "保存失败，请检查网络连接"
+  },
+  "currency": {
+    "symbol": "¥"
   }
 }

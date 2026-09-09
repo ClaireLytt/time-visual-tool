@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { formatAmount } from '../../utils/money'
 
@@ -8,7 +9,7 @@ interface FinanceSummaryCardProps {
   entryCount: number
 }
 
-function FinanceSummaryCard({ income, expense, balance, entryCount }: FinanceSummaryCardProps) {
+const FinanceSummaryCard = memo(function FinanceSummaryCard({ income, expense, balance, entryCount }: FinanceSummaryCardProps) {
   const { t } = useTranslation()
 
   const stats = [
@@ -32,6 +33,6 @@ function FinanceSummaryCard({ income, expense, balance, entryCount }: FinanceSum
       ))}
     </div>
   )
-}
+})
 
 export default FinanceSummaryCard

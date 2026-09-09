@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TimeEntry } from '../../types'
 import { formatDuration } from '../../utils/time'
@@ -12,7 +12,7 @@ interface EntryItemProps {
   onEdit: (entry: TimeEntry) => void
 }
 
-function EntryItem({ entry, onDelete, onEdit }: EntryItemProps) {
+const EntryItem = memo(function EntryItem({ entry, onDelete, onEdit }: EntryItemProps) {
   const { t } = useTranslation()
   const [showConfirm, setShowConfirm] = useState(false)
   const { getColor } = useCategories()
@@ -61,6 +61,6 @@ function EntryItem({ entry, onDelete, onEdit }: EntryItemProps) {
       />
     </div>
   )
-}
+})
 
 export default EntryItem
