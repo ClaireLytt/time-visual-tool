@@ -24,7 +24,7 @@ function Header({ mode }: HeaderProps) {
   }
 
   return (
-    <header className="bg-white dark:bg-gray-800 border-b border-calm-border dark:border-gray-700 pt-[env(safe-area-inset-top)]">
+    <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl backdrop-saturate-150 shadow-soft pt-[env(safe-area-inset-top)] sticky top-0 z-40">
       <div className="max-w-5xl mx-auto px-4 py-4 flex flex-wrap items-center gap-3">
         {isSport ? (
           <DumbbellIcon className="w-8 h-8 text-mode-sport shrink-0" />
@@ -38,7 +38,7 @@ function Header({ mode }: HeaderProps) {
           <ClockIcon className="w-8 h-8 text-mode-time shrink-0" />
         )}
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 truncate">
+          <h1 className="text-xl font-bold tracking-display text-gray-900 dark:text-gray-100 truncate">
             {isSport ? t('sportApp.title') : isDiary ? t('diaryApp.title') : isEating ? t('eatingApp.title') : isFinance ? t('financeApp.title') : t('app.title')}
           </h1>
           <p className="text-sm text-calm-muted dark:text-gray-400 truncate">

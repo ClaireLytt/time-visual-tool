@@ -59,7 +59,7 @@ function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete }: Di
     : null
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 p-4 sm:p-5">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 shadow-card p-4 sm:p-5">
       <h3 className="text-base font-bold text-gray-800 dark:text-gray-100 mb-4">
         {t(`diary.editorTitle.${periodType}`)}
       </h3>

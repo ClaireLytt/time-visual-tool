@@ -7,6 +7,9 @@ export default {
   },
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', 'system-ui', 'sans-serif'],
+      },
       colors: {
         calm: {
           bg: '#f8f8f6',
@@ -24,6 +27,16 @@ export default {
           diary: '#9b8db5',
           sport: '#6ba5a0',
         },
+      },
+      boxShadow: {
+        'soft': '0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04)',
+        'card': '0 1px 2px rgba(0,0,0,0.03), 0 2px 8px rgba(0,0,0,0.05)',
+        'elevated': '0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',
+        'dialog': '0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
+      },
+      letterSpacing: {
+        'display': '-0.025em',
+        'tight-sm': '-0.01em',
       },
     },
   },

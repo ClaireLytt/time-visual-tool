@@ -23,7 +23,7 @@ function FinanceOverviewChart({ income, expense, balance }: FinanceOverviewChart
   const total = income + expense
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 p-4">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 shadow-card p-4">
       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('finance.chartOverview')}</h3>
 
       {visibleData.length === 0 ? (

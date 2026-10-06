@@ -61,7 +61,7 @@ function ConfirmDialog({
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 bg-black/40 dark:bg-black/60 z-50 flex items-center justify-center"
+          className="fixed inset-0 bg-black/30 dark:bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center"
           onClick={onCancel}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -69,7 +69,7 @@ function ConfirmDialog({
           transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
         >
           <motion.div
-            className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full mx-4"
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-dialog p-6 max-w-sm w-full mx-4"
             onClick={e => e.stopPropagation()}
             onKeyDown={handleKeyDown}
             role="dialog"

@@ -24,6 +24,13 @@ body {
   @apply outline-2 outline-offset-2 outline-calm-accent;
 }
 
+/* Apple-style press feedback — instant scale on pointer-down */
+button:active, a:active, [role="button"]:active {
+  transform: scale(0.97);
+  transition: transform 100ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.no-press:active { transform: none !important; }
+
 /* Mobile-native: eliminate tap delay, prevent text selection on controls */
 button, a, [role="button"] {
   touch-action: manipulation;

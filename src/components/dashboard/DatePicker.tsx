@@ -82,7 +82,7 @@ function DatePicker({ selectedDate, onDateChange, viewMode }: DatePickerProps) {
         </svg>
       </button>
 
-      <h2 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100">
+      <h2 className="text-base sm:text-lg font-bold tracking-tight-sm text-gray-800 dark:text-gray-100">
         {getLabel()}
       </h2>
 

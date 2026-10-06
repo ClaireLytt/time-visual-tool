@@ -39,7 +39,7 @@ function DataTransfer<T>({ data, onImport, onExport, readFile, getCounts }: Data
   const pendingCounts = pending !== null ? getCounts(pending) : { entries: 0, categories: 0 }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 p-4">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 shadow-card p-4">
       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">{t('dataTransfer.title')}</h3>
 
       <div className="space-y-3">

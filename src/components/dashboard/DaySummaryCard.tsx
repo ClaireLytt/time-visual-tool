@@ -28,7 +28,7 @@ const DaySummaryCard = memo(function DaySummaryCard({ totalMinutes, weightedMinu
       {stats.map((stat, i) => (
         <motion.div
           key={stat.label}
-          className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 p-3 text-center"
+          className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 shadow-card p-3 text-center"
           initial={{ opacity: 0, transform: 'translateY(6px)' }}
           animate={{ opacity: 1, transform: 'translateY(0px)' }}
           transition={{
@@ -37,8 +37,8 @@ const DaySummaryCard = memo(function DaySummaryCard({ totalMinutes, weightedMinu
             delay: i * 0.05,
           }}
         >
-          <p className="text-lg font-bold text-gray-800 dark:text-gray-100">{stat.value}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{stat.label}</p>
+          <p className="text-2xl font-bold tracking-display tabular-nums text-gray-800 dark:text-gray-100">{stat.value}</p>
+          <p className="text-xs tracking-wide uppercase text-gray-500 dark:text-gray-400 mt-1">{stat.label}</p>
         </motion.div>
       ))}
     </div>

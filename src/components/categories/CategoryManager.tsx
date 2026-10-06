@@ -88,7 +88,7 @@ function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete, onReo
   const isUsed = (name: string) => entries.some(e => e.category === name)
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 p-4">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 shadow-card p-4">
       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">{t('category.title')}</h3>
 
       <div className="space-y-2 mb-3" onDragLeave={() => setDragOverIndex(null)}>
