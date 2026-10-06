@@ -14,13 +14,14 @@ function EatingDailyChart({ dailyBreakdown, title }: EatingDailyChartProps) {
   const { isDark } = useTheme()
   const hasData = dailyBreakdown.some(d => d.calories > 0)
 
-  const gridColor = isDark ? '#374151' : '#e5e7eb'
+  const gridColor = isDark ? '#2e2e34' : '#e8e7e3'
   const tickColor = isDark ? '#9ca3af' : '#52514e'
-  const barColor = '#f59e0b'
+  const barColor = '#c4a36b'
+  const barHoverColor = '#b3924f'
 
   if (!hasData) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 shadow-card p-6 text-center">
+      <div className="panel p-6 text-center">
         <p className="text-gray-400 dark:text-gray-500 text-sm">{t('chart.noData')}</p>
       </div>
     )
@@ -29,8 +30,8 @@ function EatingDailyChart({ dailyBreakdown, title }: EatingDailyChartProps) {
   const isMonthly = dailyBreakdown.length > 12
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 shadow-card p-4">
-      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{title ?? t('eating.chartDaily')}</h3>
+    <div className="panel panel-accent p-4" style={{ '--panel-accent': '#c4a36b' } as React.CSSProperties}>
+      <h3 className="text-xs font-semibold tracking-wide uppercase text-calm-muted dark:text-gray-400 mb-3 mt-0.5">{title ?? t('eating.chartDaily')}</h3>
 
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={dailyBreakdown} margin={{ top: 8, right: 8, bottom: 0, left: -8 }}>
@@ -51,20 +52,21 @@ function EatingDailyChart({ dailyBreakdown, title }: EatingDailyChartProps) {
           <Tooltip
             formatter={(value: number) => [formatCalories(value), t('eating.totalCalories')]}
             contentStyle={{
-              borderRadius: '8px',
+              borderRadius: '12px',
               border: `1px solid ${gridColor}`,
               backgroundColor: isDark ? '#1f2937' : '#fff',
               color: isDark ? '#e5e7eb' : '#111827',
               fontSize: '13px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
             }}
-            cursor={{ fill: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }}
+            cursor={{ fill: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(196,163,107,0.06)' }}
           />
           <Bar
             dataKey="calories"
             name={t('eating.totalCalories')}
             fill={barColor}
-            radius={[4, 4, 0, 0]}
-            maxBarSize={24}
+            radius={[6, 6, 0, 0]}
+            maxBarSize={28}
           />
         </BarChart>
       </ResponsiveContainer>

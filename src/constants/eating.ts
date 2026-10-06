@@ -4,6 +4,8 @@ export const EATING_STORAGE_KEY = 'eating-visual-entries'
 
 export const LATE_NIGHT_CATEGORY_NAME = '夜宵'
 
+export const DEFAULT_DAILY_CALORIE_GOAL = 2000
+
 export const DEFAULT_EATING_CATEGORY_LIST: EatingCategory[] = [
   { name: '早餐', color: '#c4a36b' },
   { name: '午餐', color: '#7aab8e' },

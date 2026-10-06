@@ -8,6 +8,7 @@ import ViewModeToggle from '../dashboard/ViewModeToggle'
 import CategoryManager, { type ManagedCategory } from '../categories/CategoryManager'
 import DataTransfer from '../settings/DataTransfer'
 import EatingSummaryCard from './EatingSummaryCard'
+import CalorieGoalRing from './CalorieGoalRing'
 import EatingEntryForm from './EatingEntryForm'
 import EatingEntryList from './EatingEntryList'
 import EatingProportionChart from './EatingProportionChart'
@@ -31,6 +32,7 @@ function EatingDashboard() {
     addCategory, updateCategory, deleteCategory,
     importData,
     getEntriesForDate, getSummaryForPeriod,
+    dailyCalorieGoal, setDailyCalorieGoal,
   } = useEatingEntries()
 
   const dayEntries = useMemo(() => getEntriesForDate(selectedDate), [getEntriesForDate, selectedDate])
@@ -46,6 +48,9 @@ function EatingDashboard() {
         })
     return summaryEntries.filter(e => e.category === LATE_NIGHT_CATEGORY_NAME).length
   }, [viewMode, dayEntries, entries, periodSummary.dailyBreakdown])
+
+  // For day view, compute today's total from dayEntries for the goal ring
+  const dayTotalCalories = useMemo(() => dayEntries.reduce((sum, e) => sum + e.calories, 0), [dayEntries])
 
   const isDaily = viewMode === 'day'
 
@@ -86,7 +91,7 @@ function EatingDashboard() {
           <ViewModeToggle viewMode={viewMode} modes={EATING_MODES} onViewModeChange={handleViewModeChange} />
           <button
             onClick={() => setShowSettings(s => !s)}
-            className={`p-2 rounded-lg transition-colors ${showSettings ? 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+            className={`btn-icon transition-colors ${showSettings ? 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 shadow-pressed' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
             aria-label={t('settings.label')}
             aria-expanded={showSettings}
           >
@@ -124,6 +129,15 @@ function EatingDashboard() {
           lateNightCount={lateNightCount}
         />
 
+        {/* Calorie goal ring — day view only */}
+        {isDaily && (
+          <CalorieGoalRing
+            currentCalories={dayTotalCalories}
+            goal={dailyCalorieGoal}
+            onGoalChange={setDailyCalorieGoal}
+          />
+        )}
+
         {!isDaily && (
           <div className="mb-4">
             <EatingDailyChart
@@ -142,6 +156,7 @@ function EatingDashboard() {
               editingEntry={editingEntry}
               onUpdate={updateEntry}
               onCancelEdit={handleCancelEdit}
+              entries={entries}
             />
             <EatingEntryList entries={dayEntries} onDelete={deleteEntry} onEdit={setEditingEntry} />
           </div>

@@ -93,11 +93,24 @@ export function useEatingEntries() {
     return computeEatingPeriodSummary(entries, anchorDate, viewMode)
   }, [entries])
 
+  const dailyCalorieGoal = data.dailyCalorieGoal
+
+  const setDailyCalorieGoal = useCallback((goal: number | undefined) => {
+    setData(prev => {
+      if (goal === undefined) {
+        const { dailyCalorieGoal: _, ...rest } = prev
+        return rest as EatingStorageData
+      }
+      return { ...prev, dailyCalorieGoal: goal }
+    })
+  }, [setData])
+
   return {
     entries, categories, data, loading,
     addEntry, deleteEntry, updateEntry,
     addCategory, updateCategory, deleteCategory,
     importData,
     getEntriesForDate, getSummaryForPeriod,
+    dailyCalorieGoal, setDailyCalorieGoal,
   }
 }

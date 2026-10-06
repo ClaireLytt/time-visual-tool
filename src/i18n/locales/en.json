@@ -113,7 +113,12 @@
     "countTimes": "{{count}}",
     "chartDaily": "Daily calories",
     "chartMonthly": "Monthly calories",
-    "chartProportion": "Calorie breakdown"
+    "chartProportion": "Calorie breakdown",
+    "goalSetAriaLabel": "Set daily calorie goal",
+    "goalInputAriaLabel": "Daily calorie goal",
+    "multiplierAriaLabel": "Serving multiplier",
+    "multiplierDecrease": "Decrease servings",
+    "multiplierIncrease": "Increase servings"
   },
   "sport": {
     "addTitle": "Add exercise entry",

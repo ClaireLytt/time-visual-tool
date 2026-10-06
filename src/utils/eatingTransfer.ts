@@ -42,7 +42,12 @@ export function validateEatingData(raw: unknown): EatingStorageData | null {
     categories = DEFAULT_EATING_CATEGORY_LIST
   }
 
-  return { version: 1, entries, categories }
+  let dailyCalorieGoal: number | undefined
+  if (typeof obj.dailyCalorieGoal === 'number' && obj.dailyCalorieGoal >= 100 && obj.dailyCalorieGoal <= 10000) {
+    dailyCalorieGoal = Math.round(obj.dailyCalorieGoal)
+  }
+
+  return { version: 1, entries, categories, ...(dailyCalorieGoal != null && { dailyCalorieGoal }) }
 }
 
 export function exportEatingToFile(data: EatingStorageData) {

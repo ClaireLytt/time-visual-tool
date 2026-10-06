@@ -22,6 +22,7 @@ export interface EatingStorageData {
   version: 1
   entries: EatingEntry[]
   categories: EatingCategory[]
+  dailyCalorieGoal?: number
 }
 
 export interface EatingCategoryBreakdown {

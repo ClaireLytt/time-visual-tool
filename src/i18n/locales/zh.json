@@ -113,7 +113,12 @@
     "countTimes": "{{count}} 次",
     "chartDaily": "每日热量",
     "chartMonthly": "每月热量",
-    "chartProportion": "热量分布"
+    "chartProportion": "热量分布",
+    "goalSetAriaLabel": "设置每日热量目标",
+    "goalInputAriaLabel": "每日热量目标",
+    "multiplierAriaLabel": "份量倍数",
+    "multiplierDecrease": "减少份量",
+    "multiplierIncrease": "增加份量"
   },
   "sport": {
     "addTitle": "添加运动记录",
