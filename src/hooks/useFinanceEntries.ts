@@ -80,6 +80,11 @@ export function useFinanceEntries() {
           version: 1,
           entries: [...prev.entries, ...newEntries],
           categories: [...prev.categories, ...newCategories],
+          ...(imported.monthlyBudget != null
+            ? { monthlyBudget: imported.monthlyBudget }
+            : prev.monthlyBudget != null
+              ? { monthlyBudget: prev.monthlyBudget }
+              : {}),
         }
       })
     }
@@ -93,11 +98,24 @@ export function useFinanceEntries() {
     return computeFinancePeriodSummary(entries, anchorDate, viewMode)
   }, [entries])
 
+  const monthlyBudget = data.monthlyBudget
+
+  const setMonthlyBudget = useCallback((budget: number | undefined) => {
+    setData(prev => {
+      if (budget === undefined) {
+        const { monthlyBudget: _, ...rest } = prev
+        return rest as FinanceStorageData
+      }
+      return { ...prev, monthlyBudget: budget }
+    })
+  }, [setData])
+
   return {
     entries, categories, data, loading,
     addEntry, deleteEntry, updateEntry,
     addCategory, updateCategory, deleteCategory,
     importData,
     getEntriesForDate, getSummaryForPeriod,
+    monthlyBudget, setMonthlyBudget,
   }
 }

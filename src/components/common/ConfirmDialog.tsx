@@ -86,16 +86,14 @@ function ConfirmDialog({
               <button
                 ref={cancelRef}
                 onClick={onCancel}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors active:scale-[0.97] transition-transform duration-[160ms]"
-                style={{ transitionTimingFunction: 'var(--ease-out)' }}
+                className="btn-secondary"
               >
                 {cancelLabel ?? t('confirm.cancel')}
               </button>
               <button
                 ref={confirmRef}
                 onClick={onConfirm}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors active:scale-[0.97] transition-transform duration-[160ms] ${confirmColors}`}
-                style={{ transitionTimingFunction: 'var(--ease-out)' }}
+                className={`btn-tactile ${confirmColors}`}
               >
                 {confirmLabel ?? t('confirm.ok')}
               </button>

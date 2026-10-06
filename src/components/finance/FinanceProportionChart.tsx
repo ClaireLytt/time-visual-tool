@@ -47,7 +47,7 @@ function FinanceProportionChart({ incomeBreakdown, expenseBreakdown, income, exp
   )
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 shadow-card p-4">
+    <div className="panel p-4">
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
           {t('finance.chartProportion', { type: t(chartType === 'expense' ? 'finance.expense' : 'finance.income') })}

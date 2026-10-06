@@ -36,7 +36,7 @@ function SportReflectionEditor({ periodType, periodKey, reflection, onSave, onDe
     : null
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 shadow-card p-4 sm:p-5">
+    <div className="panel p-4 sm:p-5">
       <h3 className="text-base font-bold text-gray-800 dark:text-gray-100 mb-4">
         {t(`sport.reflectionTitle.${periodType}`)}
       </h3>

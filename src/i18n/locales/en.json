@@ -48,7 +48,36 @@
     "emptyTitle": "No entries yet",
     "emptySubtitle": "Write your first one"
   },
+  "overviewApp": {
+    "title": "Today",
+    "subtitle": "Your day at a glance"
+  },
+  "overview": {
+    "timeCard": "Hours tracked",
+    "financeCard": "Balance",
+    "eatingCard": "Calories",
+    "sportCard": "Exercise",
+    "diaryCard": "Diary",
+    "restDay": "Rest day",
+    "written": "Written",
+    "notYet": "Not yet",
+    "streak": "day streak",
+    "income": "In",
+    "expense": "Out",
+    "meals": "meals",
+    "budget": "Budget",
+    "hoursGoal": "Hours goal"
+  },
+  "finance": {
+    "budgetGoalLabel": "Set monthly budget",
+    "budgetUnit": "¥"
+  },
+  "time": {
+    "hoursGoalLabel": "Set daily hours goal",
+    "hoursUnit": "h"
+  },
   "mode": {
+    "overview": "Today",
     "time": "Time",
     "finance": "Money",
     "eating": "Eating",

@@ -48,7 +48,36 @@
     "emptyTitle": "还没有记录",
     "emptySubtitle": "写下你的第一篇吧"
   },
+  "overviewApp": {
+    "title": "今日总览",
+    "subtitle": "你的一天一目了然"
+  },
+  "overview": {
+    "timeCard": "已记录时间",
+    "financeCard": "收支",
+    "eatingCard": "热量",
+    "sportCard": "运动",
+    "diaryCard": "日记",
+    "restDay": "休息日",
+    "written": "已记录",
+    "notYet": "未记录",
+    "streak": "天连续",
+    "income": "收入",
+    "expense": "支出",
+    "meals": "餐",
+    "budget": "预算",
+    "hoursGoal": "时间目标"
+  },
+  "finance": {
+    "budgetGoalLabel": "设置月度预算",
+    "budgetUnit": "¥"
+  },
+  "time": {
+    "hoursGoalLabel": "设置每日时间目标",
+    "hoursUnit": "小时"
+  },
   "mode": {
+    "overview": "总览",
     "time": "时间",
     "finance": "理财",
     "eating": "饮食",

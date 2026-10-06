@@ -28,7 +28,7 @@ const DaySummaryCard = memo(function DaySummaryCard({ totalMinutes, weightedMinu
       {stats.map((stat, i) => (
         <motion.div
           key={stat.label}
-          className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 shadow-card p-3 text-center"
+          className="panel p-3 text-center"
           initial={{ opacity: 0, transform: 'translateY(6px)' }}
           animate={{ opacity: 1, transform: 'translateY(0px)' }}
           transition={{

@@ -80,6 +80,11 @@ export function useEatingEntries() {
           version: 1,
           entries: [...prev.entries, ...newEntries],
           categories: [...prev.categories, ...newCategories],
+          ...(imported.dailyCalorieGoal != null
+            ? { dailyCalorieGoal: imported.dailyCalorieGoal }
+            : prev.dailyCalorieGoal != null
+              ? { dailyCalorieGoal: prev.dailyCalorieGoal }
+              : {}),
         }
       })
     }

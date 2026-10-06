@@ -95,6 +95,11 @@ export function useTimeEntries() {
           version: 2,
           entries: [...prev.entries, ...newEntries],
           categories: [...prev.categories, ...newCategories],
+          ...(imported.dailyHoursGoal != null
+            ? { dailyHoursGoal: imported.dailyHoursGoal }
+            : prev.dailyHoursGoal != null
+              ? { dailyHoursGoal: prev.dailyHoursGoal }
+              : {}),
         }
       })
     }
@@ -108,11 +113,24 @@ export function useTimeEntries() {
     return computePeriodSummary(entries, anchorDate, viewMode)
   }, [entries])
 
+  const dailyHoursGoal = data.dailyHoursGoal
+
+  const setDailyHoursGoal = useCallback((goal: number | undefined) => {
+    setData(prev => {
+      if (goal === undefined) {
+        const { dailyHoursGoal: _, ...rest } = prev
+        return rest as StorageData
+      }
+      return { ...prev, dailyHoursGoal: goal }
+    })
+  }, [setData])
+
   return {
     entries, categories, data, loading,
     addEntry, deleteEntry, updateEntry,
     addCategory, updateCategory, deleteCategory,
     importData,
     getEntriesForDate, getSummaryForPeriod,
+    dailyHoursGoal, setDailyHoursGoal,
   }
 }

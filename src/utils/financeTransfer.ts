@@ -42,7 +42,12 @@ export function validateFinanceData(raw: unknown): FinanceStorageData | null {
     categories = DEFAULT_FINANCE_CATEGORY_LIST
   }
 
-  return { version: 1, entries, categories }
+  let monthlyBudget: number | undefined
+  if (typeof obj.monthlyBudget === 'number' && obj.monthlyBudget >= 100 && obj.monthlyBudget <= 1000000) {
+    monthlyBudget = Math.round(obj.monthlyBudget)
+  }
+
+  return { version: 1, entries, categories, ...(monthlyBudget != null && { monthlyBudget }) }
 }
 
 export function exportFinanceToFile(data: FinanceStorageData) {

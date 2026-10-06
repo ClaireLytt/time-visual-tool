@@ -5,6 +5,7 @@ import Container from './Container'
 import BottomTabBar from './BottomTabBar'
 import DataMigrationDialog from '../auth/DataMigrationDialog'
 import ErrorBoundary from '../common/ErrorBoundary'
+import OverviewDashboard from '../overview/OverviewDashboard'
 import Dashboard from '../dashboard/Dashboard'
 import FinanceDashboard from '../finance/FinanceDashboard'
 import EatingDashboard from '../eating/EatingDashboard'
@@ -15,21 +16,23 @@ import { APP_MODE_STORAGE_KEY } from '../../constants'
 import type { AppMode } from '../../types'
 
 function validateMode(raw: unknown): AppMode | null {
-  return raw === 'time' || raw === 'finance' || raw === 'eating' || raw === 'diary' || raw === 'sport' ? raw : null
-}
-
-const modeComponent: Record<AppMode, () => JSX.Element> = {
-  time: Dashboard,
-  finance: FinanceDashboard,
-  eating: EatingDashboard,
-  diary: DiaryDashboard,
-  sport: SportDashboard,
+  return raw === 'overview' || raw === 'time' || raw === 'finance' || raw === 'eating' || raw === 'diary' || raw === 'sport' ? raw : null
 }
 
 function AppShell() {
   const { t } = useTranslation()
-  const [mode, setMode] = useLocalStorage<AppMode>(APP_MODE_STORAGE_KEY, 'time', validateMode)
-  const ActiveDashboard = modeComponent[mode]
+  const [mode, setMode] = useLocalStorage<AppMode>(APP_MODE_STORAGE_KEY, 'overview', validateMode)
+
+  const renderDashboard = () => {
+    switch (mode) {
+      case 'overview': return <OverviewDashboard onNavigate={setMode} />
+      case 'time': return <Dashboard />
+      case 'finance': return <FinanceDashboard />
+      case 'eating': return <EatingDashboard />
+      case 'diary': return <DiaryDashboard />
+      case 'sport': return <SportDashboard />
+    }
+  }
 
   return (
     <>
@@ -50,7 +53,7 @@ function AppShell() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
             >
-              <ActiveDashboard />
+              {renderDashboard()}
             </motion.div>
           </AnimatePresence>
         </Container>

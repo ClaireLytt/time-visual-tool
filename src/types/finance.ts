@@ -25,6 +25,7 @@ export interface FinanceStorageData {
   version: 1
   entries: FinanceEntry[]
   categories: FinanceCategory[]
+  monthlyBudget?: number
 }
 
 export interface FinanceCategoryBreakdown {

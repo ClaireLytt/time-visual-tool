@@ -28,7 +28,7 @@ export type ViewMode = 'day' | 'week' | 'month'
 
 export type ExtendedViewMode = ViewMode | 'year'
 
-export type AppMode = 'time' | 'finance' | 'eating' | 'diary' | 'sport'
+export type AppMode = 'overview' | 'time' | 'finance' | 'eating' | 'diary' | 'sport'
 
 export interface DailyDataPoint {
   date: string
@@ -46,6 +46,7 @@ export interface StorageData {
   version: 2
   entries: TimeEntry[]
   categories: Category[]
+  dailyHoursGoal?: number
 }
 
 export interface PeriodSummary {

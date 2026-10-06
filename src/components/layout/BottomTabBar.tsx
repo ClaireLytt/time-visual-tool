@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
-import { ClockIcon, WalletIcon, UtensilsIcon, BookIcon, DumbbellIcon } from '../icons'
+import { HomeIcon, ClockIcon, WalletIcon, UtensilsIcon, BookIcon, DumbbellIcon } from '../icons'
 import type { AppMode } from '../../types'
 
 interface BottomTabBarProps {
@@ -9,6 +9,7 @@ interface BottomTabBarProps {
 }
 
 const TABS: { mode: AppMode; icon: typeof ClockIcon; labelKey: string; activeColor: string; dotColor: string }[] = [
+  { mode: 'overview', icon: HomeIcon, labelKey: 'mode.overview', activeColor: 'text-calm-accent', dotColor: '#6b8db5' },
   { mode: 'time', icon: ClockIcon, labelKey: 'mode.time', activeColor: 'text-mode-time', dotColor: '#6b8db5' },
   { mode: 'finance', icon: WalletIcon, labelKey: 'mode.finance', activeColor: 'text-mode-finance', dotColor: '#7aab8e' },
   { mode: 'eating', icon: UtensilsIcon, labelKey: 'mode.eating', activeColor: 'text-mode-eating', dotColor: '#c4a36b' },

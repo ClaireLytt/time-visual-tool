@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '../../hooks/useTheme'
 import { useAuth } from '../../contexts/AuthContext'
-import { ClockIcon, WalletIcon, UtensilsIcon, BookIcon, DumbbellIcon } from '../icons'
+import { HomeIcon, ClockIcon, WalletIcon, UtensilsIcon, BookIcon, DumbbellIcon } from '../icons'
 import type { AppMode } from '../../types'
 
 interface HeaderProps {
@@ -14,6 +14,7 @@ function Header({ mode }: HeaderProps) {
   const { user, logout, switchAccount } = useAuth()
 
   const themeLabel = t(`theme.${theme}`)
+  const isOverview = mode === 'overview'
   const isFinance = mode === 'finance'
   const isEating = mode === 'eating'
   const isDiary = mode === 'diary'
@@ -26,7 +27,9 @@ function Header({ mode }: HeaderProps) {
   return (
     <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl backdrop-saturate-150 shadow-soft pt-[env(safe-area-inset-top)] sticky top-0 z-40">
       <div className="max-w-5xl mx-auto px-4 py-4 flex flex-wrap items-center gap-3">
-        {isSport ? (
+        {isOverview ? (
+          <HomeIcon className="w-8 h-8 text-calm-accent shrink-0" />
+        ) : isSport ? (
           <DumbbellIcon className="w-8 h-8 text-mode-sport shrink-0" />
         ) : isDiary ? (
           <BookIcon className="w-8 h-8 text-mode-diary shrink-0" />
@@ -39,10 +42,10 @@ function Header({ mode }: HeaderProps) {
         )}
         <div className="flex-1 min-w-0">
           <h1 className="text-xl font-bold tracking-display text-gray-900 dark:text-gray-100 truncate">
-            {isSport ? t('sportApp.title') : isDiary ? t('diaryApp.title') : isEating ? t('eatingApp.title') : isFinance ? t('financeApp.title') : t('app.title')}
+            {isOverview ? t('overviewApp.title') : isSport ? t('sportApp.title') : isDiary ? t('diaryApp.title') : isEating ? t('eatingApp.title') : isFinance ? t('financeApp.title') : t('app.title')}
           </h1>
           <p className="text-sm text-calm-muted dark:text-gray-400 truncate">
-            {isSport ? t('sportApp.subtitle') : isDiary ? t('diaryApp.subtitle') : isEating ? t('eatingApp.subtitle') : isFinance ? t('financeApp.subtitle') : t('app.subtitle')}
+            {isOverview ? t('overviewApp.subtitle') : isSport ? t('sportApp.subtitle') : isDiary ? t('diaryApp.subtitle') : isEating ? t('eatingApp.subtitle') : isFinance ? t('financeApp.subtitle') : t('app.subtitle')}
           </p>
         </div>
         <button

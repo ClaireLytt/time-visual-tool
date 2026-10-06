@@ -22,7 +22,7 @@ function SportReflectionList({ reflections, periodType, activePeriodKey, onSelec
 
   if (sorted.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 shadow-card p-6 text-center">
+      <div className="panel p-6 text-center">
         <p className="text-gray-400 dark:text-gray-500 text-sm">{t('sport.reflectionEmptyTitle')}</p>
         <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">{t('sport.reflectionEmptySubtitle')}</p>
       </div>
@@ -30,7 +30,7 @@ function SportReflectionList({ reflections, periodType, activePeriodKey, onSelec
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 shadow-card p-2">
+    <div className="panel p-2">
       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 px-3 pt-2 pb-1">
         {t('sport.reflectionListTitle', { count: sorted.length })}
       </h3>

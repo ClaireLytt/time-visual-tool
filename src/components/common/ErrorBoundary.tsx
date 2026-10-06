@@ -24,7 +24,7 @@ class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="max-w-md mx-auto mt-20 p-6 bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 shadow-card text-center">
+        <div className="max-w-md mx-auto mt-20 p-6 panel text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
             <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />

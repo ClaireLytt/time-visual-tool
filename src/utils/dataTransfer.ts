@@ -38,7 +38,12 @@ export function validateImportData(raw: unknown): StorageData | null {
     categories = DEFAULT_CATEGORY_LIST
   }
 
-  return { version: 2, entries, categories }
+  let dailyHoursGoal: number | undefined
+  if (typeof obj.dailyHoursGoal === 'number' && obj.dailyHoursGoal >= 0.5 && obj.dailyHoursGoal <= 24) {
+    dailyHoursGoal = Math.round(obj.dailyHoursGoal * 2) / 2 // snap to 0.5
+  }
+
+  return { version: 2, entries, categories, ...(dailyHoursGoal != null && { dailyHoursGoal }) }
 }
 
 export function exportToFile(data: StorageData) {

@@ -23,7 +23,7 @@ function SportProportionChart({ categoryBreakdown, totalDuration }: SportProport
   const legendItems = Object.entries(categoryBreakdown).sort((a, b) => b[1].duration - a[1].duration)
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 shadow-card p-4">
+    <div className="panel p-4">
       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
         {t('sport.chartProportion')}
       </h3>
