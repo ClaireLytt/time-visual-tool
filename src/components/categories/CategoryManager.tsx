@@ -57,9 +57,12 @@ function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete, onReo
     setDragOverIndex(null)
   }, [])
 
+  const MAX_CATEGORIES = 30
+  const atCategoryLimit = categories.length >= MAX_CATEGORIES
+
   const handleAdd = () => {
     const name = newName.trim()
-    if (!name) return
+    if (!name || atCategoryLimit) return
     if (categories.some(c => c.name === name)) return
     onAdd(withKind ? { name, color: newColor, kind: newKind } : { name, color: newColor })
     setNewName('')
@@ -115,6 +118,7 @@ function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete, onReo
                   onKeyDown={e => e.key === 'Enter' && saveEdit()}
                   className="input-base flex-1 min-w-0 !px-2 !py-1 !rounded"
                   aria-label={t('category.nameLabel')}
+                  maxLength={20}
                   autoFocus
                 />
                 <button onClick={saveEdit} className="text-xs text-calm-accent hover:text-calm-accent-hover font-medium">{t('category.saveButton')}</button>
@@ -188,12 +192,15 @@ function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete, onReo
         )}
         <button
           onClick={handleAdd}
-          disabled={!newName.trim()}
+          disabled={!newName.trim() || atCategoryLimit}
           className="px-3 py-1.5 bg-calm-accent text-white text-xs font-medium rounded-lg hover:bg-calm-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {t('category.addButton')}
         </button>
       </div>
+      {atCategoryLimit && (
+        <p className="text-xs text-calm-muted mt-2">{t('category.limitReached', { max: MAX_CATEGORIES })}</p>
+      )}
 
       <ConfirmDialog
         open={deleteTarget !== null}

@@ -4,7 +4,7 @@ const MAX_CALORIES = 100_000
 
 export function formatCalories(calories: number): string {
   if (!Number.isFinite(calories)) return `0 ${i18n.t('eating.calorieUnit')}`
-  return `${Math.round(calories)} ${i18n.t('eating.calorieUnit')}`
+  return `${Math.round(calories).toLocaleString()} ${i18n.t('eating.calorieUnit')}`
 }
 
 export function parseCalorieInput(input: string): number | null {

@@ -9,8 +9,8 @@ export function isValidFinanceEntry(e: unknown): e is FinanceEntry {
   return (
     typeof obj.id === 'string' &&
     typeof obj.date === 'string' &&
-    typeof obj.description === 'string' &&
-    typeof obj.amount === 'number' &&
+    typeof obj.description === 'string' && obj.description.length <= 100 &&
+    typeof obj.amount === 'number' && obj.amount > 0 && obj.amount <= 1000000000 &&
     (obj.type === 'income' || obj.type === 'expense') &&
     typeof obj.category === 'string' &&
     typeof obj.createdAt === 'string'

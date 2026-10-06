@@ -37,6 +37,7 @@
       "year": "本年目标"
     },
     "goalAdd": "添加",
+    "goalLimit": "最多添加 {{max}} 个目标",
     "goalRemove": "删除目标",
     "saveButton": "保存",
     "savedAt": "已保存 · {{time}}",
@@ -128,6 +129,7 @@
     "notePlaceholder": "备注（感受、强度等）",
     "noteLabel": "备注",
     "errorContent": "请输入训练内容",
+    "errorContentEmpty": "请输入运动内容",
     "errorDuration": "请输入有效的分钟数（如 30、60）",
     "errorCalorie": "请输入有效热量",
     "emptyTitle": "今天还没有运动记录",
@@ -246,6 +248,7 @@
     "newNamePlaceholder": "新分类名称",
     "newNameLabel": "新分类名称",
     "addButton": "添加",
+    "limitReached": "最多添加 {{max}} 个分类",
     "saveButton": "保存",
     "cancelButton": "取消",
     "editAriaLabel": "编辑分类 {{name}}",

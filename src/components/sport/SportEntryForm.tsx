@@ -51,10 +51,15 @@ function SportEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdat
     e.preventDefault()
     setError('')
 
+    if (!content.trim()) {
+      setError(t('sport.errorContentEmpty'))
+      return
+    }
+
     let duration = 0
     if (durationInput.trim()) {
       const n = Number(durationInput.trim())
-      if (!Number.isFinite(n) || n < 0) {
+      if (!Number.isFinite(n) || n < 0 || n > 1440) {
         setError(t('sport.errorDuration'))
         return
       }

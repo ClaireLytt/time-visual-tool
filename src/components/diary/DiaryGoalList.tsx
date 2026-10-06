@@ -12,9 +12,12 @@ function DiaryGoalList({ goals, onChange, inputLabel }: DiaryGoalListProps) {
   const { t } = useTranslation()
   const [newGoalText, setNewGoalText] = useState('')
 
+  const MAX_GOALS = 20
+  const atLimit = goals.length >= MAX_GOALS
+
   const addGoal = () => {
     const text = newGoalText.trim()
-    if (!text) return
+    if (!text || atLimit) return
     onChange([...goals, { id: crypto.randomUUID(), text, done: false }])
     setNewGoalText('')
   }
@@ -63,12 +66,15 @@ function DiaryGoalList({ goals, onChange, inputLabel }: DiaryGoalListProps) {
         />
         <button
           onClick={addGoal}
-          disabled={newGoalText.trim() === ''}
+          disabled={newGoalText.trim() === '' || atLimit}
           className="shrink-0 px-4 py-2 bg-mode-diary hover:opacity-90 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-base sm:text-sm font-medium rounded-xl transition-colors"
         >
           {t('diary.goalAdd')}
         </button>
       </div>
+      {atLimit && (
+        <p className="text-xs text-calm-muted mt-1">{t('diary.goalLimit', { max: MAX_GOALS })}</p>
+      )}
     </div>
   )
 }

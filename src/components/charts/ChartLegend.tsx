@@ -23,7 +23,7 @@ function ChartLegend({ breakdown }: ChartLegendProps) {
           />
           <span className="flex-1 text-gray-700 dark:text-gray-200">{t('category.names.' + category, category)}</span>
           <span className="text-gray-500 dark:text-gray-400 text-xs">{formatDuration(data.totalMinutes)}</span>
-          <span className="text-gray-400 dark:text-gray-500 text-xs w-10 text-right">{data.percentage}%</span>
+          <span className="text-gray-400 dark:text-gray-500 text-xs w-10 text-right">{Math.round(data.percentage)}%</span>
         </li>
       ))}
     </ul>

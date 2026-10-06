@@ -8,7 +8,7 @@ const PERIOD_TYPES: readonly string[] = ['day', 'week', 'month', 'year']
 function isValidGoal(g: unknown): g is DiaryGoal {
   if (typeof g !== 'object' || g === null) return false
   const obj = g as Record<string, unknown>
-  return typeof obj.id === 'string' && typeof obj.text === 'string' && typeof obj.done === 'boolean'
+  return typeof obj.id === 'string' && typeof obj.text === 'string' && obj.text.length <= 200 && typeof obj.done === 'boolean'
 }
 
 export function isValidDiaryEntry(e: unknown): e is DiaryEntry {
@@ -20,10 +20,10 @@ export function isValidDiaryEntry(e: unknown): e is DiaryEntry {
     PERIOD_TYPES.includes(obj.periodType) &&
     typeof obj.periodKey === 'string' &&
     isValidPeriodKey(obj.periodType as DiaryPeriodType, obj.periodKey) &&
-    typeof obj.gratitude === 'string' &&
-    typeof obj.feelings === 'string' &&
-    typeof obj.motivation === 'string' &&
-    (obj.goals === undefined || (Array.isArray(obj.goals) && obj.goals.every(isValidGoal))) &&
+    typeof obj.gratitude === 'string' && obj.gratitude.length <= 5000 &&
+    typeof obj.feelings === 'string' && obj.feelings.length <= 5000 &&
+    typeof obj.motivation === 'string' && obj.motivation.length <= 5000 &&
+    (obj.goals === undefined || (Array.isArray(obj.goals) && obj.goals.length <= 20 && obj.goals.every(isValidGoal))) &&
     typeof obj.createdAt === 'string' &&
     typeof obj.updatedAt === 'string'
   )

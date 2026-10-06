@@ -9,8 +9,8 @@ export function isValidEatingEntry(e: unknown): e is EatingEntry {
   return (
     typeof obj.id === 'string' &&
     typeof obj.date === 'string' &&
-    typeof obj.food === 'string' &&
-    typeof obj.calories === 'number' &&
+    typeof obj.food === 'string' && obj.food.length <= 100 &&
+    typeof obj.calories === 'number' && obj.calories >= 0 && obj.calories <= 100000 &&
     typeof obj.mealTime === 'string' &&
     typeof obj.category === 'string' &&
     typeof obj.note === 'string' &&

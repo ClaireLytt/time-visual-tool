@@ -37,6 +37,7 @@
       "year": "Yearly Goals"
     },
     "goalAdd": "Add",
+    "goalLimit": "Maximum {{max}} goals reached",
     "goalRemove": "Remove goal",
     "saveButton": "Save",
     "savedAt": "Saved · {{time}}",
@@ -128,6 +129,7 @@
     "notePlaceholder": "Note (feeling, intensity, etc.)",
     "noteLabel": "Note",
     "errorContent": "Please enter training content",
+    "errorContentEmpty": "Please enter sport content",
     "errorDuration": "Please enter a valid number of minutes (e.g. 30, 60)",
     "errorCalorie": "Please enter valid calories",
     "emptyTitle": "No exercise entries yet",
@@ -246,6 +248,7 @@
     "newNamePlaceholder": "New category name",
     "newNameLabel": "New category name",
     "addButton": "Add",
+    "limitReached": "Maximum {{max}} categories reached",
     "saveButton": "Save",
     "cancelButton": "Cancel",
     "editAriaLabel": "Edit category {{name}}",

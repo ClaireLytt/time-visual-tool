@@ -80,6 +80,7 @@ function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete }: Di
             <textarea
               id="diary-gratitude"
               rows={3}
+              maxLength={2000}
               value={gratitude}
               onChange={e => setGratitude(e.target.value)}
               className={TEXTAREA_CLASS}
@@ -94,6 +95,7 @@ function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete }: Di
           <textarea
             id="diary-feelings"
             rows={isDaily ? 3 : 5}
+            maxLength={2000}
             value={feelings}
             onChange={e => setFeelings(e.target.value)}
             className={TEXTAREA_CLASS}
@@ -108,6 +110,7 @@ function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete }: Di
             <textarea
               id="diary-motivation"
               rows={2}
+              maxLength={2000}
               value={motivation}
               onChange={e => setMotivation(e.target.value)}
               className={TEXTAREA_CLASS}

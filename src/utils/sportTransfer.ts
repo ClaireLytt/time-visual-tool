@@ -11,8 +11,8 @@ export function isValidSportEntry(e: unknown): e is SportEntry {
     typeof obj.date === 'string' && obj.date !== '' &&
     typeof obj.sportType === 'string' && obj.sportType !== '' &&
     typeof obj.content === 'string' &&
-    typeof obj.duration === 'number' && Number.isFinite(obj.duration) && obj.duration >= 0 &&
-    typeof obj.calories === 'number' && Number.isFinite(obj.calories) && obj.calories >= 0 &&
+    typeof obj.duration === 'number' && Number.isFinite(obj.duration) && obj.duration >= 0 && obj.duration <= 1440 &&
+    typeof obj.calories === 'number' && Number.isFinite(obj.calories) && obj.calories >= 0 && obj.calories <= 100000 &&
     typeof obj.note === 'string' &&
     typeof obj.createdAt === 'string' && obj.createdAt !== ''
   )

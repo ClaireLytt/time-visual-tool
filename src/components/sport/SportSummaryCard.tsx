@@ -14,7 +14,7 @@ const SportSummaryCard = memo(function SportSummaryCard({ totalDuration, totalCa
 
   const stats = [
     { label: t('sport.totalDuration'), value: formatDuration(totalDuration), color: 'text-mode-sport' },
-    { label: t('sport.totalCalories'), value: `${Math.round(totalCalories)} ${t('sport.calorieUnit')}`, color: 'text-mode-eating' },
+    { label: t('sport.totalCalories'), value: `${Math.round(totalCalories).toLocaleString()} ${t('sport.calorieUnit')}`, color: 'text-mode-eating' },
     { label: t('sport.entryCount'), value: t('sport.countUnit', { count: entryCount }), color: 'text-gray-800 dark:text-gray-100' },
     { label: t('sport.avgPerSession'), value: formatDuration(Math.round(averageDurationPerEntry)), color: 'text-calm-accent' },
   ]
