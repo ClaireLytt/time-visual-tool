@@ -27,10 +27,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    return onAuthStateChanged(auth, (u) => {
+    const unsubscribe = onAuthStateChanged(auth, (u) => {
       setUser(u)
       setLoading(false)
     })
+    // Fallback: if Firebase doesn't respond within 5s (e.g. network issues),
+    // stop loading so the user can see the login page instead of spinning forever.
+    const timeout = setTimeout(() => setLoading(false), 5000)
+    return () => { unsubscribe(); clearTimeout(timeout) }
   }, [])
 
   const login = useCallback(async (email: string, password: string) => {
