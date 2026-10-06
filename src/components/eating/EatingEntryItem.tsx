@@ -37,13 +37,13 @@ const EatingEntryItem = memo(function EatingEntryItem({ entry, onDelete, onEdit 
         </div>
       </div>
 
-      <span className="text-sm font-semibold shrink-0 text-amber-600 dark:text-amber-400">
+      <span className="text-sm font-semibold shrink-0 text-mode-eating">
         {formatCalories(entry.calories)}
       </span>
 
       <button
         onClick={() => onEdit(entry)}
-        className="opacity-70 hover:opacity-100 focus-visible:opacity-100 p-1 text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 transition-all"
+        className="opacity-70 hover:opacity-100 focus-visible:opacity-100 p-1 text-gray-400 dark:text-gray-500 hover:text-calm-accent transition-all"
         aria-label={t('entry.editAriaLabel', { name: displayName })}
       >
         <EditIcon />

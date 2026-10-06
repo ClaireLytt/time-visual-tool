@@ -12,6 +12,7 @@ import EatingEntryForm from './EatingEntryForm'
 import EatingEntryList from './EatingEntryList'
 import EatingProportionChart from './EatingProportionChart'
 import EatingDailyChart from './EatingDailyChart'
+import AnimatedCollapse from '../common/AnimatedCollapse'
 import { exportEatingToFile, readEatingImportFile } from '../../utils/eatingTransfer'
 import { LATE_NIGHT_CATEGORY_NAME } from '../../constants/eating'
 import type { EatingEntry, EatingStorageData, EatingViewMode } from '../../types/eating'
@@ -73,7 +74,7 @@ function EatingDashboard() {
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-mode-eating border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -96,7 +97,7 @@ function EatingDashboard() {
           </button>
         </div>
 
-        {showSettings && (
+        <AnimatedCollapse open={showSettings}>
           <div className="space-y-4 mb-4">
             <CategoryManager
               categories={categories}
@@ -113,7 +114,7 @@ function EatingDashboard() {
               getCounts={(d: EatingStorageData) => ({ entries: d.entries.length, categories: d.categories.length })}
             />
           </div>
-        )}
+        </AnimatedCollapse>
 
         <DatePicker selectedDate={selectedDate} onDateChange={handleDateChange} viewMode={viewMode} />
         <EatingSummaryCard

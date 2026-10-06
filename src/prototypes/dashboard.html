@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Prototype Picker</title>
+<style>
+/* ===== RESET ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+/* ===== PICKER (verbatim from PICKER.md) ===== */
+.proto-picker {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(10, 10, 10, 0.82);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  backdrop-filter: blur(12px) saturate(1.4);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+    0 8px 24px rgba(0, 0, 0, 0.24),
+    0 2px 6px rgba(0, 0, 0, 0.12);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.proto-picker-highlight {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  will-change: transform;
+}
+.proto-picker[data-ready] .proto-picker-highlight {
+  transition:
+    transform 250ms cubic-bezier(0.23, 1, 0.32, 1),
+    width 250ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .proto-picker[data-ready] .proto-picker-highlight { transition: none; }
+}
+.proto-picker-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+  font: inherit;
+  cursor: pointer;
+  transition: color 150ms ease-out;
+}
+.proto-picker-item:hover { color: rgba(255, 255, 255, 0.85); }
+.proto-picker-item:active { transform: scale(0.97); }
+.proto-picker-item:focus-visible { outline: 2px solid rgba(255, 255, 255, 0.4); outline-offset: 2px; }
+.proto-picker-item[data-active] { color: #fff; }
+.proto-picker-divider {
+  width: 1px;
+  height: 16px;
+  margin: 0 4px;
+  background: rgba(255, 255, 255, 0.12);
+}
+.proto-picker-replay { padding: 0 10px; font-size: 14px; }
+
+/* ===== STAGE ===== */
+#stage { min-height: 100vh; }
+
+/* ===== SHARED VARIABLES ===== */
+:root {
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+/* ===== VARIANT: CALM ===== */
+.calm { background: #f8f8f6; color: #2d2d2d; font-family: var(--font); }
+.calm .shell { max-width: 900px; margin: 0 auto; padding: 32px 24px 100px; }
+.calm .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
+.calm .header h1 { font-size: 22px; font-weight: 600; color: #3d3d3d; letter-spacing: -0.3px; }
+.calm .header .subtitle { font-size: 13px; color: #999; margin-top: 2px; }
+.calm .date-nav { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
+.calm .date-nav button { background: none; border: none; cursor: pointer; color: #bbb; font-size: 18px; padding: 6px; border-radius: 8px; transition: background 0.15s ease-out, color 0.15s ease-out; }
+.calm .date-nav button:hover { background: rgba(0,0,0,0.04); color: #666; }
+.calm .date-nav .date-label { font-size: 15px; font-weight: 500; color: #555; }
+.calm .date-nav .today-btn { font-size: 12px; color: #8ba4c4; background: #eef3fa; border: none; padding: 4px 12px; border-radius: 999px; cursor: pointer; transition: background 0.15s ease-out; }
+.calm .date-nav .today-btn:hover { background: #dde8f5; }
+
+.calm .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+.calm .stat-card { background: #fff; border: 1px solid #ececec; border-radius: 16px; padding: 20px; text-align: center; }
+.calm .stat-card .value { font-size: 28px; font-weight: 600; color: #3d3d3d; letter-spacing: -0.5px; }
+.calm .stat-card .label { font-size: 12px; color: #aaa; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.calm .content { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+.calm .form-card { background: #fff; border: 1px solid #ececec; border-radius: 16px; padding: 24px; }
+.calm .form-card h3 { font-size: 14px; font-weight: 600; color: #666; margin-bottom: 16px; }
+.calm .field { margin-bottom: 14px; }
+.calm .field label { display: block; font-size: 12px; color: #999; margin-bottom: 6px; }
+.calm .field input, .calm .field select { width: 100%; padding: 10px 14px; border: 1px solid #e5e5e5; border-radius: 10px; font-size: 14px; background: #fafaf9; color: #3d3d3d; outline: none; transition: border-color 0.15s ease-out; }
+.calm .field input:focus, .calm .field select:focus { border-color: #8ba4c4; }
+.calm .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.calm .submit-btn { width: 100%; padding: 11px; background: #6b8db5; color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.15s ease-out; }
+.calm .submit-btn:hover { background: #5a7da5; }
+
+.calm .entries { margin-top: 20px; }
+.calm .entry { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; transition: background 0.15s ease-out; }
+.calm .entry:hover { background: rgba(0,0,0,0.02); }
+.calm .entry .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.calm .entry .info { flex: 1; }
+.calm .entry .name { font-size: 14px; color: #3d3d3d; font-weight: 500; }
+.calm .entry .meta { font-size: 12px; color: #bbb; margin-top: 2px; }
+.calm .entry .duration { font-size: 14px; font-weight: 500; color: #666; }
+
+.calm .chart-card { background: #fff; border: 1px solid #ececec; border-radius: 16px; padding: 24px; height: fit-content; }
+.calm .chart-card h3 { font-size: 14px; font-weight: 600; color: #666; margin-bottom: 20px; }
+.calm .donut-placeholder { width: 180px; height: 180px; margin: 0 auto 20px; border-radius: 50%; background: conic-gradient(#8ba4c4 0% 35%, #c4a88b 35% 55%, #9bc4a4 55% 72%, #c4b08b 72% 85%, #b5b5b5 85% 100%); position: relative; }
+.calm .donut-placeholder::after { content: '4h 30m'; position: absolute; inset: 30px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 600; color: #3d3d3d; }
+.calm .legend { display: flex; flex-direction: column; gap: 8px; }
+.calm .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #666; }
+.calm .legend-item .swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.calm .legend-item .pct { margin-left: auto; color: #aaa; }
+
+/* ===== VARIANT: DENSE ===== */
+.dense { background: #0f1117; color: #e0e0e8; font-family: var(--font); }
+.dense .shell { max-width: 1060px; margin: 0 auto; padding: 20px 20px 90px; }
+.dense .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid #1e2030; padding-bottom: 12px; }
+.dense .top-bar h1 { font-size: 16px; font-weight: 600; color: #fff; }
+.dense .date-nav { display: flex; align-items: center; gap: 8px; }
+.dense .date-nav button { background: #1a1c2a; border: 1px solid #2a2d3e; color: #888; font-size: 13px; padding: 4px 8px; border-radius: 6px; cursor: pointer; transition: background 0.1s ease-out, color 0.1s ease-out; }
+.dense .date-nav button:hover { background: #22253a; color: #bbb; }
+.dense .date-nav .date-label { font-size: 13px; font-weight: 500; color: #ccc; }
+.dense .date-nav .today-btn { font-size: 11px; color: #6c8cff; background: rgba(108,140,255,0.1); border: 1px solid rgba(108,140,255,0.2); padding: 3px 10px; border-radius: 4px; cursor: pointer; }
+
+.dense .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+.dense .stat-card { background: #161826; border: 1px solid #1e2030; border-radius: 8px; padding: 12px 14px; }
+.dense .stat-card .value { font-size: 22px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; }
+.dense .stat-card .label { font-size: 11px; color: #666; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.4px; }
+.dense .stat-card .change { font-size: 11px; color: #4ade80; margin-top: 4px; }
+
+.dense .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.dense .panel { background: #161826; border: 1px solid #1e2030; border-radius: 8px; padding: 14px; }
+.dense .panel h3 { font-size: 12px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 12px; }
+
+.dense .field { margin-bottom: 10px; }
+.dense .field label { display: block; font-size: 11px; color: #555; margin-bottom: 4px; }
+.dense .field input, .dense .field select { width: 100%; padding: 7px 10px; border: 1px solid #2a2d3e; border-radius: 6px; font-size: 13px; background: #1a1c2a; color: #e0e0e8; outline: none; transition: border-color 0.1s ease-out; }
+.dense .field input:focus, .dense .field select:focus { border-color: #6c8cff; }
+.dense .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.dense .submit-btn { width: 100%; padding: 8px; background: #6c8cff; color: #fff; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.1s ease-out; }
+.dense .submit-btn:hover { background: #5a7aee; }
+
+.dense .table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+.dense .table th { text-align: left; font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 0.3px; padding: 6px 8px; border-bottom: 1px solid #1e2030; font-weight: 500; }
+.dense .table td { padding: 8px; font-size: 13px; border-bottom: 1px solid #13141f; }
+.dense .table tr:hover td { background: rgba(255,255,255,0.02); }
+.dense .table .cat-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+.dense .table .dur { font-variant-numeric: tabular-nums; color: #bbb; }
+
+.dense .donut-placeholder { width: 140px; height: 140px; margin: 0 auto 14px; border-radius: 50%; background: conic-gradient(#6c8cff 0% 35%, #ff8c6c 35% 55%, #4ade80 55% 72%, #fbbf24 72% 85%, #888 85% 100%); position: relative; }
+.dense .donut-placeholder::after { content: '4h 30m'; position: absolute; inset: 26px; background: #161826; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #fff; }
+.dense .mini-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; }
+.dense .mini-legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #888; }
+.dense .mini-legend-item .swatch { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
+.dense .mini-legend-item .pct { margin-left: auto; font-variant-numeric: tabular-nums; }
+
+/* ===== VARIANT: VIBRANT ===== */
+.vibrant { background: #fafbff; color: #1a1a2e; font-family: var(--font); }
+.vibrant .shell { max-width: 920px; margin: 0 auto; padding: 28px 24px 100px; }
+.vibrant .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+.vibrant .header h1 { font-size: 24px; font-weight: 700; color: #1a1a2e; letter-spacing: -0.5px; }
+.vibrant .header .badge { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; font-size: 12px; font-weight: 600; padding: 5px 14px; border-radius: 999px; }
+.vibrant .date-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.vibrant .date-nav button { background: #fff; border: 1px solid #e8e8f0; cursor: pointer; color: #666; font-size: 16px; padding: 8px 12px; border-radius: 12px; transition: all 0.15s ease-out; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+.vibrant .date-nav button:hover { border-color: #c5c5e0; box-shadow: 0 2px 8px rgba(100,100,200,0.1); }
+.vibrant .date-nav .date-label { font-size: 16px; font-weight: 600; color: #1a1a2e; }
+.vibrant .date-nav .today-btn { font-size: 13px; color: #fff; background: linear-gradient(135deg, #667eea, #764ba2); border: none; padding: 6px 18px; border-radius: 999px; cursor: pointer; font-weight: 500; box-shadow: 0 2px 12px rgba(102,126,234,0.3); transition: box-shadow 0.15s ease-out, transform 0.1s ease-out; }
+.vibrant .date-nav .today-btn:hover { box-shadow: 0 4px 20px rgba(102,126,234,0.4); }
+.vibrant .date-nav .today-btn:active { transform: scale(0.97); }
+
+.vibrant .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
+.vibrant .stat-card { background: #fff; border: 1px solid #eeeef5; border-radius: 18px; padding: 20px; box-shadow: 0 2px 12px rgba(100,100,200,0.06); position: relative; overflow: hidden; }
+.vibrant .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.vibrant .stat-card:nth-child(1)::before { background: linear-gradient(90deg, #667eea, #764ba2); }
+.vibrant .stat-card:nth-child(2)::before { background: linear-gradient(90deg, #f093fb, #f5576c); }
+.vibrant .stat-card:nth-child(3)::before { background: linear-gradient(90deg, #4facfe, #00f2fe); }
+.vibrant .stat-card .value { font-size: 30px; font-weight: 700; color: #1a1a2e; letter-spacing: -1px; }
+.vibrant .stat-card .label { font-size: 13px; color: #888; margin-top: 4px; font-weight: 500; }
+
+.vibrant .content { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
+.vibrant .form-card { background: #fff; border: 1px solid #eeeef5; border-radius: 18px; padding: 24px; box-shadow: 0 2px 12px rgba(100,100,200,0.06); }
+.vibrant .form-card h3 { font-size: 15px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px; }
+.vibrant .field { margin-bottom: 14px; }
+.vibrant .field label { display: block; font-size: 13px; color: #888; margin-bottom: 6px; font-weight: 500; }
+.vibrant .field input, .vibrant .field select { width: 100%; padding: 11px 14px; border: 1.5px solid #e8e8f0; border-radius: 12px; font-size: 14px; background: #fafaff; color: #1a1a2e; outline: none; transition: border-color 0.15s ease-out, box-shadow 0.15s ease-out; }
+.vibrant .field input:focus, .vibrant .field select:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.12); }
+.vibrant .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.vibrant .submit-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 12px rgba(102,126,234,0.3); transition: box-shadow 0.15s ease-out, transform 0.1s ease-out; }
+.vibrant .submit-btn:hover { box-shadow: 0 4px 20px rgba(102,126,234,0.4); }
+.vibrant .submit-btn:active { transform: scale(0.98); }
+
+.vibrant .entries { margin-top: 18px; }
+.vibrant .entry { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; transition: background 0.15s ease-out; }
+.vibrant .entry:hover { background: #f5f5ff; }
+.vibrant .entry .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 6px rgba(0,0,0,0.1); }
+.vibrant .entry .info { flex: 1; }
+.vibrant .entry .name { font-size: 14px; color: #1a1a2e; font-weight: 600; }
+.vibrant .entry .meta { font-size: 12px; color: #aaa; margin-top: 2px; }
+.vibrant .entry .duration { font-size: 14px; font-weight: 600; color: #667eea; }
+
+.vibrant .chart-card { background: #fff; border: 1px solid #eeeef5; border-radius: 18px; padding: 24px; height: fit-content; box-shadow: 0 2px 12px rgba(100,100,200,0.06); }
+.vibrant .chart-card h3 { font-size: 15px; font-weight: 700; color: #1a1a2e; margin-bottom: 20px; }
+.vibrant .donut-placeholder { width: 170px; height: 170px; margin: 0 auto 20px; border-radius: 50%; background: conic-gradient(#667eea 0% 35%, #f5576c 35% 55%, #4facfe 55% 72%, #fbbf24 72% 85%, #a78bfa 85% 100%); position: relative; box-shadow: 0 4px 20px rgba(100,100,200,0.15); }
+.vibrant .donut-placeholder::after { content: '4h 30m'; position: absolute; inset: 28px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: #1a1a2e; }
+.vibrant .legend { display: flex; flex-direction: column; gap: 8px; }
+.vibrant .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #555; font-weight: 500; }
+.vibrant .legend-item .swatch { width: 10px; height: 10px; border-radius: 4px; flex-shrink: 0; }
+.vibrant .legend-item .pct { margin-left: auto; color: #aaa; font-weight: 400; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .calm .content, .vibrant .content { grid-template-columns: 1fr; }
+  .dense .grid { grid-template-columns: 1fr; }
+  .dense .stats { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<div id="stage"></div>
+
+<nav class="proto-picker" aria-label="Prototype variants">
+  <span class="proto-picker-highlight" aria-hidden="true"></span>
+  <button class="proto-picker-item" data-active aria-current="true">Calm</button>
+  <button class="proto-picker-item">Dense</button>
+  <button class="proto-picker-item">Vibrant</button>
+</nav>
+
+<script>
+// Variant data
+const ENTRIES = [
+  { name: '写前端代码', cat: '工作', dur: '1h 45m', color: '#3b82f6' },
+  { name: '阅读《设计心理学》', cat: '阅读', dur: '0h 50m', color: '#f59e0b' },
+  { name: '慢跑 5km', cat: '运动', dur: '0h 35m', color: '#10b981' },
+  { name: '复习线性代数', cat: '学习', dur: '1h 20m', color: '#8b5cf6' },
+];
+const LEGEND = [
+  { name: '工作', pct: '39%', color: '#3b82f6' },
+  { name: '学习', pct: '29%', color: '#8b5cf6' },
+  { name: '运动', pct: '12%', color: '#10b981' },
+  { name: '阅读', pct: '18%', color: '#f59e0b' },
+  { name: '休息', pct: '2%', color: '#6b7280' },
+];
+
+function entriesHTML(cls) {
+  return ENTRIES.map(e => `
+    <div class="entry">
+      <span class="dot" style="background:${e.color}"></span>
+      <div class="info">
+        <div class="name">${e.name}</div>
+        <div class="meta">${e.cat}</div>
+      </div>
+      <span class="duration">${e.dur}</span>
+    </div>
+  `).join('');
+}
+
+function legendHTML(cls) {
+  return LEGEND.map(l => `
+    <div class="${cls}-item">
+      <span class="swatch" style="background:${l.color}"></span>
+      <span>${l.name}</span>
+      <span class="pct">${l.pct}</span>
+    </div>
+  `).join('');
+}
+
+function formFieldsHTML() {
+  return `
+    <div class="field">
+      <label>活动名称</label>
+      <input type="text" placeholder="你在做什么？" />
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>时长</label>
+        <input type="text" placeholder="1:30" />
+      </div>
+      <div class="field">
+        <label>权重</label>
+        <input type="text" placeholder="1.0" />
+      </div>
+    </div>
+    <div class="field">
+      <label>分类</label>
+      <select>
+        <option>工作</option><option>学习</option><option>运动</option><option>阅读</option><option>休息</option><option>其他</option>
+      </select>
+    </div>
+    <button class="submit-btn" type="button">添加记录</button>
+  `;
+}
+
+const variants = [
+  // ===== CALM =====
+  () => `<div class="calm"><div class="shell">
+    <div class="header">
+      <div>
+        <h1>⏱ 时间记录</h1>
+        <div class="subtitle">记录你的每一天</div>
+      </div>
+    </div>
+    <div class="date-nav">
+      <button>‹</button>
+      <span class="date-label">2026年10月6日 · 周二</span>
+      <button>›</button>
+      <button class="today-btn">今天</button>
+    </div>
+    <div class="stats">
+      <div class="stat-card"><div class="value">4h 30m</div><div class="label">总时长</div></div>
+      <div class="stat-card"><div class="value">5h 15m</div><div class="label">加权时长</div></div>
+      <div class="stat-card"><div class="value">4</div><div class="label">记录条数</div></div>
+    </div>
+    <div class="content">
+      <div>
+        <div class="form-card">
+          <h3>添加记录</h3>
+          ${formFieldsHTML()}
+        </div>
+        <div class="entries">${entriesHTML('calm')}</div>
+      </div>
+      <div class="chart-card">
+        <h3>时间分布</h3>
+        <div class="donut-placeholder"></div>
+        <div class="legend">${legendHTML('legend')}</div>
+      </div>
+    </div>
+  </div></div>`,
+
+  // ===== DENSE =====
+  () => `<div class="dense"><div class="shell">
+    <div class="top-bar">
+      <h1>⏱ 时间追踪</h1>
+      <div class="date-nav">
+        <button>‹</button>
+        <span class="date-label">2026-10-06 周二</span>
+        <button>›</button>
+        <button class="today-btn">Today</button>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat-card"><div class="value">4:30</div><div class="label">总时长</div><div class="change">↑ 12%</div></div>
+      <div class="stat-card"><div class="value">5:15</div><div class="label">加权</div><div class="change">↑ 8%</div></div>
+      <div class="stat-card"><div class="value">4</div><div class="label">条目数</div></div>
+      <div class="stat-card"><div class="value">67%</div><div class="label">效率</div><div class="change">↑ 5%</div></div>
+    </div>
+    <div class="grid">
+      <div class="panel">
+        <h3>快速录入</h3>
+        ${formFieldsHTML()}
+        <h3 style="margin-top:16px">今日记录</h3>
+        <table class="table">
+          <thead><tr><th>活动</th><th>分类</th><th>时长</th></tr></thead>
+          <tbody>
+            ${ENTRIES.map(e => `<tr><td>${e.name}</td><td><span class="cat-dot" style="background:${e.color}"></span>${e.cat}</td><td class="dur">${e.dur}</td></tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="panel">
+        <h3>时间分布</h3>
+        <div class="donut-placeholder"></div>
+        <div class="mini-legend">
+          ${LEGEND.map(l => `<div class="mini-legend-item"><span class="swatch" style="background:${l.color}"></span><span>${l.name}</span><span class="pct">${l.pct}</span></div>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div></div>`,
+
+  // ===== VIBRANT =====
+  () => `<div class="vibrant"><div class="shell">
+    <div class="header">
+      <h1>⏱ 时间记录</h1>
+      <span class="badge">🔥 连续记录 12 天</span>
+    </div>
+    <div class="date-nav">
+      <button>‹</button>
+      <span class="date-label">2026年10月6日 · 周二</span>
+      <button>›</button>
+      <button class="today-btn">今天</button>
+    </div>
+    <div class="stats">
+      <div class="stat-card"><div class="value">4h 30m</div><div class="label">总时长</div></div>
+      <div class="stat-card"><div class="value">5h 15m</div><div class="label">加权时长</div></div>
+      <div class="stat-card"><div class="value">4</div><div class="label">记录条数</div></div>
+    </div>
+    <div class="content">
+      <div>
+        <div class="form-card">
+          <h3>✏️ 添加记录</h3>
+          ${formFieldsHTML()}
+        </div>
+        <div class="entries">${entriesHTML('vibrant')}</div>
+      </div>
+      <div class="chart-card">
+        <h3>📊 时间分布</h3>
+        <div class="donut-placeholder"></div>
+        <div class="legend">${legendHTML('legend')}</div>
+      </div>
+    </div>
+  </div></div>`
+];
+
+// ===== PICKER WIRING (verbatim from PICKER.md) =====
+const stage = document.getElementById('stage');
+const picker = document.querySelector('.proto-picker');
+const highlight = picker.querySelector('.proto-picker-highlight');
+const items = [...picker.querySelectorAll('.proto-picker-item:not(.proto-picker-replay)')];
+let current = 0;
+
+function moveHighlight() {
+  const el = items[current];
+  highlight.style.width = el.offsetWidth + 'px';
+  highlight.style.transform = `translateX(${el.offsetLeft}px)`;
+}
+
+function mount(i) {
+  stage.innerHTML = '';
+  requestAnimationFrame(() => { stage.innerHTML = variants[i](); });
+}
+
+function setActive(i) {
+  if (i < 0 || i >= variants.length) return;
+  current = i;
+  items.forEach((el, j) => {
+    el.toggleAttribute('data-active', j === i);
+    if (j === i) el.setAttribute('aria-current', 'true');
+    else el.removeAttribute('aria-current');
+  });
+  moveHighlight();
+  const url = new URL(location);
+  url.searchParams.set('v', i + 1);
+  history.replaceState(null, '', url);
+  mount(i);
+}
+
+items.forEach((el, i) => el.addEventListener('click', () => setActive(i)));
+window.addEventListener('resize', moveHighlight);
+
+document.addEventListener('keydown', (e) => {
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const num = parseInt(e.key, 10);
+  if (num >= 1 && num <= variants.length) setActive(num - 1);
+  else if (e.key === 'ArrowRight') setActive((current + 1) % variants.length);
+  else if (e.key === 'ArrowLeft') setActive((current - 1 + variants.length) % variants.length);
+});
+
+setActive((parseInt(new URLSearchParams(location.search).get('v'), 10) || 1) - 1);
+requestAnimationFrame(() => requestAnimationFrame(() => picker.setAttribute('data-ready', '')));
+</script>
+</body>
+</html>

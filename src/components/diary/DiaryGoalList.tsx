@@ -30,7 +30,7 @@ function DiaryGoalList({ goals, onChange, inputLabel }: DiaryGoalListProps) {
                 id={`diary-goal-${goal.id}`}
                 checked={goal.done}
                 onChange={() => onChange(goals.map(g => g.id === goal.id ? { ...g, done: !g.done } : g))}
-                className="w-5 h-5 accent-purple-500 shrink-0"
+                className="w-5 h-5 accent-[#9b8db5] shrink-0"
               />
               <label
                 htmlFor={`diary-goal-${goal.id}`}
@@ -59,12 +59,12 @@ function DiaryGoalList({ goals, onChange, inputLabel }: DiaryGoalListProps) {
           onKeyDown={e => { if (e.key === 'Enter') addGoal() }}
           enterKeyHint="done"
           aria-label={inputLabel}
-          className="flex-1 min-w-0 px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl text-base sm:text-sm bg-gray-50 dark:bg-gray-700/60 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 dark:focus:ring-purple-500 focus:bg-white dark:focus:bg-gray-700 transition-colors"
+          className="flex-1 min-w-0 px-3 py-2 border border-calm-border dark:border-gray-600 rounded-xl text-base sm:text-sm bg-gray-50 dark:bg-gray-700/60 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-mode-diary focus:bg-white dark:focus:bg-gray-700 transition-colors"
         />
         <button
           onClick={addGoal}
           disabled={newGoalText.trim() === ''}
-          className="shrink-0 px-4 py-2 bg-purple-500 hover:bg-purple-600 active:bg-purple-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-base sm:text-sm font-medium rounded-xl transition-colors"
+          className="shrink-0 px-4 py-2 bg-mode-diary hover:opacity-90 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-base sm:text-sm font-medium rounded-xl transition-colors"
         >
           {t('diary.goalAdd')}
         </button>

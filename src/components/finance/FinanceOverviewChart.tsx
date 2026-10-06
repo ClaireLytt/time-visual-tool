@@ -16,19 +16,19 @@ function FinanceOverviewChart({ income, expense, balance }: FinanceOverviewChart
 
   const isOverspent = balance < 0
   const chartData = [
-    { name: t('finance.income'), value: income, color: '#10b981' },
-    { name: t('finance.expense'), value: expense, color: '#f43f5e' },
+    { name: t('finance.income'), value: income, color: '#7aab8e' },
+    { name: t('finance.expense'), value: expense, color: '#c47070' },
   ]
   const visibleData = chartData.filter(d => d.value > 0)
   const total = income + expense
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 p-4">
       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('finance.chartOverview')}</h3>
 
       {visibleData.length === 0 ? (
         <div className="p-6 text-center">
-          <div className="w-24 h-24 mx-auto mb-3 rounded-full border-4 border-dashed border-gray-200 dark:border-gray-600 flex items-center justify-center">
+          <div className="w-24 h-24 mx-auto mb-3 rounded-full border-4 border-dashed border-calm-border dark:border-gray-600 flex items-center justify-center">
             <WalletIcon className="w-8 h-8 text-gray-300 dark:text-gray-600" />
           </div>
           <p className="text-gray-400 dark:text-gray-500 text-sm">{t('chart.noData')}</p>
@@ -75,7 +75,7 @@ function FinanceOverviewChart({ income, expense, balance }: FinanceOverviewChart
                 y="55%"
                 textAnchor="middle"
                 dominantBaseline="middle"
-                fill={isOverspent ? '#dc2626' : (isDark ? '#e5e7eb' : '#1f2937')}
+                fill={isOverspent ? '#c47070' : (isDark ? '#e5e7eb' : '#1f2937')}
                 className="text-sm font-semibold"
               >
                 {formatAmount(balance)}

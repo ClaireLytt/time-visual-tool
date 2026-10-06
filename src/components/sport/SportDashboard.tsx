@@ -16,6 +16,7 @@ import SportReflectionEditor from './SportReflectionEditor'
 import SportReflectionList from './SportReflectionList'
 import SportYearReview from './SportYearReview'
 import { getPeriodKey, periodKeyToAnchorDate } from '../../utils/diaryPeriod'
+import AnimatedCollapse from '../common/AnimatedCollapse'
 import { exportSportToFile, readSportImportFile } from '../../utils/sportTransfer'
 import type { SportEntry, SportReflection, SportStorageData, SportViewMode } from '../../types/sport'
 
@@ -85,7 +86,7 @@ function SportDashboard() {
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-mode-sport border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -108,7 +109,7 @@ function SportDashboard() {
           </button>
         </div>
 
-        {showSettings && (
+        <AnimatedCollapse open={showSettings}>
           <div className="space-y-4 mb-4">
             <CategoryManager
               categories={categories}
@@ -126,7 +127,7 @@ function SportDashboard() {
               getCounts={(d: SportStorageData) => ({ entries: d.entries.length, categories: d.categories.length })}
             />
           </div>
-        )}
+        </AnimatedCollapse>
 
         <DatePicker selectedDate={selectedDate} onDateChange={handleDateChange} viewMode={viewMode} />
         <SportSummaryCard

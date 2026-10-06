@@ -24,37 +24,37 @@ function Header({ mode }: HeaderProps) {
   }
 
   return (
-    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm pt-[env(safe-area-inset-top)]">
+    <header className="bg-white dark:bg-gray-800 border-b border-calm-border dark:border-gray-700 pt-[env(safe-area-inset-top)]">
       <div className="max-w-5xl mx-auto px-4 py-4 flex flex-wrap items-center gap-3">
         {isSport ? (
-          <DumbbellIcon className="w-8 h-8 text-teal-500 shrink-0" />
+          <DumbbellIcon className="w-8 h-8 text-mode-sport shrink-0" />
         ) : isDiary ? (
-          <BookIcon className="w-8 h-8 text-purple-500 shrink-0" />
+          <BookIcon className="w-8 h-8 text-mode-diary shrink-0" />
         ) : isEating ? (
-          <UtensilsIcon className="w-8 h-8 text-amber-500 shrink-0" />
+          <UtensilsIcon className="w-8 h-8 text-mode-eating shrink-0" />
         ) : isFinance ? (
-          <WalletIcon className="w-8 h-8 text-green-500 shrink-0" />
+          <WalletIcon className="w-8 h-8 text-mode-finance shrink-0" />
         ) : (
-          <ClockIcon className="w-8 h-8 text-blue-500 shrink-0" />
+          <ClockIcon className="w-8 h-8 text-mode-time shrink-0" />
         )}
         <div className="flex-1 min-w-0">
           <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 truncate">
             {isSport ? t('sportApp.title') : isDiary ? t('diaryApp.title') : isEating ? t('eatingApp.title') : isFinance ? t('financeApp.title') : t('app.title')}
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+          <p className="text-sm text-calm-muted dark:text-gray-400 truncate">
             {isSport ? t('sportApp.subtitle') : isDiary ? t('diaryApp.subtitle') : isEating ? t('eatingApp.subtitle') : isFinance ? t('financeApp.subtitle') : t('app.subtitle')}
           </p>
         </div>
         <button
           onClick={toggleLang}
-          className="px-2 py-1 rounded-lg text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          className="px-2 py-1 rounded-lg text-sm text-calm-muted dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           aria-label={t('lang.label')}
         >
           {t('lang.toggle')}
         </button>
         <button
           onClick={cycleTheme}
-          className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          className="p-2 rounded-lg text-calm-muted dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           aria-label={t('theme.toggle', { mode: themeLabel })}
           title={themeLabel}
         >
@@ -81,13 +81,13 @@ function Header({ mode }: HeaderProps) {
             </span>
             <button
               onClick={switchAccount}
-              className="px-2 py-1 rounded-lg text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="px-2 py-1 rounded-lg text-sm text-calm-muted dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               {t('auth.switchAccount')}
             </button>
             <button
               onClick={logout}
-              className="px-2 py-1 rounded-lg text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="px-2 py-1 rounded-lg text-sm text-calm-muted dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               {t('auth.logout')}
             </button>

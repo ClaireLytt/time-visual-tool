@@ -12,6 +12,7 @@ import TimeProportionChart from '../charts/TimeProportionChart'
 import DailyBreakdownChart from '../charts/DailyBreakdownChart'
 import CategoryManager from '../categories/CategoryManager'
 import DataTransfer from '../settings/DataTransfer'
+import AnimatedCollapse from '../common/AnimatedCollapse'
 import { exportToFile, readImportFile } from '../../utils/dataTransfer'
 import type { TimeEntry, ViewMode, StorageData } from '../../types'
 
@@ -51,7 +52,7 @@ function Dashboard() {
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-calm-accent border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -74,7 +75,7 @@ function Dashboard() {
           </button>
         </div>
 
-        {showSettings && (
+        <AnimatedCollapse open={showSettings}>
           <div className="space-y-4 mb-4">
             <CategoryManager
               categories={categories}
@@ -91,7 +92,7 @@ function Dashboard() {
               getCounts={(d: StorageData) => ({ entries: d.entries.length, categories: d.categories.length })}
             />
           </div>
-        )}
+        </AnimatedCollapse>
 
         <DatePicker selectedDate={selectedDate} onDateChange={handleDateChange} viewMode={viewMode} />
         <DaySummaryCard

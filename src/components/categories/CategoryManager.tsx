@@ -85,14 +85,14 @@ function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete, onReo
   const isUsed = (name: string) => entries.some(e => e.category === name)
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 p-4">
       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">{t('category.title')}</h3>
 
       <div className="space-y-2 mb-3" onDragLeave={() => setDragOverIndex(null)}>
         {categories.map((cat, index) => (
           <div
             key={cat.name}
-            className={`flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 group ${dragOverIndex === index ? 'ring-2 ring-teal-400 dark:ring-teal-600' : ''}`}
+            className={`flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 group ${dragOverIndex === index ? 'ring-2 ring-mode-sport' : ''}`}
             draggable={!!onReorder && editingName !== cat.name}
             onDragStart={() => handleDragStart(index)}
             onDragOver={e => handleDragOver(e, index)}
@@ -117,7 +117,7 @@ function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete, onReo
                   aria-label={t('category.nameLabel')}
                   autoFocus
                 />
-                <button onClick={saveEdit} className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">{t('category.saveButton')}</button>
+                <button onClick={saveEdit} className="text-xs text-calm-accent hover:text-calm-accent-hover font-medium">{t('category.saveButton')}</button>
                 <button onClick={() => setEditingName(null)} className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">{t('category.cancelButton')}</button>
               </div>
             ) : (
@@ -131,14 +131,14 @@ function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete, onReo
                 <span className="flex-1 text-sm text-gray-700 dark:text-gray-200">
                   {t('category.names.' + cat.name, cat.name)}
                   {withKind && cat.kind && (
-                    <span className={`ml-2 text-[10px] px-1.5 py-0.5 rounded ${cat.kind === 'income' ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400' : 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400'}`}>
+                    <span className={`ml-2 text-[10px] px-1.5 py-0.5 rounded ${cat.kind === 'income' ? 'bg-mode-finance/15 text-mode-finance' : 'bg-[#c47070]/15 text-[#c47070]'}`}>
                       {t(cat.kind === 'income' ? 'finance.income' : 'finance.expense')}
                     </span>
                   )}
                 </span>
                 <button
                   onClick={() => startEdit(cat)}
-                  className="opacity-70 hover:opacity-100 focus-visible:opacity-100 p-1 text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 transition-all"
+                  className="opacity-70 hover:opacity-100 focus-visible:opacity-100 p-1 text-gray-400 dark:text-gray-500 hover:text-calm-accent transition-all"
                   aria-label={t('category.editAriaLabel', { name: cat.name })}
                 >
                   <EditIcon className="w-3.5 h-3.5" />
@@ -189,7 +189,7 @@ function CategoryManager({ categories, entries, onAdd, onUpdate, onDelete, onReo
         <button
           onClick={handleAdd}
           disabled={!newName.trim()}
-          className="px-3 py-1.5 bg-blue-500 text-white text-xs font-medium rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-3 py-1.5 bg-calm-accent text-white text-xs font-medium rounded-lg hover:bg-calm-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {t('category.addButton')}
         </button>

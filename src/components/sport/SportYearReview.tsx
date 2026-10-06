@@ -41,7 +41,7 @@ function SportYearReview({ allEntries, selectedDate }: SportYearReviewProps) {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 p-4">
       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
         {t('sport.yearReviewTitle')}
       </h3>
@@ -77,7 +77,7 @@ function SportYearReview({ allEntries, selectedDate }: SportYearReviewProps) {
               {newTypes.map(sport => (
                 <span
                   key={sport}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 ring-1 ring-teal-200 dark:ring-teal-700"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm bg-mode-sport/10 text-mode-sport ring-1 ring-mode-sport/30"
                 >
                   <span
                     className="w-2 h-2 rounded-full shrink-0"

@@ -39,7 +39,7 @@ function DataTransfer<T>({ data, onImport, onExport, readFile, getCounts }: Data
   const pendingCounts = pending !== null ? getCounts(pending) : { entries: 0, categories: 0 }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 p-4">
       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">{t('dataTransfer.title')}</h3>
 
       <div className="space-y-3">
@@ -71,7 +71,7 @@ function DataTransfer<T>({ data, onImport, onExport, readFile, getCounts }: Data
           />
           <button
             onClick={() => fileRef.current?.click()}
-            className="w-full py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-sm font-medium rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+            className="w-full py-2 bg-calm-accent-light text-calm-accent text-sm font-medium rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
             aria-label={t('dataTransfer.importFileLabel')}
           >
             {t('dataTransfer.importButton')}
@@ -79,7 +79,7 @@ function DataTransfer<T>({ data, onImport, onExport, readFile, getCounts }: Data
         </div>
 
         {status && (
-          <p className={`text-xs ${status.type === 'success' ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`} role="status">
+          <p className={`text-xs ${status.type === 'success' ? 'text-mode-finance' : 'text-red-500 dark:text-red-400'}`} role="status">
             {status.message}
           </p>
         )}

@@ -13,6 +13,7 @@ import FinanceEntryList from './FinanceEntryList'
 import FinanceProportionChart from './FinanceProportionChart'
 import FinanceOverviewChart from './FinanceOverviewChart'
 import FinanceDailyChart from './FinanceDailyChart'
+import AnimatedCollapse from '../common/AnimatedCollapse'
 import { exportFinanceToFile, readFinanceImportFile } from '../../utils/financeTransfer'
 import type { FinanceEntry, FinanceStorageData, FinanceViewMode } from '../../types/finance'
 
@@ -62,7 +63,7 @@ function FinanceDashboard() {
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-mode-finance border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -85,7 +86,7 @@ function FinanceDashboard() {
           </button>
         </div>
 
-        {showSettings && (
+        <AnimatedCollapse open={showSettings}>
           <div className="space-y-4 mb-4">
             <CategoryManager
               categories={categories}
@@ -103,7 +104,7 @@ function FinanceDashboard() {
               getCounts={(d: FinanceStorageData) => ({ entries: d.entries.length, categories: d.categories.length })}
             />
           </div>
-        )}
+        </AnimatedCollapse>
 
         <DatePicker selectedDate={selectedDate} onDateChange={handleDateChange} viewMode={viewMode} />
         <FinanceSummaryCard

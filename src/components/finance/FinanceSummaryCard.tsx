@@ -13,12 +13,12 @@ const FinanceSummaryCard = memo(function FinanceSummaryCard({ income, expense, b
   const { t } = useTranslation()
 
   const stats = [
-    { label: t('finance.income'), value: formatAmount(income), color: 'text-green-600 dark:text-green-400' },
-    { label: t('finance.expense'), value: formatAmount(expense), color: 'text-rose-600 dark:text-rose-400' },
+    { label: t('finance.income'), value: formatAmount(income), color: 'text-mode-finance' },
+    { label: t('finance.expense'), value: formatAmount(expense), color: 'text-[#c47070]' },
     {
       label: t('finance.balance'),
       value: formatAmount(balance),
-      color: balance >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-rose-600 dark:text-rose-400',
+      color: balance >= 0 ? 'text-calm-accent' : 'text-[#c47070]',
     },
     { label: t('summary.entryCount'), value: t('finance.countUnit', { count: entryCount }), color: 'text-gray-800 dark:text-gray-100' },
   ]
@@ -26,7 +26,7 @@ const FinanceSummaryCard = memo(function FinanceSummaryCard({ income, expense, b
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
       {stats.map(stat => (
-        <div key={stat.label} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-3 text-center">
+        <div key={stat.label} className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 p-3 text-center">
           <p className={`text-lg font-bold ${stat.color}`}>{stat.value}</p>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{stat.label}</p>
         </div>

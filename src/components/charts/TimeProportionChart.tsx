@@ -23,8 +23,8 @@ function TimeProportionChart({ categoryBreakdown, totalMinutes }: TimeProportion
 
   if (chartData.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center">
-        <div className="w-24 h-24 mx-auto mb-3 rounded-full border-4 border-dashed border-gray-200 dark:border-gray-600 flex items-center justify-center">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 p-6 text-center">
+        <div className="w-24 h-24 mx-auto mb-3 rounded-full border-4 border-dashed border-calm-border dark:border-gray-600 flex items-center justify-center">
           <ClockIcon className="w-8 h-8 text-gray-300 dark:text-gray-600" />
         </div>
         <p className="text-gray-400 dark:text-gray-500 text-sm">{t('chart.noData')}</p>
@@ -33,7 +33,7 @@ function TimeProportionChart({ categoryBreakdown, totalMinutes }: TimeProportion
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 p-4">
       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('chart.proportion')}</h3>
 
       <ResponsiveContainer width="100%" height={220}>

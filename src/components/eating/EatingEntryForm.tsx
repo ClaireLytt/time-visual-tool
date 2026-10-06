@@ -118,7 +118,7 @@ function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpda
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-4">
+    <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 p-4 mb-4">
       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
         {isEditing ? t('eating.editTitle') : t('eating.addTitle')}
       </h3>
@@ -147,7 +147,7 @@ function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpda
             inputMode="decimal"
           />
           {showCalcResult && (
-            <p className="text-xs text-blue-500 dark:text-blue-400 mt-1" aria-live="polite">
+            <p className="text-xs text-calm-accent mt-1" aria-live="polite">
               = {formatCalories(parsedCalories)}
             </p>
           )}
@@ -193,20 +193,20 @@ function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpda
         <button
           type="button"
           onClick={() => setShowFoodSearch(s => !s)}
-          className="text-xs text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
+          className="text-xs text-mode-eating hover:opacity-80 transition-colors"
           aria-expanded={showFoodSearch}
         >
           {t('eating.foodSearch')} {showFoodSearch ? '▲' : '▼'}
         </button>
 
         {showFoodSearch && (
-          <div className="mt-2 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
+          <div className="mt-2 border border-calm-border dark:border-gray-600 rounded-lg overflow-hidden">
             <input
               type="text"
               value={foodQuery}
               onChange={e => setFoodQuery(e.target.value)}
               placeholder={t('eating.foodSearchPlaceholder')}
-              className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-600 focus:outline-none"
+              className="w-full px-3 py-2 text-base sm:text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-b border-calm-border dark:border-gray-600 focus:outline-none"
             />
             <div className="max-h-48 overflow-y-auto">
               {filteredFoods.length === 0 ? (
@@ -229,13 +229,13 @@ function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpda
                 ))
               )}
             </div>
-            <div className="px-3 py-1.5 border-t border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 flex items-center justify-between">
+            <div className="px-3 py-1.5 border-t border-calm-border dark:border-gray-600 bg-gray-50 dark:bg-gray-700 flex items-center justify-between">
               <span className="text-xs text-gray-400 dark:text-gray-500">{t('eating.foodSearchHint')}</span>
               <a
                 href="https://www.boohee.com/food/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-blue-500 dark:text-blue-400 hover:underline"
+                className="text-xs text-calm-accent hover:underline"
               >
                 {t('eating.calorieRef')} → {t('eating.calorieRefSite')}
               </a>
@@ -249,7 +249,7 @@ function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpda
       <div className={isEditing ? 'flex gap-2' : ''}>
         <button
           type="submit"
-          className={`${isEditing ? 'flex-1' : 'w-full'} py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-lg transition-colors`}
+          className={`${isEditing ? 'flex-1' : 'w-full'} py-2 bg-mode-eating hover:opacity-90 text-white text-sm font-medium rounded-lg transition-colors`}
         >
           {isEditing ? t('entry.saveButton') : t('eating.addButton')}
         </button>

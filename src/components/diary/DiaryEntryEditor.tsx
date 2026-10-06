@@ -19,7 +19,7 @@ interface DiaryEntryEditorProps {
   onDelete: (id: string) => void
 }
 
-const TEXTAREA_CLASS = 'w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-base sm:text-sm leading-relaxed bg-gray-50 dark:bg-gray-700/60 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 dark:focus:ring-purple-500 focus:bg-white dark:focus:bg-gray-700 resize-none transition-colors'
+const TEXTAREA_CLASS = 'w-full px-3 py-2.5 border border-calm-border dark:border-gray-600 rounded-xl text-base sm:text-sm leading-relaxed bg-gray-50 dark:bg-gray-700/60 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-mode-diary focus:bg-white dark:focus:bg-gray-700 resize-none transition-colors'
 
 const LABEL_CLASS = 'block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1.5'
 
@@ -59,7 +59,7 @@ function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete }: Di
     : null
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-5">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 p-4 sm:p-5">
       <h3 className="text-base font-bold text-gray-800 dark:text-gray-100 mb-4">
         {t(`diary.editorTitle.${periodType}`)}
       </h3>
@@ -124,7 +124,7 @@ function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete }: Di
               goals: isDaily ? [] : goals,
             })}
             disabled={!canSave}
-            className="w-full sm:w-auto px-5 py-2.5 sm:py-2 bg-purple-500 hover:bg-purple-600 active:bg-purple-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-base sm:text-sm font-medium rounded-xl transition-colors"
+            className="w-full sm:w-auto px-5 py-2.5 sm:py-2 bg-mode-diary hover:opacity-90 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-base sm:text-sm font-medium rounded-xl transition-colors"
           >
             {t('diary.saveButton')}
           </button>

@@ -100,7 +100,7 @@ function DatePicker({ selectedDate, onDateChange, viewMode }: DatePickerProps) {
       {!isCurrent() && (
         <button
           onClick={goToNow}
-          className="ml-2 px-3 py-1 text-sm bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50"
+          className="ml-2 px-3 py-1 text-sm bg-calm-accent-light text-calm-accent rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50"
         >
           {labels.today}
         </button>

@@ -14,7 +14,7 @@ function ViewModeToggle<M extends ExtendedViewMode>({ viewMode, onViewModeChange
   const modeList = (modes ?? DEFAULT_MODES) as readonly M[]
 
   return (
-    <div className="flex rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 w-fit" role="group" aria-label={t('viewMode.label')}>
+    <div className="flex rounded-lg overflow-hidden border border-calm-border dark:border-gray-700 w-fit" role="group" aria-label={t('viewMode.label')}>
       {modeList.map(mode => (
         <button
           key={mode}
@@ -22,7 +22,7 @@ function ViewModeToggle<M extends ExtendedViewMode>({ viewMode, onViewModeChange
           aria-pressed={viewMode === mode}
           className={`px-3 sm:px-4 py-1.5 text-sm font-medium transition-colors ${
             viewMode === mode
-              ? 'bg-blue-500 text-white'
+              ? 'bg-calm-accent text-white'
               : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
           }`}
         >

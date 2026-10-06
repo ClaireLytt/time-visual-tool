@@ -23,14 +23,14 @@ function EatingProportionChart({ categoryBreakdown, totalCalories }: EatingPropo
   const legendItems = Object.entries(categoryBreakdown).sort((a, b) => b[1].calories - a[1].calories)
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 p-4">
       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
         {t('eating.chartProportion')}
       </h3>
 
       {chartData.length === 0 ? (
         <div className="p-6 text-center">
-          <div className="w-24 h-24 mx-auto mb-3 rounded-full border-4 border-dashed border-gray-200 dark:border-gray-600 flex items-center justify-center">
+          <div className="w-24 h-24 mx-auto mb-3 rounded-full border-4 border-dashed border-calm-border dark:border-gray-600 flex items-center justify-center">
             <svg className="w-8 h-8 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
               <path d="M7 2v20" />

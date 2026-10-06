@@ -8,18 +8,18 @@ interface BottomTabBarProps {
 }
 
 const TABS: { mode: AppMode; icon: typeof ClockIcon; labelKey: string; activeColor: string }[] = [
-  { mode: 'time', icon: ClockIcon, labelKey: 'mode.time', activeColor: 'text-blue-500' },
-  { mode: 'finance', icon: WalletIcon, labelKey: 'mode.finance', activeColor: 'text-green-500' },
-  { mode: 'eating', icon: UtensilsIcon, labelKey: 'mode.eating', activeColor: 'text-amber-500' },
-  { mode: 'diary', icon: BookIcon, labelKey: 'mode.diary', activeColor: 'text-purple-500' },
-  { mode: 'sport', icon: DumbbellIcon, labelKey: 'mode.sport', activeColor: 'text-teal-500' },
+  { mode: 'time', icon: ClockIcon, labelKey: 'mode.time', activeColor: 'text-mode-time' },
+  { mode: 'finance', icon: WalletIcon, labelKey: 'mode.finance', activeColor: 'text-mode-finance' },
+  { mode: 'eating', icon: UtensilsIcon, labelKey: 'mode.eating', activeColor: 'text-mode-eating' },
+  { mode: 'diary', icon: BookIcon, labelKey: 'mode.diary', activeColor: 'text-mode-diary' },
+  { mode: 'sport', icon: DumbbellIcon, labelKey: 'mode.sport', activeColor: 'text-mode-sport' },
 ]
 
 function BottomTabBar({ mode, onChangeMode }: BottomTabBarProps) {
   const { t } = useTranslation()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50 pb-[env(safe-area-inset-bottom)]">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-calm-border dark:border-gray-700 z-50 pb-[env(safe-area-inset-bottom)]">
       <div className="max-w-5xl mx-auto flex">
         {TABS.map(tab => {
           const isActive = mode === tab.mode

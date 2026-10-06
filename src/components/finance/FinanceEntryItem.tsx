@@ -34,13 +34,13 @@ const FinanceEntryItem = memo(function FinanceEntryItem({ entry, onDelete, onEdi
         <p className="text-xs text-gray-500 dark:text-gray-400">{categoryName}</p>
       </div>
 
-      <span className={`text-sm font-semibold shrink-0 ${isIncome ? 'text-green-600 dark:text-green-400' : 'text-rose-600 dark:text-rose-400'}`}>
+      <span className={`text-sm font-semibold shrink-0 ${isIncome ? 'text-mode-finance' : 'text-[#c47070]'}`}>
         {isIncome ? '+' : '-'}{formatAmount(entry.amount)}
       </span>
 
       <button
         onClick={() => onEdit(entry)}
-        className="opacity-70 hover:opacity-100 focus-visible:opacity-100 p-1 text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 transition-all"
+        className="opacity-70 hover:opacity-100 focus-visible:opacity-100 p-1 text-gray-400 dark:text-gray-500 hover:text-calm-accent transition-all"
         aria-label={t('entry.editAriaLabel', { name: displayName })}
       >
         <EditIcon />

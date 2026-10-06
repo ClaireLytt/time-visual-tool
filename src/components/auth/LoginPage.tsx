@@ -59,8 +59,8 @@ function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-      <div className="w-full max-w-sm bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
+    <div className="min-h-[100dvh] flex items-center justify-center bg-calm-bg dark:bg-gray-900 px-4">
+      <div className="w-full max-w-sm bg-white dark:bg-gray-800 rounded-2xl p-8">
         <h1 className="text-2xl font-bold text-center text-gray-900 dark:text-gray-100 mb-6">
           {t('auth.login')}
         </h1>
@@ -76,7 +76,7 @@ function LoginPage() {
               autoComplete="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              className="w-full px-3 py-2 rounded-lg border border-calm-border dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-calm-accent focus:border-transparent outline-none"
             />
           </div>
           <div>
@@ -90,7 +90,7 @@ function LoginPage() {
               autoComplete="current-password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              className="w-full px-3 py-2 rounded-lg border border-calm-border dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-calm-accent focus:border-transparent outline-none"
             />
           </div>
           <label className="flex items-center gap-2 cursor-pointer select-none">
@@ -98,7 +98,7 @@ function LoginPage() {
               type="checkbox"
               checked={rememberMe}
               onChange={e => setRememberMe(e.target.checked)}
-              className="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+              className="w-4 h-4 rounded border-calm-border text-calm-accent focus:ring-calm-accent"
             />
             <span className="text-sm text-gray-600 dark:text-gray-400">
               {t('auth.rememberMe')}
@@ -108,12 +108,12 @@ function LoginPage() {
             <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
           )}
           {resetMsg && (
-            <p className="text-sm text-green-600 dark:text-green-400">{resetMsg}</p>
+            <p className="text-sm text-mode-finance">{resetMsg}</p>
           )}
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-2.5 rounded-lg bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white font-medium transition-colors"
+            className="w-full py-2.5 rounded-lg bg-calm-accent hover:bg-calm-accent-hover disabled:opacity-50 text-white font-medium transition-colors"
           >
             {submitting ? t('auth.loading') : t('auth.loginButton')}
           </button>
@@ -121,13 +121,13 @@ function LoginPage() {
         <button
           type="button"
           onClick={handleForgotPassword}
-          className="mt-3 w-full text-center text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
+          className="mt-3 w-full text-center text-sm text-calm-accent hover:text-calm-accent-hover"
         >
           {t('auth.forgotPassword')}
         </button>
         <p className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
           {t('auth.noAccount')}{' '}
-          <Link to="/register" className="text-blue-500 hover:text-blue-600 font-medium">
+          <Link to="/register" className="text-calm-accent hover:text-calm-accent-hover font-medium">
             {t('auth.goToRegister')}
           </Link>
         </p>

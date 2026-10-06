@@ -30,13 +30,13 @@ const EntryItem = memo(function EntryItem({ entry, onDelete, onEdit }: EntryItem
         <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{entry.activity}</p>
         <p className="text-xs text-gray-500 dark:text-gray-400">
           {t('category.names.' + entry.category, entry.category)} · {formatDuration(entry.duration)}
-          {entry.weight !== 1 && <span className="ml-1 text-amber-600 dark:text-amber-400">x{entry.weight}</span>}
+          {entry.weight !== 1 && <span className="ml-1 text-mode-eating">x{entry.weight}</span>}
         </p>
       </div>
 
       <button
         onClick={() => onEdit(entry)}
-        className="opacity-70 hover:opacity-100 focus-visible:opacity-100 p-1 text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 transition-all"
+        className="opacity-70 hover:opacity-100 focus-visible:opacity-100 p-1 text-gray-400 dark:text-gray-500 hover:text-calm-accent transition-all"
         aria-label={t('entry.editAriaLabel', { name: entry.activity })}
       >
         <EditIcon />

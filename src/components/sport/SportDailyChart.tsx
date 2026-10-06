@@ -20,7 +20,7 @@ function SportDailyChart({ dailyBreakdown, title }: SportDailyChartProps) {
 
   if (!hasData) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 p-6 text-center">
         <p className="text-gray-400 dark:text-gray-500 text-sm">{t('chart.noData')}</p>
       </div>
     )
@@ -29,7 +29,7 @@ function SportDailyChart({ dailyBreakdown, title }: SportDailyChartProps) {
   const isMonthly = dailyBreakdown.length > 12
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 p-4">
       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{title ?? t('sport.chartDaily')}</h3>
 
       <ResponsiveContainer width="100%" height={220}>

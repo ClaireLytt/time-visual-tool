@@ -48,7 +48,7 @@ function DataMigrationDialog() {
         aria-modal="true"
         aria-labelledby="migrate-dialog-title"
         tabIndex={-1}
-        className="w-full max-w-sm bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 outline-none"
+        className="w-full max-w-sm bg-white dark:bg-gray-800 rounded-2xl p-6 outline-none"
       >
         <p id="migrate-dialog-title" className="text-gray-900 dark:text-gray-100 mb-4">
           {t('auth.migratePrompt')}
@@ -64,7 +64,7 @@ function DataMigrationDialog() {
           <button
             onClick={handleMigrate}
             disabled={migrating}
-            className="flex-1 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white font-medium transition-colors disabled:opacity-50"
+            className="flex-1 py-2 rounded-lg bg-calm-accent hover:bg-calm-accent-hover text-white font-medium transition-colors disabled:opacity-50"
           >
             {migrating ? t('auth.loading') : t('auth.migrateButton')}
           </button>

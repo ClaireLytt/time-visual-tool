@@ -8,6 +8,7 @@ import DataTransfer from '../settings/DataTransfer'
 import DiaryEntryEditor, { type DiaryEntryFields } from './DiaryEntryEditor'
 import DiaryEntryList from './DiaryEntryList'
 import { getPeriodKey, periodKeyToAnchorDate } from '../../utils/diaryPeriod'
+import AnimatedCollapse from '../common/AnimatedCollapse'
 import { exportDiaryToFile, readDiaryImportFile } from '../../utils/diaryTransfer'
 import type { DiaryEntry, DiaryPeriodType, DiaryStorageData } from '../../types/diary'
 
@@ -34,7 +35,7 @@ function DiaryDashboard() {
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-mode-diary border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -56,7 +57,7 @@ function DiaryDashboard() {
         </button>
       </div>
 
-      {showSettings && (
+      <AnimatedCollapse open={showSettings}>
         <div className="space-y-4 mb-4">
           <DataTransfer
             data={data}
@@ -66,7 +67,7 @@ function DiaryDashboard() {
             getCounts={(d: DiaryStorageData) => ({ entries: d.entries.length, categories: 0 })}
           />
         </div>
-      )}
+      </AnimatedCollapse>
 
       <DatePicker selectedDate={selectedDate} onDateChange={setSelectedDate} viewMode={viewMode} />
 

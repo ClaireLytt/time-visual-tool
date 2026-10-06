@@ -23,14 +23,14 @@ function SportProportionChart({ categoryBreakdown, totalDuration }: SportProport
   const legendItems = Object.entries(categoryBreakdown).sort((a, b) => b[1].duration - a[1].duration)
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-calm-border dark:border-gray-700 p-4">
       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
         {t('sport.chartProportion')}
       </h3>
 
       {chartData.length === 0 ? (
         <div className="p-6 text-center">
-          <div className="w-24 h-24 mx-auto mb-3 rounded-full border-4 border-dashed border-gray-200 dark:border-gray-600 flex items-center justify-center">
+          <div className="w-24 h-24 mx-auto mb-3 rounded-full border-4 border-dashed border-calm-border dark:border-gray-600 flex items-center justify-center">
             <svg className="w-8 h-8 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M14.4 14.4 9.6 9.6" />
               <path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767-1.768a2 2 0 1 1-2.829-2.828l6.364-6.364a2 2 0 1 1 2.829 2.828l1.767 1.768a2 2 0 1 1 2.829 2.828z" />

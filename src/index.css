@@ -2,22 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+
 body {
-  @apply bg-gray-50 text-gray-900 min-h-screen;
+  @apply bg-calm-bg text-gray-900 min-h-[100dvh];
   @apply dark:bg-gray-900 dark:text-gray-100;
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
 
 *:focus-visible {
-  @apply outline-2 outline-offset-2 outline-blue-500;
+  @apply outline-2 outline-offset-2 outline-calm-accent;
+}
+
+/* Mobile-native: eliminate tap delay, prevent text selection on controls */
+button, a, [role="button"] {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 @layer components {
   .input-base {
-    @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-base sm:text-sm
+    @apply w-full px-3 py-2 border border-calm-border dark:border-gray-600 rounded-lg text-base sm:text-sm
       bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
       placeholder-gray-400 dark:placeholder-gray-500
-      focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500;
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-calm-accent;
   }
 }
