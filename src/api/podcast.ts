@@ -2,11 +2,36 @@ import type { Feed, PodcastSummary } from '../types/podcast'
 
 const API_BASE: string = import.meta.env.VITE_API_BASE ?? '/api'
 
-async function getJson<T>(path: string, signal?: AbortSignal): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, { signal })
-  const body = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(body.error ?? `HTTP ${res.status}`)
-  return body as T
+/** Fetch JSON with automatic retry on transient network errors */
+async function getJson<T>(path: string, signal?: AbortSignal, retries = 2): Promise<T> {
+  const url = `${API_BASE}${path}`
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const res = await fetch(url, { signal })
+      const body = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        // Pass through the server's clear error message directly
+        const msg = body.error ?? `HTTP ${res.status}`
+        if (attempt < retries && res.status >= 500) {
+          await new Promise(r => setTimeout(r, 800 * (attempt + 1)))
+          continue
+        }
+        throw new Error(msg)
+      }
+      return body as T
+    } catch (err) {
+      if (signal?.aborted) throw err
+      if (attempt < retries && err instanceof TypeError) {
+        await new Promise(r => setTimeout(r, 800 * (attempt + 1)))
+        continue
+      }
+      // Clear message for browser-level network errors
+      if (err instanceof TypeError) {
+        throw new Error('Cannot connect to server — make sure the podcast server is running (npm run server)')
+      }
+      throw err
+    }
+  }
 }
 
 export async function searchPodcasts(q: string, signal?: AbortSignal): Promise<PodcastSummary[]> {
