@@ -1,0 +1,78 @@
+import type { Feed, PodcastSummary } from '../types/podcast'
+
+const API_BASE: string = import.meta.env.VITE_API_BASE ?? '/api'
+
+async function getJson<T>(path: string, signal?: AbortSignal): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, { signal })
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(body.error ?? `HTTP ${res.status}`)
+  return body as T
+}
+
+export async function searchPodcasts(q: string, signal?: AbortSignal): Promise<PodcastSummary[]> {
+  const { results } = await getJson<{ results: PodcastSummary[] }>(`/search?q=${encodeURIComponent(q)}`, signal)
+  return results
+}
+
+export type FeedSource = { feedUrl: string } | { collectionId: number }
+
+export function fetchEpisodes(source: FeedSource, signal?: AbortSignal): Promise<Feed> {
+  const qs = 'feedUrl' in source
+    ? `feedUrl=${encodeURIComponent(source.feedUrl)}`
+    : `collectionId=${source.collectionId}`
+  return getJson<Feed>(`/episodes?${qs}`, signal)
+}
+
+export function audioProxyUrl(audioUrl: string): string {
+  return `${API_BASE}/audio?url=${encodeURIComponent(audioUrl)}`
+}
+
+export async function fetchTranscriptText(transcriptUrl: string, signal?: AbortSignal): Promise<string> {
+  const res = await fetch(`${API_BASE}/transcript?url=${encodeURIComponent(transcriptUrl)}`, { signal })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  return res.text()
+}
+
+// ─── Charts ───
+
+export type ChartFeed = 'top' | 'popular'
+
+export interface ChartPodcast {
+  collectionId: number
+  collectionName: string
+  artistName: string
+  artworkUrl600: string
+  summary: string
+  feedUrl?: string
+}
+
+export async function fetchCharts(feed: ChartFeed, signal?: AbortSignal): Promise<ChartPodcast[]> {
+  const { results } = await getJson<{ results: ChartPodcast[] }>(`/charts?feed=${feed}`, signal)
+  return results
+}
+
+// ─── Whisper ASR transcription ───
+
+interface TranscriptionResult {
+  status: 'queued' | 'transcribing' | 'done' | 'failed'
+  segments?: import('../types/podcast').Segment[]
+  error?: string
+}
+
+/** Request a Whisper transcription (returns cached result if already done) */
+export async function requestTranscription(audioUrl: string, episodeId: string, signal?: AbortSignal): Promise<TranscriptionResult> {
+  const res = await fetch(`${API_BASE}/transcribe`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ audioUrl, episodeId }),
+    signal,
+  })
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(body.error ?? `HTTP ${res.status}`)
+  return body as TranscriptionResult
+}
+
+/** Poll the status of a Whisper transcription job */
+export async function pollTranscription(episodeId: string, signal?: AbortSignal): Promise<TranscriptionResult> {
+  return getJson<TranscriptionResult>(`/transcribe?episodeId=${encodeURIComponent(episodeId)}`, signal)
+}
