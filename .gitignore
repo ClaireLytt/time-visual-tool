@@ -4,6 +4,7 @@ dist
 .env
 .env.*
 /scripts/
+server/data/
 
 # Skills & agent configs
 .agents/

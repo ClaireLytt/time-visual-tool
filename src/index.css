@@ -15,24 +15,26 @@ html {
 }
 
 body {
-  @apply bg-calm-bg text-gray-900 min-h-[100dvh];
-  @apply dark:bg-gray-900 dark:text-gray-100;
+  @apply text-gray-900 min-h-[100dvh];
+  @apply dark:text-gray-100;
+  background-color: var(--mode-bg, #e8e4d9);
+  transition: background-color 500ms ease;
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
 
 *:focus-visible {
-  @apply outline-2 outline-offset-2 outline-calm-accent;
+  @apply outline-2 outline-offset-2 outline-px-gold;
 }
 
-/* Tactile press feedback — push-down with shadow flip */
+/* Tactile press feedback — soft push-down */
 button:active, a:active, [role="button"]:active {
   transform: translateY(1px) scale(0.98);
   transition: transform 80ms var(--ease-out);
 }
 .no-press:active { transform: none !important; }
 
-/* Mobile-native: eliminate tap delay, prevent text selection on controls */
+/* Mobile-native */
 button, a, [role="button"] {
   touch-action: manipulation;
   -webkit-user-select: none;
@@ -40,32 +42,32 @@ button, a, [role="button"] {
 }
 
 @layer components {
-  /* Recessed input fields — control-panel cutout feel */
+  /* ── Input — soft filled ── */
   .input-base {
     @apply w-full px-3 py-2 rounded-lg text-base sm:text-sm
       text-gray-900 dark:text-gray-100
       placeholder-gray-400 dark:placeholder-gray-500
       focus:outline-none;
-    background: #f4f3f1;
-    border: 1px solid #e0dfdb;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.06), inset 0 0 0 1px rgba(0,0,0,0.02);
+    background: #f4f1ea;
+    border: 1px solid #d5d0c5;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);
     transition: box-shadow 150ms var(--ease-out), border-color 150ms var(--ease-out);
   }
   .input-base:focus-visible {
-    border-color: #c4a36b;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.06), 0 0 0 2px rgba(196,163,107,0.25);
+    border-color: #f4b41a;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.06), 0 0 0 2px rgba(244,180,26,0.25);
   }
   :is(.dark) .input-base {
-    background: #1e1e22;
-    border-color: #3a3a40;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2), inset 0 0 0 1px rgba(255,255,255,0.03);
+    background: #262b44;
+    border-color: #3d4460;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
   }
   :is(.dark) .input-base:focus-visible {
-    border-color: #c4a36b;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2), 0 0 0 2px rgba(196,163,107,0.3);
+    border-color: #f4b41a;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2), 0 0 0 2px rgba(244,180,26,0.3);
   }
 
-  /* Raised tactile button — primary actions */
+  /* ── Button primary — soft with game colors ── */
   .btn-tactile {
     @apply py-2.5 text-sm font-semibold rounded-xl transition-all;
     box-shadow: 0 2px 0 rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.15);
@@ -81,10 +83,10 @@ button, a, [role="button"] {
     transition: transform 60ms var(--ease-out), box-shadow 60ms var(--ease-out);
   }
 
-  /* Secondary tactile button — subtle raised feel */
+  /* ── Button secondary — thin border ── */
   .btn-secondary {
-    @apply px-4 py-2 text-sm font-medium rounded-xl transition-all;
-    border: 1px solid #dddcd8;
+    @apply px-4 py-2 text-sm font-medium rounded-lg transition-all;
+    border: 1px solid #d5d0c5;
     box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.04);
   }
   .btn-secondary:hover {
@@ -97,41 +99,60 @@ button, a, [role="button"] {
     box-shadow: inset 0 1px 2px rgba(0,0,0,0.08);
   }
   :is(.dark) .btn-secondary {
-    border-color: #4a4a52;
+    border-color: #3d4460;
     @apply text-gray-300;
   }
   :is(.dark) .btn-secondary:hover {
     @apply bg-gray-700;
   }
 
-  /* Panel card — subtle colored top accent edge */
+  /* ── Panel — rounded, soft shadow, game palette bg ── */
   .panel {
-    @apply bg-white dark:bg-gray-800 rounded-2xl shadow-card overflow-hidden;
-    border: 1px solid #e8e7e3;
+    @apply rounded-2xl overflow-hidden;
+    background: #f4f1ea;
+    border: 1px solid #d5d0c5;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.02);
+    transition: transform 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
+  }
+  @media (hover: hover) {
+    .panel:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+    }
   }
   :is(.dark) .panel {
-    border-color: #2e2e34;
+    background: #262b44;
+    border-color: #3d4460;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2), 0 2px 8px rgba(0,0,0,0.15);
   }
 
-  /* Panel with a colored accent stripe along the top */
+  /* ── Hero Panel — rounded, elevated ── */
+  .panel-hero {
+    @apply rounded-2xl overflow-hidden;
+    background: #f4f1ea;
+    border: 1px solid #d5d0c5;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.02);
+  }
+  :is(.dark) .panel-hero {
+    background: #262b44;
+    border-color: #3d4460;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.15);
+  }
+
+  /* ── Panel accent — colored left stripe ── */
   .panel-accent {
     position: relative;
-  }
-  .panel-accent::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: var(--panel-accent, #c4a36b);
-    border-radius: 9999px 9999px 0 0;
+    border-left: 4px solid var(--panel-accent, #f4b41a) !important;
+    border-top-left-radius: 0.25rem;
+    border-bottom-left-radius: 0.25rem;
   }
 
-  /* Stat card — tinted background with raised feel */
+  /* ── Stat card — rounded, soft shadow, colored top accent ── */
   .stat-card {
-    @apply rounded-2xl p-3 text-center transition-all;
-    border: 1px solid rgba(0,0,0,0.06);
+    @apply p-3 text-center rounded-xl transition-all;
+    background: #f4f1ea;
+    border: 1px solid #d5d0c5;
+    border-top-width: 2px;
     box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 2px 6px rgba(0,0,0,0.03);
   }
   .stat-card:hover {
@@ -140,11 +161,12 @@ button, a, [role="button"] {
     transition: all 200ms var(--ease-out);
   }
   :is(.dark) .stat-card {
-    border-color: rgba(255,255,255,0.06);
+    background: #262b44;
+    border-color: #3d4460;
     box-shadow: 0 1px 3px rgba(0,0,0,0.2);
   }
 
-  /* Icon button — small tactile circle */
+  /* ── Icon Button — soft ── */
   .btn-icon {
     @apply p-1.5 rounded-lg transition-all;
     box-shadow: 0 1px 0 rgba(0,0,0,0.04);
@@ -157,4 +179,16 @@ button, a, [role="button"] {
     transform: translateY(1px) scale(0.95) !important;
     box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
   }
+}
+
+/* ── Pixel scene decorative backgrounds ── */
+.scene-stars {
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, #f4b41a 50%, transparent 50%),
+    radial-gradient(1px 1px at 30% 60%, #2ce8f5 50%, transparent 50%),
+    radial-gradient(1px 1px at 50% 10%, #f0f0e8 50%, transparent 50%),
+    radial-gradient(1px 1px at 70% 40%, #f4b41a 50%, transparent 50%),
+    radial-gradient(1px 1px at 90% 80%, #f0f0e8 50%, transparent 50%),
+    radial-gradient(1px 1px at 15% 85%, #2ce8f5 50%, transparent 50%),
+    radial-gradient(1px 1px at 85% 15%, #8b5cf6 50%, transparent 50%);
 }

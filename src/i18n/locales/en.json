@@ -61,6 +61,8 @@
     "restDay": "Rest day",
     "written": "Written",
     "notYet": "Not yet",
+    "exportAll": "Export All Data",
+    "exportDesc": "Download all module data as a JSON file for backup",
     "streak": "day streak",
     "income": "In",
     "expense": "Out",
@@ -83,6 +85,11 @@
     "eating": "Eating",
     "diary": "Diary",
     "sport": "Sport",
+    "habit": "Habit",
+    "todo": "Todo",
+    "study": "Study",
+    "work": "Work",
+    "podcast": "Podcast",
     "toggleToFinance": "Switch to money tracking",
     "toggleToTime": "Switch to time tracking",
     "toggleToEating": "Switch to eating tracker"
@@ -401,5 +408,120 @@
   },
   "currency": {
     "symbol": "$"
+  },
+  "habitApp": {
+    "title": "HabitVisual",
+    "subtitle": "Daily habit check-in"
+  },
+  "todoApp": {
+    "title": "TodoVisual",
+    "subtitle": "Manage your tasks"
+  },
+  "habit": {
+    "addTitle": "Add Habit",
+    "namePlaceholder": "Habit name",
+    "addButton": "Add",
+    "completed": "completed",
+    "streak": "{{count}} day streak",
+    "check": "Check in",
+    "uncheck": "Uncheck",
+    "deleteTitle": "Delete Habit",
+    "deleteMessage": "Delete \"{{name}}\"? All check-in records will also be removed.",
+    "emptyTitle": "No habits yet. Add one!",
+    "weekRate": "Last 7 days",
+    "monthRate": "Last 30 days"
+  },
+  "todo": {
+    "addTitle": "Add Task",
+    "textPlaceholder": "Task description",
+    "addButton": "Add",
+    "completed": "completed",
+    "markDone": "Mark done",
+    "markUndone": "Mark undone",
+    "deleteTitle": "Delete Task",
+    "deleteMessage": "Delete this task?",
+    "emptyTitle": "No tasks",
+    "priority": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "filter": {
+      "all": "All",
+      "active": "Active",
+      "completed": "Done"
+    }
+  },
+  "studyApp": {
+    "title": "StudyVisual",
+    "subtitle": "Track your study sessions"
+  },
+  "study": {
+    "addTitle": "Log Study",
+    "subjectLabel": "Subject",
+    "durationLabel": "Duration (min)",
+    "durationPlaceholder": "Minutes",
+    "notesLabel": "Notes",
+    "notesPlaceholder": "What did you study...",
+    "addButton": "Add",
+    "deleteTitle": "Delete Record",
+    "deleteMessage": "Delete this study record?",
+    "emptyTitle": "No study records today",
+    "totalDuration": "Study Time",
+    "entryCount": "Records"
+  },
+  "workApp": {
+    "title": "WorkVisual",
+    "subtitle": "Log your work sessions"
+  },
+  "work": {
+    "addTitle": "Log Work",
+    "projectLabel": "Project",
+    "taskLabel": "Task",
+    "taskPlaceholder": "What did you work on...",
+    "durationLabel": "Duration (min)",
+    "durationPlaceholder": "Minutes",
+    "addButton": "Add",
+    "deleteTitle": "Delete Record",
+    "deleteMessage": "Delete this work record?",
+    "emptyTitle": "No work records today",
+    "totalDuration": "Work Time",
+    "entryCount": "Records"
+  },
+  "podcastApp": {
+    "title": "PodcastVisual",
+    "subtitle": "Listen with timed transcripts",
+    "scene": "BARD HALL"
+  },
+  "podcast": {
+    "searchPlaceholder": "Search podcasts or paste an RSS URL",
+    "search": "Search",
+    "importRss": "Import RSS",
+    "searching": "Searching…",
+    "noResults": "No podcasts found",
+    "error": "Error",
+    "back": "Back",
+    "loadingEpisodes": "Loading episodes…",
+    "episodeCount": "episodes",
+    "hasTranscript": "Transcript",
+    "showMore": "Show more",
+    "play": "Play",
+    "pause": "Pause",
+    "transcript": "Transcript",
+    "transcriptLoading": "Loading transcript…",
+    "noTranscript": "No transcript available for this episode",
+    "audioLoadError": "Failed to load audio",
+    "audioFormatError": "Audio format not supported by this browser ({{detail}}). Try a different browser.",
+    "audioPlayFailed": "Playback failed — check your network connection",
+    "asrQueued": "Queued for transcription…",
+    "asrTranscribing": "Generating transcript with AI (this may take a minute)…",
+    "asrFailed": "Transcription failed",
+    "searchHistory": "Recent searches",
+    "clearHistory": "Clear all",
+    "chartTop": "Trending",
+    "chartPopular": "Everyone's Listening",
+    "chartError": "Failed to load charts",
+    "chartEmpty": "No podcasts found",
+    "retry": "Retry"
   }
 }

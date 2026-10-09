@@ -1,11 +1,26 @@
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '../../hooks/useTheme'
 import { useAuth } from '../../contexts/AuthContext'
-import { HomeIcon, ClockIcon, WalletIcon, UtensilsIcon, BookIcon, DumbbellIcon } from '../icons'
+import { HomeIcon, ClockIcon, WalletIcon, UtensilsIcon, BookIcon, DumbbellIcon, CheckSquareIcon, ListTodoIcon, StudyIcon, WorkIcon, PodcastIcon } from '../icons'
+import { MODE_ACCENT } from '../../constants/modes'
 import type { AppMode } from '../../types'
 
 interface HeaderProps {
   mode: AppMode
+}
+
+const MODE_CONFIG: Record<AppMode, { icon: typeof ClockIcon; colorClass: string; titleKey: string; subtitleKey: string }> = {
+  overview: { icon: HomeIcon,        colorClass: 'text-calm-accent', titleKey: 'overviewApp.title', subtitleKey: 'overviewApp.subtitle' },
+  time:     { icon: ClockIcon,       colorClass: 'text-mode-time',    titleKey: 'app.title',         subtitleKey: 'app.subtitle' },
+  finance:  { icon: WalletIcon,      colorClass: 'text-mode-finance', titleKey: 'financeApp.title',  subtitleKey: 'financeApp.subtitle' },
+  eating:   { icon: UtensilsIcon,    colorClass: 'text-mode-eating',  titleKey: 'eatingApp.title',   subtitleKey: 'eatingApp.subtitle' },
+  diary:    { icon: BookIcon,        colorClass: 'text-mode-diary',   titleKey: 'diaryApp.title',    subtitleKey: 'diaryApp.subtitle' },
+  sport:    { icon: DumbbellIcon,    colorClass: 'text-mode-sport',   titleKey: 'sportApp.title',    subtitleKey: 'sportApp.subtitle' },
+  habit:    { icon: CheckSquareIcon, colorClass: 'text-mode-habit',   titleKey: 'habitApp.title',    subtitleKey: 'habitApp.subtitle' },
+  todo:     { icon: ListTodoIcon,    colorClass: 'text-mode-todo',    titleKey: 'todoApp.title',     subtitleKey: 'todoApp.subtitle' },
+  study:    { icon: StudyIcon,       colorClass: 'text-mode-study',   titleKey: 'studyApp.title',    subtitleKey: 'studyApp.subtitle' },
+  work:     { icon: WorkIcon,        colorClass: 'text-mode-work',    titleKey: 'workApp.title',     subtitleKey: 'workApp.subtitle' },
+  podcast:  { icon: PodcastIcon,     colorClass: 'text-mode-podcast', titleKey: 'podcastApp.title',  subtitleKey: 'podcastApp.subtitle' },
 }
 
 function Header({ mode }: HeaderProps) {
@@ -14,38 +29,31 @@ function Header({ mode }: HeaderProps) {
   const { user, logout, switchAccount } = useAuth()
 
   const themeLabel = t(`theme.${theme}`)
-  const isOverview = mode === 'overview'
-  const isFinance = mode === 'finance'
-  const isEating = mode === 'eating'
-  const isDiary = mode === 'diary'
-  const isSport = mode === 'sport'
+  const cfg = MODE_CONFIG[mode]
+  const Icon = cfg.icon
+  const accent = MODE_ACCENT[mode]
 
   const toggleLang = () => {
     i18n.changeLanguage(i18n.language === 'zh' ? 'en' : 'zh')
   }
 
   return (
-    <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl backdrop-saturate-150 shadow-soft pt-[env(safe-area-inset-top)] sticky top-0 z-40">
+    <header
+      className="bg-[#f4f1ea]/80 dark:bg-[#262b44]/80 backdrop-blur-xl backdrop-saturate-150 pt-[env(safe-area-inset-top)] sticky top-0 z-40"
+      style={{
+        borderBottom: `2px solid ${accent}4d`,
+        transition: 'border-color 400ms ease',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04)',
+      }}
+    >
       <div className="max-w-5xl mx-auto px-4 py-4 flex flex-wrap items-center gap-3">
-        {isOverview ? (
-          <HomeIcon className="w-8 h-8 text-calm-accent shrink-0" />
-        ) : isSport ? (
-          <DumbbellIcon className="w-8 h-8 text-mode-sport shrink-0" />
-        ) : isDiary ? (
-          <BookIcon className="w-8 h-8 text-mode-diary shrink-0" />
-        ) : isEating ? (
-          <UtensilsIcon className="w-8 h-8 text-mode-eating shrink-0" />
-        ) : isFinance ? (
-          <WalletIcon className="w-8 h-8 text-mode-finance shrink-0" />
-        ) : (
-          <ClockIcon className="w-8 h-8 text-mode-time shrink-0" />
-        )}
+        <Icon className={`w-8 h-8 ${cfg.colorClass} shrink-0`} />
         <div className="flex-1 min-w-0">
           <h1 className="text-xl font-bold tracking-display text-gray-900 dark:text-gray-100 truncate">
-            {isOverview ? t('overviewApp.title') : isSport ? t('sportApp.title') : isDiary ? t('diaryApp.title') : isEating ? t('eatingApp.title') : isFinance ? t('financeApp.title') : t('app.title')}
+            {t(cfg.titleKey)}
           </h1>
           <p className="text-sm text-calm-muted dark:text-gray-400 truncate">
-            {isOverview ? t('overviewApp.subtitle') : isSport ? t('sportApp.subtitle') : isDiary ? t('diaryApp.subtitle') : isEating ? t('eatingApp.subtitle') : isFinance ? t('financeApp.subtitle') : t('app.subtitle')}
+            {t(cfg.subtitleKey)}
           </p>
         </div>
         <button
