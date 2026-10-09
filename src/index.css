@@ -192,3 +192,8 @@ button, a, [role="button"] {
     radial-gradient(1px 1px at 15% 85%, #2ce8f5 50%, transparent 50%),
     radial-gradient(1px 1px at 85% 15%, #8b5cf6 50%, transparent 50%);
 }
+
+@keyframes stripe-slide {
+  0% { background-position: 0 0; }
+  100% { background-position: 1rem 0; }
+}

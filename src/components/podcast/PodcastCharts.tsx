@@ -20,7 +20,6 @@ export default function PodcastCharts({ onOpen }: PodcastChartsProps) {
   const abortRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
-    // Already cached in state
     if (data[activeTab]) return
 
     abortRef.current?.abort()
@@ -66,14 +65,17 @@ export default function PodcastCharts({ onOpen }: PodcastChartsProps) {
         ))}
       </div>
 
-      {/* Loading */}
+      {/* Loading skeleton — horizontal rows */}
       {loading && (
-        <div className="grid grid-cols-2 gap-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="panel p-3 animate-pulse">
-              <div className="w-full aspect-square rounded-lg bg-gray-200 dark:bg-gray-700 mb-2" />
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-1.5" />
-              <div className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
+        <div className="space-y-2">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="panel flex items-center gap-3 px-3 py-2.5 animate-pulse">
+              <div className="w-5 h-4 bg-gray-200 dark:bg-gray-700 rounded" />
+              <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-gray-700 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="h-3.5 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-1.5" />
+                <div className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
+              </div>
             </div>
           ))}
         </div>
@@ -92,32 +94,42 @@ export default function PodcastCharts({ onOpen }: PodcastChartsProps) {
         </div>
       )}
 
-      {/* Chart grid */}
+      {/* Chart list — compact horizontal rows */}
       {!loading && !error && items.length > 0 && (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
           {items.map((p, i) => (
             <button
               key={p.collectionId}
               onClick={() => onOpen(p.feedUrl ? { feedUrl: p.feedUrl } : { collectionId: p.collectionId })}
-              className="panel p-3 text-left hover:scale-[1.02] transition-transform"
+              className="panel flex items-center gap-3 px-3 py-2.5 w-full text-left hover:bg-black/[0.03] dark:hover:bg-white/[0.03] active:scale-[0.99] transition-all"
             >
-              <div className="relative">
-                <img
-                  src={p.artworkUrl600}
-                  alt=""
-                  loading="lazy"
-                  className="w-full aspect-square rounded-lg object-cover bg-gray-200 dark:bg-gray-700"
-                />
-                <span className="absolute top-1.5 left-1.5 bg-black/60 text-white text-xs font-bold px-1.5 py-0.5 rounded-md tabular-nums">
-                  {i + 1}
-                </span>
+              {/* Rank number */}
+              <span className="w-5 text-center text-xs font-bold text-gray-400 dark:text-gray-500 tabular-nums shrink-0">
+                {i + 1}
+              </span>
+
+              {/* Small artwork */}
+              <img
+                src={p.artworkUrl600}
+                alt=""
+                loading="lazy"
+                className="w-10 h-10 rounded-lg object-cover bg-gray-200 dark:bg-gray-700 shrink-0"
+              />
+
+              {/* Name & author */}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                  {p.collectionName}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                  {p.artistName}
+                </p>
               </div>
-              <p className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2 leading-tight">
-                {p.collectionName}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
-                {p.artistName}
-              </p>
+
+              {/* Chevron */}
+              <svg className="w-4 h-4 text-gray-300 dark:text-gray-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
             </button>
           ))}
         </div>
