@@ -13,9 +13,11 @@ Progress/errors go to stderr so they don't pollute the JSON output.
 """
 
 import sys
+import os
 import json
 import argparse
 import time
+import traceback
 from pathlib import Path
 
 def apply_gpu_limit():
@@ -126,7 +128,13 @@ def main():
         print(json.dumps({"success": False, "error": "Cancelled"}))
         sys.exit(1)
     except Exception as e:
-        print(json.dumps({"success": False, "error": str(e)}))
+        tb = traceback.format_exc()
+        print(tb, file=sys.stderr)
+        print(json.dumps({
+            "success": False,
+            "error": str(e),
+            "traceback": tb,
+        }))
         sys.exit(1)
 
 

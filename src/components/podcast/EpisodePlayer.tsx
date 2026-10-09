@@ -2,12 +2,18 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { audioProxyUrl, fetchTranscriptText, requestTranscription, pollTranscription } from '../../api/podcast'
 import { findActiveIndex, formatClock, parseSrt, parseVtt, parseJsonTranscript } from '../../utils/transcript'
+import WordPopover from './WordPopover'
 import type { Episode } from '../../types/podcast'
 import type { Segment, JobStatus } from '../../types/podcast'
 
 interface EpisodePlayerProps {
   episode: Episode
   onBack: () => void
+  onWordLookup?: (word: string) => void
+  onSaveSentence?: (text: string, episodeTitle: string, timestamp: number) => void
+  savedSentences?: Set<string>
+  /** Batch-add words from transcript */
+  onExtractWords?: (words: string[]) => void
 }
 
 const SPEED_OPTIONS = [0.75, 1, 1.25, 1.5, 2]
@@ -23,7 +29,7 @@ function describeMediaError(code: number): string {
   }
 }
 
-export default function EpisodePlayer({ episode, onBack }: EpisodePlayerProps) {
+export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSentence, savedSentences, onExtractWords }: EpisodePlayerProps) {
   const { t } = useTranslation()
   const audioRef = useRef<HTMLAudioElement>(null)
   const activeRef = useRef<HTMLDivElement>(null)
@@ -43,6 +49,72 @@ export default function EpisodePlayer({ episode, onBack }: EpisodePlayerProps) {
   // User must click "Load transcript" to start — not auto-loaded
   const [transcriptRequested, setTranscriptRequested] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
+  // Word-tap dictionary popup
+  const [selectedWord, setSelectedWord] = useState<{ word: string; rect: DOMRect; sentence: string; segStart: number } | null>(null)
+  const closePopover = useCallback(() => setSelectedWord(null), [])
+  const isPopoverOpen = selectedWord !== null
+
+  // Subtitle display mode
+  const [subtitleMode, setSubtitleMode] = useState<'en' | 'bilingual'>('en')
+
+  // Dictation clip mode: select a segment range and loop-play it
+  const [clipMode, setClipMode] = useState(false)
+  const [clipStart, setClipStart] = useState<number | null>(null)
+  const [clipEnd, setClipEnd] = useState<number | null>(null)
+
+  // Loop playback within clip range
+  useEffect(() => {
+    if (!clipMode || clipStart == null || clipEnd == null) return
+    const audio = audioRef.current
+    if (!audio) return
+    const handler = () => {
+      if (audio.currentTime >= clipEnd) {
+        audio.currentTime = clipStart
+      }
+    }
+    audio.addEventListener('timeupdate', handler)
+    return () => audio.removeEventListener('timeupdate', handler)
+  }, [clipMode, clipStart, clipEnd])
+
+  /** Extract unique words from all transcript segments */
+  const extractAllWords = useCallback(() => {
+    if (segments.length === 0) return
+    const wordSet = new Set<string>()
+    for (const seg of segments) {
+      for (const token of seg.text.split(/\s+/)) {
+        const clean = token.replace(/^[^a-zA-Z']+|[^a-zA-Z']+$/g, '').toLowerCase()
+        if (clean && clean.length > 1 && /[a-zA-Z]/.test(clean)) wordSet.add(clean)
+      }
+    }
+    // Filter out very common words (top 50 English)
+    const stopWords = new Set(['the','be','to','of','and','a','in','that','have','i','it','for','not','on','with','he','as','you','do','at','this','but','his','by','from','they','we','her','she','or','an','will','my','one','all','would','there','their','what','so','up','out','if','about','who','get','which','go','me','when','make','can','like','time','no','just','him','know','take','people','into','year','your'])
+    const words = [...wordSet].filter(w => !stopWords.has(w))
+    onExtractWords?.(words)
+  }, [segments, onExtractWords])
+
+  // Dismiss popover on click/tap outside — only active while popover is open.
+  // Word spans call stopPropagation so their events never reach document.
+  // Audio controls, back button, etc. are NOT blocked (no overlay).
+  useEffect(() => {
+    if (!isPopoverOpen) return
+    const dismiss = (e: Event) => {
+      const popover = (e.target as HTMLElement).closest('[data-word-popover]')
+      if (popover) return
+      setSelectedWord(null)
+    }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelectedWord(null) }
+    // Listen on both click (desktop) and touchend (mobile, since word spans
+    // preventDefault on touchend which suppresses the synthetic click)
+    document.addEventListener('click', dismiss)
+    document.addEventListener('touchend', dismiss)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('click', dismiss)
+      document.removeEventListener('touchend', dismiss)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [isPopoverOpen])
+
   // Elapsed time tracking for transcript generation
   const [asrElapsed, setAsrElapsed] = useState(0)
   const asrTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -288,14 +360,16 @@ export default function EpisodePlayer({ episode, onBack }: EpisodePlayerProps) {
             </div>
           </div>
 
-          {/* Speed button */}
-          <button
-            onClick={cycleSpeed}
-            className="shrink-0 px-2 py-1 rounded-lg text-xs font-bold tabular-nums bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors min-w-[3rem] text-center"
-            aria-label={`Speed ${playbackRate}x`}
+          {/* Speed dropdown */}
+          <select
+            value={playbackRate}
+            onChange={e => setPlaybackRate(Number(e.target.value))}
+            className="shrink-0 px-2 py-1 rounded-lg text-xs font-bold tabular-nums bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors min-w-[3.5rem] text-center border-none focus:outline-none focus:ring-2 focus:ring-mode-podcast/30"
           >
-            {playbackRate}x
-          </button>
+            {SPEED_OPTIONS.map(s => (
+              <option key={s} value={s}>{s}x</option>
+            ))}
+          </select>
         </div>
 
         {audioError && (
@@ -307,9 +381,83 @@ export default function EpisodePlayer({ episode, onBack }: EpisodePlayerProps) {
 
       {/* Transcript */}
       <div className="panel p-4">
-        <p className="text-base font-medium text-gray-700 dark:text-gray-300 mb-3">
-          {t('podcast.transcript')}
-        </p>
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <p className="text-base font-medium text-gray-700 dark:text-gray-300">
+              {t('podcast.transcript')}
+            </p>
+            {/* Subtitle mode toggle */}
+            {segments.length > 0 && (
+              <div className="flex rounded-lg bg-gray-100 dark:bg-gray-700/50 p-0.5 text-[11px]">
+                <button
+                  onClick={() => setSubtitleMode('en')}
+                  className={`px-2 py-1 rounded-md transition-colors ${subtitleMode === 'en' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-500'}`}
+                >
+                  {t('podcast.subtitleEn')}
+                </button>
+                <button
+                  onClick={() => setSubtitleMode('bilingual')}
+                  className={`px-2 py-1 rounded-md transition-colors ${subtitleMode === 'bilingual' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-500'}`}
+                >
+                  {t('podcast.subtitleBilingual')}
+                </button>
+              </div>
+            )}
+          </div>
+          {/* Toolbar buttons */}
+          {segments.length > 0 && (
+            <div className="flex items-center gap-1.5">
+              {/* Extract all words */}
+              <button
+                onClick={extractAllWords}
+                className="text-xs px-2.5 py-1.5 rounded-lg bg-mode-podcast/10 text-mode-podcast hover:bg-mode-podcast/20 transition-colors"
+                title={t('podcast.extractWords')}
+              >
+                📝 {t('podcast.extractWords')}
+              </button>
+              {/* Dictation clip toggle */}
+              <button
+                onClick={() => {
+                  if (clipMode) {
+                    setClipMode(false)
+                    setClipStart(null)
+                    setClipEnd(null)
+                  } else {
+                    setClipMode(true)
+                  }
+                }}
+                className={`text-xs px-2.5 py-1.5 rounded-lg transition-colors ${
+                  clipMode
+                    ? 'bg-mode-podcast text-white'
+                    : 'bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+                title={t('podcast.dictationClip')}
+              >
+                🎧 {t('podcast.dictationClip')}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Clip mode instructions */}
+        {clipMode && (
+          <div className="mb-3 px-3 py-2 rounded-lg bg-mode-podcast/10 text-sm text-mode-podcast">
+            {clipStart == null
+              ? t('podcast.clipSelectStart')
+              : clipEnd == null
+                ? t('podcast.clipSelectEnd')
+                : `${t('podcast.clipActive')} ${formatClock(clipStart)} → ${formatClock(clipEnd)}`
+            }
+            {clipStart != null && clipEnd != null && (
+              <button
+                onClick={() => { setClipStart(null); setClipEnd(null) }}
+                className="ml-2 underline text-xs"
+              >
+                {t('podcast.clipReset')}
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Not requested yet — show load button with duration warning */}
         {!transcriptRequested && segments.length === 0 && (
@@ -370,27 +518,119 @@ export default function EpisodePlayer({ episode, onBack }: EpisodePlayerProps) {
           )
         })()}
 
-        {/* Transcript lines — larger text */}
+        {/* Transcript lines — clickable words + sentence bookmark */}
         {segments.length > 0 && (
           <div className="max-h-[28rem] overflow-y-auto space-y-1.5">
-            {segments.map((seg, i) => (
+            {segments.map((seg, i) => {
+              const inClip = clipMode && clipStart != null && clipEnd != null &&
+                seg.start >= clipStart && seg.end <= clipEnd
+              return (
               <div
                 key={i}
                 ref={i === activeIndex ? activeRef : undefined}
-                onClick={() => seekTo(seg.start)}
-                className={`px-3 py-2 rounded-lg cursor-pointer transition-colors ${
-                  i === activeIndex
-                    ? 'bg-mode-podcast/15 text-gray-900 dark:text-gray-100 font-medium'
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5'
+                className={`group flex items-start gap-1 px-3 py-2 rounded-lg transition-colors ${
+                  inClip
+                    ? 'bg-mode-podcast/20 ring-1 ring-mode-podcast/30 text-gray-900 dark:text-gray-100'
+                    : i === activeIndex
+                      ? 'bg-mode-podcast/15 text-gray-900 dark:text-gray-100 font-medium'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5'
                 }`}
               >
-                <span className="text-xs text-gray-400 dark:text-gray-500 tabular-nums mr-2.5">
+                {/* Timestamp — click seeks audio, or selects clip boundary */}
+                <button
+                  onClick={() => {
+                    if (clipMode) {
+                      if (clipStart == null) { setClipStart(seg.start); seekTo(seg.start) }
+                      else if (clipEnd == null) { setClipEnd(seg.end); seekTo(clipStart) }
+                      else { closePopover(); seekTo(seg.start) }
+                    } else {
+                      closePopover(); seekTo(seg.start)
+                    }
+                  }}
+                  className={`text-xs tabular-nums mr-1.5 mt-1 shrink-0 transition-colors ${
+                    clipMode ? 'text-mode-podcast hover:text-mode-podcast font-medium' : 'text-gray-400 dark:text-gray-500 hover:text-mode-podcast'
+                  }`}
+                >
                   {formatClock(seg.start)}
+                </button>
+
+                {/* Words — each word is tappable for dictionary lookup */}
+                <span className="text-base leading-relaxed flex-1">
+                  {seg.text.split(/(\s+)/).map((token, j) => {
+                    if (/^\s+$/.test(token)) return token
+                    if (!token) return null
+                    // Check if this token contains any letters
+                    const hasLetters = /[a-zA-Z]/.test(token)
+                    if (!hasLetters) return <span key={j}>{token}</span>
+                    const openWord = (el: HTMLElement) => {
+                      const clean = token.replace(/^[^a-zA-Z']+|[^a-zA-Z']+$/g, '')
+                      if (!clean) return
+                      setSelectedWord({ word: token, rect: el.getBoundingClientRect(), sentence: seg.text, segStart: seg.start })
+                    }
+                    return (
+                      <span
+                        key={j}
+                        onTouchEnd={(e) => {
+                          e.preventDefault() // bypass 300ms mobile click delay
+                          e.stopPropagation()
+                          openWord(e.currentTarget)
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          openWord(e.currentTarget)
+                        }}
+                        className="hover:bg-mode-podcast/20 active:bg-mode-podcast/30 rounded px-0.5 cursor-pointer transition-colors"
+                        style={{ touchAction: 'manipulation' }}
+                      >
+                        {token}
+                      </span>
+                    )
+                  })}
                 </span>
-                <span className="text-base leading-relaxed">{seg.text}</span>
+
+                {/* Bookmark sentence button — yellow when saved */}
+                {(() => {
+                  const isSaved = savedSentences?.has(seg.text) ?? false
+                  return (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onSaveSentence?.(seg.text, episode.title, seg.start)
+                      }}
+                      className={`mt-1 shrink-0 transition-all ${
+                        isSaved
+                          ? 'text-yellow-500 dark:text-yellow-400 opacity-100'
+                          : 'text-gray-300 dark:text-gray-600 opacity-0 group-hover:opacity-100 hover:text-yellow-500 dark:hover:text-yellow-400'
+                      }`}
+                      title={t('podcast.saveSentence')}
+                    >
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}
+                        fill={isSaved ? 'currentColor' : 'none'}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+                      </svg>
+                    </button>
+                  )
+                })()}
               </div>
-            ))}
+              )
+            })}
           </div>
+        )}
+
+        {/* Dictionary popover — no overlay, dismiss via document click listener
+            registered only while the popover is open (see effect below). */}
+        {selectedWord && (
+          <WordPopover
+            word={selectedWord.word}
+            anchorRect={selectedWord.rect}
+            onClose={closePopover}
+            onLookup={onWordLookup}
+            onAddToVocab={onWordLookup}
+            onSaveSentence={() => onSaveSentence?.(selectedWord.sentence, episode.title, selectedWord.segStart)}
+            isSentenceSaved={savedSentences?.has(selectedWord.sentence) ?? false}
+            sentenceContext={selectedWord.sentence}
+          />
         )}
 
         {/* ASR failed */}

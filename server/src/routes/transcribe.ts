@@ -188,7 +188,11 @@ async function runTranscription(id: string, audioUrl: string) {
     const parsed = JSON.parse(result)
     if (!parsed.success) {
       job.status = 'failed'
-      job.error = parsed.error ?? 'Transcription failed'
+      const detail = parsed.traceback
+        ? `${parsed.error}\n\n${parsed.traceback}`
+        : (parsed.error ?? 'Transcription failed')
+      job.error = detail
+      console.error(`[whisper] Transcription failed for ${id}:\n${detail}`)
       return
     }
 
