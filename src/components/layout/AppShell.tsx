@@ -92,6 +92,11 @@ function AppShell() {
       case 'study': return <StudyDashboard />
       case 'work': return <WorkDashboard />
       case 'podcast': return <PodcastDashboard />
+      default: {
+        const _exhaustive: never = mode
+        console.warn(`Unhandled mode: ${_exhaustive}`)
+        return null
+      }
     }
   }
 

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer } from 'recharts'
 import type { EatingDailyDataPoint } from '../../types/eating'
 import { useTheme } from '../../hooks/useTheme'
 import { formatCalories } from '../../utils/calories'
@@ -7,9 +7,10 @@ import { formatCalories } from '../../utils/calories'
 interface EatingDailyChartProps {
   dailyBreakdown: EatingDailyDataPoint[]
   title?: string
+  calorieGoal?: number
 }
 
-function EatingDailyChart({ dailyBreakdown, title }: EatingDailyChartProps) {
+function EatingDailyChart({ dailyBreakdown, title, calorieGoal }: EatingDailyChartProps) {
   const { t } = useTranslation()
   const { isDark } = useTheme()
   const hasData = dailyBreakdown.some(d => d.calories > 0)
@@ -61,6 +62,21 @@ function EatingDailyChart({ dailyBreakdown, title }: EatingDailyChartProps) {
             }}
             cursor={{ fill: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(196,163,107,0.06)' }}
           />
+          {calorieGoal != null && calorieGoal > 0 && (
+            <ReferenceLine
+              y={calorieGoal}
+              stroke={isDark ? '#c47070' : '#c47070'}
+              strokeDasharray="6 3"
+              strokeWidth={1.5}
+              label={{
+                value: `${t('eating.goalLabel')} ${calorieGoal.toLocaleString('en-US')}`,
+                position: 'right',
+                fill: isDark ? '#c47070' : '#c47070',
+                fontSize: 10,
+                fontWeight: 600,
+              }}
+            />
+          )}
           <Bar
             dataKey="calories"
             name={t('eating.totalCalories')}

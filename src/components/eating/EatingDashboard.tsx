@@ -32,6 +32,7 @@ function EatingDashboard() {
     importData,
     getEntriesForDate, getSummaryForPeriod,
     dailyCalorieGoal, setDailyCalorieGoal,
+    customTemplates, addTemplate, deleteTemplate,
   } = useEatingEntries()
 
   const dayEntries = useMemo(() => getEntriesForDate(selectedDate), [getEntriesForDate, selectedDate])
@@ -108,6 +109,11 @@ function EatingDashboard() {
           entryCount={periodSummary.entryCount}
           averageCaloriesPerEntry={periodSummary.averageCaloriesPerEntry}
           lateNightCount={lateNightCount}
+          dailyAverage={!isDaily && periodSummary.dailyBreakdown.length > 0
+            ? Math.round(periodSummary.totalCalories / periodSummary.dailyBreakdown.filter(d => d.calories > 0).length || 1)
+            : undefined
+          }
+          calorieGoal={dailyCalorieGoal}
         />
 
         {isDaily && (
@@ -123,6 +129,7 @@ function EatingDashboard() {
             <EatingDailyChart
               dailyBreakdown={periodSummary.dailyBreakdown}
               title={viewMode === 'year' ? t('eating.chartMonthly') : undefined}
+              calorieGoal={viewMode !== 'year' ? dailyCalorieGoal : undefined}
             />
           </div>
         )}
@@ -130,7 +137,13 @@ function EatingDashboard() {
         {isDaily && (
           <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-6">
             <div className="space-y-3">
-              <MealTemplates onQuickAdd={(meal) => addEntry({ date: selectedDate, food: meal.name, calories: meal.calories, mealTime: '', category: '', note: '' })} />
+              <MealTemplates
+                onQuickAdd={(meal) => addEntry({ date: selectedDate, food: meal.name, calories: meal.calories, mealTime: '', category: '', note: '' })}
+                entries={entries}
+                savedTemplates={customTemplates}
+                onSaveTemplate={addTemplate}
+                onDeleteTemplate={deleteTemplate}
+              />
               <EatingEntryForm
                 selectedDate={selectedDate}
                 categories={categories}
@@ -145,7 +158,7 @@ function EatingDashboard() {
           </div>
         )}
 
-        {(viewMode === 'month' || viewMode === 'year') && (
+        {(viewMode === 'week' || viewMode === 'month' || viewMode === 'year') && (
           <div className="mb-4">
             <EatingProportionChart
               categoryBreakdown={periodSummary.categoryBreakdown}

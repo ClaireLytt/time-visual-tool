@@ -18,11 +18,17 @@ export interface EatingCategory {
   color: string
 }
 
+export interface EatingTemplate {
+  name: string
+  calories: number
+}
+
 export interface EatingStorageData {
   version: 1
   entries: EatingEntry[]
   categories: EatingCategory[]
   dailyCalorieGoal?: number
+  customTemplates?: EatingTemplate[]
 }
 
 export interface EatingCategoryBreakdown {

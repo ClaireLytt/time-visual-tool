@@ -15,9 +15,10 @@ export default function TodoList({ items, filter, onToggle, onDelete }: TodoList
   const { t } = useTranslation()
 
   const filtered = useMemo(() => {
-    let list = items
-    if (filter === 'active') list = items.filter(t => !t.done)
-    if (filter === 'completed') list = items.filter(t => t.done)
+    let list: TodoItemType[]
+    if (filter === 'active') list = items.filter(item => !item.done)
+    else if (filter === 'completed') list = items.filter(item => item.done)
+    else list = [...items]
     return list.sort((a, b) => {
       // Active items first, then by priority, then by creation
       if (a.done !== b.done) return a.done ? 1 : -1

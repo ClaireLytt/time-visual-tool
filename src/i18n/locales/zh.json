@@ -71,30 +71,6 @@
     "hoursGoal": "时间目标"
   },
   "finance": {
-    "budgetGoalLabel": "设置月度预算",
-    "budgetUnit": "¥"
-  },
-  "time": {
-    "hoursGoalLabel": "设置每日时间目标",
-    "hoursUnit": "小时"
-  },
-  "mode": {
-    "overview": "总览",
-    "time": "时间",
-    "finance": "理财",
-    "eating": "饮食",
-    "diary": "日记",
-    "sport": "运动",
-    "habit": "习惯",
-    "todo": "待办",
-    "study": "学习",
-    "work": "工作",
-    "podcast": "播客",
-    "toggleToFinance": "切换到理财管理",
-    "toggleToTime": "切换到时间管理",
-    "toggleToEating": "切换到饮食管理"
-  },
-  "finance": {
     "income": "收入",
     "expense": "支出",
     "balance": "结余",
@@ -116,6 +92,26 @@
     "chartDaily": "每日收支",
     "chartMonthly": "每月收支",
     "chartOverview": "收支总览"
+  },
+  "time": {
+    "hoursGoalLabel": "设置每日时间目标",
+    "hoursUnit": "小时"
+  },
+  "mode": {
+    "overview": "总览",
+    "time": "时间",
+    "finance": "理财",
+    "eating": "饮食",
+    "diary": "日记",
+    "sport": "运动",
+    "habit": "习惯",
+    "todo": "待办",
+    "study": "学习",
+    "work": "工作",
+    "podcast": "播客",
+    "toggleToFinance": "切换到理财管理",
+    "toggleToTime": "切换到时间管理",
+    "toggleToEating": "切换到饮食管理"
   },
   "eating": {
     "addTitle": "添加饮食记录",
@@ -154,7 +150,18 @@
     "goalInputAriaLabel": "每日热量目标",
     "multiplierAriaLabel": "份量倍数",
     "multiplierDecrease": "减少份量",
-    "multiplierIncrease": "增加份量"
+    "multiplierIncrease": "增加份量",
+    "templateBreakfast": "早餐",
+    "templateLunch": "午餐",
+    "templateDinner": "晚餐",
+    "frequentLabel": "常吃",
+    "addTemplate": "添加自定义模板",
+    "saveTemplate": "保存",
+    "deleteTemplate": "删除模板 {{name}}",
+    "templateNamePlaceholder": "模板名称",
+    "dailyAvg": "日均热量",
+    "vsGoal": "于目标",
+    "goalLabel": "目标"
   },
   "sport": {
     "addTitle": "添加运动记录",
@@ -235,8 +242,29 @@
     "weekRangeFormat": "M月d日",
     "weekRangeSeparator": " ~ ",
     "yearFormat": "yyyy年",
-    "dayLabels": ["周日", "周一", "周二", "周三", "周四", "周五", "周六"],
-    "monthLabels": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
+    "dayLabels": [
+      "周日",
+      "周一",
+      "周二",
+      "周三",
+      "周四",
+      "周五",
+      "周六"
+    ],
+    "monthLabels": [
+      "1月",
+      "2月",
+      "3月",
+      "4月",
+      "5月",
+      "6月",
+      "7月",
+      "8月",
+      "9月",
+      "10月",
+      "11月",
+      "12月"
+    ],
     "daySuffix": "{{day}}日"
   },
   "summary": {

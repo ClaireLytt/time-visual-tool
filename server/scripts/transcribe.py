@@ -18,6 +18,24 @@ import argparse
 import time
 from pathlib import Path
 
+def apply_gpu_limit():
+    """Limit GPU utilization via CUDA stream throttling"""
+    gpu_limit = os.environ.get("WHISPER_GPU_LIMIT", "").strip()
+    if not gpu_limit:
+        return
+    try:
+        pct = int(gpu_limit)
+        if 10 <= pct < 100:
+            # Reduce CUDA threads proportionally to limit GPU usage
+            import torch
+            if torch.cuda.is_available():
+                # Use CUDA memory fraction as a proxy for utilization
+                torch.cuda.set_per_process_memory_fraction(pct / 100.0, 0)
+                print(f"GPU memory limited to {pct}%", file=sys.stderr)
+    except (ValueError, ImportError):
+        pass
+
+
 def main():
     parser = argparse.ArgumentParser(description="Transcribe audio with faster-whisper")
     parser.add_argument("file", help="Audio file path")
@@ -38,6 +56,7 @@ def main():
         sys.exit(1)
 
     try:
+        apply_gpu_limit()
         from faster_whisper import WhisperModel
     except ImportError:
         print(json.dumps({

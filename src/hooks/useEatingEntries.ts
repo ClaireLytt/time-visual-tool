@@ -3,7 +3,7 @@ import { useFirestore } from './useFirestore'
 import { DEFAULT_EATING_CATEGORY_LIST } from '../constants/eating'
 import { computeEatingPeriodSummary } from '../utils/eatingSummary'
 import { validateEatingData } from '../utils/eatingTransfer'
-import type { EatingEntry, EatingCategory, EatingStorageData, EatingPeriodSummary, EatingViewMode } from '../types/eating'
+import type { EatingEntry, EatingCategory, EatingTemplate, EatingStorageData, EatingPeriodSummary, EatingViewMode } from '../types/eating'
 
 const INITIAL_DATA: EatingStorageData = {
   version: 1,
@@ -110,6 +110,23 @@ export function useEatingEntries() {
     })
   }, [setData])
 
+  const customTemplates = data.customTemplates ?? []
+
+  const addTemplate = useCallback((template: EatingTemplate) => {
+    setData(prev => {
+      const existing = prev.customTemplates ?? []
+      if (existing.some(t => t.name === template.name)) return prev
+      return { ...prev, customTemplates: [...existing, template] }
+    })
+  }, [setData])
+
+  const deleteTemplate = useCallback((name: string) => {
+    setData(prev => ({
+      ...prev,
+      customTemplates: (prev.customTemplates ?? []).filter(t => t.name !== name),
+    }))
+  }, [setData])
+
   return {
     entries, categories, data, loading,
     addEntry, deleteEntry, updateEntry,
@@ -117,5 +134,6 @@ export function useEatingEntries() {
     importData,
     getEntriesForDate, getSummaryForPeriod,
     dailyCalorieGoal, setDailyCalorieGoal,
+    customTemplates, addTemplate, deleteTemplate,
   }
 }

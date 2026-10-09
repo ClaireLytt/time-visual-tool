@@ -7,7 +7,7 @@ export function formatAmount(amount: number): string {
   if (!Number.isFinite(amount)) return `${symbol}0.00`
   const sign = amount < 0 ? '-' : ''
   const abs = Math.abs(amount)
-  return `${sign}${symbol}${abs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  return `${sign}${symbol}${abs.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
 /**

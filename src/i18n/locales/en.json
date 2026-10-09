@@ -71,30 +71,6 @@
     "hoursGoal": "Hours goal"
   },
   "finance": {
-    "budgetGoalLabel": "Set monthly budget",
-    "budgetUnit": "¥"
-  },
-  "time": {
-    "hoursGoalLabel": "Set daily hours goal",
-    "hoursUnit": "h"
-  },
-  "mode": {
-    "overview": "Today",
-    "time": "Time",
-    "finance": "Money",
-    "eating": "Eating",
-    "diary": "Diary",
-    "sport": "Sport",
-    "habit": "Habit",
-    "todo": "Todo",
-    "study": "Study",
-    "work": "Work",
-    "podcast": "Podcast",
-    "toggleToFinance": "Switch to money tracking",
-    "toggleToTime": "Switch to time tracking",
-    "toggleToEating": "Switch to eating tracker"
-  },
-  "finance": {
     "income": "Income",
     "expense": "Expense",
     "balance": "Balance",
@@ -116,6 +92,26 @@
     "chartDaily": "Daily income & expense",
     "chartMonthly": "Monthly income & expense",
     "chartOverview": "Overview"
+  },
+  "time": {
+    "hoursGoalLabel": "Set daily hours goal",
+    "hoursUnit": "h"
+  },
+  "mode": {
+    "overview": "Today",
+    "time": "Time",
+    "finance": "Money",
+    "eating": "Eating",
+    "diary": "Diary",
+    "sport": "Sport",
+    "habit": "Habit",
+    "todo": "Todo",
+    "study": "Study",
+    "work": "Work",
+    "podcast": "Podcast",
+    "toggleToFinance": "Switch to money tracking",
+    "toggleToTime": "Switch to time tracking",
+    "toggleToEating": "Switch to eating tracker"
   },
   "eating": {
     "addTitle": "Add eating entry",
@@ -154,7 +150,18 @@
     "goalInputAriaLabel": "Daily calorie goal",
     "multiplierAriaLabel": "Serving multiplier",
     "multiplierDecrease": "Decrease servings",
-    "multiplierIncrease": "Increase servings"
+    "multiplierIncrease": "Increase servings",
+    "templateBreakfast": "Breakfast",
+    "templateLunch": "Lunch",
+    "templateDinner": "Dinner",
+    "frequentLabel": "Frequent",
+    "addTemplate": "Add custom template",
+    "saveTemplate": "Save",
+    "deleteTemplate": "Delete template {{name}}",
+    "templateNamePlaceholder": "Template name",
+    "dailyAvg": "Daily Avg",
+    "vsGoal": "vs goal",
+    "goalLabel": "Goal"
   },
   "sport": {
     "addTitle": "Add exercise entry",
@@ -235,8 +242,29 @@
     "weekRangeFormat": "MMM d",
     "weekRangeSeparator": " – ",
     "yearFormat": "yyyy",
-    "dayLabels": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-    "monthLabels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    "dayLabels": [
+      "Sun",
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat"
+    ],
+    "monthLabels": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ],
     "daySuffix": "{{day}}"
   },
   "summary": {

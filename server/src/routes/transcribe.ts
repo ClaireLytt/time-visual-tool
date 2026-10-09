@@ -23,8 +23,15 @@ interface Job {
 }
 const jobs = new Map<string, Job>()
 
+/** Sanitize an id so it is safe for use in file paths and shell arguments */
+function sanitizeId(raw: string): string {
+  // Strip path separators and non-alphanumeric chars (keep - _ .)
+  return raw.replace(/[^a-zA-Z0-9_.-]/g, '_').slice(0, 128)
+}
+
 function deriveId(audioUrl: string, episodeId?: string): string {
-  return episodeId || createHash('sha1').update(audioUrl).digest('hex').slice(0, 16)
+  if (episodeId) return sanitizeId(episodeId)
+  return createHash('sha1').update(audioUrl).digest('hex').slice(0, 16)
 }
 
 /** Read cached transcript from disk if available */
@@ -153,11 +160,13 @@ async function runTranscription(id: string, audioUrl: string) {
     const args = [scriptPath, tempFile, '--model', model, '--device', device]
     if (language) args.push('--language', language)
 
-    console.log(`Transcribing with ${pythonCmd} (model=${model}, device=${device})...`)
+    const gpuLimit = process.env.WHISPER_GPU_LIMIT ?? ''
+    console.log(`Transcribing with ${pythonCmd} (model=${model}, device=${device}${gpuLimit ? `, gpu_limit=${gpuLimit}%` : ''})...`)
     const result = await new Promise<string>((resolve, reject) => {
+      const env = { ...process.env, WHISPER_GPU_LIMIT: gpuLimit }
       const proc = spawn(pythonCmd!, args, {
         stdio: ['ignore', 'pipe', 'pipe'],
-        shell: true,
+        env,
       })
       let stdout = ''
       let stderr = ''
@@ -253,9 +262,11 @@ transcribeRouter.post('/transcribe', async (req, res, next) => {
  */
 transcribeRouter.get('/transcribe', (req, res, next) => {
   try {
-    const episodeId = String(req.query.episodeId ?? '')
-    if (!episodeId) throw new HttpError(400, 'episodeId required')
-    const job = jobs.get(episodeId)
+    const episodeId = req.query.episodeId ? String(req.query.episodeId) : ''
+    const audioUrl = req.query.audioUrl ? String(req.query.audioUrl) : ''
+    if (!episodeId && !audioUrl) throw new HttpError(400, 'episodeId or audioUrl required')
+    const id = deriveId(audioUrl, episodeId || undefined)
+    const job = jobs.get(id)
     if (!job) throw new HttpError(404, 'no transcription job for this episode')
     res.json(job)
   } catch (e) {

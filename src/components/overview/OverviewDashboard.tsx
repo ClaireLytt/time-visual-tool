@@ -88,7 +88,7 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
   const habitCheckedCount = useMemo(() => habit.getCheckedCountForDate(today), [habit.getCheckedCountForDate, today])
 
   const todoToday = useMemo(() => todo.getItemsForDate(today), [todo.getItemsForDate, today])
-  const todoDoneCount = useMemo(() => todoToday.filter(t => t.done).length, [todoToday])
+  const todoDoneCount = useMemo(() => todoToday.filter(item => item.done).length, [todoToday])
 
   const studyToday = useMemo(() => study.getEntriesForDate(today), [study.getEntriesForDate, today])
   const studyMinutes = useMemo(() => studyToday.reduce((s, e) => s + e.duration, 0), [studyToday])
@@ -246,11 +246,11 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
           { emoji: '🍽', label: 'Eating', color: '#f77622', values: last7.map(d => eating.getEntriesForDate(d).length) },
           { emoji: '🏃', label: 'Sport', color: '#2ce8f5', values: last7.map(d => sport.getEntriesForDate(d).reduce((s, e) => s + e.duration, 0)) },
           { emoji: '🏰', label: 'Habit', color: '#e8a838', values: last7.map(d => habit.getCheckedCountForDate(d)) },
-          { emoji: '📋', label: 'Todo', color: '#5b8def', values: last7.map(d => todo.getItemsForDate(d).filter(t => t.done).length) },
+          { emoji: '📋', label: 'Todo', color: '#5b8def', values: last7.map(d => todo.getItemsForDate(d).filter(item => item.done).length) },
           { emoji: '🎓', label: 'Study', color: '#4a90d9', values: last7.map(d => study.getEntriesForDate(d).reduce((s, e) => s + e.duration, 0)) },
           { emoji: '🏢', label: 'Work', color: '#e67e22', values: last7.map(d => work.getEntriesForDate(d).reduce((s, e) => s + e.duration, 0)) },
         ]
-      }, [time, finance, eating, sport, habit, todo, study, work])} />
+      }, [time.getEntriesForDate, finance.getEntriesForDate, eating.getEntriesForDate, sport.getEntriesForDate, habit.getCheckedCountForDate, todo.getItemsForDate, study.getEntriesForDate, work.getEntriesForDate])} />
 
       {/* ── Export ── */}
       <button
