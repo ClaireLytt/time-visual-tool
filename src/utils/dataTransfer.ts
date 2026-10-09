@@ -9,9 +9,9 @@ export function isValidEntry(e: unknown): e is TimeEntry {
   return (
     typeof obj.id === 'string' &&
     typeof obj.date === 'string' &&
-    typeof obj.activity === 'string' &&
-    typeof obj.duration === 'number' &&
-    typeof obj.weight === 'number' &&
+    typeof obj.activity === 'string' && obj.activity.length <= 100 &&
+    typeof obj.duration === 'number' && obj.duration > 0 && obj.duration <= 1440 &&
+    typeof obj.weight === 'number' && obj.weight >= 0.1 && obj.weight <= 10 &&
     typeof obj.category === 'string' &&
     typeof obj.createdAt === 'string'
   )
@@ -38,7 +38,12 @@ export function validateImportData(raw: unknown): StorageData | null {
     categories = DEFAULT_CATEGORY_LIST
   }
 
-  return { version: 2, entries, categories }
+  let dailyHoursGoal: number | undefined
+  if (typeof obj.dailyHoursGoal === 'number' && obj.dailyHoursGoal >= 0.5 && obj.dailyHoursGoal <= 24) {
+    dailyHoursGoal = Math.round(obj.dailyHoursGoal * 2) / 2 // snap to 0.5
+  }
+
+  return { version: 2, entries, categories, ...(dailyHoursGoal != null && { dailyHoursGoal }) }
 }
 
 export function exportToFile(data: StorageData) {

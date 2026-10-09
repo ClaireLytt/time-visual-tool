@@ -9,8 +9,8 @@ export function isValidFinanceEntry(e: unknown): e is FinanceEntry {
   return (
     typeof obj.id === 'string' &&
     typeof obj.date === 'string' &&
-    typeof obj.description === 'string' &&
-    typeof obj.amount === 'number' &&
+    typeof obj.description === 'string' && obj.description.length <= 100 &&
+    typeof obj.amount === 'number' && obj.amount > 0 && obj.amount <= 1000000000 &&
     (obj.type === 'income' || obj.type === 'expense') &&
     typeof obj.category === 'string' &&
     typeof obj.createdAt === 'string'
@@ -42,7 +42,12 @@ export function validateFinanceData(raw: unknown): FinanceStorageData | null {
     categories = DEFAULT_FINANCE_CATEGORY_LIST
   }
 
-  return { version: 1, entries, categories }
+  let monthlyBudget: number | undefined
+  if (typeof obj.monthlyBudget === 'number' && obj.monthlyBudget >= 100 && obj.monthlyBudget <= 1000000) {
+    monthlyBudget = Math.round(obj.monthlyBudget)
+  }
+
+  return { version: 1, entries, categories, ...(monthlyBudget != null && { monthlyBudget }) }
 }
 
 export function exportFinanceToFile(data: FinanceStorageData) {

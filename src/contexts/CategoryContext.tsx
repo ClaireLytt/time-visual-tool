@@ -9,7 +9,7 @@ interface CategoryContextValue {
 
 const CategoryContext = createContext<CategoryContextValue>({
   categories: [],
-  getColor: () => '#94a3b8',
+  getColor: () => '#a0a0a0',
 })
 
 export function CategoryProvider({ categories, children }: { categories: Category[]; children: React.ReactNode }) {
@@ -20,7 +20,7 @@ export function CategoryProvider({ categories, children }: { categories: Categor
     }
     return {
       categories,
-      getColor: (name: string) => colorMap[name] ?? '#94a3b8',
+      getColor: (name: string) => colorMap[name] ?? '#a0a0a0',
     }
   }, [categories])
 

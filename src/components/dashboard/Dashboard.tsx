@@ -12,6 +12,8 @@ import TimeProportionChart from '../charts/TimeProportionChart'
 import DailyBreakdownChart from '../charts/DailyBreakdownChart'
 import CategoryManager from '../categories/CategoryManager'
 import DataTransfer from '../settings/DataTransfer'
+import AnimatedCollapse from '../common/AnimatedCollapse'
+import QuickTimer from './QuickTimer'
 import { exportToFile, readImportFile } from '../../utils/dataTransfer'
 import type { TimeEntry, ViewMode, StorageData } from '../../types'
 
@@ -48,13 +50,6 @@ function Dashboard() {
     setEditingEntry(null)
   }, [])
 
-  if (loading) {
-    return (
-      <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
-  }
 
   return (
     <CategoryProvider categories={categories}>
@@ -74,7 +69,7 @@ function Dashboard() {
           </button>
         </div>
 
-        {showSettings && (
+        <AnimatedCollapse open={showSettings}>
           <div className="space-y-4 mb-4">
             <CategoryManager
               categories={categories}
@@ -91,7 +86,7 @@ function Dashboard() {
               getCounts={(d: StorageData) => ({ entries: d.entries.length, categories: d.categories.length })}
             />
           </div>
-        )}
+        </AnimatedCollapse>
 
         <DatePicker selectedDate={selectedDate} onDateChange={handleDateChange} viewMode={viewMode} />
         <DaySummaryCard
@@ -106,9 +101,10 @@ function Dashboard() {
           </div>
         )}
 
-        <div className={isDaily ? 'grid grid-cols-1 lg:grid-cols-2 gap-4' : 'space-y-4'}>
+        <div className={isDaily ? 'grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-6' : 'space-y-6'}>
           {isDaily && (
             <div className="space-y-4">
+              <QuickTimer onComplete={() => {}} />
               <EntryForm
                 selectedDate={selectedDate}
                 onAdd={addEntry}

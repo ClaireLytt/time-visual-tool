@@ -9,8 +9,8 @@ export function isValidEatingEntry(e: unknown): e is EatingEntry {
   return (
     typeof obj.id === 'string' &&
     typeof obj.date === 'string' &&
-    typeof obj.food === 'string' &&
-    typeof obj.calories === 'number' &&
+    typeof obj.food === 'string' && obj.food.length <= 100 &&
+    typeof obj.calories === 'number' && obj.calories >= 0 && obj.calories <= 100000 &&
     typeof obj.mealTime === 'string' &&
     typeof obj.category === 'string' &&
     typeof obj.note === 'string' &&
@@ -42,7 +42,12 @@ export function validateEatingData(raw: unknown): EatingStorageData | null {
     categories = DEFAULT_EATING_CATEGORY_LIST
   }
 
-  return { version: 1, entries, categories }
+  let dailyCalorieGoal: number | undefined
+  if (typeof obj.dailyCalorieGoal === 'number' && obj.dailyCalorieGoal >= 100 && obj.dailyCalorieGoal <= 10000) {
+    dailyCalorieGoal = Math.round(obj.dailyCalorieGoal)
+  }
+
+  return { version: 1, entries, categories, ...(dailyCalorieGoal != null && { dailyCalorieGoal }) }
 }
 
 export function exportEatingToFile(data: EatingStorageData) {

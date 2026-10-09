@@ -8,8 +8,11 @@ export interface DiaryEntryFields {
   gratitude: string
   feelings: string
   motivation: string
+  mood?: string
   goals: DiaryGoal[]
 }
+
+const MOOD_OPTIONS = ['😊', '😐', '😢', '😤', '🥰', '😴']
 
 interface DiaryEntryEditorProps {
   periodType: DiaryPeriodType
@@ -19,7 +22,7 @@ interface DiaryEntryEditorProps {
   onDelete: (id: string) => void
 }
 
-const TEXTAREA_CLASS = 'w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-base sm:text-sm leading-relaxed bg-gray-50 dark:bg-gray-700/60 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-400 dark:focus:ring-purple-500 focus:bg-white dark:focus:bg-gray-700 resize-none transition-colors'
+const TEXTAREA_CLASS = 'w-full px-3 py-2.5 border border-calm-border dark:border-gray-600 rounded-xl text-base sm:text-sm leading-relaxed bg-gray-50 dark:bg-gray-700/60 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-mode-diary focus:bg-white dark:focus:bg-gray-700 resize-none transition-colors'
 
 const LABEL_CLASS = 'block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1.5'
 
@@ -29,6 +32,7 @@ function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete }: Di
   const [feelings, setFeelings] = useState(entry?.feelings ?? '')
   const [motivation, setMotivation] = useState(entry?.motivation ?? '')
   const [goals, setGoals] = useState<DiaryGoal[]>(entry?.goals ?? [])
+  const [mood, setMood] = useState(entry?.mood ?? '')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [prevPeriod, setPrevPeriod] = useState(`${periodType}:${periodKey}`)
 
@@ -38,6 +42,7 @@ function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete }: Di
     setGratitude(entry?.gratitude ?? '')
     setFeelings(entry?.feelings ?? '')
     setMotivation(entry?.motivation ?? '')
+    setMood(entry?.mood ?? '')
     setGoals(entry?.goals ?? [])
   }
 
@@ -47,6 +52,7 @@ function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete }: Di
     gratitude !== (entry?.gratitude ?? '') ||
     feelings !== (entry?.feelings ?? '') ||
     motivation !== (entry?.motivation ?? '') ||
+    mood !== (entry?.mood ?? '') ||
     JSON.stringify(goals) !== JSON.stringify(entry?.goals ?? [])
   const isEmpty =
     gratitude.trim() === '' && feelings.trim() === '' && motivation.trim() === '' && goals.length === 0
@@ -59,10 +65,25 @@ function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete }: Di
     : null
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-5">
+    <div className="panel p-4 sm:p-5">
       <h3 className="text-base font-bold text-gray-800 dark:text-gray-100 mb-4">
         {t(`diary.editorTitle.${periodType}`)}
       </h3>
+
+      {isDaily && (
+        <div className="flex gap-1.5 mb-4">
+          {MOOD_OPTIONS.map(m => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setMood(mood === m ? '' : m)}
+              className={`w-9 h-9 rounded-lg text-lg flex items-center justify-center transition-all ${mood === m ? 'ring-2 ring-mode-diary bg-mode-diary/10 scale-110' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+            >
+              {m}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="space-y-4">
         {!isDaily && (
@@ -80,6 +101,7 @@ function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete }: Di
             <textarea
               id="diary-gratitude"
               rows={3}
+              maxLength={2000}
               value={gratitude}
               onChange={e => setGratitude(e.target.value)}
               className={TEXTAREA_CLASS}
@@ -94,6 +116,7 @@ function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete }: Di
           <textarea
             id="diary-feelings"
             rows={isDaily ? 3 : 5}
+            maxLength={2000}
             value={feelings}
             onChange={e => setFeelings(e.target.value)}
             className={TEXTAREA_CLASS}
@@ -108,11 +131,18 @@ function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete }: Di
             <textarea
               id="diary-motivation"
               rows={2}
+              maxLength={2000}
               value={motivation}
               onChange={e => setMotivation(e.target.value)}
               className={TEXTAREA_CLASS}
             />
           </div>
+        )}
+
+        {isDaily && (
+          <p className="text-xs text-gray-400 dark:text-gray-500 text-right">
+            {(gratitude.length + feelings.length + motivation.length).toLocaleString()} 字
+          </p>
         )}
 
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 pt-1">
@@ -121,10 +151,11 @@ function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete }: Di
               gratitude: isDaily ? gratitude : '',
               feelings,
               motivation: isDaily ? motivation : '',
+              mood: isDaily ? mood : undefined,
               goals: isDaily ? [] : goals,
             })}
             disabled={!canSave}
-            className="w-full sm:w-auto px-5 py-2.5 sm:py-2 bg-purple-500 hover:bg-purple-600 active:bg-purple-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-base sm:text-sm font-medium rounded-xl transition-colors"
+            className="w-full sm:w-auto px-5 py-2.5 sm:py-2 bg-mode-diary hover:opacity-90 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-base sm:text-sm font-medium rounded-xl transition-colors"
           >
             {t('diary.saveButton')}
           </button>
@@ -157,6 +188,7 @@ function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete }: Di
           setGratitude('')
           setFeelings('')
           setMotivation('')
+          setMood('')
           setGoals([])
         }}
         onCancel={() => setShowDeleteConfirm(false)}

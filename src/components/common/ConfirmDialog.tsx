@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import { motion, AnimatePresence } from 'motion/react'
 
 interface ConfirmDialogProps {
   open: boolean
@@ -51,43 +52,56 @@ function ConfirmDialog({
     }
   }, [])
 
-  if (!open) return null
-
   const confirmColors =
     confirmVariant === 'danger'
       ? 'bg-red-500 hover:bg-red-600 text-white'
-      : 'bg-blue-500 hover:bg-blue-600 text-white'
+      : 'bg-calm-accent hover:bg-calm-accent-hover text-white'
 
   return (
-    <div className="fixed inset-0 bg-black/40 dark:bg-black/60 z-50 flex items-center justify-center" onClick={onCancel}>
-      <div
-        className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 max-w-sm w-full mx-4"
-        onClick={e => e.stopPropagation()}
-        onKeyDown={handleKeyDown}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="confirm-dialog-title"
-      >
-        <h3 id="confirm-dialog-title" className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">{title}</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-300 mb-5">{message}</p>
-        <div className="flex gap-3 justify-end">
-          <button
-            ref={cancelRef}
-            onClick={onCancel}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className="fixed inset-0 bg-black/30 dark:bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center"
+          onClick={onCancel}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+        >
+          <motion.div
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-dialog p-6 max-w-sm w-full mx-4"
+            onClick={e => e.stopPropagation()}
+            onKeyDown={handleKeyDown}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="confirm-dialog-title"
+            initial={{ opacity: 0, transform: 'scale(0.96)' }}
+            animate={{ opacity: 1, transform: 'scale(1)' }}
+            exit={{ opacity: 0, transform: 'scale(0.96)' }}
+            transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
           >
-            {cancelLabel ?? t('confirm.cancel')}
-          </button>
-          <button
-            ref={confirmRef}
-            onClick={onConfirm}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${confirmColors}`}
-          >
-            {confirmLabel ?? t('confirm.ok')}
-          </button>
-        </div>
-      </div>
-    </div>
+            <h3 id="confirm-dialog-title" className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">{title}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-5">{message}</p>
+            <div className="flex gap-3 justify-end">
+              <button
+                ref={cancelRef}
+                onClick={onCancel}
+                className="btn-secondary"
+              >
+                {cancelLabel ?? t('confirm.cancel')}
+              </button>
+              <button
+                ref={confirmRef}
+                onClick={onConfirm}
+                className={`btn-tactile ${confirmColors}`}
+              >
+                {confirmLabel ?? t('confirm.ok')}
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }
 

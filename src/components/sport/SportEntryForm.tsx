@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { parseCalorieInput } from '../../utils/calories'
+import DurationPresets from '../common/DurationPresets'
 import type { SportEntry, SportCategory } from '../../types/sport'
 
 interface SportEntryFormProps {
@@ -51,10 +52,15 @@ function SportEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdat
     e.preventDefault()
     setError('')
 
+    if (!content.trim()) {
+      setError(t('sport.errorContentEmpty'))
+      return
+    }
+
     let duration = 0
     if (durationInput.trim()) {
       const n = Number(durationInput.trim())
-      if (!Number.isFinite(n) || n < 0) {
+      if (!Number.isFinite(n) || n < 0 || n > 1440) {
         setError(t('sport.errorDuration'))
         return
       }
@@ -98,8 +104,8 @@ function SportEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdat
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-4">
-      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
+    <form onSubmit={handleSubmit} className="panel p-4 mb-4">
+      <h3 className="text-xs font-semibold tracking-wide uppercase text-calm-muted dark:text-gray-200 mb-3">
         {isEditing ? t('sport.editTitle') : t('sport.addTitle')}
       </h3>
 
@@ -127,6 +133,9 @@ function SportEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdat
             inputMode="numeric"
           />
           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-gray-500 pointer-events-none">min</span>
+        </div>
+        <div className="col-span-2">
+          <DurationPresets onSelect={v => setDurationInput(String(v))} selected={durationInput ? parseInt(durationInput, 10) : undefined} />
         </div>
 
         <div>
@@ -172,7 +181,7 @@ function SportEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdat
       <div className={isEditing ? 'flex gap-2' : ''}>
         <button
           type="submit"
-          className={`${isEditing ? 'flex-1' : 'w-full'} py-2 bg-teal-500 hover:bg-teal-600 text-white text-sm font-medium rounded-lg transition-colors`}
+          className={`${isEditing ? 'flex-1' : 'w-full'} py-2 bg-mode-sport hover:opacity-90 text-white text-sm font-medium rounded-lg transition-colors`}
         >
           {isEditing ? t('entry.saveButton') : t('sport.addButton')}
         </button>

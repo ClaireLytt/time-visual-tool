@@ -30,7 +30,7 @@ function FinanceProportionChart({ incomeBreakdown, expenseBreakdown, income, exp
   const legendItems = Object.entries(breakdown).sort((a, b) => b[1].amount - a[1].amount)
 
   const typeToggle = (
-    <div className="flex rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 text-xs" role="radiogroup" aria-label={t('finance.chartTypeLabel')}>
+    <div className="flex rounded-lg overflow-hidden border border-calm-border dark:border-gray-600 text-xs" role="radiogroup" aria-label={t('finance.chartTypeLabel')}>
       {(['expense', 'income'] as const).map(type => (
         <button
           key={type}
@@ -38,7 +38,7 @@ function FinanceProportionChart({ incomeBreakdown, expenseBreakdown, income, exp
           role="radio"
           aria-checked={chartType === type}
           onClick={() => setChartType(type)}
-          className={`px-2 py-1 font-medium transition-colors ${chartType === type ? (type === 'expense' ? 'bg-rose-500 text-white' : 'bg-green-500 text-white') : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+          className={`px-2 py-1 font-medium transition-colors ${chartType === type ? (type === 'expense' ? 'bg-[#c47070] text-white' : 'bg-mode-finance text-white') : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
         >
           {t(type === 'expense' ? 'finance.expense' : 'finance.income')}
         </button>
@@ -47,7 +47,7 @@ function FinanceProportionChart({ incomeBreakdown, expenseBreakdown, income, exp
   )
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+    <div className="panel p-4">
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
           {t('finance.chartProportion', { type: t(chartType === 'expense' ? 'finance.expense' : 'finance.income') })}
@@ -57,7 +57,7 @@ function FinanceProportionChart({ incomeBreakdown, expenseBreakdown, income, exp
 
       {chartData.length === 0 ? (
         <div className="p-6 text-center">
-          <div className="w-24 h-24 mx-auto mb-3 rounded-full border-4 border-dashed border-gray-200 dark:border-gray-600 flex items-center justify-center">
+          <div className="w-24 h-24 mx-auto mb-3 rounded-full border-4 border-dashed border-calm-border dark:border-gray-600 flex items-center justify-center">
             <WalletIcon className="w-8 h-8 text-gray-300 dark:text-gray-600" />
           </div>
           <p className="text-gray-400 dark:text-gray-500 text-sm">{t('chart.noData')}</p>

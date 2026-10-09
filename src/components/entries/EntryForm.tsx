@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCategories } from '../../contexts/CategoryContext'
 import { parseDurationInput } from '../../utils/time'
+import DurationPresets from '../common/DurationPresets'
 import type { TimeEntry } from '../../types'
 
 interface EntryFormProps {
@@ -88,8 +89,8 @@ function EntryForm({ selectedDate, onAdd, editingEntry, onUpdate, onCancelEdit }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-4">
-      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
+    <form onSubmit={handleSubmit} className="panel p-4 mb-4">
+      <h3 className="text-xs font-semibold tracking-wide uppercase text-calm-muted dark:text-gray-200 mb-3">
         {isEditing ? t('entry.editTitle') : t('entry.addTitle')}
       </h3>
 
@@ -115,6 +116,9 @@ function EntryForm({ selectedDate, onAdd, editingEntry, onUpdate, onCancelEdit }
             aria-label={t('entry.durationLabel')}
             className="input-base"
           />
+        </div>
+        <div className="col-span-2">
+          <DurationPresets onSelect={v => setDurationInput(String(v))} selected={durationInput ? parseInt(durationInput, 10) : undefined} />
         </div>
 
         <div>
@@ -150,7 +154,7 @@ function EntryForm({ selectedDate, onAdd, editingEntry, onUpdate, onCancelEdit }
       <div className={isEditing ? 'flex gap-2' : ''}>
         <button
           type="submit"
-          className={`${isEditing ? 'flex-1' : 'w-full'} py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors`}
+          className={`${isEditing ? 'flex-1' : 'w-full'} py-2 bg-calm-accent text-white text-sm font-medium rounded-lg hover:bg-calm-accent-hover transition-colors`}
         >
           {isEditing ? t('entry.saveButton') : t('entry.addButton')}
         </button>

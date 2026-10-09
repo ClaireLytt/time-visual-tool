@@ -13,6 +13,12 @@ function cacheKey(uid: string, collection: string): string {
   return `${uid}/${collection}`
 }
 
+/**
+ * Max time (ms) to show a loading spinner before falling back to initial data.
+ * Prevents infinite spinners when Firestore is slow or offline.
+ */
+const LOADING_TIMEOUT_MS = 3000
+
 export function useFirestore<T>(
   collectionName: string,
   initialValue: T,
@@ -28,8 +34,10 @@ export function useFirestore<T>(
     return initialValue
   }
 
+  // Only show loading if there's a user AND no cached data yet
+  const hasCachedData = !!uid && cache.has(cacheKey(uid!, collectionName))
   const [data, setDataState] = useState<T>(resolve)
-  const [loading, setLoading] = useState(() => !!uid && !cache.has(cacheKey(uid!, collectionName)))
+  const [loading, setLoading] = useState(() => !!uid && !hasCachedData)
   const [error, setError] = useState<string | null>(null)
   const dataRef = useRef<T>(data)
 
@@ -40,12 +48,24 @@ export function useFirestore<T>(
   useEffect(() => {
     if (!uid) return
 
+    // If cache already has data, ensure loading is false immediately
+    const key = cacheKey(uid, collectionName)
+    if (cache.has(key)) {
+      setLoading(false)
+    }
+
     const docRef = doc(db, 'users', uid, collectionName, 'data')
+
+    // Timeout fallback: stop loading after LOADING_TIMEOUT_MS even if
+    // Firestore hasn't responded (e.g. offline, slow network)
+    const timer = setTimeout(() => {
+      setLoading(false)
+    }, LOADING_TIMEOUT_MS)
 
     const unsubscribe = onSnapshot(
       docRef,
       (snapshot) => {
-        const key = cacheKey(uid, collectionName)
+        clearTimeout(timer)
         if (snapshot.exists()) {
           const raw = snapshot.data()
           const validated = validate ? validate(raw) : (raw as T)
@@ -61,11 +81,15 @@ export function useFirestore<T>(
         setLoading(false)
       },
       () => {
+        clearTimeout(timer)
         setLoading(false)
       },
     )
 
-    return () => unsubscribe()
+    return () => {
+      clearTimeout(timer)
+      unsubscribe()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uid, collectionName])
 

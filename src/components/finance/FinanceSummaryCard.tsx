@@ -13,22 +13,22 @@ const FinanceSummaryCard = memo(function FinanceSummaryCard({ income, expense, b
   const { t } = useTranslation()
 
   const stats = [
-    { label: t('finance.income'), value: formatAmount(income), color: 'text-green-600 dark:text-green-400' },
-    { label: t('finance.expense'), value: formatAmount(expense), color: 'text-rose-600 dark:text-rose-400' },
+    { label: t('finance.income'), value: formatAmount(income), color: 'text-mode-finance' },
+    { label: t('finance.expense'), value: formatAmount(expense), color: 'text-[#c47070]' },
     {
       label: t('finance.balance'),
       value: formatAmount(balance),
-      color: balance >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-rose-600 dark:text-rose-400',
+      color: balance >= 0 ? 'text-calm-accent' : 'text-[#c47070]',
     },
     { label: t('summary.entryCount'), value: t('finance.countUnit', { count: entryCount }), color: 'text-gray-800 dark:text-gray-100' },
   ]
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-      {stats.map(stat => (
-        <div key={stat.label} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-3 text-center">
-          <p className={`text-lg font-bold ${stat.color}`}>{stat.value}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{stat.label}</p>
+    <div className="grid grid-cols-2 sm:grid-cols-[2fr_2fr_1fr_1fr] gap-4 mb-5">
+      {stats.map((stat, i) => (
+        <div key={stat.label} className={`panel ${i < 2 ? 'pt-6 pb-4 pl-5 pr-4 text-left' : 'p-3 text-center'}`}>
+          <p className="font-pixel text-[7px] text-px-green dark:text-px-green mb-2">{stat.label}</p>
+          <p className={`${i < 2 ? 'text-2xl' : 'text-lg'} font-bold tabular-nums tracking-display ${stat.color}`}>{stat.value}</p>
         </div>
       ))}
     </div>

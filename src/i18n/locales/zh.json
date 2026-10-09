@@ -37,6 +37,7 @@
       "year": "本年目标"
     },
     "goalAdd": "添加",
+    "goalLimit": "最多添加 {{max}} 个目标",
     "goalRemove": "删除目标",
     "saveButton": "保存",
     "savedAt": "已保存 · {{time}}",
@@ -47,15 +48,27 @@
     "emptyTitle": "还没有记录",
     "emptySubtitle": "写下你的第一篇吧"
   },
-  "mode": {
-    "time": "时间",
-    "finance": "理财",
-    "eating": "饮食",
-    "diary": "日记",
-    "sport": "运动",
-    "toggleToFinance": "切换到理财管理",
-    "toggleToTime": "切换到时间管理",
-    "toggleToEating": "切换到饮食管理"
+  "overviewApp": {
+    "title": "今日总览",
+    "subtitle": "你的一天一目了然"
+  },
+  "overview": {
+    "timeCard": "已记录时间",
+    "financeCard": "收支",
+    "eatingCard": "热量",
+    "sportCard": "运动",
+    "diaryCard": "日记",
+    "restDay": "休息日",
+    "written": "已记录",
+    "notYet": "未记录",
+    "exportAll": "导出全部数据",
+    "exportDesc": "下载所有模块数据为 JSON 文件，换电脑时可导入恢复",
+    "streak": "天连续",
+    "income": "收入",
+    "expense": "支出",
+    "meals": "餐",
+    "budget": "预算",
+    "hoursGoal": "时间目标"
   },
   "finance": {
     "income": "收入",
@@ -79,6 +92,26 @@
     "chartDaily": "每日收支",
     "chartMonthly": "每月收支",
     "chartOverview": "收支总览"
+  },
+  "time": {
+    "hoursGoalLabel": "设置每日时间目标",
+    "hoursUnit": "小时"
+  },
+  "mode": {
+    "overview": "总览",
+    "time": "时间",
+    "finance": "理财",
+    "eating": "饮食",
+    "diary": "日记",
+    "sport": "运动",
+    "habit": "习惯",
+    "todo": "待办",
+    "study": "学习",
+    "work": "工作",
+    "podcast": "播客",
+    "toggleToFinance": "切换到理财管理",
+    "toggleToTime": "切换到时间管理",
+    "toggleToEating": "切换到饮食管理"
   },
   "eating": {
     "addTitle": "添加饮食记录",
@@ -112,7 +145,23 @@
     "countTimes": "{{count}} 次",
     "chartDaily": "每日热量",
     "chartMonthly": "每月热量",
-    "chartProportion": "热量分布"
+    "chartProportion": "热量分布",
+    "goalSetAriaLabel": "设置每日热量目标",
+    "goalInputAriaLabel": "每日热量目标",
+    "multiplierAriaLabel": "份量倍数",
+    "multiplierDecrease": "减少份量",
+    "multiplierIncrease": "增加份量",
+    "templateBreakfast": "早餐",
+    "templateLunch": "午餐",
+    "templateDinner": "晚餐",
+    "frequentLabel": "常吃",
+    "addTemplate": "添加自定义模板",
+    "saveTemplate": "保存",
+    "deleteTemplate": "删除模板 {{name}}",
+    "templateNamePlaceholder": "模板名称",
+    "dailyAvg": "日均热量",
+    "vsGoal": "于目标",
+    "goalLabel": "目标"
   },
   "sport": {
     "addTitle": "添加运动记录",
@@ -128,6 +177,7 @@
     "notePlaceholder": "备注（感受、强度等）",
     "noteLabel": "备注",
     "errorContent": "请输入训练内容",
+    "errorContentEmpty": "请输入运动内容",
     "errorDuration": "请输入有效的分钟数（如 30、60）",
     "errorCalorie": "请输入有效热量",
     "emptyTitle": "今天还没有运动记录",
@@ -192,8 +242,29 @@
     "weekRangeFormat": "M月d日",
     "weekRangeSeparator": " ~ ",
     "yearFormat": "yyyy年",
-    "dayLabels": ["周日", "周一", "周二", "周三", "周四", "周五", "周六"],
-    "monthLabels": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
+    "dayLabels": [
+      "周日",
+      "周一",
+      "周二",
+      "周三",
+      "周四",
+      "周五",
+      "周六"
+    ],
+    "monthLabels": [
+      "1月",
+      "2月",
+      "3月",
+      "4月",
+      "5月",
+      "6月",
+      "7月",
+      "8月",
+      "9月",
+      "10月",
+      "11月",
+      "12月"
+    ],
     "daySuffix": "{{day}}日"
   },
   "summary": {
@@ -246,6 +317,7 @@
     "newNamePlaceholder": "新分类名称",
     "newNameLabel": "新分类名称",
     "addButton": "添加",
+    "limitReached": "最多添加 {{max}} 个分类",
     "saveButton": "保存",
     "cancelButton": "取消",
     "editAriaLabel": "编辑分类 {{name}}",
@@ -364,5 +436,126 @@
   },
   "currency": {
     "symbol": "¥"
+  },
+  "habitApp": {
+    "title": "HabitVisual",
+    "subtitle": "每日习惯打卡"
+  },
+  "todoApp": {
+    "title": "TodoVisual",
+    "subtitle": "管理你的任务"
+  },
+  "habit": {
+    "addTitle": "添加习惯",
+    "namePlaceholder": "习惯名称",
+    "addButton": "添加",
+    "completed": "已完成",
+    "streak": "连续 {{count}} 天",
+    "check": "打卡",
+    "uncheck": "取消打卡",
+    "deleteTitle": "删除习惯",
+    "deleteMessage": "确定删除「{{name}}」？相关打卡记录也会一并删除。",
+    "emptyTitle": "还没有习惯，添加一个吧",
+    "weekRate": "近 7 天",
+    "monthRate": "近 30 天"
+  },
+  "todo": {
+    "addTitle": "添加任务",
+    "textPlaceholder": "任务内容",
+    "addButton": "添加",
+    "completed": "已完成",
+    "markDone": "标记完成",
+    "markUndone": "取消完成",
+    "deleteTitle": "删除任务",
+    "deleteMessage": "确定删除这个任务？",
+    "emptyTitle": "没有任务",
+    "priority": {
+      "high": "高",
+      "medium": "中",
+      "low": "低"
+    },
+    "filter": {
+      "all": "全部",
+      "active": "进行中",
+      "completed": "已完成"
+    }
+  },
+  "studyApp": {
+    "title": "StudyVisual",
+    "subtitle": "记录你的学习时光"
+  },
+  "study": {
+    "addTitle": "记录学习",
+    "subjectLabel": "科目",
+    "durationLabel": "时长（分钟）",
+    "durationPlaceholder": "分钟数",
+    "notesLabel": "笔记",
+    "notesPlaceholder": "学了什么...",
+    "addButton": "添加",
+    "deleteTitle": "删除记录",
+    "deleteMessage": "确定删除这条学习记录？",
+    "emptyTitle": "今天还没有学习记录",
+    "totalDuration": "学习时长",
+    "entryCount": "记录数"
+  },
+  "workApp": {
+    "title": "WorkVisual",
+    "subtitle": "记录你的工作日志"
+  },
+  "work": {
+    "addTitle": "记录工作",
+    "projectLabel": "项目",
+    "taskLabel": "任务",
+    "taskPlaceholder": "做了什么...",
+    "durationLabel": "时长（分钟）",
+    "durationPlaceholder": "分钟数",
+    "addButton": "添加",
+    "deleteTitle": "删除记录",
+    "deleteMessage": "确定删除这条工作记录？",
+    "emptyTitle": "今天还没有工作记录",
+    "totalDuration": "工作时长",
+    "entryCount": "记录数"
+  },
+  "podcastApp": {
+    "title": "PodcastVisual",
+    "subtitle": "听播客，看字幕，练听力",
+    "scene": "BARD HALL"
+  },
+  "podcast": {
+    "searchPlaceholder": "搜索播客，或粘贴 RSS 链接",
+    "search": "搜索",
+    "importRss": "导入 RSS",
+    "searching": "搜索中…",
+    "noResults": "没有找到相关播客",
+    "error": "出错了",
+    "back": "返回",
+    "loadingEpisodes": "正在加载单集…",
+    "episodeCount": "集",
+    "hasTranscript": "自带字幕",
+    "showMore": "加载更多",
+    "play": "播放",
+    "pause": "暂停",
+    "transcript": "字幕",
+    "transcriptLoading": "正在加载字幕…",
+    "noTranscript": "该集没有可用字幕",
+    "audioLoadError": "音频加载失败",
+    "audioFormatError": "该浏览器不支持此音频格式（{{detail}}），请尝试其他浏览器",
+    "audioPlayFailed": "播放失败，请检查网络连接",
+    "asrQueued": "已加入转写队列…",
+    "asrTranscribing": "AI 正在生成字幕（可能需要一分钟）…",
+    "asrFailed": "字幕转写失败",
+    "loadTranscript": "加载字幕",
+    "longEpisodeHint": "本集约 {{mins}} 分钟，字幕生成可能需要较长时间",
+    "asrEstimate": "预计需要约 {{mins}} 分钟，可以先听着",
+    "searchEpisodes": "搜索剧集…",
+    "searchResults": "找到 {{count}} 集",
+    "noEpisodeMatch": "没有匹配的剧集",
+    "searchHistory": "搜索历史",
+    "clearHistory": "清空",
+    "chartTop": "流行榜",
+    "chartPopular": "大家在听",
+    "chartError": "榜单加载失败",
+    "chartEmpty": "暂无榜单数据",
+    "retry": "重试"
   }
 }

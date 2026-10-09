@@ -2,22 +2,198 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+
 body {
-  @apply bg-gray-50 text-gray-900 min-h-screen;
-  @apply dark:bg-gray-900 dark:text-gray-100;
+  @apply text-gray-900 min-h-[100dvh];
+  @apply dark:text-gray-100;
+  background-color: var(--mode-bg, #e8e4d9);
+  transition: background-color 500ms ease;
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
 
 *:focus-visible {
-  @apply outline-2 outline-offset-2 outline-blue-500;
+  @apply outline-2 outline-offset-2 outline-px-gold;
+}
+
+/* Tactile press feedback — soft push-down */
+button:active, a:active, [role="button"]:active {
+  transform: translateY(1px) scale(0.98);
+  transition: transform 80ms var(--ease-out);
+}
+.no-press:active { transform: none !important; }
+
+/* Mobile-native */
+button, a, [role="button"] {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 @layer components {
+  /* ── Input — soft filled ── */
   .input-base {
-    @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-base sm:text-sm
-      bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
+    @apply w-full px-3 py-2 rounded-lg text-base sm:text-sm
+      text-gray-900 dark:text-gray-100
       placeholder-gray-400 dark:placeholder-gray-500
-      focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500;
+      focus:outline-none;
+    background: #f4f1ea;
+    border: 1px solid #d5d0c5;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);
+    transition: box-shadow 150ms var(--ease-out), border-color 150ms var(--ease-out);
   }
+  .input-base:focus-visible {
+    border-color: #f4b41a;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.06), 0 0 0 2px rgba(244,180,26,0.25);
+  }
+  :is(.dark) .input-base {
+    background: #262b44;
+    border-color: #3d4460;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+  }
+  :is(.dark) .input-base:focus-visible {
+    border-color: #f4b41a;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2), 0 0 0 2px rgba(244,180,26,0.3);
+  }
+
+  /* ── Button primary — soft with game colors ── */
+  .btn-tactile {
+    @apply py-2.5 text-sm font-semibold rounded-xl transition-all;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.15);
+    position: relative;
+  }
+  .btn-tactile:hover {
+    box-shadow: 0 3px 0 rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.15);
+    transform: translateY(-0.5px);
+  }
+  .btn-tactile:active {
+    transform: translateY(1.5px) !important;
+    box-shadow: 0 0 0 rgba(0,0,0,0.08), 0 0 2px rgba(0,0,0,0.08), inset 0 2px 3px rgba(0,0,0,0.12);
+    transition: transform 60ms var(--ease-out), box-shadow 60ms var(--ease-out);
+  }
+
+  /* ── Button secondary — thin border ── */
+  .btn-secondary {
+    @apply px-4 py-2 text-sm font-medium rounded-lg transition-all;
+    border: 1px solid #d5d0c5;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .btn-secondary:hover {
+    @apply bg-gray-50;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.05), 0 1px 4px rgba(0,0,0,0.06);
+    transform: translateY(-0.5px);
+  }
+  .btn-secondary:active {
+    transform: translateY(1px) !important;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.08);
+  }
+  :is(.dark) .btn-secondary {
+    border-color: #3d4460;
+    @apply text-gray-300;
+  }
+  :is(.dark) .btn-secondary:hover {
+    @apply bg-gray-700;
+  }
+
+  /* ── Panel — rounded, soft shadow, game palette bg ── */
+  .panel {
+    @apply rounded-2xl overflow-hidden;
+    background: #f4f1ea;
+    border: 1px solid #d5d0c5;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.02);
+    transition: transform 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
+  }
+  @media (hover: hover) {
+    .panel:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+    }
+  }
+  :is(.dark) .panel {
+    background: #262b44;
+    border-color: #3d4460;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2), 0 2px 8px rgba(0,0,0,0.15);
+  }
+
+  /* ── Hero Panel — rounded, elevated ── */
+  .panel-hero {
+    @apply rounded-2xl overflow-hidden;
+    background: #f4f1ea;
+    border: 1px solid #d5d0c5;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.02);
+  }
+  :is(.dark) .panel-hero {
+    background: #262b44;
+    border-color: #3d4460;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.15);
+  }
+
+  /* ── Panel accent — colored left stripe ── */
+  .panel-accent {
+    position: relative;
+    border-left: 4px solid var(--panel-accent, #f4b41a) !important;
+    border-top-left-radius: 0.25rem;
+    border-bottom-left-radius: 0.25rem;
+  }
+
+  /* ── Stat card — rounded, soft shadow, colored top accent ── */
+  .stat-card {
+    @apply p-3 text-center rounded-xl transition-all;
+    background: #f4f1ea;
+    border: 1px solid #d5d0c5;
+    border-top-width: 2px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 2px 6px rgba(0,0,0,0.03);
+  }
+  .stat-card:hover {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+    transform: translateY(-1px);
+    transition: all 200ms var(--ease-out);
+  }
+  :is(.dark) .stat-card {
+    background: #262b44;
+    border-color: #3d4460;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+
+  /* ── Icon Button — soft ── */
+  .btn-icon {
+    @apply p-1.5 rounded-lg transition-all;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+  }
+  .btn-icon:hover {
+    @apply bg-gray-100 dark:bg-gray-700;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  }
+  .btn-icon:active {
+    transform: translateY(1px) scale(0.95) !important;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+  }
+}
+
+/* ── Pixel scene decorative backgrounds ── */
+.scene-stars {
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, #f4b41a 50%, transparent 50%),
+    radial-gradient(1px 1px at 30% 60%, #2ce8f5 50%, transparent 50%),
+    radial-gradient(1px 1px at 50% 10%, #f0f0e8 50%, transparent 50%),
+    radial-gradient(1px 1px at 70% 40%, #f4b41a 50%, transparent 50%),
+    radial-gradient(1px 1px at 90% 80%, #f0f0e8 50%, transparent 50%),
+    radial-gradient(1px 1px at 15% 85%, #2ce8f5 50%, transparent 50%),
+    radial-gradient(1px 1px at 85% 15%, #8b5cf6 50%, transparent 50%);
+}
+
+@keyframes stripe-slide {
+  0% { background-position: 0 0; }
+  100% { background-position: 1rem 0; }
 }

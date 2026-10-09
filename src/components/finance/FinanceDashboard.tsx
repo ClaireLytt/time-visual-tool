@@ -13,6 +13,7 @@ import FinanceEntryList from './FinanceEntryList'
 import FinanceProportionChart from './FinanceProportionChart'
 import FinanceOverviewChart from './FinanceOverviewChart'
 import FinanceDailyChart from './FinanceDailyChart'
+import AnimatedCollapse from '../common/AnimatedCollapse'
 import { exportFinanceToFile, readFinanceImportFile } from '../../utils/financeTransfer'
 import type { FinanceEntry, FinanceStorageData, FinanceViewMode } from '../../types/finance'
 
@@ -30,10 +31,12 @@ function FinanceDashboard() {
     addCategory, updateCategory, deleteCategory,
     importData,
     getEntriesForDate, getSummaryForPeriod,
+    monthlyBudget,
   } = useFinanceEntries()
 
   const dayEntries = useMemo(() => getEntriesForDate(selectedDate), [getEntriesForDate, selectedDate])
   const periodSummary = useMemo(() => getSummaryForPeriod(selectedDate, viewMode), [getSummaryForPeriod, selectedDate, viewMode])
+  const monthlySummary = useMemo(() => getSummaryForPeriod(selectedDate, 'month'), [getSummaryForPeriod, selectedDate])
 
   const isDaily = viewMode === 'day'
 
@@ -59,13 +62,6 @@ function FinanceDashboard() {
     updateCategory(oldName, { name: updated.name, color: updated.color, kind: updated.kind ?? 'expense' })
   }, [updateCategory])
 
-  if (loading) {
-    return (
-      <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
-  }
 
   return (
     <CategoryProvider categories={categories}>
@@ -85,7 +81,7 @@ function FinanceDashboard() {
           </button>
         </div>
 
-        {showSettings && (
+        <AnimatedCollapse open={showSettings}>
           <div className="space-y-4 mb-4">
             <CategoryManager
               categories={categories}
@@ -103,7 +99,7 @@ function FinanceDashboard() {
               getCounts={(d: FinanceStorageData) => ({ entries: d.entries.length, categories: d.categories.length })}
             />
           </div>
-        )}
+        </AnimatedCollapse>
 
         <DatePicker selectedDate={selectedDate} onDateChange={handleDateChange} viewMode={viewMode} />
         <FinanceSummaryCard
@@ -112,6 +108,24 @@ function FinanceDashboard() {
           balance={periodSummary.balance}
           entryCount={periodSummary.entryCount}
         />
+
+        {monthlyBudget != null && monthlyBudget > 0 && (
+          <div className="panel p-3 mb-4">
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
+              <span>¥{monthlySummary.expense.toLocaleString()}</span>
+              <span>¥{monthlyBudget.toLocaleString()}</span>
+            </div>
+            <div className="h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-300"
+                style={{
+                  width: `${Math.min((monthlySummary.expense / monthlyBudget) * 100, 100)}%`,
+                  backgroundColor: monthlySummary.expense > monthlyBudget ? '#e43b44' : '#3e8948',
+                }}
+              />
+            </div>
+          </div>
+        )}
 
         {!isDaily && (
           <div className="mb-4">
@@ -123,7 +137,7 @@ function FinanceDashboard() {
         )}
 
         {isDaily && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-6">
             <FinanceEntryForm
               selectedDate={selectedDate}
               categories={categories}
@@ -137,7 +151,7 @@ function FinanceDashboard() {
         )}
 
         {(viewMode === 'month' || viewMode === 'year') && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.3fr] gap-6">
             <FinanceProportionChart
               incomeBreakdown={periodSummary.incomeBreakdown}
               expenseBreakdown={periodSummary.expenseBreakdown}

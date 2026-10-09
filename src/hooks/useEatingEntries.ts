@@ -3,7 +3,7 @@ import { useFirestore } from './useFirestore'
 import { DEFAULT_EATING_CATEGORY_LIST } from '../constants/eating'
 import { computeEatingPeriodSummary } from '../utils/eatingSummary'
 import { validateEatingData } from '../utils/eatingTransfer'
-import type { EatingEntry, EatingCategory, EatingStorageData, EatingPeriodSummary, EatingViewMode } from '../types/eating'
+import type { EatingEntry, EatingCategory, EatingTemplate, EatingStorageData, EatingPeriodSummary, EatingViewMode } from '../types/eating'
 
 const INITIAL_DATA: EatingStorageData = {
   version: 1,
@@ -80,6 +80,11 @@ export function useEatingEntries() {
           version: 1,
           entries: [...prev.entries, ...newEntries],
           categories: [...prev.categories, ...newCategories],
+          ...(imported.dailyCalorieGoal != null
+            ? { dailyCalorieGoal: imported.dailyCalorieGoal }
+            : prev.dailyCalorieGoal != null
+              ? { dailyCalorieGoal: prev.dailyCalorieGoal }
+              : {}),
         }
       })
     }
@@ -93,11 +98,42 @@ export function useEatingEntries() {
     return computeEatingPeriodSummary(entries, anchorDate, viewMode)
   }, [entries])
 
+  const dailyCalorieGoal = data.dailyCalorieGoal
+
+  const setDailyCalorieGoal = useCallback((goal: number | undefined) => {
+    setData(prev => {
+      if (goal === undefined) {
+        const { dailyCalorieGoal: _, ...rest } = prev
+        return rest as EatingStorageData
+      }
+      return { ...prev, dailyCalorieGoal: goal }
+    })
+  }, [setData])
+
+  const customTemplates = data.customTemplates ?? []
+
+  const addTemplate = useCallback((template: EatingTemplate) => {
+    setData(prev => {
+      const existing = prev.customTemplates ?? []
+      if (existing.some(t => t.name === template.name)) return prev
+      return { ...prev, customTemplates: [...existing, template] }
+    })
+  }, [setData])
+
+  const deleteTemplate = useCallback((name: string) => {
+    setData(prev => ({
+      ...prev,
+      customTemplates: (prev.customTemplates ?? []).filter(t => t.name !== name),
+    }))
+  }, [setData])
+
   return {
     entries, categories, data, loading,
     addEntry, deleteEntry, updateEntry,
     addCategory, updateCategory, deleteCategory,
     importData,
     getEntriesForDate, getSummaryForPeriod,
+    dailyCalorieGoal, setDailyCalorieGoal,
+    customTemplates, addTemplate, deleteTemplate,
   }
 }

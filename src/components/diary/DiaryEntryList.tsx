@@ -22,7 +22,7 @@ function DiaryEntryList({ entries, periodType, activePeriodKey, onSelect }: Diar
 
   if (sorted.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center">
+      <div className="panel p-6 text-center">
         <p className="text-gray-400 dark:text-gray-500 text-sm">{t('diary.emptyTitle')}</p>
         <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">{t('diary.emptySubtitle')}</p>
       </div>
@@ -30,7 +30,7 @@ function DiaryEntryList({ entries, periodType, activePeriodKey, onSelect }: Diar
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-2">
+    <div className="panel p-2">
       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 px-3 pt-2 pb-1">
         {t('diary.listTitle', { count: sorted.length })}
       </h3>
@@ -42,9 +42,9 @@ function DiaryEntryList({ entries, periodType, activePeriodKey, onSelect }: Diar
               key={entry.id}
               onClick={() => onSelect(entry)}
               aria-current={isActive ? 'true' : undefined}
-              className={`w-full text-left px-3 py-3 transition-colors rounded-lg ${isActive ? 'bg-purple-50 dark:bg-purple-900/20 ring-1 ring-purple-300 dark:ring-purple-700' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 active:bg-gray-100 dark:active:bg-gray-700'}`}
+              className={`w-full text-left px-3 py-3 transition-colors rounded-lg ${isActive ? 'bg-mode-diary/10 ring-1 ring-mode-diary/30' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 active:bg-gray-100 dark:active:bg-gray-700'}`}
             >
-              <p className={`text-base sm:text-sm font-medium ${isActive ? 'text-purple-700 dark:text-purple-300' : 'text-gray-700 dark:text-gray-200'}`}>
+              <p className={`text-base sm:text-sm font-medium ${isActive ? 'text-mode-diary' : 'text-gray-700 dark:text-gray-200'}`}>
                 {entry.periodKey}
               </p>
             </button>

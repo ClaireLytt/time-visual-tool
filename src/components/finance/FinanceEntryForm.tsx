@@ -86,18 +86,18 @@ function FinanceEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpd
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-4">
-      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
+    <form onSubmit={handleSubmit} className="panel p-4 mb-4">
+      <h3 className="text-xs font-semibold tracking-wide uppercase text-calm-muted dark:text-gray-200 mb-3">
         {isEditing ? t('finance.editTitle') : t('finance.addTitle')}
       </h3>
 
-      <div className="flex rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 mb-3" role="radiogroup" aria-label={t('finance.typeLabel')}>
+      <div className="flex rounded-lg overflow-hidden border border-calm-border dark:border-gray-600 mb-3" role="radiogroup" aria-label={t('finance.typeLabel')}>
         <button
           type="button"
           role="radio"
           aria-checked={type === 'expense'}
           onClick={() => handleTypeChange('expense')}
-          className={`flex-1 py-1.5 text-sm font-medium transition-colors ${type === 'expense' ? 'bg-rose-500 text-white' : 'bg-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+          className={`flex-1 py-1.5 text-sm font-medium transition-colors ${type === 'expense' ? 'bg-[#c47070] text-white' : 'bg-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
         >
           - {t('finance.expense')}
         </button>
@@ -106,7 +106,7 @@ function FinanceEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpd
           role="radio"
           aria-checked={type === 'income'}
           onClick={() => handleTypeChange('income')}
-          className={`flex-1 py-1.5 text-sm font-medium transition-colors ${type === 'income' ? 'bg-green-500 text-white' : 'bg-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+          className={`flex-1 py-1.5 text-sm font-medium transition-colors ${type === 'income' ? 'bg-mode-finance text-white' : 'bg-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
         >
           + {t('finance.income')}
         </button>
@@ -136,7 +136,7 @@ function FinanceEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpd
             inputMode="decimal"
           />
           {showCalcResult && (
-            <p className="text-xs text-blue-500 dark:text-blue-400 mt-1" aria-live="polite">
+            <p className="text-xs text-calm-accent mt-1" aria-live="polite">
               = {formatAmount(parsedAmount)}
             </p>
           )}
@@ -161,7 +161,7 @@ function FinanceEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpd
       <div className={isEditing ? 'flex gap-2' : ''}>
         <button
           type="submit"
-          className={`${isEditing ? 'flex-1' : 'w-full'} py-2 ${type === 'income' ? 'bg-green-500 hover:bg-green-600' : 'bg-rose-500 hover:bg-rose-600'} text-white text-sm font-medium rounded-lg transition-colors`}
+          className={`${isEditing ? 'flex-1' : 'w-full'} py-2 ${type === 'income' ? 'bg-mode-finance hover:opacity-90' : 'bg-rose-500 hover:bg-rose-600'} text-white text-sm font-medium rounded-lg transition-colors`}
         >
           {isEditing ? t('entry.saveButton') : t('finance.addButton')}
         </button>

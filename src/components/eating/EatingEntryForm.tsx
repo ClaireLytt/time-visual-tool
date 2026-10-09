@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { parseCalorieInput, formatCalories } from '../../utils/calories'
 import { COMMON_FOODS } from '../../data/commonFoods'
+import AnimatedCollapse from '../common/AnimatedCollapse'
 import type { EatingEntry, EatingCategory } from '../../types/eating'
 
 interface EatingEntryFormProps {
@@ -11,9 +12,10 @@ interface EatingEntryFormProps {
   editingEntry?: EatingEntry | null
   onUpdate?: (id: string, updates: Partial<EatingEntry>) => void
   onCancelEdit?: () => void
+  entries?: EatingEntry[]
 }
 
-function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdate, onCancelEdit }: EatingEntryFormProps) {
+function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdate, onCancelEdit, entries = [] }: EatingEntryFormProps) {
   const { t, i18n } = useTranslation()
   const [food, setFood] = useState('')
   const [calorieInput, setCalorieInput] = useState('')
@@ -28,8 +30,28 @@ function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpda
   const [foodQuery, setFoodQuery] = useState('')
   const [prevEditingEntry, setPrevEditingEntry] = useState(editingEntry)
 
+  // Serving multiplier state
+  const [baseCalories, setBaseCalories] = useState<number | null>(null)
+  const [multiplier, setMultiplier] = useState(1)
+
   const isEditing = !!editingEntry
   const isZh = i18n.language === 'zh'
+
+  // Recent foods — deduplicated by food name, most recent first
+  const recentFoods = useMemo(() => {
+    if (entries.length === 0) return []
+    const sorted = [...entries].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    const seen = new Set<string>()
+    const result: { food: string; calories: number }[] = []
+    for (const e of sorted) {
+      const key = e.food.toLowerCase()
+      if (!key || seen.has(key)) continue
+      seen.add(key)
+      result.push({ food: e.food, calories: e.calories })
+      if (result.length >= 8) break
+    }
+    return result
+  }, [entries])
 
   if (prevEditingEntry !== editingEntry) {
     setPrevEditingEntry(editingEntry)
@@ -51,6 +73,8 @@ function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpda
       setNote('')
       setError('')
     }
+    setBaseCalories(null)
+    setMultiplier(1)
   }
 
   const effectiveCategory = categories.some(c => c.name === category)
@@ -58,7 +82,7 @@ function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpda
     : (categories[0]?.name ?? '')
 
   const parsedCalories = parseCalorieInput(calorieInput)
-  const showCalcResult = parsedCalories !== null && /[+-]/.test(calorieInput.trim().slice(1))
+  const showCalcResult = parsedCalories !== null && /[+-]/.test(calorieInput.trim().slice(1)) && baseCalories === null
 
   const filteredFoods = useMemo(() => {
     if (!foodQuery.trim()) return COMMON_FOODS.slice(0, 20)
@@ -68,11 +92,40 @@ function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpda
     ).slice(0, 20)
   }, [foodQuery])
 
-  const handleFoodSelect = (foodItem: typeof COMMON_FOODS[0]) => {
-    setFood(isZh ? foodItem.name : foodItem.nameEn)
-    setCalorieInput(String(foodItem.calories))
+  const applyFoodSelection = (name: string, calories: number) => {
+    setFood(name)
+    setCalorieInput(String(calories))
+    setBaseCalories(calories)
+    setMultiplier(1)
     setShowFoodSearch(false)
     setFoodQuery('')
+  }
+
+  const handleFoodSelect = (foodItem: typeof COMMON_FOODS[0]) => {
+    applyFoodSelection(isZh ? foodItem.name : foodItem.nameEn, foodItem.calories)
+  }
+
+  const handleRecentSelect = (item: { food: string; calories: number }) => {
+    applyFoodSelection(item.food, item.calories)
+  }
+
+  const handleMultiplierChange = (delta: number) => {
+    if (baseCalories === null) return
+    const next = Math.max(0.5, Math.min(5, multiplier + delta))
+    setMultiplier(next)
+    setCalorieInput(String(Math.round(baseCalories * next)))
+  }
+
+  const handleFoodManualChange = (value: string) => {
+    setFood(value)
+    setBaseCalories(null)
+    setMultiplier(1)
+  }
+
+  const handleCalorieManualChange = (value: string) => {
+    setCalorieInput(value)
+    setBaseCalories(null)
+    setMultiplier(1)
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -112,23 +165,46 @@ function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpda
       setCalorieInput('')
       setNote('')
       setError('')
+      setBaseCalories(null)
+      setMultiplier(1)
       const now = new Date()
       setMealTime(`${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-4">
-      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
+    <form onSubmit={handleSubmit} className="panel panel-accent p-4 mb-4" style={{ '--panel-accent': '#c4a36b' } as React.CSSProperties}>
+      <h3 className="text-xs font-semibold tracking-wide uppercase text-calm-muted dark:text-gray-200 mb-3 mt-1">
         {isEditing ? t('eating.editTitle') : t('eating.addTitle')}
       </h3>
+
+      {/* Recent foods pills */}
+      {!isEditing && recentFoods.length > 0 && (
+        <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
+          {recentFoods.map(item => (
+            <button
+              key={item.food}
+              type="button"
+              onClick={() => handleRecentSelect(item)}
+              className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-all bg-amber-50 dark:bg-amber-900/15 text-gray-700 dark:text-gray-300 hover:bg-amber-100 dark:hover:bg-amber-900/30"
+              style={{
+                border: '1px solid rgba(196,163,107,0.2)',
+                boxShadow: '0 1px 0 rgba(0,0,0,0.03)',
+              }}
+            >
+              <span className="truncate max-w-[80px]">{item.food}</span>
+              <span className="text-[10px] text-gray-400 dark:text-gray-500 tabular-nums">{item.calories}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-3 mb-3">
         <div className="col-span-2">
           <input
             type="text"
             value={food}
-            onChange={e => setFood(e.target.value)}
+            onChange={e => handleFoodManualChange(e.target.value)}
             placeholder={t('eating.foodPlaceholder')}
             aria-label={t('eating.foodLabel')}
             className="input-base"
@@ -140,17 +216,51 @@ function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpda
           <input
             type="text"
             value={calorieInput}
-            onChange={e => setCalorieInput(e.target.value)}
+            onChange={e => handleCalorieManualChange(e.target.value)}
             placeholder={t('eating.caloriePlaceholder')}
             aria-label={t('eating.calorieLabel')}
             className="input-base"
             inputMode="decimal"
           />
           {showCalcResult && (
-            <p className="text-xs text-blue-500 dark:text-blue-400 mt-1" aria-live="polite">
+            <p className="text-xs text-mode-eating font-medium mt-1" aria-live="polite">
               = {formatCalories(parsedCalories)}
             </p>
           )}
+          {/* Serving multiplier */}
+          <AnimatedCollapse open={baseCalories !== null}>
+            <div
+              className="flex items-center justify-center gap-2 mt-1.5 py-1 rounded-lg"
+              role="group"
+              aria-label={t('eating.multiplierAriaLabel')}
+            >
+              <button
+                type="button"
+                onClick={() => handleMultiplierChange(-0.5)}
+                disabled={multiplier <= 0.5}
+                className="btn-icon w-7 h-7 flex items-center justify-center text-gray-500 dark:text-gray-400 disabled:opacity-30"
+                aria-label={t('eating.multiplierDecrease')}
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" d="M5 12h14" />
+                </svg>
+              </button>
+              <span className="text-sm font-semibold tabular-nums text-mode-eating min-w-[2.5rem] text-center">
+                {multiplier}×
+              </span>
+              <button
+                type="button"
+                onClick={() => handleMultiplierChange(0.5)}
+                disabled={multiplier >= 5}
+                className="btn-icon w-7 h-7 flex items-center justify-center text-gray-500 dark:text-gray-400 disabled:opacity-30"
+                aria-label={t('eating.multiplierIncrease')}
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" d="M12 5v14m-7-7h14" />
+                </svg>
+              </button>
+            </div>
+          </AnimatedCollapse>
         </div>
 
         <div>
@@ -193,22 +303,25 @@ function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpda
         <button
           type="button"
           onClick={() => setShowFoodSearch(s => !s)}
-          className="text-xs text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
+          className="text-xs font-medium text-mode-eating hover:opacity-80 transition-colors flex items-center gap-1"
           aria-expanded={showFoodSearch}
         >
-          {t('eating.foodSearch')} {showFoodSearch ? '▲' : '▼'}
+          <span>{t('eating.foodSearch')}</span>
+          <svg className={`w-3 h-3 transition-transform ${showFoodSearch ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
         </button>
 
         {showFoodSearch && (
-          <div className="mt-2 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
+          <div className="mt-2 rounded-xl overflow-hidden" style={{ border: '1px solid #e0dfdb', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.04)' }}>
             <input
               type="text"
               value={foodQuery}
               onChange={e => setFoodQuery(e.target.value)}
               placeholder={t('eating.foodSearchPlaceholder')}
-              className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-600 focus:outline-none"
+              className="w-full px-3 py-2 text-base sm:text-sm bg-[#f4f3f1] dark:bg-[#1e1e22] text-gray-900 dark:text-gray-100 border-b border-[#e0dfdb] dark:border-[#3a3a40] focus:outline-none"
             />
-            <div className="max-h-48 overflow-y-auto">
+            <div className="max-h-48 overflow-y-auto bg-white dark:bg-gray-800">
               {filteredFoods.length === 0 ? (
                 <p className="px-3 py-2 text-xs text-gray-400 dark:text-gray-500">{t('eating.foodSearchEmpty')}</p>
               ) : (
@@ -217,25 +330,25 @@ function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpda
                     key={item.name}
                     type="button"
                     onClick={() => handleFoodSelect(item)}
-                    className="w-full text-left px-3 py-1.5 text-sm hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors flex justify-between items-center"
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors flex justify-between items-center border-b border-gray-100 dark:border-gray-700/50 last:border-0"
                   >
-                    <span className="text-gray-800 dark:text-gray-100">
+                    <span className="text-gray-800 dark:text-gray-100 font-medium">
                       {isZh ? item.name : item.nameEn}
                     </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0 ml-2">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0 ml-2 tabular-nums">
                       {item.calories} {t('eating.calorieUnit')} / {item.unit}
                     </span>
                   </button>
                 ))
               )}
             </div>
-            <div className="px-3 py-1.5 border-t border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 flex items-center justify-between">
+            <div className="px-3 py-1.5 border-t border-[#e0dfdb] dark:border-[#3a3a40] bg-[#f4f3f1] dark:bg-[#1e1e22] flex items-center justify-between">
               <span className="text-xs text-gray-400 dark:text-gray-500">{t('eating.foodSearchHint')}</span>
               <a
                 href="https://www.boohee.com/food/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-blue-500 dark:text-blue-400 hover:underline"
+                className="text-xs text-calm-accent hover:underline"
               >
                 {t('eating.calorieRef')} → {t('eating.calorieRefSite')}
               </a>
@@ -249,7 +362,7 @@ function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpda
       <div className={isEditing ? 'flex gap-2' : ''}>
         <button
           type="submit"
-          className={`${isEditing ? 'flex-1' : 'w-full'} py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-lg transition-colors`}
+          className={`${isEditing ? 'flex-1' : 'w-full'} btn-tactile bg-mode-eating text-white`}
         >
           {isEditing ? t('entry.saveButton') : t('eating.addButton')}
         </button>
@@ -257,7 +370,7 @@ function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpda
           <button
             type="button"
             onClick={onCancelEdit}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="btn-secondary text-gray-600 dark:text-gray-300"
           >
             {t('entry.cancelButton')}
           </button>

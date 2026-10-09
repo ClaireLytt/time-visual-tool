@@ -4,6 +4,12 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   base: '/time-visual-tool/',
+  server: {
+    open: '/time-visual-tool/',
+    proxy: {
+      '/api': 'http://localhost:8787',
+    },
+  },
   build: {
     rollupOptions: {
       output: {
