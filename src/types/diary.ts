@@ -15,6 +15,7 @@ export interface DiaryEntry {
   gratitude: string
   feelings: string
   motivation: string
+  mood?: string
   goals: DiaryGoal[]
   createdAt: string
   updatedAt: string

@@ -32,13 +32,6 @@ function DiaryDashboard() {
     setSelectedDate(periodKeyToAnchorDate(entry.periodType, entry.periodKey))
   }, [])
 
-  if (loading) {
-    return (
-      <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-4 border-mode-diary border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
-  }
 
   return (
     <div id="main-content">
@@ -71,7 +64,7 @@ function DiaryDashboard() {
 
       <DatePicker selectedDate={selectedDate} onDateChange={setSelectedDate} viewMode={viewMode} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.3fr] gap-6">
         <DiaryEntryEditor
           periodType={viewMode}
           periodKey={periodKey}

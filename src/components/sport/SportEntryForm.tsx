@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { parseCalorieInput } from '../../utils/calories'
+import DurationPresets from '../common/DurationPresets'
 import type { SportEntry, SportCategory } from '../../types/sport'
 
 interface SportEntryFormProps {
@@ -132,6 +133,9 @@ function SportEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdat
             inputMode="numeric"
           />
           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-gray-500 pointer-events-none">min</span>
+        </div>
+        <div className="col-span-2">
+          <DurationPresets onSelect={v => setDurationInput(String(v))} selected={durationInput ? parseInt(durationInput, 10) : undefined} />
         </div>
 
         <div>

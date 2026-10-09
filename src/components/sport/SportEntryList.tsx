@@ -7,9 +7,10 @@ interface SportEntryListProps {
   entries: SportEntry[]
   onDelete: (id: string) => void
   onEdit: (entry: SportEntry) => void
+  bestDurations?: Record<string, number>
 }
 
-function SportEntryList({ entries, onDelete, onEdit }: SportEntryListProps) {
+function SportEntryList({ entries, onDelete, onEdit, bestDurations }: SportEntryListProps) {
   const { t } = useTranslation()
   const sorted = useMemo(() => [...entries].sort((a, b) => a.createdAt.localeCompare(b.createdAt)), [entries])
 
@@ -29,7 +30,7 @@ function SportEntryList({ entries, onDelete, onEdit }: SportEntryListProps) {
       </h3>
       <div className="divide-y divide-gray-100 dark:divide-gray-700">
         {sorted.map(entry => (
-          <SportEntryItem key={entry.id} entry={entry} onDelete={onDelete} onEdit={onEdit} />
+          <SportEntryItem key={entry.id} entry={entry} onDelete={onDelete} onEdit={onEdit} isPB={!!bestDurations && entry.duration > 0 && entry.duration >= (bestDurations[entry.sportType] ?? Infinity)} />
         ))}
       </div>
     </div>

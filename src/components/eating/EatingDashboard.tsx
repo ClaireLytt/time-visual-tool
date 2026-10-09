@@ -13,6 +13,7 @@ import EatingEntryForm from './EatingEntryForm'
 import EatingEntryList from './EatingEntryList'
 import EatingProportionChart from './EatingProportionChart'
 import EatingDailyChart from './EatingDailyChart'
+import MealTemplates from './MealTemplates'
 import { exportEatingToFile, readEatingImportFile } from '../../utils/eatingTransfer'
 import { LATE_NIGHT_CATEGORY_NAME } from '../../constants/eating'
 import type { EatingEntry, EatingStorageData, EatingViewMode } from '../../types/eating'
@@ -73,13 +74,6 @@ function EatingDashboard() {
     updateCategory(oldName, { name: updated.name, color: updated.color })
   }, [updateCategory])
 
-  if (loading) {
-    return (
-      <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-4 border-mode-eating border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
-  }
 
   return (
     <CategoryProvider categories={categories}>
@@ -134,16 +128,19 @@ function EatingDashboard() {
         )}
 
         {isDaily && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <EatingEntryForm
-              selectedDate={selectedDate}
-              categories={categories}
-              onAdd={addEntry}
-              editingEntry={editingEntry}
-              onUpdate={updateEntry}
-              onCancelEdit={handleCancelEdit}
-              entries={entries}
-            />
+          <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-6">
+            <div className="space-y-3">
+              <MealTemplates onQuickAdd={(meal) => addEntry({ date: selectedDate, food: meal.name, calories: meal.calories, mealTime: '', category: '', note: '' })} />
+              <EatingEntryForm
+                selectedDate={selectedDate}
+                categories={categories}
+                onAdd={addEntry}
+                editingEntry={editingEntry}
+                onUpdate={updateEntry}
+                onCancelEdit={handleCancelEdit}
+                entries={entries}
+              />
+            </div>
             <EatingEntryList entries={dayEntries} onDelete={deleteEntry} onEdit={setEditingEntry} />
           </div>
         )}

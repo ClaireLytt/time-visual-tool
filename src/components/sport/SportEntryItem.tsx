@@ -10,9 +10,10 @@ interface SportEntryItemProps {
   entry: SportEntry
   onDelete: (id: string) => void
   onEdit: (entry: SportEntry) => void
+  isPB?: boolean
 }
 
-const SportEntryItem = memo(function SportEntryItem({ entry, onDelete, onEdit }: SportEntryItemProps) {
+const SportEntryItem = memo(function SportEntryItem({ entry, onDelete, onEdit, isPB }: SportEntryItemProps) {
   const { t } = useTranslation()
   const [showConfirm, setShowConfirm] = useState(false)
   const { getColor } = useCategories()
@@ -36,6 +37,10 @@ const SportEntryItem = memo(function SportEntryItem({ entry, onDelete, onEdit }:
           {entry.note && <span className="truncate max-w-[120px]">{entry.note}</span>}
         </div>
       </div>
+
+      {isPB && (
+        <span className="text-xs font-bold text-px-gold shrink-0">🏆 PB</span>
+      )}
 
       {entry.calories > 0 && (
         <span className="text-sm font-semibold shrink-0 text-mode-sport">

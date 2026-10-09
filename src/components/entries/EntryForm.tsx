@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCategories } from '../../contexts/CategoryContext'
 import { parseDurationInput } from '../../utils/time'
+import DurationPresets from '../common/DurationPresets'
 import type { TimeEntry } from '../../types'
 
 interface EntryFormProps {
@@ -115,6 +116,9 @@ function EntryForm({ selectedDate, onAdd, editingEntry, onUpdate, onCancelEdit }
             aria-label={t('entry.durationLabel')}
             className="input-base"
           />
+        </div>
+        <div className="col-span-2">
+          <DurationPresets onSelect={v => setDurationInput(String(v))} selected={durationInput ? parseInt(durationInput, 10) : undefined} />
         </div>
 
         <div>

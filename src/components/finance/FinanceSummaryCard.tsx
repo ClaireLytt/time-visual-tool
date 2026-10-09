@@ -24,11 +24,11 @@ const FinanceSummaryCard = memo(function FinanceSummaryCard({ income, expense, b
   ]
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-      {stats.map(stat => (
-        <div key={stat.label} className="panel p-3 text-center">
-          <p className={`text-2xl font-bold tracking-display tabular-nums ${stat.color}`}>{stat.value}</p>
-          <p className="text-xs tracking-wide uppercase text-gray-500 dark:text-gray-400 mt-0.5">{stat.label}</p>
+    <div className="grid grid-cols-2 sm:grid-cols-[2fr_2fr_1fr_1fr] gap-4 mb-5">
+      {stats.map((stat, i) => (
+        <div key={stat.label} className={`panel ${i < 2 ? 'pt-6 pb-4 pl-5 pr-4 text-left' : 'p-3 text-center'}`}>
+          <p className="font-pixel text-[7px] text-px-green dark:text-px-green mb-2">{stat.label}</p>
+          <p className={`${i < 2 ? 'text-2xl' : 'text-lg'} font-bold tabular-nums tracking-display ${stat.color}`}>{stat.value}</p>
         </div>
       ))}
     </div>

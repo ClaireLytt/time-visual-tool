@@ -38,6 +38,17 @@ function SportDashboard() {
   } = useSportEntries()
 
   const dayEntries = useMemo(() => getEntriesForDate(selectedDate), [getEntriesForDate, selectedDate])
+
+  // Personal best durations per sport type
+  const bestDurations = useMemo(() => {
+    const bests: Record<string, number> = {}
+    for (const e of entries) {
+      if (!bests[e.sportType] || e.duration > bests[e.sportType]) {
+        bests[e.sportType] = e.duration
+      }
+    }
+    return bests
+  }, [entries])
   const periodSummary = useMemo(() => getSummaryForPeriod(selectedDate, viewMode), [getSummaryForPeriod, selectedDate, viewMode])
 
   const isDaily = viewMode === 'day'
@@ -83,13 +94,6 @@ function SportDashboard() {
     reorderCategories(reordered.map(c => ({ name: c.name, color: c.color })))
   }, [reorderCategories])
 
-  if (loading) {
-    return (
-      <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-4 border-mode-sport border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
-  }
 
   return (
     <CategoryProvider categories={categories}>
@@ -147,7 +151,7 @@ function SportDashboard() {
         )}
 
         {isDaily && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-6">
             <SportEntryForm
               selectedDate={selectedDate}
               categories={categories}
@@ -156,7 +160,7 @@ function SportDashboard() {
               onUpdate={updateEntry}
               onCancelEdit={handleCancelEdit}
             />
-            <SportEntryList entries={dayEntries} onDelete={deleteEntry} onEdit={setEditingEntry} />
+            <SportEntryList entries={dayEntries} onDelete={deleteEntry} onEdit={setEditingEntry} bestDurations={bestDurations} />
           </div>
         )}
 
@@ -176,7 +180,7 @@ function SportDashboard() {
         )}
 
         {!isDaily && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-6 mt-6">
             <SportReflectionEditor
               periodType={reflectionPeriodType}
               periodKey={periodKey}
