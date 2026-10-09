@@ -1,4 +1,7 @@
 import 'dotenv/config'
+import { readdir, unlink } from 'node:fs/promises'
+import { join, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import express, { type ErrorRequestHandler } from 'express'
 import cors from 'cors'
 import { HttpError } from './http.js'
@@ -26,6 +29,20 @@ const onError: ErrorRequestHandler = (err, _req, res, _next) => {
   if (!res.headersSent) res.status(status).json({ error: err.message ?? 'internal error' })
 }
 app.use(onError)
+
+// Clean up leftover temp audio files from previous runs
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const tmpDir = join(__dirname, '..', 'data', 'tmp')
+readdir(tmpDir).then(files => {
+  let cleaned = 0
+  for (const f of files) {
+    if (/\.(mp3|m4a|wav|ogg|aac|opus)$/i.test(f)) {
+      unlink(join(tmpDir, f)).catch(() => {})
+      cleaned++
+    }
+  }
+  if (cleaned) console.log(`Cleaned ${cleaned} leftover temp file(s)`)
+}).catch(() => {})
 
 const port = Number(process.env.PORT ?? 8787)
 app.listen(port, () => console.log(`podcast server on http://localhost:${port}`))
