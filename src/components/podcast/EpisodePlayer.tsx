@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { audioProxyUrl, fetchTranscriptText, requestTranscription, pollTranscription } from '../../api/podcast'
 import { translateText, batchTranslateViaBackend, loadTranslationCache, saveTranslationCache } from '../../api/translate'
+import { isKnownWord } from '../../api/dictionary'
 import { findActiveIndex, formatClock, parseSrt, parseVtt, parseJsonTranscript } from '../../utils/transcript'
 import WordPopover from './WordPopover'
 import GapFillGame from './GapFillGame'
@@ -630,25 +631,25 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
               // Generate a gap if none exists yet
               if (!dictationGap && clipSegs.length > 0) {
                 const stopWords = new Set(['the','a','an','is','are','was','were','be','been','being','have','has','had','do','does','did','will','would','shall','should','may','might','can','could','must','and','but','or','if','in','on','at','to','for','of','it','i','we','you','he','she','they','me','my','his','her','its','our','your','their','this','that','so','not','no','just','like','also','very','really','here','there','then','than','well','yeah','yes','okay','oh','um','uh','ah'])
-                const candidates: Array<{ segIdx: number; wordIdx: number; word: string }> = []
+                // Collect candidates then filter by dictionary (async)
+                const rawCandidates: Array<{ segIdx: number; wordIdx: number; word: string }> = []
                 for (let si = 0; si < clipSegs.length; si++) {
                   const words = clipSegs[si].text.split(/\s+/)
                   for (let wi = 0; wi < words.length; wi++) {
-                    const raw = words[wi].replace(/[^a-zA-Z']/g, '')
-                    const clean = raw.toLowerCase()
-                    // Skip: stop words, short words, capitalized words (proper nouns/names)
-                    // A word at sentence start (wi===0) is allowed even if capitalized
-                    const isProperNoun = wi > 0 && raw.length > 0 && raw[0] === raw[0].toUpperCase() && raw[0] !== raw[0].toLowerCase()
-                    if (clean.length >= 4 && !stopWords.has(clean) && !isProperNoun) {
-                      candidates.push({ segIdx: si, wordIdx: wi, word: clean })
+                    const clean = words[wi].replace(/[^a-zA-Z']/g, '').toLowerCase()
+                    if (clean.length >= 4 && !stopWords.has(clean)) {
+                      rawCandidates.push({ segIdx: si, wordIdx: wi, word: clean })
                     }
                   }
                 }
-                if (candidates.length > 0) {
-                  const pick = candidates[Math.floor(Math.random() * candidates.length)]
-                  // Use setTimeout to avoid setState during render
-                  setTimeout(() => setDictationGap(pick), 0)
-                }
+                // Filter by dictionary — only real English words, not names/places
+                ;(async () => {
+                  const checks = await Promise.all(rawCandidates.map(c => isKnownWord(c.word)))
+                  const candidates = rawCandidates.filter((_, i) => checks[i])
+                  if (candidates.length > 0) {
+                    setDictationGap(candidates[Math.floor(Math.random() * candidates.length)])
+                  }
+                })()
               }
 
               return (

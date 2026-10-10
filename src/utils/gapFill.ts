@@ -1,3 +1,4 @@
+import { isKnownWord } from '../api/dictionary'
 import type { Segment } from '../types/podcast'
 
 // ─── Types ───
@@ -88,37 +89,30 @@ function scoreWord(word: string): number {
 
 // ─── Main: generate gap words from segments ───
 
-export function generateGaps(segments: Segment[], options: GapOptions): GapWord[] {
+export async function generateGaps(segments: Segment[], options: GapOptions): Promise<GapWord[]> {
   const { difficulty, count } = options
 
-  // Determine fraction of segments to pick from
   const fractionMap = { easy: 0.2, medium: 0.33, hard: 0.5 }
   const fraction = fractionMap[difficulty]
 
-  // Minimum spacing between gaps (in segments)
   const spacingMap = { easy: 2, medium: 1, hard: 0 }
   const minSpacing = spacingMap[difficulty]
 
   // Collect all candidate words with scores
-  const candidates: (GapWord & { score: number })[] = []
+  const rawCandidates: (GapWord & { score: number })[] = []
 
   for (let si = 0; si < segments.length; si++) {
     const seg = segments[si]
     const words = seg.text.split(/\s+/)
 
     for (let wi = 0; wi < words.length; wi++) {
-      const raw = words[wi].replace(/^[^a-zA-Z']+|[^a-zA-Z']+$/g, '')
-      const cleaned = raw.toLowerCase()
+      const cleaned = cleanWord(words[wi])
       if (!cleaned || cleaned.length < 4) continue
-
-      // Skip proper nouns: capitalized words not at sentence start
-      const isProperNoun = wi > 0 && raw.length > 0 && raw[0] === raw[0].toUpperCase() && raw[0] !== raw[0].toLowerCase()
-      if (isProperNoun) continue
 
       const score = scoreWord(cleaned)
       if (score <= 0) continue
 
-      candidates.push({
+      rawCandidates.push({
         segmentIndex: si,
         wordIndex: wi,
         word: cleaned,
@@ -128,6 +122,11 @@ export function generateGaps(segments: Segment[], options: GapOptions): GapWord[
       })
     }
   }
+
+  // Filter: only keep words that exist in the offline dictionary
+  // (this removes proper nouns, names, places, made-up words)
+  const dictChecks = await Promise.all(rawCandidates.map(c => isKnownWord(c.word)))
+  const candidates = rawCandidates.filter((_, i) => dictChecks[i])
 
   // Sort by score descending
   candidates.sort((a, b) => b.score - a.score)

@@ -70,6 +70,33 @@ function youdaoAudio(word: string, type: 1 | 2): string {
 
 const resultCache = new Map<string, DictResult | null>()
 
+// ─── Fast word existence check (for filtering gap-fill candidates) ───
+
+/**
+ * Check if a word exists in the offline ECDICT dictionary.
+ * Returns a promise — call on a batch of words then filter.
+ * Words NOT in the dictionary are likely proper nouns (names, places, brands).
+ */
+export async function isKnownWord(word: string): Promise<boolean> {
+  const w = word.toLowerCase().replace(/^['-]+|['-]+$/g, '')
+  if (!w || !/^[a-z][a-z'-]*$/.test(w)) return false
+
+  // Check result cache first
+  if (resultCache.has(w)) return resultCache.get(w) !== null
+
+  const candidates = [w]
+  const sh = await loadShard(w[0])
+  if (sh.l[w]) candidates.push(sh.l[w])
+  candidates.push(...suffixCandidates(w))
+
+  for (const c of candidates) {
+    if (!c) continue
+    const hit = (await loadShard(c[0])).w[c]
+    if (hit) return true
+  }
+  return false
+}
+
 // ─── Main lookup ───
 
 /**

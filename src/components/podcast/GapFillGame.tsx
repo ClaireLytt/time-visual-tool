@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { generateGaps, generateDistractors, shuffleArray, collectAllWords } from '../../utils/gapFill'
 import { lookupWord } from '../../api/dictionary'
@@ -47,14 +47,14 @@ export default function GapFillGame({
   const allWords = useMemo(() => collectAllWords(segments), [segments])
 
   // Preview gap count for setup screen
-  const previewCount = useMemo(() => {
-    const preview = generateGaps(segments, { difficulty })
-    return preview.length
+  const [previewCount, setPreviewCount] = useState(0)
+  useEffect(() => {
+    generateGaps(segments, { difficulty }).then(g => setPreviewCount(g.length))
   }, [segments, difficulty])
 
   // ─── Start game ───
-  const startGame = useCallback(() => {
-    const generated = generateGaps(segments, { difficulty })
+  const startGame = useCallback(async () => {
+    const generated = await generateGaps(segments, { difficulty })
     if (generated.length === 0) return
     setGaps(generated)
     setCurrentIndex(0)
