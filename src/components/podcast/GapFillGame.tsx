@@ -92,17 +92,21 @@ export default function GapFillGame({
     const currentGap = gaps[currentIndex]
     if (!currentGap) return
 
+    // Find the segment that contains this gap to get its end time
+    const gapSegment = segments[currentGap.segmentIndex]
+    const pauseAt = gapSegment ? gapSegment.end : currentGap.startTime + 5
+
     let rafId: number
     const check = () => {
-      // Pause when audio reaches the gap segment's start + 0.5s (let them hear the context)
-      if (audio.currentTime >= currentGap.startTime + 0.5 && !audio.paused) {
+      // Wait until the entire sentence finishes playing, then pause for the question
+      if (audio.currentTime >= pauseAt && !audio.paused) {
         audio.pause()
       }
       rafId = requestAnimationFrame(check)
     }
     rafId = requestAnimationFrame(check)
     return () => cancelAnimationFrame(rafId)
-  }, [phase, gaps, currentIndex, audioRef])
+  }, [phase, gaps, currentIndex, audioRef, segments])
 
   // ─── Handle answer selection ───
   const handleAnswer = useCallback(async (answer: string) => {
