@@ -279,62 +279,53 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
       }
     } catch { /* localStorage unavailable */ }
 
-    // 2. Batch translate uncached segments via MyMemory API
+    // 2. Translate uncached segments one by one (MyMemory has 500 char limit)
     const uncached = segments.filter(s => !translationCache.current.has(s.text))
     if (uncached.length === 0) return
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTranslationLoading(true)
 
-    // Split into chunks of ~20 segments (MyMemory has query length limits)
-    const CHUNK_SIZE = 20
-    const chunks: string[][] = []
-    for (let i = 0; i < uncached.length; i += CHUNK_SIZE) {
-      chunks.push(uncached.slice(i, i + CHUNK_SIZE).map(s => s.text))
-    }
-
-    const translateChunk = async (texts: string[]) => {
-      // Join with newlines — MyMemory preserves line structure
-      const joined = texts.join('\n')
+    const translateOne = async (text: string) => {
+      if (translationCache.current.has(text)) return
       const ctrl = new AbortController()
-      const timer = setTimeout(() => ctrl.abort(), 8000)
+      const timer = setTimeout(() => ctrl.abort(), 5000)
       try {
         const res = await fetch(
-          `https://api.mymemory.translated.net/get?q=${encodeURIComponent(joined)}&langpair=en|zh`,
+          `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.slice(0, 490))}&langpair=en|zh`,
           { signal: ctrl.signal }
         )
         clearTimeout(timer)
         if (cancelled) return
         const json = await res.json()
-        const translated = json?.responseData?.translatedText ?? ''
-        const lines = translated.split('\n')
-        for (let i = 0; i < texts.length; i++) {
-          const tr = lines[i]?.trim()
-          if (tr && tr.toLowerCase() !== texts[i].toLowerCase()) {
-            translationCache.current.set(texts[i], tr)
-          }
+        const translated = json?.responseData?.translatedText
+        if (translated && translated.toLowerCase() !== text.toLowerCase()) {
+          translationCache.current.set(text, translated)
         }
       } catch {
-        // Timeout or network error — graceful degradation
+        // Timeout or blocked — skip this segment
       } finally {
         clearTimeout(timer)
       }
     }
 
-    // Translate all chunks sequentially (avoid hammering the API)
+    // Translate with concurrency=3, show results progressively
     ;(async () => {
-      for (const chunk of chunks) {
+      const CONCURRENCY = 3
+      for (let i = 0; i < uncached.length; i += CONCURRENCY) {
         if (cancelled) break
-        await translateChunk(chunk)
-        if (!cancelled) setTranslationVersion(v => v + 1) // trigger re-render
+        const batch = uncached.slice(i, i + CONCURRENCY)
+        await Promise.allSettled(batch.map(s => translateOne(s.text)))
+        if (!cancelled) setTranslationVersion(v => v + 1)
       }
       if (!cancelled) {
         setTranslationLoading(false)
-        // Persist all translations to localStorage
+        // Persist to localStorage for instant reload next time
         try {
           const obj: Record<string, string> = {}
           for (const [k, v] of translationCache.current) obj[k] = v
           localStorage.setItem(STORAGE_KEY, JSON.stringify(obj))
-        } catch { /* quota exceeded — not critical */ }
+        } catch { /* quota exceeded */ }
       }
     })()
 
