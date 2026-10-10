@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { generateGaps, generateDistractors, shuffleArray, collectAllWords } from '../../utils/gapFill'
 import { lookupWord } from '../../api/dictionary'
