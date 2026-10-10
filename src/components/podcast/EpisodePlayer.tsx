@@ -83,6 +83,8 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
   const [clipMode, setClipMode] = useState(false)
   const [clipStart, setClipStart] = useState<number | null>(null)
   const [clipEnd, setClipEnd] = useState<number | null>(null)
+  const [dictationInput, setDictationInput] = useState('')
+  const [dictationResult, setDictationResult] = useState<{ correct: boolean; expected: string; words: Array<{ word: string; ok: boolean }> } | null>(null)
 
   // Loop playback within clip range using a tight rAF loop for smooth looping
   useEffect(() => {
@@ -568,22 +570,85 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
           )}
         </div>
 
-        {/* Clip mode instructions */}
+        {/* Clip mode — dictation practice */}
         {clipMode && (
-          <div className="mb-3 px-3 py-2 rounded-lg bg-mode-podcast/10 text-sm text-mode-podcast">
-            {clipStart == null
-              ? t('podcast.clipSelectStart')
-              : clipEnd == null
-                ? t('podcast.clipSelectEnd')
-                : `${t('podcast.clipActive')} ${formatClock(clipStart)} → ${formatClock(clipEnd)}`
-            }
+          <div className="mb-3 space-y-3">
+            <div className="px-3 py-2 rounded-lg bg-mode-podcast/10 text-sm text-mode-podcast">
+              {clipStart == null
+                ? t('podcast.clipSelectStart')
+                : clipEnd == null
+                  ? t('podcast.clipSelectEnd')
+                  : `${t('podcast.clipActive')} ${formatClock(clipStart)} → ${formatClock(clipEnd)}`
+              }
+              {clipStart != null && clipEnd != null && (
+                <button
+                  onClick={() => { setClipStart(null); setClipEnd(null); setDictationInput(''); setDictationResult(null) }}
+                  className="ml-2 underline text-xs"
+                >
+                  {t('podcast.clipReset')}
+                </button>
+              )}
+            </div>
+
+            {/* Dictation input — shown when clip range is selected */}
             {clipStart != null && clipEnd != null && (
-              <button
-                onClick={() => { setClipStart(null); setClipEnd(null) }}
-                className="ml-2 underline text-xs"
-              >
-                {t('podcast.clipReset')}
-              </button>
+              <div className="space-y-2">
+                <p className="text-xs text-gray-500 px-1">{t('podcast.dictationHint')}</p>
+                <textarea
+                  value={dictationInput}
+                  onChange={e => { setDictationInput(e.target.value); setDictationResult(null) }}
+                  placeholder={t('podcast.dictationPlaceholder')}
+                  className="w-full px-3 py-2.5 rounded-xl bg-white/60 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-mode-podcast/30 resize-none"
+                  rows={3}
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      // Compare user input with actual transcript
+                      const clipSegs = segments.filter(s => s.start >= clipStart && s.end <= clipEnd)
+                      const expected = clipSegs.map(s => s.text).join(' ')
+                      const expectedWords = expected.toLowerCase().split(/\s+/).filter(Boolean)
+                      const inputWords = dictationInput.trim().toLowerCase().split(/\s+/).filter(Boolean)
+                      const words = expectedWords.map((ew, i) => ({
+                        word: ew,
+                        ok: i < inputWords.length && inputWords[i].replace(/[^a-z']/g, '') === ew.replace(/[^a-z']/g, ''),
+                      }))
+                      const correct = words.length > 0 && words.every(w => w.ok)
+                      setDictationResult({ correct, expected, words })
+                    }}
+                    disabled={!dictationInput.trim()}
+                    className="px-4 py-2 rounded-xl text-sm font-medium bg-mode-podcast text-white disabled:opacity-50"
+                  >
+                    {t('podcast.dictationCheck')}
+                  </button>
+                  <button
+                    onClick={() => { setDictationInput(''); setDictationResult(null) }}
+                    className="px-4 py-2 rounded-xl text-sm text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                  >
+                    {t('podcast.dictationClear')}
+                  </button>
+                </div>
+
+                {/* Result */}
+                {dictationResult && (
+                  <div className={`px-3 py-2.5 rounded-xl text-sm ${dictationResult.correct ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' : 'bg-red-50 dark:bg-red-900/20'}`}>
+                    {dictationResult.correct ? (
+                      <p className="font-medium">✅ {t('podcast.dictationCorrect')}</p>
+                    ) : (
+                      <div className="space-y-1.5">
+                        <p className="font-medium text-red-600 dark:text-red-400">{t('podcast.dictationWrong')}</p>
+                        <p className="leading-relaxed">
+                          {dictationResult.words.map((w, i) => (
+                            <span key={i} className={w.ok ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400 font-bold underline'}>
+                              {w.word}{' '}
+                            </span>
+                          ))}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             )}
           </div>
         )}
