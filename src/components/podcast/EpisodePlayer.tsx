@@ -636,12 +636,16 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
                   const words = clipSegs[si].text.split(/\s+/)
                   for (let wi = 0; wi < words.length; wi++) {
                     const clean = words[wi].replace(/[^a-zA-Z']/g, '').toLowerCase()
-                    if (clean.length >= 4 && !STOP_WORDS.has(clean)) {
+                    // Must be 5+ letters, not a stop word, all lowercase in original
+                    // (uppercase mid-sentence = proper noun)
+                    const raw = words[wi].replace(/[^a-zA-Z']/g, '')
+                    const midSentenceCapital = wi > 0 && raw[0] === raw[0]?.toUpperCase() && raw[0] !== raw[0]?.toLowerCase()
+                    if (clean.length >= 5 && !STOP_WORDS.has(clean) && !midSentenceCapital) {
                       rawCandidates.push({ segIdx: si, wordIdx: wi, word: clean })
                     }
                   }
                 }
-                // Filter by dictionary — only real English words, not names/places
+                // Filter by dictionary — only real English words
                 ;(async () => {
                   const checks = await Promise.all(rawCandidates.map(c => isKnownWord(c.word)))
                   const candidates = rawCandidates.filter((_, i) => checks[i])

@@ -96,7 +96,7 @@ function cleanWord(token: string): string {
 function scoreWord(word: string): number {
   const lower = word.toLowerCase()
   if (STOP_WORDS.has(lower)) return 0
-  if (lower.length < 3) return 0
+  if (lower.length < 5) return 0
 
   let score = lower.length * 2
   // Content word bonus (not in common-200)
@@ -129,8 +129,13 @@ export async function generateGaps(segments: Segment[], options: GapOptions): Pr
     const words = seg.text.split(/\s+/)
 
     for (let wi = 0; wi < words.length; wi++) {
-      const cleaned = cleanWord(words[wi])
-      if (!cleaned || cleaned.length < 4) continue
+      const raw = words[wi].replace(/^[^a-zA-Z']+|[^a-zA-Z']+$/g, '')
+      const cleaned = raw.toLowerCase()
+      if (!cleaned || cleaned.length < 5) continue
+
+      // Extra safety: skip mid-sentence capitalized words (proper nouns)
+      const midCap = wi > 0 && raw[0] === raw[0].toUpperCase() && raw[0] !== raw[0].toLowerCase()
+      if (midCap) continue
 
       const score = scoreWord(cleaned)
       if (score <= 0) continue
