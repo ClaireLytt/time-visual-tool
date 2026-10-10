@@ -380,7 +380,7 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
   return (
     <div className="space-y-4">
       <button
-        onClick={onBack}
+        onClick={(e) => { e.stopPropagation(); onBack() }}
         className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
       >
         ‹ {t('podcast.back')}
