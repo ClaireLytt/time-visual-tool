@@ -86,6 +86,11 @@ export function useWordHistory() {
     })
   }, [setSentences])
 
+  /** Remove a saved sentence */
+  const removeSentence = useCallback((text: string, episodeTitle: string) => {
+    setSentences(prev => prev.filter(s => !(s.text === text && s.episodeTitle === episodeTitle)))
+  }, [setSentences])
+
   /** Get lookup records filtered by date range */
   const getRecordsInRange = useCallback((startDate: Date, endDate: Date): WordRecord[] => {
     return words.filter(w => {
@@ -141,6 +146,7 @@ export function useWordHistory() {
     toggleBookmark,
     removeWord,
     saveSentence,
+    removeSentence,
     getRecordsInRange,
     getDailyCounts,
     getWordsByEpisode,

@@ -17,6 +17,7 @@ interface EpisodePlayerProps {
   onBack: () => void
   onWordLookup?: (word: string) => void
   onSaveSentence?: (text: string, episodeTitle: string, timestamp: number) => void
+  onRemoveSentence?: (text: string, episodeTitle: string) => void
   savedSentences?: Set<string>
   /** Batch-add words from transcript */
   onExtractWords?: (words: string[]) => void
@@ -37,7 +38,7 @@ function describeMediaError(code: number): string {
   }
 }
 
-export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSentence, savedSentences, onExtractWords, onRemoveWord }: EpisodePlayerProps) {
+export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSentence, onRemoveSentence, savedSentences, onExtractWords, onRemoveWord }: EpisodePlayerProps) {
   const { t } = useTranslation()
   const audioRef = useRef<HTMLAudioElement>(null)
   const activeRef = useRef<HTMLDivElement>(null)
@@ -757,21 +758,25 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
                   })}
                 </span>
 
-                {/* Bookmark sentence button -- yellow when saved */}
+                {/* Bookmark sentence button -- toggle save/remove */}
                 {(() => {
                   const isSaved = savedSentences?.has(seg.text) ?? false
                   return (
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
-                        onSaveSentence?.(seg.text, episode.title, seg.start)
+                        if (isSaved) {
+                          onRemoveSentence?.(seg.text, episode.title)
+                        } else {
+                          onSaveSentence?.(seg.text, episode.title, seg.start)
+                        }
                       }}
                       className={`mt-1 shrink-0 transition-all ${
                         isSaved
                           ? 'text-yellow-500 dark:text-yellow-400 opacity-100'
                           : 'text-gray-300 dark:text-gray-600 opacity-0 group-hover:opacity-100 hover:text-yellow-500 dark:hover:text-yellow-400'
                       }`}
-                      title={t('podcast.saveSentence')}
+                      title={isSaved ? t('podcast.unsaveSentence') : t('podcast.saveSentence')}
                     >
                       <svg className="w-4 h-4" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}
                         fill={isSaved ? 'currentColor' : 'none'}

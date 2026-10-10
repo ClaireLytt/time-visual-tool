@@ -23,7 +23,7 @@ export default function PodcastDashboard() {
   const { t } = useTranslation()
   const [view, setView] = useState<View>({ kind: 'search' })
   const [feed, setFeed] = useState<Feed | null>(null)
-  const { words, sentences, recordLookup, saveSentence, removeWord, getEpisodeGroups } = useWordHistory()
+  const { words, sentences, recordLookup, saveSentence, removeSentence, removeWord, getEpisodeGroups } = useWordHistory()
   const savedSentenceTexts = useMemo(() => new Set(sentences.map(s => s.text)), [sentences])
   const { stats: episodeStats, toggleStar, toggleToLearn, recordWord, recordPlay } = useEpisodeStats()
 
@@ -134,6 +134,7 @@ export default function PodcastDashboard() {
           onBack={() => setView({ kind: 'episodes', source: view.source })}
           onWordLookup={handleWordLookup}
           onSaveSentence={handleSaveSentence}
+          onRemoveSentence={removeSentence}
           savedSentences={savedSentenceTexts}
           onExtractWords={handleExtractWords}
           onRemoveWord={removeWord}

@@ -642,6 +642,7 @@
     "reviewSpaced": "间隔重复",
     "reviewDictation": "听写练习",
     "saveSentence": "收藏句子",
+    "unsaveSentence": "取消收藏",
     "noSavedSentences": "还没有收藏的句子，在字幕中点击书签图标收藏",
     "sortDefault": "默认",
     "sortDifficulty": "难度由低到高",

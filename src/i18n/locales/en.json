@@ -642,6 +642,7 @@
     "reviewSpaced": "Spaced Repetition",
     "reviewDictation": "Dictation Practice",
     "saveSentence": "Bookmark sentence",
+    "unsaveSentence": "Remove bookmark",
     "noSavedSentences": "No saved sentences yet. Tap the bookmark icon in the transcript to save one.",
     "sortDefault": "Default",
     "sortDifficulty": "Easiest first",
