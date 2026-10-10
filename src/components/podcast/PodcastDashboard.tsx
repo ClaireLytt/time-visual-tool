@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import PodcastSearch from './PodcastSearch'
 import PodcastCharts from './PodcastCharts'
@@ -21,10 +22,83 @@ type View =
   | { kind: 'episodeWords'; episodeId: string; episodeTitle: string }
   | { kind: 'favorites' }
 
+/** Encode view state into URL search params */
+function viewToParams(view: View): Record<string, string> {
+  switch (view.kind) {
+    case 'search': return {}
+    case 'episodes': {
+      const p: Record<string, string> = { pv: 'episodes' }
+      if ('feedUrl' in view.source && view.source.feedUrl) p.feed = view.source.feedUrl
+      if ('collectionId' in view.source && view.source.collectionId) p.cid = String(view.source.collectionId)
+      return p
+    }
+    case 'player': {
+      const p: Record<string, string> = { pv: 'player', eid: view.episode.id, etitle: view.episode.title }
+      if ('feedUrl' in view.source && view.source.feedUrl) p.feed = view.source.feedUrl
+      if ('collectionId' in view.source && view.source.collectionId) p.cid = String(view.source.collectionId)
+      if (view.episode.audioUrl) p.audio = view.episode.audioUrl
+      return p
+    }
+    case 'review': return { pv: 'review' }
+    case 'favorites': return { pv: 'favorites' }
+    case 'episodeWords': return { pv: 'epwords', eid: view.episodeId, etitle: view.episodeTitle }
+  }
+}
+
+/** Decode URL search params into a view state (partial — player needs episode data) */
+function paramsToView(params: URLSearchParams): View | null {
+  const pv = params.get('pv')
+  if (!pv) return { kind: 'search' }
+  if (pv === 'review') return { kind: 'review' }
+  if (pv === 'favorites') return { kind: 'favorites' }
+  if (pv === 'epwords') {
+    const eid = params.get('eid')
+    const etitle = params.get('etitle')
+    if (eid && etitle) return { kind: 'episodeWords', episodeId: eid, episodeTitle: etitle }
+  }
+  if (pv === 'episodes') {
+    const feed = params.get('feed')
+    const cid = params.get('cid')
+    if (feed) return { kind: 'episodes', source: { feedUrl: feed } }
+    if (cid) return { kind: 'episodes', source: { collectionId: Number(cid) } }
+  }
+  if (pv === 'player') {
+    const feed = params.get('feed')
+    const cid = params.get('cid')
+    const eid = params.get('eid')
+    const etitle = params.get('etitle')
+    const audio = params.get('audio')
+    const source: FeedSource = feed ? { feedUrl: feed } : { collectionId: Number(cid ?? 0) }
+    if (eid && audio) {
+      const episode: Episode = {
+        id: eid, title: etitle ?? '', audioUrl: audio,
+        pubDate: null, duration: null, summary: null, transcript: null,
+      }
+      return { kind: 'player', source, episode }
+    }
+  }
+  return null
+}
+
 export default function PodcastDashboard() {
   const { t } = useTranslation()
-  const [view, setView] = useState<View>({ kind: 'search' })
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [view, setViewState] = useState<View>(() => paramsToView(searchParams) ?? { kind: 'search' })
   const [feed, setFeed] = useState<Feed | null>(null)
+
+  // Sync view → URL (replace, don't push history for every click)
+  const setView = useCallback((v: View) => {
+    setViewState(v)
+    setSearchParams(viewToParams(v), { replace: true })
+  }, [setSearchParams])
+
+  // On mount, restore view from URL
+  useEffect(() => {
+    const restored = paramsToView(searchParams)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (restored && restored.kind !== 'search') setViewState(restored)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const { words, sentences, recordLookup, saveSentence, removeSentence, removeWord, getEpisodeGroups } = useWordHistory()
   const savedSentenceTexts = useMemo(() => new Set(sentences.map(s => s.text)), [sentences])
   const { stats: episodeStats, toggleStar, toggleToLearn, recordWord, recordPlay } = useEpisodeStats()
