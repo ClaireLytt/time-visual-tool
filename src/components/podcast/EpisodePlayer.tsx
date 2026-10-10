@@ -106,19 +106,25 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
   useEffect(() => {
     if (!isPopoverOpen) return
     const dismiss = (e: Event) => {
-      const popover = (e.target as HTMLElement).closest('[data-word-popover]')
-      if (popover) return
+      const target = e.target as HTMLElement
+      // Don't dismiss if clicking inside the popover
+      if (target.closest('[data-word-popover]')) return
+      // Don't dismiss if clicking another word (it will open a new popover)
+      if (target.closest('[style*="touch-action"]')) return
       setSelectedWord(null)
     }
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelectedWord(null) }
-    // Listen on both click (desktop) and touchend (mobile, since word spans
-    // preventDefault on touchend which suppresses the synthetic click)
-    document.addEventListener('click', dismiss)
-    document.addEventListener('touchend', dismiss)
-    document.addEventListener('keydown', onKey)
+    // Delay listener registration so the current click that opened the
+    // popover doesn't immediately dismiss it
+    const timer = setTimeout(() => {
+      document.addEventListener('mousedown', dismiss)
+      document.addEventListener('touchstart', dismiss)
+      document.addEventListener('keydown', onKey)
+    }, 100)
     return () => {
-      document.removeEventListener('click', dismiss)
-      document.removeEventListener('touchend', dismiss)
+      clearTimeout(timer)
+      document.removeEventListener('mousedown', dismiss)
+      document.removeEventListener('touchstart', dismiss)
       document.removeEventListener('keydown', onKey)
     }
   }, [isPopoverOpen])

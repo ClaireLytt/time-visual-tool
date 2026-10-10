@@ -54,11 +54,20 @@ function youdaoAudio(word: string, type: 1 | 2): string {
 
 // ─── Public API lookup ───
 
+/** Fetch with a hard timeout — avoids infinite spinning on slow/blocked APIs */
+function fetchWithTimeout(url: string, timeoutMs: number, signal?: AbortSignal): Promise<Response> {
+  const ctrl = new AbortController()
+  // Abort on caller signal or timeout, whichever comes first
+  signal?.addEventListener('abort', () => ctrl.abort())
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs)
+  return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(timer))
+}
+
 async function fetchFreeDictionary(word: string, signal?: AbortSignal): Promise<FreeDictEntry | null> {
   try {
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`,
-      { signal }
+      4000, signal
     )
     if (!res.ok) return null
     const data = (await res.json()) as FreeDictEntry[]
@@ -70,14 +79,13 @@ async function fetchFreeDictionary(word: string, signal?: AbortSignal): Promise<
 
 async function fetchTranslation(word: string, signal?: AbortSignal): Promise<string | null> {
   try {
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=en|zh`,
-      { signal }
+      4000, signal
     )
     if (!res.ok) return null
     const data = (await res.json()) as MyMemoryResponse
     const text = data?.responseData?.translatedText
-    // MyMemory sometimes returns the input unchanged — skip those
     if (text && text.toLowerCase() !== word.toLowerCase()) return text
     return null
   } catch {
