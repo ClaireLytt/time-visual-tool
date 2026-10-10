@@ -674,5 +674,43 @@
     "dictEnDef": "English Def",
     "dictWebDict": "Web Dict",
     "dictEudict": "Eudic"
+  },
+  "game": {
+    "gapFill": "Word Game",
+    "typeFill": "Type Fill",
+    "start": "Start Game",
+    "exit": "Exit Game",
+    "correct": "Correct!",
+    "wrong": "Wrong",
+    "result": "Results",
+    "score": "Score",
+    "retry": "Retry",
+    "playAgain": "Play Again",
+    "addWrongWords": "Add wrong words to vocab",
+    "difficulty": "Difficulty",
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard",
+    "progress": "Progress",
+    "attemptsLeft": "Attempts left"
+  },
+  "typing": {
+    "title": "Typing Practice",
+    "start": "Start Practice",
+    "exit": "Exit Practice",
+    "wpm": "WPM",
+    "accuracy": "Accuracy",
+    "pressEnter": "Press Enter to continue",
+    "complete": "Practice Complete!",
+    "linesCompleted": "Lines Completed",
+    "errorWords": "Misspelled Words",
+    "practiceAgain": "Practice Again"
+  },
+  "episodeWords": {
+    "title": "Episode Words",
+    "viewAll": "View Episode Words",
+    "empty": "No words collected for this episode",
+    "byEpisode": "By Episode",
+    "wordCount": "{{count}} words"
   }
 }

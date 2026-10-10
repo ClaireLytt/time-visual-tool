@@ -12,6 +12,10 @@ export interface WordRecord {
   count: number
   /** Whether the user bookmarked this word */
   bookmarked: boolean
+  /** Episode where this word was first encountered */
+  episodeId?: string
+  /** Title of the episode where this word was first encountered */
+  episodeTitle?: string
 }
 
 /** Bookmarked sentence from a transcript */
@@ -32,7 +36,7 @@ export function useWordHistory() {
   const [sentences, setSentences] = useLocalStorage<SavedSentence[]>(SENTENCES_KEY, [])
 
   /** Record a word lookup. Increments count if already seen. */
-  const recordLookup = useCallback((word: string) => {
+  const recordLookup = useCallback((word: string, episodeId?: string, episodeTitle?: string) => {
     const key = word.toLowerCase().trim()
     if (!key) return
     setWords(prev => {
@@ -43,7 +47,7 @@ export function useWordHistory() {
         updated[idx] = { ...updated[idx], lastSeen: now, count: updated[idx].count + 1 }
         return updated
       }
-      const next = [...prev, { word: key, firstSeen: now, lastSeen: now, count: 1, bookmarked: false }]
+      const next = [...prev, { word: key, firstSeen: now, lastSeen: now, count: 1, bookmarked: false, episodeId, episodeTitle }]
       // Evict least-recently-seen non-bookmarked entries if over limit
       if (next.length > MAX_WORDS) {
         const excess = next.length - MAX_WORDS
@@ -65,6 +69,12 @@ export function useWordHistory() {
     setWords(prev => prev.map(w =>
       w.word === key ? { ...w, bookmarked: !w.bookmarked } : w
     ))
+  }, [setWords])
+
+  /** Remove a word from history */
+  const removeWord = useCallback((word: string) => {
+    const key = word.toLowerCase().trim()
+    setWords(prev => prev.filter(w => w.word !== key))
   }, [setWords])
 
   /** Save a sentence */
@@ -97,13 +107,43 @@ export function useWordHistory() {
     return counts
   }, [words])
 
+  /** Get all words associated with a specific episode */
+  const getWordsByEpisode = useCallback((episodeId: string): WordRecord[] => {
+    return words.filter(w => w.episodeId === episodeId)
+  }, [words])
+
+  /** Get a list of episodes with word counts, sorted by most recent */
+  const getEpisodeGroups = useCallback((): Array<{ episodeId: string; episodeTitle: string; count: number }> => {
+    const groups = new Map<string, { episodeTitle: string; count: number; lastSeen: string }>()
+    for (const w of words) {
+      if (!w.episodeId) continue
+      const existing = groups.get(w.episodeId)
+      if (existing) {
+        existing.count++
+        if (w.lastSeen > existing.lastSeen) existing.lastSeen = w.lastSeen
+      } else {
+        groups.set(w.episodeId, {
+          episodeTitle: w.episodeTitle ?? w.episodeId,
+          count: 1,
+          lastSeen: w.lastSeen,
+        })
+      }
+    }
+    return [...groups.entries()]
+      .sort((a, b) => b[1].lastSeen.localeCompare(a[1].lastSeen))
+      .map(([episodeId, { episodeTitle, count }]) => ({ episodeId, episodeTitle, count }))
+  }, [words])
+
   return {
     words,
     sentences,
     recordLookup,
     toggleBookmark,
+    removeWord,
     saveSentence,
     getRecordsInRange,
     getDailyCounts,
+    getWordsByEpisode,
+    getEpisodeGroups,
   }
 }

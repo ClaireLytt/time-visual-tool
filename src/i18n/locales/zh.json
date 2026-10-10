@@ -674,5 +674,43 @@
     "dictEnDef": "英文释义",
     "dictWebDict": "网络词典",
     "dictEudict": "欧路词典"
+  },
+  "game": {
+    "gapFill": "选词游戏",
+    "typeFill": "打字填空",
+    "start": "开始游戏",
+    "exit": "退出游戏",
+    "correct": "正确！",
+    "wrong": "答错了",
+    "result": "游戏结果",
+    "score": "得分",
+    "retry": "重试",
+    "playAgain": "再玩一次",
+    "addWrongWords": "错词加入生词库",
+    "difficulty": "难度",
+    "easy": "初级",
+    "medium": "中级",
+    "hard": "高级",
+    "progress": "进度",
+    "attemptsLeft": "剩余次数"
+  },
+  "typing": {
+    "title": "抄写练习",
+    "start": "开始练习",
+    "exit": "退出练习",
+    "wpm": "打字速度",
+    "accuracy": "正确率",
+    "pressEnter": "按回车继续",
+    "complete": "练习完成！",
+    "linesCompleted": "完成行数",
+    "errorWords": "拼错的单词",
+    "practiceAgain": "再练一次"
+  },
+  "episodeWords": {
+    "title": "本集生词",
+    "viewAll": "查看本集生词",
+    "empty": "本集还没有收藏的生词",
+    "byEpisode": "按播客分组",
+    "wordCount": "{{count}} 个生词"
   }
 }

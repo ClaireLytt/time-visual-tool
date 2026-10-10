@@ -5,6 +5,10 @@ import { audioProxyUrl, fetchTranscriptText, requestTranscription, pollTranscrip
 import { translateText, batchTranslateViaBackend, loadTranslationCache, saveTranslationCache } from '../../api/translate'
 import { findActiveIndex, formatClock, parseSrt, parseVtt, parseJsonTranscript } from '../../utils/transcript'
 import WordPopover from './WordPopover'
+import GapFillGame from './GapFillGame'
+import TypeFillGame from './TypeFillGame'
+import TypingPractice from './TypingPractice'
+import EpisodeWordList from './EpisodeWordList'
 import type { Episode } from '../../types/podcast'
 import type { Segment, JobStatus } from '../../types/podcast'
 
@@ -16,6 +20,8 @@ interface EpisodePlayerProps {
   savedSentences?: Set<string>
   /** Batch-add words from transcript */
   onExtractWords?: (words: string[]) => void
+  /** Remove a word from history */
+  onRemoveWord?: (word: string) => void
 }
 
 const SPEED_OPTIONS = [0.75, 1, 1.25, 1.5, 2]
@@ -31,7 +37,7 @@ function describeMediaError(code: number): string {
   }
 }
 
-export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSentence, savedSentences, onExtractWords }: EpisodePlayerProps) {
+export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSentence, savedSentences, onExtractWords, onRemoveWord }: EpisodePlayerProps) {
   const { t } = useTranslation()
   const audioRef = useRef<HTMLAudioElement>(null)
   const activeRef = useRef<HTMLDivElement>(null)
@@ -65,6 +71,12 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
   const [translationLoading, setTranslationLoading] = useState(false)
   const [translationProgress, setTranslationProgress] = useState({ done: 0, total: 0 })
   const [translationStarted, setTranslationStarted] = useState(false)
+
+  // Game mode
+  const [gameMode, setGameMode] = useState<'none' | 'gapfill' | 'typefill' | 'typing'>('none')
+
+  // Episode word list overlay
+  const [showEpisodeWords, setShowEpisodeWords] = useState(false)
 
   // Dictation clip mode: select a segment range and loop-play it
   const [clipMode, setClipMode] = useState(false)
@@ -381,6 +393,14 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
         )}
       </div>
 
+      {/* View episode words button */}
+      <button
+        onClick={() => setShowEpisodeWords(true)}
+        className="text-xs text-mode-podcast hover:text-mode-podcast/80 transition-colors"
+      >
+        📚 {t('episodeWords.viewAll')}
+      </button>
+
       {/* Audio player */}
       <div className="panel p-4 space-y-3">
         <audio ref={audioRef} src={audioSrc} preload="auto" />
@@ -509,6 +529,39 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
               >
                 🎧 {t('podcast.dictationClip')}
               </button>
+              {/* Gap fill game */}
+              <button
+                onClick={() => setGameMode('gapfill')}
+                className={`text-xs px-2.5 py-1.5 rounded-lg transition-colors ${
+                  gameMode === 'gapfill'
+                    ? 'bg-mode-podcast text-white'
+                    : 'bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                🎮 {t('game.gapFill')}
+              </button>
+              {/* Type fill game */}
+              <button
+                onClick={() => setGameMode('typefill')}
+                className={`text-xs px-2.5 py-1.5 rounded-lg transition-colors ${
+                  gameMode === 'typefill'
+                    ? 'bg-mode-podcast text-white'
+                    : 'bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                ⌨️ {t('game.typeFill')}
+              </button>
+              {/* Typing practice */}
+              <button
+                onClick={() => setGameMode('typing')}
+                className={`text-xs px-2.5 py-1.5 rounded-lg transition-colors ${
+                  gameMode === 'typing'
+                    ? 'bg-mode-podcast text-white'
+                    : 'bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                ✍️ {t('typing.title')}
+              </button>
             </div>
           )}
         </div>
@@ -608,8 +661,34 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
           </div>
         )}
 
+        {/* Game mode — render game component instead of transcript */}
+        {gameMode === 'gapfill' && segments.length > 0 && (
+          <GapFillGame
+            segments={segments}
+            audioRef={audioRef}
+            onExit={() => setGameMode('none')}
+            onAddToVocab={onWordLookup}
+          />
+        )}
+        {gameMode === 'typefill' && segments.length > 0 && (
+          <TypeFillGame
+            segments={segments}
+            audioRef={audioRef}
+            onExit={() => setGameMode('none')}
+            onAddToVocab={onWordLookup}
+          />
+        )}
+        {gameMode === 'typing' && segments.length > 0 && (
+          <TypingPractice
+            segments={segments}
+            audioRef={audioRef}
+            onExit={() => setGameMode('none')}
+            onAddToVocab={onWordLookup}
+          />
+        )}
+
         {/* Transcript lines — clickable words + sentence bookmark */}
-        {segments.length > 0 && (
+        {gameMode === 'none' && segments.length > 0 && (
           <div className="max-h-[28rem] overflow-y-auto space-y-1.5">
             {segments.map((seg, i) => {
               const inClip = clipMode && clipStart != null && clipEnd != null &&
@@ -764,6 +843,18 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
           </div>
         )}
       </div>
+
+      {/* Episode word list overlay */}
+      {showEpisodeWords && (
+        <div className="panel p-4">
+          <EpisodeWordList
+            episodeId={episode.id}
+            episodeTitle={episode.title}
+            onClose={() => setShowEpisodeWords(false)}
+            onRemoveWord={onRemoveWord}
+          />
+        </div>
+      )}
     </div>
   )
 }
