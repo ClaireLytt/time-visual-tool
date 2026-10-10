@@ -16,10 +16,12 @@ export interface DictResult {
   enDefinitions?: string[]
 }
 
-// ─── In-memory client cache (capped at 500 entries) ───
+// ─── In-memory client cache with TTL + LRU eviction ───
 
-const clientCache = new Map<string, DictResult>()
-const CLIENT_CACHE_MAX = 500
+interface CacheEntry { data: DictResult; ts: number }
+const clientCache = new Map<string, CacheEntry>()
+const CLIENT_CACHE_MAX = 300
+const CLIENT_CACHE_TTL = 7 * 24 * 60 * 60 * 1000 // 7 days
 
 // ─── API ───
 
@@ -33,18 +35,26 @@ export async function lookupWord(word: string, signal?: AbortSignal): Promise<Di
   if (!key) return null
 
   const cached = clientCache.get(key)
-  if (cached) return cached
+  if (cached) {
+    if (Date.now() - cached.ts < CLIENT_CACHE_TTL) {
+      // LRU: move to end by re-inserting
+      clientCache.delete(key)
+      clientCache.set(key, cached)
+      return cached.data
+    }
+    clientCache.delete(key) // expired
+  }
 
   try {
     const res = await fetch(`${API_BASE}/dictionary/${encodeURIComponent(key)}`, { signal })
     if (!res.ok) return null
     const data = (await res.json()) as DictResult
+    // Evict oldest (LRU) if at capacity
     if (clientCache.size >= CLIENT_CACHE_MAX) {
-      // Delete oldest entry (first inserted)
       const firstKey = clientCache.keys().next().value
       if (firstKey !== undefined) clientCache.delete(firstKey)
     }
-    clientCache.set(key, data)
+    clientCache.set(key, { data, ts: Date.now() })
     return data
   } catch {
     return null

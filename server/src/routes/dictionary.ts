@@ -3,6 +3,7 @@ import { fetchOk, HttpError } from '../http.js'
 
 export const dictionaryRouter = Router()
 
+// Note: Node.js is single-threaded so Map operations are atomic — no lock needed.
 const cache = new Map<string, { data: unknown; ts: number; size: number }>()
 const CACHE_TTL = 7 * 24 * 60 * 60 * 1000
 const CACHE_MAX = 2000

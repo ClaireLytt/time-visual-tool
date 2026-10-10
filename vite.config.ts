@@ -22,15 +22,26 @@ export default defineConfig({
             },
           },
           {
-            // Cache API responses (dictionary, etc.) with network-first
-            urlPattern: /\/api\/.*/i,
-            handler: 'NetworkFirst',
+            // Cache dictionary lookups only — static reference data safe to cache
+            urlPattern: /\/api\/dictionary\/.*/i,
+            handler: 'CacheFirst',
             options: {
-              cacheName: 'api-cache',
-              expiration: { maxEntries: 100, maxAgeSeconds: 7 * 24 * 60 * 60 },
-              networkTimeoutSeconds: 5,
+              cacheName: 'dictionary-cache',
+              expiration: { maxEntries: 200, maxAgeSeconds: 30 * 24 * 60 * 60 },
             },
           },
+          {
+            // Transcribe/podcast APIs: network-first with short cache for offline fallback
+            urlPattern: /\/api\/transcribe.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'transcribe-cache',
+              expiration: { maxEntries: 20, maxAgeSeconds: 24 * 60 * 60 },
+              networkTimeoutSeconds: 10,
+            },
+          },
+          // Note: Firebase/Firestore APIs are NOT cached by the SW —
+          // they use their own SDK caching and auth tokens.
         ],
       },
     }),
