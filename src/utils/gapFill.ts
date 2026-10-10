@@ -65,6 +65,28 @@ export const STOP_WORDS = new Set([
   'yeah','yes','okay','oh','um','uh','ah','well','like','actually',
   'really','maybe','probably','pretty','stuff','things','something',
   'anything','everything','nothing','someone','anyone','everyone',
+  // Contractions (with and without apostrophe)
+  "i'm","i've","i'll","i'd","you're","you've","you'll","you'd",
+  "he's","he'll","he'd","she's","she'll","she'd","it's","it'll",
+  "we're","we've","we'll","we'd","they're","they've","they'll","they'd",
+  "isn't","aren't","wasn't","weren't","hasn't","haven't","hadn't",
+  "doesn't","didn't","won't","wouldn't","can't","couldn't","shouldn't",
+  "mustn't","don't","that's","there's","here's","what's","who's",
+  "let's","gonna","wanna","gotta","kinda","sorta",
+  "im","ive","ill","id","youre","youve","youll","youd",
+  "hes","hell","hed","shes","shell","shed","its","itll",
+  "were","weve","well","wed","theyre","theyve","theyll","theyd",
+  "isnt","arent","wasnt","werent","hasnt","havent","hadnt",
+  "doesnt","didnt","wont","wouldnt","cant","couldnt","shouldnt",
+  "mustnt","dont","thats","theres","heres","whats","whos","lets",
+  // More basic words that slip through
+  'about','after','again','because','before','between','could','should',
+  'would','these','those','being','doing','having','other','another',
+  'since','while','where','there','their','which','though','through',
+  'until','without','along','among','around','behind','beside','beyond',
+  'during','except','inside','outside','toward','towards','under',
+  'upon','within','today','tonight','maybe','never','always','often',
+  'sometimes','together','already','almost','enough','quite','rather',
 ])
 
 // ─── Scoring: words in this set get lower priority ───
