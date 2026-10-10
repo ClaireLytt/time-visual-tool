@@ -159,8 +159,8 @@ export default function PodcastCharts({ onOpen, isFavorite, onToggleFavorite }: 
 
   return (
     <div className="space-y-3">
-      {/* Tab bar */}
-      <div className="flex gap-2 px-1">
+      {/* Tab bar + filters in one row */}
+      <div className="flex items-center gap-2 px-1 flex-wrap">
         {TABS.map(tab => (
           <button
             key={tab.key}
@@ -174,10 +174,6 @@ export default function PodcastCharts({ onOpen, isFavorite, onToggleFavorite }: 
             {t(tab.labelKey)}
           </button>
         ))}
-      </div>
-
-      {/* Filter dropdowns */}
-      <div className="flex gap-2 px-1">
         <FilterDropdown
           label={t('podcast.filter.country')}
           options={countryOptions}

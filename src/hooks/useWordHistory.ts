@@ -44,7 +44,14 @@ export function useWordHistory() {
       const now = new Date().toISOString()
       if (idx >= 0) {
         const updated = [...prev]
-        updated[idx] = { ...updated[idx], lastSeen: now, count: updated[idx].count + 1 }
+        updated[idx] = {
+          ...updated[idx],
+          lastSeen: now,
+          count: updated[idx].count + 1,
+          // Backfill episodeId if it was missing (e.g. word seen before episodes feature)
+          episodeId: updated[idx].episodeId || episodeId,
+          episodeTitle: updated[idx].episodeTitle || episodeTitle,
+        }
         return updated
       }
       const next = [...prev, { word: key, firstSeen: now, lastSeen: now, count: 1, bookmarked: false, episodeId, episodeTitle }]
