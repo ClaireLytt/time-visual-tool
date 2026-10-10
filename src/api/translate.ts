@@ -9,7 +9,10 @@
 
 const API_BASE: string = import.meta.env.VITE_API_BASE ?? '/api'
 
-let backendAvailable = true // assume available until first failure
+let backendAvailable = true
+let backendDisabledAt = 0
+let lingvaDisabledAt = 0
+const RETRY_AFTER_MS = 60_000 // retry disabled backends after 1 minute
 
 /** Fetch with hard timeout */
 async function fetchTimeout(url: string, init: RequestInit, ms: number): Promise<Response> {
@@ -26,7 +29,10 @@ async function fetchTimeout(url: string, init: RequestInit, ms: number): Promise
 // ─── Strategy 1: Backend → Bing Translator (best for China) ───
 
 async function translateViaBackend(text: string): Promise<string | null> {
-  if (!backendAvailable) return null
+  if (!backendAvailable) {
+    if (Date.now() - backendDisabledAt > RETRY_AFTER_MS) backendAvailable = true
+    else return null
+  }
   try {
     const res = await fetchTimeout(`${API_BASE}/translate`, {
       method: 'POST',
@@ -34,34 +40,39 @@ async function translateViaBackend(text: string): Promise<string | null> {
       body: JSON.stringify({ text }),
     }, 8000)
     if (!res.ok) {
-      if (res.status === 404) backendAvailable = false
+      if (res.status === 404) { backendAvailable = false; backendDisabledAt = Date.now() }
       return null
     }
     const data = await res.json()
     return data?.translation || null
   } catch {
     backendAvailable = false
+    backendDisabledAt = Date.now()
     return null
   }
 }
 
 /** Batch translate via backend (one HTTP request for up to 50 texts) */
 export async function batchTranslateViaBackend(texts: string[]): Promise<(string | null)[]> {
-  if (!backendAvailable) return texts.map(() => null)
+  if (!backendAvailable) {
+    if (Date.now() - backendDisabledAt > RETRY_AFTER_MS) backendAvailable = true
+    else return texts.map(() => null)
+  }
   try {
     const res = await fetchTimeout(`${API_BASE}/translate/batch`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ texts }),
-    }, 30000) // longer timeout for batch
+    }, 30000)
     if (!res.ok) {
-      if (res.status === 404) backendAvailable = false
+      if (res.status === 404) { backendAvailable = false; backendDisabledAt = Date.now() }
       return texts.map(() => null)
     }
     const data = await res.json()
     return (data?.translations ?? []) as (string | null)[]
   } catch {
     backendAvailable = false
+    backendDisabledAt = Date.now()
     return texts.map(() => null)
   }
 }
@@ -76,7 +87,10 @@ let lingvaIdx = 0
 let lingvaFailed = 0
 
 async function translateViaLingva(text: string): Promise<string | null> {
-  if (lingvaFailed >= LINGVA_HOSTS.length) return null
+  if (lingvaFailed >= LINGVA_HOSTS.length) {
+    if (Date.now() - lingvaDisabledAt > RETRY_AFTER_MS) lingvaFailed = 0
+    else return null
+  }
   for (let i = 0; i < LINGVA_HOSTS.length; i++) {
     const host = LINGVA_HOSTS[(lingvaIdx + i) % LINGVA_HOSTS.length]
     try {
@@ -93,6 +107,7 @@ async function translateViaLingva(text: string): Promise<string | null> {
     } catch { /* try next */ }
   }
   lingvaFailed = LINGVA_HOSTS.length
+  lingvaDisabledAt = Date.now()
   return null
 }
 

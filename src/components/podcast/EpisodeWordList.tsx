@@ -37,7 +37,7 @@ export default function EpisodeWordList({
     lookupAll()
     return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [episodeId])
+  }, [episodeId, episodeWords.length])
 
   // Find a saved sentence that contains the word
   const findSentence = (word: string): string | undefined => {
@@ -94,7 +94,7 @@ export default function EpisodeWordList({
                     {wr.word}
                   </span>
                   {phonetic && (
-                    <span className="text-xs text-gray-400">/{phonetic}/</span>
+                    <span className="text-xs text-gray-400">{phonetic}</span>
                   )}
                 </div>
                 <div className="flex items-center gap-1.5">

@@ -29,15 +29,16 @@ export function useEpisodeStats() {
 
   const getMeta = useCallback((id: string): EpisodeMeta | undefined => stats[id], [stats])
 
-  const updateMeta = useCallback((id: string, patch: Partial<EpisodeMeta>) => {
+  /** Update meta using a function that reads from prev state (no stale closures) */
+  const updateMeta = useCallback((id: string, patchFn: (cur: EpisodeMeta) => Partial<EpisodeMeta>) => {
     setStats(prev => {
       const existing = prev[id] ?? {
         id, starred: false, toLearn: false,
         segmentsListened: 0, listenTime: 0, wordCount: 0,
         lastPlayed: new Date().toISOString(),
       }
+      const patch = patchFn(existing)
       const next = { ...prev, [id]: { ...existing, ...patch, id } }
-      // Evict oldest non-starred entries if over limit
       const keys = Object.keys(next)
       if (keys.length > MAX_ENTRIES) {
         const sorted = keys
@@ -50,33 +51,27 @@ export function useEpisodeStats() {
   }, [setStats])
 
   const toggleStar = useCallback((id: string) => {
-    const cur = stats[id]
-    updateMeta(id, { starred: !(cur?.starred ?? false), lastPlayed: new Date().toISOString() })
-  }, [stats, updateMeta])
+    updateMeta(id, cur => ({ starred: !cur.starred, lastPlayed: new Date().toISOString() }))
+  }, [updateMeta])
 
   const toggleToLearn = useCallback((id: string) => {
-    const cur = stats[id]
-    updateMeta(id, { toLearn: !(cur?.toLearn ?? false), lastPlayed: new Date().toISOString() })
-  }, [stats, updateMeta])
+    updateMeta(id, cur => ({ toLearn: !cur.toLearn, lastPlayed: new Date().toISOString() }))
+  }, [updateMeta])
 
-  /** Record that the user played/interacted with an episode */
   const recordPlay = useCallback((id: string, durationSec = 0) => {
-    const cur = stats[id]
-    updateMeta(id, {
-      segmentsListened: (cur?.segmentsListened ?? 0) + 1,
-      listenTime: (cur?.listenTime ?? 0) + durationSec,
+    updateMeta(id, cur => ({
+      segmentsListened: cur.segmentsListened + 1,
+      listenTime: cur.listenTime + durationSec,
       lastPlayed: new Date().toISOString(),
-    })
-  }, [stats, updateMeta])
+    }))
+  }, [updateMeta])
 
-  /** Increment word count for an episode */
   const recordWord = useCallback((id: string) => {
-    const cur = stats[id]
-    updateMeta(id, {
-      wordCount: (cur?.wordCount ?? 0) + 1,
+    updateMeta(id, cur => ({
+      wordCount: cur.wordCount + 1,
       lastPlayed: new Date().toISOString(),
-    })
-  }, [stats, updateMeta])
+    }))
+  }, [updateMeta])
 
   return { stats, getMeta, toggleStar, toggleToLearn, recordPlay, recordWord }
 }

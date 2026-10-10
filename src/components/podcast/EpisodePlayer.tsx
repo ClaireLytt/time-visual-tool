@@ -306,22 +306,23 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
         const chunk = texts.slice(i, i + 30)
 
         if (backendWorked) {
-          // Batch attempt
           const results = await batchTranslateViaBackend(chunk)
           const anySuccess = results.some(r => !!r)
-          for (let j = 0; j < chunk.length; j++) {
-            if (results[j]) translationCache.current.set(chunk[j], results[j]!)
-            done++
+          if (anySuccess) {
+            for (let j = 0; j < chunk.length; j++) {
+              if (results[j]) translationCache.current.set(chunk[j], results[j]!)
+              done++
+            }
+            if (!cancelled) {
+              setTranslationProgress({ done, total: texts.length })
+              setTranslationVersion(v => v + 1)
+            }
+          } else {
+            backendWorked = false // don't increment done, fall through
           }
-          if (!cancelled) {
-            setTranslationProgress({ done, total: texts.length })
-            setTranslationVersion(v => v + 1)
-          }
-          if (!anySuccess) backendWorked = false // switch to one-by-one
         }
 
         if (!backendWorked) {
-          // One-by-one fallback (Lingva → MyMemory)
           for (let j = i; j < Math.min(i + 30, texts.length); j++) {
             if (cancelled) break
             if (!translationCache.current.has(texts[j])) {

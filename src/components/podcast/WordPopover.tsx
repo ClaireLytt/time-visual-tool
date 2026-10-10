@@ -21,10 +21,9 @@ function cleanWord(raw: string): string {
 
 const GAP = 8
 
-function computePosition(anchor: DOMRect) {
+function computePosition(anchor: DOMRect): { top?: number; bottom?: number; left: number; w: number; ox: string } {
   const vw = window.innerWidth
   const vh = window.innerHeight
-  // Responsive width: shrink on small screens, cap at 340
   const popoverW = Math.min(340, vw - 24)
   const clampTop = (t: number) => Math.max(8, Math.min(t, vh - 300))
 
@@ -34,10 +33,13 @@ function computePosition(anchor: DOMRect) {
   // Try left side
   if (anchor.left - GAP - popoverW > 12)
     return { top: clampTop(anchor.top), left: anchor.left - GAP - popoverW, w: popoverW, ox: '100% 0%' }
-  // Fall back to centered above/below
+  // Fall back to centered below or above
   const cx = Math.max(12, Math.min(anchor.left + anchor.width / 2 - popoverW / 2, vw - popoverW - 12))
-  const below = vh - anchor.bottom > 200
-  return { top: below ? anchor.bottom + GAP : anchor.top - GAP, left: cx, w: popoverW, ox: below ? '50% 0%' : '50% 100%' }
+  if (vh - anchor.bottom > 200) {
+    return { top: anchor.bottom + GAP, left: cx, w: popoverW, ox: '50% 0%' }
+  }
+  // Above: use bottom positioning so popover extends UPWARD
+  return { bottom: vh - anchor.top + GAP, left: cx, w: popoverW, ox: '50% 100%' }
 }
 
 export default memo(function WordPopover({
@@ -98,7 +100,7 @@ export default memo(function WordPopover({
       data-word-popover
       onClick={(e) => e.stopPropagation()}
       className="fixed z-50"
-      style={{ top: pos.top, left: pos.left, width: pos.w }}
+      style={{ top: pos.top, bottom: pos.bottom, left: pos.left, width: pos.w }}
       initial={{ opacity: 0, scale: 0.92, transformOrigin: pos.ox }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}

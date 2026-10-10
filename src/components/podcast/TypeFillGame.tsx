@@ -173,18 +173,27 @@ export default function TypeFillGame({
           inputRef.current?.focus()
         }, 800)
       } else {
-        // No retries left — show correct answer with definition
-        const result = await lookupWord(currentGap.word)
-        const definition = result?.definitions?.join('; ') ?? ''
-
-        setFeedback({ correct: false, definition, correctWord: currentGap.word })
+        // No retries left — set feedback immediately to block re-entry
+        setFeedback({ correct: false, definition: '', correctWord: currentGap.word })
         setAnswers(prev => [...prev, {
           gap: currentGap,
           userAnswer: trimmed,
           correct: false,
-          definition,
+          definition: '',
           attemptsUsed: MAX_RETRIES,
         }])
+
+        // Fetch definition asynchronously, update in place
+        lookupWord(currentGap.word).then(result => {
+          const def = result?.definitions?.join('; ') ?? ''
+          setFeedback(prev => prev ? { ...prev, definition: def } : prev)
+          setAnswers(prev => {
+            const copy = [...prev]
+            const last = copy[copy.length - 1]
+            if (last && last.gap.word === currentGap.word) copy[copy.length - 1] = { ...last, definition: def }
+            return copy
+          })
+        })
 
         feedbackTimer.current = setTimeout(moveToNext, 2500)
       }
