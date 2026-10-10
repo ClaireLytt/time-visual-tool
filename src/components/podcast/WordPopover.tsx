@@ -62,7 +62,12 @@ export default memo(function WordPopover({
       if (!ctrl.signal.aborted) {
         setData(result)
         setLoading(false)
-        if (result) onLookupRef.current?.(cleanedWord)
+        if (result) {
+          onLookupRef.current?.(cleanedWord)
+          // Auto-play pronunciation on lookup success
+          const audioUrl = result.phonetics.us.audio || result.phonetics.uk.audio
+          playPronunciation(audioUrl, cleanedWord)
+        }
       }
     })
     return () => ctrl.abort()

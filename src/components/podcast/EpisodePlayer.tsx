@@ -624,16 +624,23 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
                     return (
                       <span
                         key={j}
+                        onDoubleClick={(e) => {
+                          e.stopPropagation()
+                          openWord(e.currentTarget)
+                        }}
                         onTouchEnd={(e) => {
-                          e.preventDefault() // bypass 300ms mobile click delay
-                          e.stopPropagation()
-                          openWord(e.currentTarget)
+                          // Mobile: double-tap detection via timestamp
+                          const now = Date.now()
+                          const el = e.currentTarget
+                          const last = Number(el.dataset.lastTap ?? 0)
+                          el.dataset.lastTap = String(now)
+                          if (now - last < 400) {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            openWord(el)
+                          }
                         }}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          openWord(e.currentTarget)
-                        }}
-                        className="hover:bg-mode-podcast/20 active:bg-mode-podcast/30 rounded px-0.5 cursor-pointer transition-colors"
+                        className="hover:bg-mode-podcast/20 active:bg-mode-podcast/30 rounded px-0.5 cursor-pointer select-none transition-colors"
                         style={{ touchAction: 'manipulation' }}
                       >
                         {token}
