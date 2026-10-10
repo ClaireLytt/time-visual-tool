@@ -665,6 +665,8 @@
     "goalWords": "Words {{done}}/{{total}}",
     "subtitleEn": "English",
     "subtitleBilingual": "Bilingual",
+    "startTranslation": "Translate",
+    "translating": "Translating...",
     "addToVocab": "Add to vocab",
     "wordAdded": "Added",
     "sentenceSaved": "Saved",

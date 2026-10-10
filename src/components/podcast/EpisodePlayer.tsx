@@ -59,10 +59,12 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
   // Subtitle display mode
   const [subtitleMode, setSubtitleMode] = useState<'en' | 'bilingual'>('en')
 
-  // Bilingual translation — batch translate + localStorage persistence
+  // Bilingual translation — user-triggered, with progress bar
   const translationCache = useRef<Map<string, string>>(new Map())
   const [translationVersion, setTranslationVersion] = useState(0)
   const [translationLoading, setTranslationLoading] = useState(false)
+  const [translationProgress, setTranslationProgress] = useState({ done: 0, total: 0 })
+  const [translationStarted, setTranslationStarted] = useState(false)
 
   // Dictation clip mode: select a segment range and loop-play it
   const [clipMode, setClipMode] = useState(false)
@@ -254,29 +256,33 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
     activeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, [activeIndex])
 
-  // Translate all segments when bilingual mode is activated.
-  // Uses auto-fallback: backend(Google) → Lingva → MyMemory.
-  // Cached in localStorage by episode ID for instant reload.
+  // Load cached translations from localStorage on mount (instant, no network)
   useEffect(() => {
-    if (subtitleMode !== 'bilingual' || segments.length === 0) return
-    let cancelled = false
-
-    // 1. Load from localStorage (instant, offline)
+    if (segments.length === 0) return
     const cached = loadTranslationCache(episode.id)
     if (cached.size > 0) {
       for (const [k, v] of cached) translationCache.current.set(k, v)
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setTranslationVersion(v => v + 1)
+      // If all segments are already cached, mark as started (show translations)
+      const allCached = segments.every(s => cached.has(s.text))
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (allCached) setTranslationStarted(true)
     }
+  }, [segments, episode.id])
 
+  // Translate segments when user clicks "Start Translation" button
+  useEffect(() => {
+    if (!translationStarted || segments.length === 0) return
     const uncached = segments.filter(s => !translationCache.current.has(s.text))
-    if (uncached.length === 0) return // fully cached
+    if (uncached.length === 0) return // fully cached, nothing to do
+    let cancelled = false
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTranslationLoading(true)
+    setTranslationProgress({ done: 0, total: uncached.length })
 
-    // 2. Translate uncached segments with concurrency=3
     ;(async () => {
+      let done = 0
       const CONCURRENCY = 3
       for (let i = 0; i < uncached.length; i += CONCURRENCY) {
         if (cancelled) break
@@ -287,6 +293,8 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
           if (result && !cancelled) {
             translationCache.current.set(s.text, result)
           }
+          done++
+          if (!cancelled) setTranslationProgress({ done, total: uncached.length })
         }))
         if (!cancelled) setTranslationVersion(v => v + 1)
       }
@@ -297,7 +305,7 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
     })()
 
     return () => { cancelled = true }
-  }, [subtitleMode, segments, episode.id])
+  }, [translationStarted, segments, episode.id])
 
   const togglePlay = useCallback(async () => {
     const audio = audioRef.current
@@ -423,22 +431,26 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
             <p className="text-base font-medium text-gray-700 dark:text-gray-300">
               {t('podcast.transcript')}
             </p>
-            {/* Subtitle mode toggle */}
-            {segments.length > 0 && (
-              <div className="flex rounded-lg bg-gray-100 dark:bg-gray-700/50 p-0.5 text-[11px]">
-                <button
-                  onClick={() => setSubtitleMode('en')}
-                  className={`px-2 py-1 rounded-md transition-colors ${subtitleMode === 'en' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-500'}`}
-                >
-                  {t('podcast.subtitleEn')}
-                </button>
-                <button
-                  onClick={() => setSubtitleMode('bilingual')}
-                  className={`px-2 py-1 rounded-md transition-colors ${subtitleMode === 'bilingual' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-500'}`}
-                >
-                  {t('podcast.subtitleBilingual')}
-                </button>
-              </div>
+            {/* Bilingual toggle */}
+            {segments.length > 0 && !translationStarted && (
+              <button
+                onClick={() => { setTranslationStarted(true); setSubtitleMode('bilingual') }}
+                className="text-xs px-2.5 py-1.5 rounded-lg bg-mode-podcast/10 text-mode-podcast hover:bg-mode-podcast/20 transition-colors"
+              >
+                🌐 {t('podcast.startTranslation')}
+              </button>
+            )}
+            {segments.length > 0 && translationStarted && (
+              <button
+                onClick={() => setSubtitleMode(prev => prev === 'bilingual' ? 'en' : 'bilingual')}
+                className={`text-xs px-2.5 py-1.5 rounded-lg transition-colors ${
+                  subtitleMode === 'bilingual'
+                    ? 'bg-mode-podcast text-white'
+                    : 'bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300'
+                }`}
+              >
+                🌐 {subtitleMode === 'bilingual' ? t('podcast.subtitleEn') : t('podcast.subtitleBilingual')}
+              </button>
             )}
           </div>
           {/* Toolbar buttons */}
@@ -554,6 +566,22 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
             </div>
           )
         })()}
+
+        {/* Translation progress bar */}
+        {translationLoading && translationProgress.total > 0 && (
+          <div className="mb-3 space-y-1.5">
+            <div className="flex items-center justify-between text-xs text-gray-400">
+              <span>🌐 {t('podcast.translating')}</span>
+              <span className="tabular-nums">{translationProgress.done}/{translationProgress.total}</span>
+            </div>
+            <div className="w-full h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-mode-podcast rounded-full transition-all duration-300 ease-out"
+                style={{ width: `${Math.round((translationProgress.done / translationProgress.total) * 100)}%` }}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Transcript lines — clickable words + sentence bookmark */}
         {segments.length > 0 && (

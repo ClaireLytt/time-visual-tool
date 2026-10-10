@@ -665,6 +665,8 @@
     "goalWords": "生词 {{done}}/{{total}} 个",
     "subtitleEn": "纯英文",
     "subtitleBilingual": "中英双语",
+    "startTranslation": "翻译字幕",
+    "translating": "正在翻译...",
     "addToVocab": "加入生词库",
     "wordAdded": "已加入",
     "sentenceSaved": "已收藏",
