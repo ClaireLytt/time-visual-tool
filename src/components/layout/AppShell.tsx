@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'motion/react'
 import Header from './Header'
 import Container from './Container'
-import BottomTabBar from './BottomTabBar'
 import DataMigrationDialog from '../auth/DataMigrationDialog'
 import ErrorBoundary from '../common/ErrorBoundary'
 import OverviewDashboard from '../overview/OverviewDashboard'
@@ -112,7 +111,7 @@ function AppShell() {
       >
         {t('app.skipToContent')}
       </a>
-      <Header mode={mode} />
+      <Header mode={mode} onBack={() => setMode('overview')} />
       <ErrorBoundary>
         <Container>
           <AnimatePresence initial={false}>
@@ -129,7 +128,6 @@ function AppShell() {
           </AnimatePresence>
         </Container>
       </ErrorBoundary>
-      <BottomTabBar mode={mode} onChangeMode={setMode} />
       <DataMigrationDialog />
     </>
   )

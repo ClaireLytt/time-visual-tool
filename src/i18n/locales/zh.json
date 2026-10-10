@@ -402,6 +402,11 @@
     "readFailed": "文件读取失败",
     "exportFailed": "导出失败"
   },
+  "profile": {
+    "guest": "未登录",
+    "account": "个人账号",
+    "appearance": "外观"
+  },
   "auth": {
     "login": "登录",
     "register": "注册",

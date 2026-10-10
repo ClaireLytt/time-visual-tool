@@ -402,6 +402,11 @@
     "readFailed": "Failed to read file",
     "exportFailed": "Export failed"
   },
+  "profile": {
+    "guest": "Not logged in",
+    "account": "Account",
+    "appearance": "Appearance"
+  },
   "auth": {
     "login": "Login",
     "register": "Register",
