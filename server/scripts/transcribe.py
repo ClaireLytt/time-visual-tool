@@ -13,6 +13,7 @@ Progress/errors go to stderr so they don't pollute the JSON output.
 """
 
 import sys
+import os
 import json
 import argparse
 import time
