@@ -71,8 +71,16 @@ export interface ChartPodcast {
   feedUrl?: string
 }
 
-export async function fetchCharts(feed: ChartFeed, signal?: AbortSignal): Promise<ChartPodcast[]> {
-  const { results } = await getJson<{ results: ChartPodcast[] }>(`/charts?feed=${feed}`, signal)
+export async function fetchCharts(
+  feed: ChartFeed,
+  signal?: AbortSignal,
+  country?: string,
+  genreId?: string,
+): Promise<ChartPodcast[]> {
+  let url = `/charts?feed=${feed}`
+  if (country) url += `&country=${encodeURIComponent(country)}`
+  if (genreId) url += `&genreId=${encodeURIComponent(genreId)}`
+  const { results } = await getJson<{ results: ChartPodcast[] }>(url, signal)
   return results
 }
 

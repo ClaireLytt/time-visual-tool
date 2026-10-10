@@ -622,6 +622,23 @@
     "chartPopular": "大家在听",
     "chartError": "榜单加载失败",
     "chartEmpty": "暂无榜单数据",
+    "noFilterResults": "未找到匹配的播客",
+    "filter": {
+      "country": "国家",
+      "allCategories": "所有类别"
+    },
+    "country": {
+      "us": "美国", "gb": "英国", "ca": "加拿大", "es": "西班牙", "fr": "法国",
+      "de": "德国", "pt": "葡萄牙", "jp": "日本", "kr": "韩国", "se": "瑞典",
+      "it": "意大利", "ru": "俄罗斯", "tr": "土耳其", "no": "挪威", "ae": "阿联酋"
+    },
+    "genre": {
+      "languageLearning": "语言学习", "science": "科学", "technology": "科技",
+      "education": "教育", "healthFitness": "健康与健身", "business": "商务",
+      "news": "新闻", "societyCulture": "社会与文化", "arts": "艺术",
+      "comedy": "喜剧", "fiction": "小说", "history": "历史",
+      "kidsFamily": "儿童与家庭", "leisure": "休闲", "music": "音乐", "sports": "体育"
+    },
     "retry": "重试",
     "dictLoading": "正在查询…",
     "dictNoResult": "词典中未收录该词",
