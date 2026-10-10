@@ -15,6 +15,8 @@ export default function TodoForm({ selectedDate, onAdd }: TodoFormProps) {
   const [text, setText] = useState('')
   const [priority, setPriority] = useState<TodoPriority>('medium')
   const [dueDate, setDueDate] = useState('')
+  const [notes, setNotes] = useState('')
+  const [showNotes, setShowNotes] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -26,10 +28,13 @@ export default function TodoForm({ selectedDate, onAdd }: TodoFormProps) {
       priority,
       date: selectedDate,
       ...(dueDate ? { dueDate } : {}),
+      ...(notes.trim() ? { notes: notes.trim() } : {}),
       createdAt: new Date().toISOString(),
     })
     setText('')
     setDueDate('')
+    setNotes('')
+    setShowNotes(false)
   }
 
   return (
@@ -55,6 +60,26 @@ export default function TodoForm({ selectedDate, onAdd }: TodoFormProps) {
           placeholder="截止日期"
         />
       </div>
+      {/* Notes toggle */}
+      <div>
+        <button
+          type="button"
+          onClick={() => setShowNotes(!showNotes)}
+          className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+        >
+          📝 {t('todo.addNotes')}
+        </button>
+        {showNotes && (
+          <textarea
+            value={notes}
+            onChange={e => setNotes(e.target.value)}
+            placeholder={t('todo.addNotes') + '\n- item 1\n- item 2'}
+            className="mt-1 w-full text-xs text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-2 resize-none focus:outline-none focus:ring-1 focus:ring-[#5b8def]/50"
+            rows={3}
+          />
+        )}
+      </div>
+
       <div className="flex gap-2">
         {PRIORITIES.map(p => (
           <button

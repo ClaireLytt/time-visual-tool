@@ -68,7 +68,9 @@
     "expense": "Out",
     "meals": "meals",
     "budget": "Budget",
-    "hoursGoal": "Hours goal"
+    "hoursGoal": "Hours goal",
+    "dailyRings": "Daily Progress",
+    "startTimer": "Start Timer"
   },
   "finance": {
     "income": "Income",
@@ -91,11 +93,35 @@
     "chartTypeLabel": "Breakdown type",
     "chartDaily": "Daily income & expense",
     "chartMonthly": "Monthly income & expense",
-    "chartOverview": "Overview"
+    "chartOverview": "Overview",
+    "budgetTitle": "Monthly Budget",
+    "budgetUsed": "Spent",
+    "budgetProgress": "{{spent}} / {{budget}}",
+    "categoryBreakdown": "Category Spending",
+    "budgetOf": "/ ${{budget}}"
   },
   "time": {
     "hoursGoalLabel": "Set daily hours goal",
     "hoursUnit": "h"
+  },
+  "timer": {
+    "idle": "Timer",
+    "start": "Start Timer",
+    "pause": "Pause",
+    "resume": "Resume",
+    "stop": "Stop",
+    "reset": "Reset",
+    "freeMode": "Free",
+    "pomodoroMode": "Pomodoro",
+    "breakTime": "Break!",
+    "breakStart": "Start Break",
+    "skipBreak": "Skip",
+    "pomodoroComplete": "Pomodoro complete!",
+    "selectCategory": "Select category",
+    "saveEntry": "Save Entry",
+    "discard": "Discard",
+    "entryActivity": "Timer session",
+    "pomoActivity": "Pomodoro session"
   },
   "mode": {
     "overview": "Today",
@@ -161,7 +187,29 @@
     "templateNamePlaceholder": "Template name",
     "dailyAvg": "Daily Avg",
     "vsGoal": "vs goal",
-    "goalLabel": "Goal"
+    "goalLabel": "Goal",
+    "macros": "Macros",
+    "macroTitle": "Today's Macros",
+    "proteinLabel": "Protein (g)",
+    "carbsLabel": "Carbs (g)",
+    "fatLabel": "Fat (g)",
+    "proteinPlaceholder": "Protein (grams)",
+    "carbsPlaceholder": "Carbs (grams)",
+    "fatPlaceholder": "Fat (grams)",
+    "protein": "Protein",
+    "proteinShort": "P",
+    "carbs": "Carbs",
+    "carbsShort": "C",
+    "fat": "Fat",
+    "fatShort": "F",
+    "showMacros": "Add macros",
+    "macroToggle": "Add macros",
+    "mealType": {
+      "breakfast": "Breakfast",
+      "lunch": "Lunch",
+      "dinner": "Dinner",
+      "snack": "Snack"
+    }
   },
   "sport": {
     "addTitle": "Add exercise entry",
@@ -203,7 +251,15 @@
     "reflectionListTitle": "Past Reflections ({{count}})",
     "yearReviewTitle": "Year in Review",
     "yearAllSports": "Participated in {{count}} sport(s) this year",
-    "yearNewSports": "New sports tried this year ({{count}})"
+    "yearNewSports": "New sports tried this year ({{count}})",
+    "weeklyGoal": "This week",
+    "weeklyGoalProgress": "{{done}}/{{goal}} workouts",
+    "weeklyGoalComplete": "Goal reached!",
+    "quickTemplates": "Quick add",
+    "templateRunning": "Running 30min",
+    "templateGym": "Gym 60min",
+    "templateYoga": "Yoga 45min",
+    "templateCycling": "Cycling 40min"
   },
   "theme": {
     "light": "Light mode",
@@ -462,7 +518,10 @@
     "deleteMessage": "Delete \"{{name}}\"? All check-in records will also be removed.",
     "emptyTitle": "No habits yet. Add one!",
     "weekRate": "Last 7 days",
-    "monthRate": "Last 30 days"
+    "monthRate": "Last 30 days",
+    "currentStreak": "Current Streak",
+    "days": "days",
+    "heatmapTitle": "Check-in Heatmap"
   },
   "todo": {
     "addTitle": "Add Task",
@@ -474,6 +533,8 @@
     "deleteTitle": "Delete Task",
     "deleteMessage": "Delete this task?",
     "emptyTitle": "No tasks",
+    "notes": "Notes",
+    "addNotes": "Add notes",
     "priority": {
       "high": "High",
       "medium": "Medium",

@@ -9,6 +9,7 @@ export interface TodoItem {
   dueDate?: string
   completedAt?: string
   createdAt: string
+  notes?: string
 }
 
 export interface TodoStorageData {

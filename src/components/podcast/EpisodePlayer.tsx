@@ -57,6 +57,12 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
   // Subtitle display mode
   const [subtitleMode, setSubtitleMode] = useState<'en' | 'bilingual'>('en')
 
+  // Bilingual translation
+  const translationCache = useRef<Map<string, string>>(new Map())
+  const translationInFlight = useRef<Set<string>>(new Set())
+  const [translationVersion, setTranslationVersion] = useState(0)
+  const [translationLoading, setTranslationLoading] = useState<Set<string>>(new Set())
+
   // Dictation clip mode: select a segment range and loop-play it
   const [clipMode, setClipMode] = useState(false)
   const [clipStart, setClipStart] = useState<number | null>(null)
@@ -259,6 +265,50 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
   useEffect(() => {
     activeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, [activeIndex])
+
+  // Translate visible segments when bilingual mode is active
+  useEffect(() => {
+    if (subtitleMode !== 'bilingual' || segments.length === 0) return
+    const start = Math.max(0, activeIndex - 3)
+    const end = Math.min(segments.length - 1, activeIndex + 3)
+    let cancelled = false
+
+    const translateSegment = async (text: string) => {
+      if (translationCache.current.has(text) || translationInFlight.current.has(text)) return
+      translationInFlight.current.add(text)
+      setTranslationLoading(prev => new Set(prev).add(text))
+
+      try {
+        const res = await fetch(
+          `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|zh`
+        )
+        if (cancelled) return
+        const json = await res.json()
+        const translated = json?.responseData?.translatedText
+        if (translated && translated !== text) {
+          translationCache.current.set(text, translated)
+        }
+      } catch {
+        // Graceful degradation: just show English
+      } finally {
+        translationInFlight.current.delete(text)
+        if (!cancelled) {
+          setTranslationLoading(prev => {
+            const next = new Set(prev)
+            next.delete(text)
+            return next
+          })
+          setTranslationVersion(v => v + 1)
+        }
+      }
+    }
+
+    for (let i = start; i <= end; i++) {
+      translateSegment(segments[i].text)
+    }
+
+    return () => { cancelled = true }
+  }, [subtitleMode, activeIndex, segments])
 
   const togglePlay = useCallback(async () => {
     const audio = audioRef.current
@@ -526,7 +576,7 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
               <div
                 key={i}
                 ref={i === activeIndex ? activeRef : undefined}
-                className={`group flex items-start gap-1 px-3 py-2 rounded-lg transition-colors ${
+                className={`group flex flex-wrap items-start gap-1 px-3 py-2 rounded-lg transition-colors ${
                   inClip
                     ? 'bg-mode-podcast/20 ring-1 ring-mode-podcast/30 text-gray-900 dark:text-gray-100'
                     : i === activeIndex
@@ -586,7 +636,7 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
                   })}
                 </span>
 
-                {/* Bookmark sentence button — yellow when saved */}
+                {/* Bookmark sentence button -- yellow when saved */}
                 {(() => {
                   const isSaved = savedSentences?.has(seg.text) ?? false
                   return (
@@ -609,6 +659,27 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
                       </svg>
                     </button>
                   )
+                })()}
+
+                {/* Bilingual translation */}
+                {subtitleMode === 'bilingual' && translationVersion >= 0 && (() => {
+                  const cached = translationCache.current.get(seg.text)
+                  const isLoading = translationLoading.has(seg.text)
+                  if (cached) {
+                    return (
+                      <p className="w-full text-xs text-gray-400 dark:text-gray-500 mt-0.5 leading-relaxed pl-12">
+                        {cached}
+                      </p>
+                    )
+                  }
+                  if (isLoading) {
+                    return (
+                      <p className="w-full text-[10px] text-gray-300 dark:text-gray-600 mt-0.5 pl-12">
+                        ...
+                      </p>
+                    )
+                  }
+                  return null
                 })()}
               </div>
               )
