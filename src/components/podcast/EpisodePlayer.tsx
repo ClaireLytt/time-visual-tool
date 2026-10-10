@@ -739,23 +739,16 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
                     return (
                       <span
                         key={j}
-                        onDoubleClick={(e) => {
+                        onClick={(e) => {
                           e.stopPropagation()
                           openWord(e.currentTarget)
                         }}
                         onTouchEnd={(e) => {
-                          // Mobile: double-tap detection via timestamp
-                          const now = Date.now()
-                          const el = e.currentTarget
-                          const last = Number(el.dataset.lastTap ?? 0)
-                          el.dataset.lastTap = String(now)
-                          if (now - last < 400) {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            openWord(el)
-                          }
+                          e.preventDefault()
+                          e.stopPropagation()
+                          openWord(e.currentTarget)
                         }}
-                        className="hover:bg-mode-podcast/20 active:bg-mode-podcast/30 rounded px-0.5 cursor-pointer select-none transition-colors"
+                        className="hover:bg-mode-podcast/20 active:bg-mode-podcast/30 rounded px-0.5 cursor-pointer transition-colors"
                         style={{ touchAction: 'manipulation' }}
                       >
                         {token}
