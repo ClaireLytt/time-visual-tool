@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { audioProxyUrl, fetchTranscriptText, requestTranscription, pollTranscription } from '../../api/podcast'
-import { translateText, loadTranslationCache, saveTranslationCache } from '../../api/translate'
+import { translateText, batchTranslateViaBackend, loadTranslationCache, saveTranslationCache } from '../../api/translate'
 import { findActiveIndex, formatClock, parseSrt, parseVtt, parseJsonTranscript } from '../../utils/transcript'
 import WordPopover from './WordPopover'
 import type { Episode } from '../../types/podcast'
@@ -281,25 +281,50 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
     setTranslationLoading(true)
     setTranslationProgress({ done: 0, total: uncached.length })
 
+    // Try batch via backend first (Bing, one request per 30 segments)
+    // Falls back to one-by-one (Lingva/MyMemory) if backend is down
     ;(async () => {
+      const texts = uncached.map(s => s.text)
       let done = 0
-      const CONCURRENCY = 3
-      for (let i = 0; i < uncached.length; i += CONCURRENCY) {
+      let backendWorked = true
+
+      for (let i = 0; i < texts.length; i += 30) {
         if (cancelled) break
-        const batch = uncached.slice(i, i + CONCURRENCY)
-        await Promise.allSettled(batch.map(async s => {
-          if (cancelled || translationCache.current.has(s.text)) return
-          const result = await translateText(s.text)
-          if (result && !cancelled) {
-            translationCache.current.set(s.text, result)
+        const chunk = texts.slice(i, i + 30)
+
+        if (backendWorked) {
+          // Batch attempt
+          const results = await batchTranslateViaBackend(chunk)
+          const anySuccess = results.some(r => !!r)
+          for (let j = 0; j < chunk.length; j++) {
+            if (results[j]) translationCache.current.set(chunk[j], results[j]!)
+            done++
           }
-          done++
-          if (!cancelled) setTranslationProgress({ done, total: uncached.length })
-        }))
-        if (!cancelled) setTranslationVersion(v => v + 1)
+          if (!cancelled) {
+            setTranslationProgress({ done, total: texts.length })
+            setTranslationVersion(v => v + 1)
+          }
+          if (!anySuccess) backendWorked = false // switch to one-by-one
+        }
+
+        if (!backendWorked) {
+          // One-by-one fallback (Lingva → MyMemory)
+          for (let j = i; j < Math.min(i + 30, texts.length); j++) {
+            if (cancelled) break
+            if (!translationCache.current.has(texts[j])) {
+              const result = await translateText(texts[j])
+              if (result && !cancelled) translationCache.current.set(texts[j], result)
+            }
+            done++
+            if (!cancelled) setTranslationProgress({ done, total: texts.length })
+          }
+          if (!cancelled) setTranslationVersion(v => v + 1)
+        }
       }
+
       if (!cancelled) {
         setTranslationLoading(false)
+        setTranslationVersion(v => v + 1)
         saveTranslationCache(episode.id, translationCache.current)
       }
     })()
