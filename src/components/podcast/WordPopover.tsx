@@ -9,6 +9,7 @@ interface WordPopoverProps {
   onClose: () => void
   onLookup?: (word: string) => void
   onAddToVocab?: (word: string) => void
+  onRemoveFromVocab?: (word: string) => void
   onSaveSentence?: () => void
   isSentenceSaved?: boolean
   /** The full sentence containing this word (for AI context) */
@@ -43,7 +44,7 @@ function computePosition(anchor: DOMRect): { top?: number; bottom?: number; left
 }
 
 export default memo(function WordPopover({
-  word, anchorRect, onClose, onLookup, onAddToVocab, onSaveSentence, isSentenceSaved, sentenceContext,
+  word, anchorRect, onClose, onLookup, onAddToVocab, onRemoveFromVocab, onSaveSentence, isSentenceSaved, sentenceContext,
 }: WordPopoverProps) {
   const { t } = useTranslation()
   const [data, setData] = useState<DictResult | null>(null)
@@ -110,7 +111,7 @@ export default memo(function WordPopover({
         <div className="flex items-center gap-2 px-4 pt-3.5 pb-1">
           <span className="text-[17px] font-semibold text-gray-900 dark:text-gray-100 flex-1">{cleanedWord}</span>
           <button
-            onClick={() => { if (added) { setAdded(false) } else { onAddToVocab?.(cleanedWord); setAdded(true) } }}
+            onClick={() => { if (added) { onRemoveFromVocab?.(cleanedWord); setAdded(false) } else { onAddToVocab?.(cleanedWord); setAdded(true) } }}
             className="p-1 transition-colors"
             aria-label={added ? 'Remove from vocab' : 'Add to vocab'}
           >

@@ -713,7 +713,10 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
                     if (clipMode) {
                       if (clipStart == null) { setClipStart(seg.start); seekTo(seg.start) }
                       else if (clipEnd == null) { setClipEnd(seg.end); seekTo(clipStart) }
-                      else { closePopover(); seekTo(seg.start) }
+                      else {
+                        // Both set — reset and start new selection from this segment
+                        setClipStart(seg.start); setClipEnd(null); seekTo(seg.start)
+                      }
                     } else {
                       closePopover(); seekTo(seg.start)
                     }
@@ -822,6 +825,7 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
             onClose={closePopover}
             onLookup={onWordLookup}
             onAddToVocab={onWordLookup}
+            onRemoveFromVocab={onRemoveWord}
             onSaveSentence={() => onSaveSentence?.(selectedWord.sentence, episode.title, selectedWord.segStart)}
             isSentenceSaved={savedSentences?.has(selectedWord.sentence) ?? false}
             sentenceContext={selectedWord.sentence}
