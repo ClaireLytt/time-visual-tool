@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { audioProxyUrl, fetchTranscriptText, requestTranscription, pollTranscription } from '../../api/podcast'
+import { translateText, loadTranslationCache, saveTranslationCache } from '../../api/translate'
 import { findActiveIndex, formatClock, parseSrt, parseVtt, parseJsonTranscript } from '../../utils/transcript'
 import WordPopover from './WordPopover'
 import type { Episode } from '../../types/podcast'
@@ -253,79 +254,45 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
     activeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, [activeIndex])
 
-  // Batch translate all segments when bilingual mode is activated.
+  // Translate all segments when bilingual mode is activated.
+  // Uses auto-fallback: backend(Google) → Lingva → MyMemory.
   // Cached in localStorage by episode ID for instant reload.
   useEffect(() => {
     if (subtitleMode !== 'bilingual' || segments.length === 0) return
     let cancelled = false
 
-    const STORAGE_KEY = `podcast-trans-${episode.id}`
+    // 1. Load from localStorage (instant, offline)
+    const cached = loadTranslationCache(episode.id)
+    if (cached.size > 0) {
+      for (const [k, v] of cached) translationCache.current.set(k, v)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setTranslationVersion(v => v + 1)
+    }
 
-    // 1. Try loading from localStorage first (instant, offline)
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) {
-        const parsed = JSON.parse(stored) as Record<string, string>
-        for (const [k, v] of Object.entries(parsed)) {
-          translationCache.current.set(k, v)
-        }
-        if (Object.keys(parsed).length > 0) {
-          // eslint-disable-next-line react-hooks/set-state-in-effect
-          setTranslationVersion(v => v + 1) // trigger re-render with cached data
-          // Check if all segments are cached
-          const missing = segments.filter(s => !translationCache.current.has(s.text))
-          if (missing.length === 0) return // fully cached, done
-        }
-      }
-    } catch { /* localStorage unavailable */ }
-
-    // 2. Translate uncached segments one by one (MyMemory has 500 char limit)
     const uncached = segments.filter(s => !translationCache.current.has(s.text))
-    if (uncached.length === 0) return
+    if (uncached.length === 0) return // fully cached
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setTranslationLoading(true)
 
-    const translateOne = async (text: string) => {
-      if (translationCache.current.has(text)) return
-      const ctrl = new AbortController()
-      const timer = setTimeout(() => ctrl.abort(), 5000)
-      try {
-        const res = await fetch(
-          `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.slice(0, 490))}&langpair=en|zh`,
-          { signal: ctrl.signal }
-        )
-        clearTimeout(timer)
-        if (cancelled) return
-        const json = await res.json()
-        const translated = json?.responseData?.translatedText
-        if (translated && translated.toLowerCase() !== text.toLowerCase()) {
-          translationCache.current.set(text, translated)
-        }
-      } catch {
-        // Timeout or blocked — skip this segment
-      } finally {
-        clearTimeout(timer)
-      }
-    }
-
-    // Translate with concurrency=3, show results progressively
+    // 2. Translate uncached segments with concurrency=3
     ;(async () => {
       const CONCURRENCY = 3
       for (let i = 0; i < uncached.length; i += CONCURRENCY) {
         if (cancelled) break
         const batch = uncached.slice(i, i + CONCURRENCY)
-        await Promise.allSettled(batch.map(s => translateOne(s.text)))
+        await Promise.allSettled(batch.map(async s => {
+          if (cancelled || translationCache.current.has(s.text)) return
+          const result = await translateText(s.text)
+          if (result && !cancelled) {
+            translationCache.current.set(s.text, result)
+          }
+        }))
         if (!cancelled) setTranslationVersion(v => v + 1)
       }
       if (!cancelled) {
         setTranslationLoading(false)
-        // Persist to localStorage for instant reload next time
-        try {
-          const obj: Record<string, string> = {}
-          for (const [k, v] of translationCache.current) obj[k] = v
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(obj))
-        } catch { /* quota exceeded */ }
+        saveTranslationCache(episode.id, translationCache.current)
       }
     })()
 
