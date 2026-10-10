@@ -627,6 +627,8 @@
     "dictNoResult": "Word not in dictionary",
     "dictUkPron": "UK",
     "dictUsPron": "US",
+    "favorites": "Favorites",
+    "noFavorites": "No favorite podcasts yet",
     "reviewTitle": "Review",
     "reviewWeek": "Week",
     "reviewMonth": "Month",

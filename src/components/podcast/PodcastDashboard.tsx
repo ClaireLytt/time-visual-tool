@@ -9,6 +9,7 @@ import EpisodeWordList from './EpisodeWordList'
 import LearningGoal from './LearningGoal'
 import { useWordHistory } from '../../hooks/useWordHistory'
 import { useEpisodeStats } from '../../hooks/useEpisodeStats'
+import { useFavoritePodcasts } from '../../hooks/useFavoritePodcasts'
 import type { FeedSource } from '../../api/podcast'
 import type { Episode, Feed } from '../../types/podcast'
 
@@ -18,6 +19,7 @@ type View =
   | { kind: 'player'; source: FeedSource; episode: Episode }
   | { kind: 'review' }
   | { kind: 'episodeWords'; episodeId: string; episodeTitle: string }
+  | { kind: 'favorites' }
 
 export default function PodcastDashboard() {
   const { t } = useTranslation()
@@ -26,6 +28,7 @@ export default function PodcastDashboard() {
   const { words, sentences, recordLookup, saveSentence, removeSentence, removeWord, getEpisodeGroups } = useWordHistory()
   const savedSentenceTexts = useMemo(() => new Set(sentences.map(s => s.text)), [sentences])
   const { stats: episodeStats, toggleStar, toggleToLearn, recordWord, recordPlay } = useEpisodeStats()
+  const { favorites, isFavorite, toggleFavorite } = useFavoritePodcasts()
 
   const openFeed = useCallback((source: FeedSource) => {
     setFeed(null)
@@ -61,20 +64,36 @@ export default function PodcastDashboard() {
         <p className="font-pixel text-[8px] text-mode-podcast px-1">🎧 {t('podcastApp.scene')}</p>
 
         {view.kind === 'search' && (
-          <button
-            onClick={() => setView({ kind: 'review' })}
-            className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-mode-podcast transition-colors"
-          >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-            </svg>
-            {t('podcast.reviewTitle')}
-            {words.length > 0 && (
-              <span className="bg-mode-podcast/15 text-mode-podcast text-[10px] font-medium px-1.5 py-0.5 rounded-full">
-                {words.length}
-              </span>
-            )}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setView({ kind: 'favorites' })}
+              className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-yellow-500 transition-colors"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+              </svg>
+              {t('podcast.favorites')}
+              {favorites.length > 0 && (
+                <span className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 text-[10px] font-medium px-1.5 py-0.5 rounded-full">
+                  {favorites.length}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setView({ kind: 'review' })}
+              className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-mode-podcast transition-colors"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+              {t('podcast.reviewTitle')}
+              {words.length > 0 && (
+                <span className="bg-mode-podcast/15 text-mode-podcast text-[10px] font-medium px-1.5 py-0.5 rounded-full">
+                  {words.length}
+                </span>
+              )}
+            </button>
+          </div>
         )}
       </div>
 
@@ -82,7 +101,7 @@ export default function PodcastDashboard() {
         <>
           <LearningGoal words={words} episodeStats={episodeStats} />
           <PodcastSearch onOpen={openFeed} />
-          <PodcastCharts onOpen={openFeed} />
+          <PodcastCharts onOpen={openFeed} isFavorite={isFavorite} onToggleFavorite={toggleFavorite} />
 
           {/* Episode word groups */}
           {(() => {
@@ -139,6 +158,49 @@ export default function PodcastDashboard() {
           onExtractWords={handleExtractWords}
           onRemoveWord={removeWord}
         />
+      )}
+
+      {view.kind === 'favorites' && (
+        <div className="space-y-4">
+          <button
+            onClick={() => setView({ kind: 'search' })}
+            className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+          >
+            ‹ {t('podcast.back')}
+          </button>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">{t('podcast.favorites')}</h2>
+          {favorites.length === 0 ? (
+            <p className="text-sm text-gray-400 px-1">{t('podcast.noFavorites')}</p>
+          ) : (
+            <div className="space-y-1.5">
+              {favorites.map(p => (
+                <button
+                  key={p.collectionId}
+                  onClick={() => openFeed(p.feedUrl ? { feedUrl: p.feedUrl } : { collectionId: p.collectionId })}
+                  className="panel flex items-center gap-3 px-3 py-2.5 w-full text-left hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-all"
+                >
+                  <img src={p.artworkUrl600} alt="" loading="lazy" className="w-10 h-10 rounded-lg object-cover bg-gray-200 dark:bg-gray-700 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{p.collectionName}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{p.artistName}</p>
+                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); toggleFavorite(p) }}
+                    className="p-1.5 shrink-0 text-yellow-500 transition-colors hover:text-yellow-600"
+                    aria-label="Remove favorite"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} fill="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+                    </svg>
+                  </button>
+                  <svg className="w-4 h-4 text-gray-300 dark:text-gray-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       )}
 
       {view.kind === 'review' && (

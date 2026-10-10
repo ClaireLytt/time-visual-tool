@@ -9,9 +9,11 @@ const TABS: { key: ChartFeed; labelKey: string }[] = [
 
 interface PodcastChartsProps {
   onOpen: (source: FeedSource) => void
+  isFavorite?: (id: number) => boolean
+  onToggleFavorite?: (p: ChartPodcast) => void
 }
 
-export default function PodcastCharts({ onOpen }: PodcastChartsProps) {
+export default function PodcastCharts({ onOpen, isFavorite, onToggleFavorite }: PodcastChartsProps) {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<ChartFeed>('top')
   const [data, setData] = useState<Record<string, ChartPodcast[]>>({})
@@ -127,6 +129,25 @@ export default function PodcastCharts({ onOpen }: PodcastChartsProps) {
                   {p.artistName}
                 </p>
               </div>
+
+              {/* Bookmark */}
+              {onToggleFavorite && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onToggleFavorite(p) }}
+                  className={`p-1.5 shrink-0 transition-colors ${
+                    isFavorite?.(p.collectionId)
+                      ? 'text-yellow-500'
+                      : 'text-gray-300 dark:text-gray-600 hover:text-yellow-500'
+                  }`}
+                  aria-label="Favorite"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}
+                    fill={isFavorite?.(p.collectionId) ? 'currentColor' : 'none'}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+                  </svg>
+                </button>
+              )}
 
               {/* Chevron */}
               <svg className="w-4 h-4 text-gray-300 dark:text-gray-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

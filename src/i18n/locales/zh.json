@@ -627,6 +627,8 @@
     "dictNoResult": "词典中未收录该词",
     "dictUkPron": "英",
     "dictUsPron": "美",
+    "favorites": "收藏播客",
+    "noFavorites": "还没有收藏的播客",
     "reviewTitle": "回顾",
     "reviewWeek": "周",
     "reviewMonth": "月",
