@@ -60,10 +60,11 @@ export function useEpisodeStats() {
   }, [stats, updateMeta])
 
   /** Record that the user played/interacted with an episode */
-  const recordPlay = useCallback((id: string) => {
+  const recordPlay = useCallback((id: string, durationSec = 0) => {
     const cur = stats[id]
     updateMeta(id, {
       segmentsListened: (cur?.segmentsListened ?? 0) + 1,
+      listenTime: (cur?.listenTime ?? 0) + durationSec,
       lastPlayed: new Date().toISOString(),
     })
   }, [stats, updateMeta])

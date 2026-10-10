@@ -27,7 +27,7 @@ function GoalRing({
   current, goal, defaultGoal, onGoalChange, formatValue,
   color, unit, goalLabel, size = 140, strokeWidth = 10, min = 1, max = 100000,
 }: GoalRingProps) {
-  const { t } = useTranslation()
+  useTranslation() // keep hook call for future i18n use
   const [isEditing, setIsEditing] = useState(false)
   const [inputValue, setInputValue] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)

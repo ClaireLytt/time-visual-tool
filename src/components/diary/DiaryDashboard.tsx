@@ -19,7 +19,7 @@ function DiaryDashboard() {
   const [selectedDate, setSelectedDate] = useState(() => format(new Date(), 'yyyy-MM-dd'))
   const [viewMode, setViewMode] = useState<DiaryPeriodType>('day')
   const [showSettings, setShowSettings] = useState(false)
-  const { entries, data, loading, getEntry, upsertEntry, deleteEntry, importData } = useDiaryEntries()
+  const { entries, data, getEntry, upsertEntry, deleteEntry, importData } = useDiaryEntries()
 
   const periodKey = useMemo(() => getPeriodKey(selectedDate, viewMode), [selectedDate, viewMode])
   const currentEntry = getEntry(viewMode, periodKey)

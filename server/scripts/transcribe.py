@@ -13,7 +13,6 @@ Progress/errors go to stderr so they don't pollute the JSON output.
 """
 
 import sys
-import os
 import json
 import argparse
 import time
@@ -128,12 +127,12 @@ def main():
         print(json.dumps({"success": False, "error": "Cancelled"}))
         sys.exit(1)
     except Exception as e:
-        tb = traceback.format_exc()
-        print(tb, file=sys.stderr)
+        # Log full traceback to stderr (server-side only), send only
+        # a generic error message to the client to avoid info disclosure.
+        traceback.print_exc(file=sys.stderr)
         print(json.dumps({
             "success": False,
             "error": str(e),
-            "traceback": tb,
         }))
         sys.exit(1)
 

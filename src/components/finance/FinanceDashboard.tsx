@@ -26,7 +26,7 @@ function FinanceDashboard() {
   const [editingEntry, setEditingEntry] = useState<FinanceEntry | null>(null)
   const [showSettings, setShowSettings] = useState(false)
   const {
-    entries, categories, data, loading,
+    entries, categories, data,
     addEntry, deleteEntry, updateEntry,
     addCategory, updateCategory, deleteCategory,
     importData,

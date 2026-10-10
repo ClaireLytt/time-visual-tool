@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next'
 import GoalRing from '../common/GoalRing'
-import { formatCalories } from '../../utils/calories'
 import { DEFAULT_DAILY_CALORIE_GOAL } from '../../constants/eating'
 
 interface CalorieGoalRingProps {

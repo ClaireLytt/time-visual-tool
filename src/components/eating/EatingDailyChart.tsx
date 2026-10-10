@@ -18,7 +18,6 @@ function EatingDailyChart({ dailyBreakdown, title, calorieGoal }: EatingDailyCha
   const gridColor = isDark ? '#2e2e34' : '#e8e7e3'
   const tickColor = isDark ? '#9ca3af' : '#52514e'
   const barColor = '#c4a36b'
-  const barHoverColor = '#b3924f'
 
   if (!hasData) {
     return (

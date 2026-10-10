@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { format } from 'date-fns'
 import { PRIORITY_COLORS } from '../../constants/todo'
 import type { TodoItem, TodoPriority } from '../../types/todo'
 

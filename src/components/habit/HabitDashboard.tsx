@@ -12,7 +12,7 @@ export default function HabitDashboard() {
   const { t } = useTranslation()
   const [selectedDate, setSelectedDate] = useState(() => format(new Date(), 'yyyy-MM-dd'))
   const {
-    habits, loading,
+    habits,
     addHabit, deleteHabit, toggleCheck, isChecked, getCheckedDatesForHabit, getCheckedCountForDate,
   } = useHabitEntries()
 

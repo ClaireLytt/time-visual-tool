@@ -19,20 +19,25 @@ function cleanWord(raw: string): string {
   return raw.replace(/^[^a-zA-Z']+|[^a-zA-Z']+$/g, '').toLowerCase()
 }
 
-const POPOVER_W = 340
 const GAP = 8
 
 function computePosition(anchor: DOMRect) {
   const vw = window.innerWidth
   const vh = window.innerHeight
-  const clampTop = (t: number) => Math.max(8, Math.min(t, vh - 400))
-  if (anchor.right + GAP + POPOVER_W + 12 < vw)
-    return { top: clampTop(anchor.top), left: anchor.right + GAP, ox: '0% 0%' }
-  if (anchor.left - GAP - POPOVER_W > 12)
-    return { top: clampTop(anchor.top), left: anchor.left - GAP - POPOVER_W, ox: '100% 0%' }
-  const cx = Math.max(12, Math.min(anchor.left + anchor.width / 2 - POPOVER_W / 2, vw - POPOVER_W - 12))
+  // Responsive width: shrink on small screens, cap at 340
+  const popoverW = Math.min(340, vw - 24)
+  const clampTop = (t: number) => Math.max(8, Math.min(t, vh - 300))
+
+  // Try right side
+  if (anchor.right + GAP + popoverW + 12 < vw)
+    return { top: clampTop(anchor.top), left: anchor.right + GAP, w: popoverW, ox: '0% 0%' }
+  // Try left side
+  if (anchor.left - GAP - popoverW > 12)
+    return { top: clampTop(anchor.top), left: anchor.left - GAP - popoverW, w: popoverW, ox: '100% 0%' }
+  // Fall back to centered above/below
+  const cx = Math.max(12, Math.min(anchor.left + anchor.width / 2 - popoverW / 2, vw - popoverW - 12))
   const below = vh - anchor.bottom > 200
-  return { top: below ? anchor.bottom + GAP : anchor.top - GAP, left: cx, ox: below ? '50% 0%' : '50% 100%' }
+  return { top: below ? anchor.bottom + GAP : anchor.top - GAP, left: cx, w: popoverW, ox: below ? '50% 0%' : '50% 100%' }
 }
 
 export default memo(function WordPopover({
@@ -63,6 +68,8 @@ export default memo(function WordPopover({
     return () => ctrl.abort()
   }, [cleanedWord])
 
+  // Only allow navigation to known, trusted domains
+  const ALLOWED_HOSTS = ['www.google.com', 'www.merriam-webster.com', 'dict.youdao.com']
   const menuItems = [
     { label: t('podcast.dictAiExplain'), href: `https://www.google.com/search?q=${encodeURIComponent(`"${cleanedWord}" meaning in "${sentenceContext ?? ''}" explain in Chinese`)}`,
       icon: <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 0 0-2.455 2.456Z" />,
@@ -73,18 +80,20 @@ export default memo(function WordPopover({
     { label: t('podcast.dictWebDict'), href: `https://dict.youdao.com/result?word=${encodeURIComponent(cleanedWord)}&lang=en`,
       icon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5a17.92 17.92 0 0 1-8.716-2.247m0 0A8.966 8.966 0 0 1 3 12c0-1.264.26-2.467.732-3.558" />,
     },
-    { label: t('podcast.dictEudict'), href: `eudic://dict/${encodeURIComponent(cleanedWord)}`,
-      icon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />,
-    },
-  ]
+  ].filter(item => {
+    // Validate each href is a safe HTTPS URL on a known host
+    try {
+      const url = new URL(item.href)
+      return url.protocol === 'https:' && ALLOWED_HOSTS.includes(url.hostname)
+    } catch { return false }
+  })
 
   return (
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <motion.div
       data-word-popover
       onClick={(e) => e.stopPropagation()}
       className="fixed z-50"
-      style={{ top: pos.top, left: pos.left, width: POPOVER_W }}
+      style={{ top: pos.top, left: pos.left, width: pos.w }}
       initial={{ opacity: 0, scale: 0.92, transformOrigin: pos.ox }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}

@@ -26,7 +26,7 @@ function EatingDashboard() {
   const [viewMode, setViewMode] = useState<EatingViewMode>('day')
   const [editingEntry, setEditingEntry] = useState<EatingEntry | null>(null)
   const {
-    entries, categories, data, loading,
+    entries, categories, data,
     addEntry, deleteEntry, updateEntry,
     addCategory, updateCategory, deleteCategory,
     importData,

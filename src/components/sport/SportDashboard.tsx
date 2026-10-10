@@ -29,7 +29,7 @@ function SportDashboard() {
   const [editingEntry, setEditingEntry] = useState<SportEntry | null>(null)
   const [showSettings, setShowSettings] = useState(false)
   const {
-    entries, categories, reflections, data, loading,
+    entries, categories, reflections, data,
     addEntry, deleteEntry, updateEntry,
     addCategory, updateCategory, deleteCategory, reorderCategories,
     getReflection, upsertReflection, deleteReflection,

@@ -27,7 +27,7 @@ async function getJson<T>(path: string, signal?: AbortSignal, retries = 2): Prom
       }
       // Clear message for browser-level network errors
       if (err instanceof TypeError) {
-        throw new Error('Cannot connect to server — make sure the podcast server is running (npm run server)')
+        throw new Error('Cannot connect to server — make sure the podcast server is running (npm run server)', { cause: err })
       }
       throw err
     }

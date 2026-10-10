@@ -3,24 +3,41 @@ import { fetchOk, HttpError } from '../http.js'
 
 export const dictionaryRouter = Router()
 
-const cache = new Map<string, { data: unknown; ts: number }>()
+const cache = new Map<string, { data: unknown; ts: number; size: number }>()
 const CACHE_TTL = 7 * 24 * 60 * 60 * 1000
 const CACHE_MAX = 2000
+const CACHE_MAX_BYTES = 10 * 1024 * 1024 // 10 MB total size budget
+let cacheBytes = 0
 
 function cacheSet(key: string, data: unknown) {
-  if (cache.size >= CACHE_MAX) {
+  const json = JSON.stringify(data)
+  const entrySize = json.length * 2 // rough UTF-16 byte estimate
+
+  // Skip caching oversized single entries (> 256 KB)
+  if (entrySize > 256 * 1024) return
+
+  // Evict expired entries first
+  if (cache.size >= CACHE_MAX || cacheBytes + entrySize > CACHE_MAX_BYTES) {
     const now = Date.now()
     for (const [k, v] of cache) {
-      if (now - v.ts > CACHE_TTL) cache.delete(k)
-    }
-    if (cache.size >= CACHE_MAX) {
-      for (const k of cache.keys()) {
-        cache.delete(k)
-        if (cache.size < CACHE_MAX * 0.8) break
-      }
+      if (now - v.ts > CACHE_TTL) { cacheBytes -= v.size; cache.delete(k) }
     }
   }
-  cache.set(key, { data, ts: Date.now() })
+  // Evict oldest entries if still over limits
+  if (cache.size >= CACHE_MAX || cacheBytes + entrySize > CACHE_MAX_BYTES) {
+    for (const [k, v] of cache) {
+      cacheBytes -= v.size
+      cache.delete(k)
+      if (cache.size < CACHE_MAX * 0.8 && cacheBytes + entrySize <= CACHE_MAX_BYTES) break
+    }
+  }
+
+  // Remove old entry's size if replacing
+  const old = cache.get(key)
+  if (old) cacheBytes -= old.size
+
+  cache.set(key, { data, ts: Date.now(), size: entrySize })
+  cacheBytes += entrySize
 }
 
 // ─── Types ───
@@ -65,7 +82,7 @@ dictionaryRouter.get('/dictionary/:word', async (req, res, next) => {
     // Cache hit
     const cached = cache.get(word)
     if (cached && Date.now() - cached.ts < CACHE_TTL) {
-      res.set('cache-control', 'public, max-age=604800')
+      res.set('cache-control', 'private, max-age=604800')
       res.json(cached.data)
       return
     }
@@ -138,7 +155,7 @@ dictionaryRouter.get('/dictionary/:word', async (req, res, next) => {
     }
 
     cacheSet(word, result)
-    res.set('cache-control', 'public, max-age=604800')
+    res.set('cache-control', 'private, max-age=604800')
     res.json(result)
   } catch (e) {
     next(e)

@@ -33,6 +33,7 @@ export default function EpisodeList({
   useEffect(() => {
     if (feed) return
     const ctrl = new AbortController()
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional reset before async fetch
     setError(null)
     fetchEpisodes(source, ctrl.signal)
       .then(onFeedLoaded)
@@ -44,7 +45,7 @@ export default function EpisodeList({
   const filtered = useMemo(() => {
     if (!feed) return []
     const q = search.trim().toLowerCase()
-    let list = q
+    const list = q
       ? feed.episodes.filter(ep => ep.title.toLowerCase().includes(q))
       : [...feed.episodes]
 
@@ -52,6 +53,10 @@ export default function EpisodeList({
       list.sort((a, b) => {
         const ta = episodeStats?.[a.id]?.lastPlayed ?? ''
         const tb = episodeStats?.[b.id]?.lastPlayed ?? ''
+        // Push episodes with no play history to the end
+        if (!ta && !tb) return 0
+        if (!ta) return 1
+        if (!tb) return -1
         return tb.localeCompare(ta) // most recent first
       })
     } else if (sortMode === 'words') {
@@ -68,6 +73,7 @@ export default function EpisodeList({
     return list
   }, [feed, search, sortMode, episodeStats])
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional pagination reset on filter change
   useEffect(() => setVisible(PAGE_SIZE), [search, sortMode])
 
   const dateFmt = new Intl.DateTimeFormat(i18n.language === 'zh' ? 'zh-CN' : 'en-US', { dateStyle: 'medium' })

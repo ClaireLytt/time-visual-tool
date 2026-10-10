@@ -13,7 +13,7 @@ export default function TodoDashboard() {
   const { t } = useTranslation()
   const [selectedDate, setSelectedDate] = useState(() => format(new Date(), 'yyyy-MM-dd'))
   const [filter, setFilter] = useState<Filter>('all')
-  const { items, loading, addItem, toggleItem, deleteItem, getItemsForDate } = useTodoEntries()
+  const { addItem, toggleItem, deleteItem, getItemsForDate } = useTodoEntries()
 
   const dayItems = useMemo(() => getItemsForDate(selectedDate), [getItemsForDate, selectedDate])
   const doneCount = useMemo(() => dayItems.filter(t => t.done).length, [dayItems])

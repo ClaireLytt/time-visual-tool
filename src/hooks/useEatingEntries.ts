@@ -103,6 +103,7 @@ export function useEatingEntries() {
   const setDailyCalorieGoal = useCallback((goal: number | undefined) => {
     setData(prev => {
       if (goal === undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { dailyCalorieGoal: _, ...rest } = prev
         return rest as EatingStorageData
       }

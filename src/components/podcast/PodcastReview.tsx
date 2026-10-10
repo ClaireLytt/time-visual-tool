@@ -43,6 +43,7 @@ type SubView = 'main' | 'vocab' | 'sentences'
 
 export default function PodcastReview({ words, sentences, onBack }: PodcastReviewProps) {
   const { t, i18n } = useTranslation()
+  const { language } = i18n
   const { isDark } = useTheme()
   const [period, setPeriod] = useState<Period>('week')
   const [subView, setSubView] = useState<SubView>('main')
@@ -63,7 +64,7 @@ export default function PodcastReview({ words, sentences, onBack }: PodcastRevie
   const chartData = useMemo(() => {
     if (period === 'week') {
       // Group by day of week
-      const labels = weekdayLabels(i18n.language === 'zh' ? 'zh-CN' : 'en-US')
+      const labels = weekdayLabels(language === 'zh' ? 'zh-CN' : 'en-US')
       const counts = Array(7).fill(0) as number[]
       for (const w of wordsInRange) {
         const d = new Date(w.lastSeen)
@@ -92,14 +93,14 @@ export default function PodcastReview({ words, sentences, onBack }: PodcastRevie
       const months: Record<string, number> = {}
       for (const w of wordsInRange) {
         const d = new Date(w.lastSeen)
-        const key = d.toLocaleDateString(i18n.language === 'zh' ? 'zh-CN' : 'en-US', { month: 'short' })
+        const key = d.toLocaleDateString(language === 'zh' ? 'zh-CN' : 'en-US', { month: 'short' })
         months[key] = (months[key] ?? 0) + 1
       }
       const result: Array<{ label: string; count: number }> = []
       for (let i = 5; i >= 0; i--) {
         const d = new Date(now)
         d.setMonth(d.getMonth() - i)
-        const label = d.toLocaleDateString(i18n.language === 'zh' ? 'zh-CN' : 'en-US', { month: 'short' })
+        const label = d.toLocaleDateString(language === 'zh' ? 'zh-CN' : 'en-US', { month: 'short' })
         result.push({ label, count: months[label] ?? 0 })
       }
       return result
@@ -117,11 +118,11 @@ export default function PodcastReview({ words, sentences, onBack }: PodcastRevie
       const d = new Date(now)
       d.setMonth(d.getMonth() - i)
       const key = `${d.getFullYear()}-${d.getMonth()}`
-      const label = d.toLocaleDateString(i18n.language === 'zh' ? 'zh-CN' : 'en-US', { month: 'short' })
+      const label = d.toLocaleDateString(language === 'zh' ? 'zh-CN' : 'en-US', { month: 'short' })
       result.push({ label, count: months[key] ?? 0 })
     }
     return result
-  }, [period, wordsInRange, i18n.language, now])
+  }, [period, wordsInRange, language, now])
 
   const total = wordsInRange.length
   const maxCount = Math.max(0, ...chartData.map(d => d.count))

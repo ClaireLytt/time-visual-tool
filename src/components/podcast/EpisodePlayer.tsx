@@ -62,18 +62,20 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
   const [clipStart, setClipStart] = useState<number | null>(null)
   const [clipEnd, setClipEnd] = useState<number | null>(null)
 
-  // Loop playback within clip range
+  // Loop playback within clip range using a tight rAF loop for smooth looping
   useEffect(() => {
     if (!clipMode || clipStart == null || clipEnd == null) return
     const audio = audioRef.current
     if (!audio) return
-    const handler = () => {
+    let rafId: number
+    const check = () => {
       if (audio.currentTime >= clipEnd) {
         audio.currentTime = clipStart
       }
+      rafId = requestAnimationFrame(check)
     }
-    audio.addEventListener('timeupdate', handler)
-    return () => audio.removeEventListener('timeupdate', handler)
+    rafId = requestAnimationFrame(check)
+    return () => cancelAnimationFrame(rafId)
   }, [clipMode, clipStart, clipEnd])
 
   /** Extract unique words from all transcript segments */
@@ -127,10 +129,12 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
     if (asrTimerRef.current) clearInterval(asrTimerRef.current)
     const ctrl = new AbortController()
     abortRef.current = ctrl
+    /* eslint-disable react-hooks/set-state-in-effect -- intentional state resets before async transcript load */
     setTranscriptLoading(true)
     setTranscriptError(null)
     setAsrStatus(null)
     setAsrElapsed(0)
+    /* eslint-enable react-hooks/set-state-in-effect */
     // Start elapsed timer
     const t0 = Date.now()
     asrTimerRef.current = setInterval(() => setAsrElapsed(Math.floor((Date.now() - t0) / 1000)), 1000)
@@ -287,12 +291,6 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
     if (audio) audio.currentTime = Number(e.target.value)
   }, [])
 
-  const cycleSpeed = useCallback(() => {
-    setPlaybackRate(prev => {
-      const idx = SPEED_OPTIONS.indexOf(prev)
-      return SPEED_OPTIONS[(idx + 1) % SPEED_OPTIONS.length]
-    })
-  }, [])
 
   return (
     <div className="space-y-4">
@@ -565,7 +563,7 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
                     const openWord = (el: HTMLElement) => {
                       const clean = token.replace(/^[^a-zA-Z']+|[^a-zA-Z']+$/g, '')
                       if (!clean) return
-                      setSelectedWord({ word: token, rect: el.getBoundingClientRect(), sentence: seg.text, segStart: seg.start })
+                      setSelectedWord({ word: clean, rect: el.getBoundingClientRect(), sentence: seg.text, segStart: seg.start })
                     }
                     return (
                       <span
