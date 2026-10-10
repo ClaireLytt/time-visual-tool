@@ -20,16 +20,21 @@ export default function PodcastSearch({ onOpen }: PodcastSearchProps) {
   const [error, setError] = useState<string | null>(null)
   const [searched, setSearched] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
+  const [suggestions, setSuggestions] = useState<PodcastSummary[]>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
+  const suggestAbortRef = useRef<AbortController | null>(null)
+  const suggestTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => () => abortRef.current?.abort(), [])
+  useEffect(() => () => { abortRef.current?.abort(); suggestAbortRef.current?.abort() }, [])
 
   // Close history dropdown on outside click
   useEffect(() => {
     const onClickOutside = (e: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
         setShowHistory(false)
+        setShowSuggestions(false)
       }
     }
     document.addEventListener('mousedown', onClickOutside)
@@ -55,6 +60,8 @@ export default function PodcastSearch({ onOpen }: PodcastSearchProps) {
   const doSearch = (q: string) => {
     addToHistory(q)
     setShowHistory(false)
+    setShowSuggestions(false)
+    setSuggestions([])
     if (isUrl(q)) {
       onOpen({ feedUrl: q })
       return
@@ -92,8 +99,36 @@ export default function PodcastSearch({ onOpen }: PodcastSearchProps) {
         <form onSubmit={submit} className="panel p-4 flex gap-2">
           <input
             value={query}
-            onChange={e => setQuery(e.target.value)}
-            onFocus={() => { if (history.length > 0) setShowHistory(true) }}
+            onChange={e => {
+              const val = e.target.value
+              setQuery(val)
+              setShowHistory(false)
+              // Debounced live suggestions
+              if (suggestTimerRef.current) clearTimeout(suggestTimerRef.current)
+              const trimmed = val.trim()
+              if (!trimmed || trimmed.length < 2 || isUrl(trimmed)) {
+                setSuggestions([])
+                setShowSuggestions(false)
+                return
+              }
+              suggestTimerRef.current = setTimeout(() => {
+                suggestAbortRef.current?.abort()
+                const ctrl = new AbortController()
+                suggestAbortRef.current = ctrl
+                searchPodcasts(trimmed, ctrl.signal)
+                  .then(r => {
+                    if (!ctrl.signal.aborted) {
+                      setSuggestions(r.slice(0, 6))
+                      setShowSuggestions(r.length > 0)
+                    }
+                  })
+                  .catch(() => {})
+              }, 300)
+            }}
+            onFocus={() => {
+              if (suggestions.length > 0 && query.trim().length >= 2) setShowSuggestions(true)
+              else if (history.length > 0) setShowHistory(true)
+            }}
             placeholder={t('podcast.searchPlaceholder')}
             className="flex-1 min-w-0 px-3 py-2 rounded-xl bg-gray-100 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-mode-podcast"
           />
@@ -106,8 +141,44 @@ export default function PodcastSearch({ onOpen }: PodcastSearchProps) {
           </button>
         </form>
 
+        {/* Live suggestions dropdown */}
+        {showSuggestions && suggestions.length > 0 && !showHistory && (
+          <div className="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <ul className="max-h-72 overflow-y-auto overscroll-contain">
+              {suggestions.map(p => (
+                <li key={p.collectionId}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowSuggestions(false)
+                      setSuggestions([])
+                      addToHistory(query.trim())
+                      onOpen(p.feedUrl ? { feedUrl: p.feedUrl } : { collectionId: p.collectionId })
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                  >
+                    <img src={p.artworkUrl600} alt="" loading="lazy" className="w-10 h-10 rounded-lg object-cover shrink-0 bg-gray-200" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{p.collectionName}</p>
+                      <p className="text-xs text-gray-400 truncate">{p.artistName}</p>
+                    </div>
+                    <span className="text-gray-300 text-sm">›</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* No results hint */}
+        {showSuggestions && suggestions.length === 0 && query.trim().length >= 2 && !isUrl(query) && !showHistory && (
+          <div className="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 px-4 py-3">
+            <p className="text-sm text-gray-400">{t('podcast.noResults')}</p>
+          </div>
+        )}
+
         {/* History dropdown — positioned relative to the wrapper, outside .panel's overflow:hidden */}
-        {showHistory && history.length > 0 && (
+        {showHistory && history.length > 0 && !showSuggestions && (
           <div className="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div className="flex items-center justify-between px-3 py-1.5 border-b border-gray-100 dark:border-gray-700">
               <span className="text-xs text-gray-400">{t('podcast.searchHistory')}</span>
