@@ -107,8 +107,13 @@ export function generateGaps(segments: Segment[], options: GapOptions): GapWord[
     const words = seg.text.split(/\s+/)
 
     for (let wi = 0; wi < words.length; wi++) {
-      const cleaned = cleanWord(words[wi])
-      if (!cleaned || cleaned.length < 3) continue
+      const raw = words[wi].replace(/^[^a-zA-Z']+|[^a-zA-Z']+$/g, '')
+      const cleaned = raw.toLowerCase()
+      if (!cleaned || cleaned.length < 4) continue
+
+      // Skip proper nouns: capitalized words not at sentence start
+      const isProperNoun = wi > 0 && raw.length > 0 && raw[0] === raw[0].toUpperCase() && raw[0] !== raw[0].toLowerCase()
+      if (isProperNoun) continue
 
       const score = scoreWord(cleaned)
       if (score <= 0) continue

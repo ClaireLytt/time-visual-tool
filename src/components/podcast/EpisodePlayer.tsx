@@ -629,13 +629,17 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
               const clipSegs = segments.filter(s => s.start >= clipStart && s.end <= clipEnd)
               // Generate a gap if none exists yet
               if (!dictationGap && clipSegs.length > 0) {
-                const stopWords = new Set(['the','a','an','is','are','was','were','be','been','being','have','has','had','do','does','did','will','would','shall','should','may','might','can','could','must','and','but','or','if','in','on','at','to','for','of','it','i','we','you','he','she','they','me','my','his','her','its','our','your','their','this','that','so','not','no'])
+                const stopWords = new Set(['the','a','an','is','are','was','were','be','been','being','have','has','had','do','does','did','will','would','shall','should','may','might','can','could','must','and','but','or','if','in','on','at','to','for','of','it','i','we','you','he','she','they','me','my','his','her','its','our','your','their','this','that','so','not','no','just','like','also','very','really','here','there','then','than','well','yeah','yes','okay','oh','um','uh','ah'])
                 const candidates: Array<{ segIdx: number; wordIdx: number; word: string }> = []
                 for (let si = 0; si < clipSegs.length; si++) {
                   const words = clipSegs[si].text.split(/\s+/)
                   for (let wi = 0; wi < words.length; wi++) {
-                    const clean = words[wi].replace(/[^a-zA-Z']/g, '').toLowerCase()
-                    if (clean.length >= 3 && !stopWords.has(clean)) {
+                    const raw = words[wi].replace(/[^a-zA-Z']/g, '')
+                    const clean = raw.toLowerCase()
+                    // Skip: stop words, short words, capitalized words (proper nouns/names)
+                    // A word at sentence start (wi===0) is allowed even if capitalized
+                    const isProperNoun = wi > 0 && raw.length > 0 && raw[0] === raw[0].toUpperCase() && raw[0] !== raw[0].toLowerCase()
+                    if (clean.length >= 4 && !stopWords.has(clean) && !isProperNoun) {
                       candidates.push({ segIdx: si, wordIdx: wi, word: clean })
                     }
                   }
