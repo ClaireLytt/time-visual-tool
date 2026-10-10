@@ -26,7 +26,7 @@ function EatingDashboard() {
   const [viewMode, setViewMode] = useState<EatingViewMode>('day')
   const [editingEntry, setEditingEntry] = useState<EatingEntry | null>(null)
   const {
-    entries, categories, data, loading,
+    entries, categories, data,
     addEntry, deleteEntry, updateEntry,
     addCategory, updateCategory, deleteCategory,
     importData,
@@ -50,6 +50,16 @@ function EatingDashboard() {
   }, [viewMode, dayEntries, entries, periodSummary.dailyBreakdown])
 
   const dayTotalCalories = useMemo(() => dayEntries.reduce((sum, e) => sum + e.calories, 0), [dayEntries])
+
+  const dayMacros = useMemo(() => {
+    let protein = 0, carbs = 0, fat = 0
+    for (const e of dayEntries) {
+      protein += e.protein ?? 0
+      carbs += e.carbs ?? 0
+      fat += e.fat ?? 0
+    }
+    return { protein, carbs, fat, total: protein + carbs + fat }
+  }, [dayEntries])
 
   const isDaily = viewMode === 'day'
 
@@ -122,6 +132,42 @@ function EatingDashboard() {
             goal={dailyCalorieGoal}
             onGoalChange={setDailyCalorieGoal}
           />
+        )}
+
+        {isDaily && dayMacros.total > 0 && (
+          <div className="panel p-3 mb-4">
+            <h3 className="text-xs font-semibold tracking-wide uppercase text-calm-muted dark:text-gray-400 mb-2">
+              {t('eating.macroTitle')}
+            </h3>
+            <div className="flex h-3 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700 mb-2">
+              {dayMacros.protein > 0 && (
+                <div className="h-full" style={{ width: `${(dayMacros.protein / dayMacros.total) * 100}%`, backgroundColor: '#5b8def' }} />
+              )}
+              {dayMacros.carbs > 0 && (
+                <div className="h-full" style={{ width: `${(dayMacros.carbs / dayMacros.total) * 100}%`, backgroundColor: '#e8a838' }} />
+              )}
+              {dayMacros.fat > 0 && (
+                <div className="h-full" style={{ width: `${(dayMacros.fat / dayMacros.total) * 100}%`, backgroundColor: '#e45858' }} />
+              )}
+            </div>
+            <div className="flex justify-between text-xs tabular-nums">
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: '#5b8def' }} />
+                <span className="text-gray-600 dark:text-gray-400">{t('eating.proteinShort')}</span>
+                <span className="font-medium text-gray-800 dark:text-gray-200">{Math.round(dayMacros.protein)}g</span>
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: '#e8a838' }} />
+                <span className="text-gray-600 dark:text-gray-400">{t('eating.carbsShort')}</span>
+                <span className="font-medium text-gray-800 dark:text-gray-200">{Math.round(dayMacros.carbs)}g</span>
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: '#e45858' }} />
+                <span className="text-gray-600 dark:text-gray-400">{t('eating.fatShort')}</span>
+                <span className="font-medium text-gray-800 dark:text-gray-200">{Math.round(dayMacros.fat)}g</span>
+              </span>
+            </div>
+          </div>
         )}
 
         {!isDaily && (

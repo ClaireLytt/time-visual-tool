@@ -4,6 +4,12 @@ import { parseCalorieInput } from '../../utils/calories'
 import DurationPresets from '../common/DurationPresets'
 import type { SportEntry, SportCategory } from '../../types/sport'
 
+export interface SportFormFill {
+  content: string
+  duration: number
+  sportType: string
+}
+
 interface SportEntryFormProps {
   selectedDate: string
   categories: SportCategory[]
@@ -11,9 +17,11 @@ interface SportEntryFormProps {
   editingEntry?: SportEntry | null
   onUpdate?: (id: string, updates: Partial<SportEntry>) => void
   onCancelEdit?: () => void
+  templateFill?: SportFormFill | null
+  onTemplateFillConsumed?: () => void
 }
 
-function SportEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdate, onCancelEdit }: SportEntryFormProps) {
+function SportEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdate, onCancelEdit, templateFill, onTemplateFillConsumed }: SportEntryFormProps) {
   const { t } = useTranslation()
   const [content, setContent] = useState('')
   const [durationInput, setDurationInput] = useState('')
@@ -41,6 +49,19 @@ function SportEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdat
       setSportType('')
       setNote('')
       setError('')
+    }
+  }
+
+  // Apply template fill (render-time sync, same pattern as editingEntry)
+  const [prevTemplateFill, setPrevTemplateFill] = useState(templateFill)
+  if (prevTemplateFill !== templateFill) {
+    setPrevTemplateFill(templateFill)
+    if (templateFill && !isEditing) {
+      setContent(templateFill.content)
+      setDurationInput(String(templateFill.duration))
+      setSportType(templateFill.sportType)
+      setError('')
+      onTemplateFillConsumed?.()
     }
   }
 
@@ -111,27 +132,11 @@ function SportEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdat
 
       <div className="grid grid-cols-2 gap-3 mb-3">
         <div className="col-span-2">
-          <input
-            type="text"
-            value={content}
-            onChange={e => setContent(e.target.value)}
-            placeholder={t('sport.contentPlaceholder')}
-            aria-label={t('sport.contentLabel')}
-            className="input-base"
-            maxLength={100}
-          />
+          <input type="text" value={content} onChange={e => setContent(e.target.value)} placeholder={t('sport.contentPlaceholder')} aria-label={t('sport.contentLabel')} className="input-base" maxLength={100} />
         </div>
 
         <div className="relative">
-          <input
-            type="text"
-            value={durationInput}
-            onChange={e => setDurationInput(e.target.value)}
-            placeholder={t('sport.durationPlaceholder')}
-            aria-label={t('sport.durationLabel')}
-            className="input-base pr-10"
-            inputMode="numeric"
-          />
+          <input type="text" value={durationInput} onChange={e => setDurationInput(e.target.value)} placeholder={t('sport.durationPlaceholder')} aria-label={t('sport.durationLabel')} className="input-base pr-10" inputMode="numeric" />
           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-gray-500 pointer-events-none">min</span>
         </div>
         <div className="col-span-2">
@@ -139,24 +144,11 @@ function SportEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdat
         </div>
 
         <div>
-          <input
-            type="text"
-            value={calorieInput}
-            onChange={e => setCalorieInput(e.target.value)}
-            placeholder={t('sport.caloriePlaceholder')}
-            aria-label={t('sport.calorieLabel')}
-            className="input-base"
-            inputMode="decimal"
-          />
+          <input type="text" value={calorieInput} onChange={e => setCalorieInput(e.target.value)} placeholder={t('sport.caloriePlaceholder')} aria-label={t('sport.calorieLabel')} className="input-base" inputMode="decimal" />
         </div>
 
         <div>
-          <select
-            value={effectiveSportType}
-            onChange={e => setSportType(e.target.value)}
-            aria-label={t('sport.sportTypeLabel')}
-            className="input-base"
-          >
+          <select value={effectiveSportType} onChange={e => setSportType(e.target.value)} aria-label={t('sport.sportTypeLabel')} className="input-base">
             {categories.map(cat => (
               <option key={cat.name} value={cat.name}>{t('category.names.' + cat.name, cat.name)}</option>
             ))}
@@ -164,33 +156,18 @@ function SportEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdat
         </div>
 
         <div>
-          <input
-            type="text"
-            value={note}
-            onChange={e => setNote(e.target.value)}
-            placeholder={t('sport.notePlaceholder')}
-            aria-label={t('sport.noteLabel')}
-            className="input-base"
-            maxLength={200}
-          />
+          <input type="text" value={note} onChange={e => setNote(e.target.value)} placeholder={t('sport.notePlaceholder')} aria-label={t('sport.noteLabel')} className="input-base" maxLength={200} />
         </div>
       </div>
 
       {error && <p className="text-red-500 dark:text-red-400 text-xs mb-2" role="alert">{error}</p>}
 
       <div className={isEditing ? 'flex gap-2' : ''}>
-        <button
-          type="submit"
-          className={`${isEditing ? 'flex-1' : 'w-full'} py-2 bg-mode-sport hover:opacity-90 text-white text-sm font-medium rounded-lg transition-colors`}
-        >
+        <button type="submit" className={`${isEditing ? 'flex-1' : 'w-full'} py-2 bg-mode-sport hover:opacity-90 text-white text-sm font-medium rounded-lg transition-colors`}>
           {isEditing ? t('entry.saveButton') : t('sport.addButton')}
         </button>
         {isEditing && (
-          <button
-            type="button"
-            onClick={onCancelEdit}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-          >
+          <button type="button" onClick={onCancelEdit} className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
             {t('entry.cancelButton')}
           </button>
         )}

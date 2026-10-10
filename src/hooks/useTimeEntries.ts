@@ -118,6 +118,7 @@ export function useTimeEntries() {
   const setDailyHoursGoal = useCallback((goal: number | undefined) => {
     setData(prev => {
       if (goal === undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { dailyHoursGoal: _, ...rest } = prev
         return rest as StorageData
       }

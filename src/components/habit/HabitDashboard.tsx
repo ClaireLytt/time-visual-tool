@@ -5,6 +5,7 @@ import { useHabitEntries } from '../../hooks/useHabitEntries'
 import DatePicker from '../dashboard/DatePicker'
 import HabitItem from './HabitItem'
 import HabitGrid from './HabitGrid'
+import HabitHeatmap from './HabitHeatmap'
 import HabitForm from './HabitForm'
 import CollapsibleForm from '../common/CollapsibleForm'
 
@@ -12,12 +13,25 @@ export default function HabitDashboard() {
   const { t } = useTranslation()
   const [selectedDate, setSelectedDate] = useState(() => format(new Date(), 'yyyy-MM-dd'))
   const {
-    habits, loading,
+    habits,
     addHabit, deleteHabit, toggleCheck, isChecked, getCheckedDatesForHabit, getCheckedCountForDate,
   } = useHabitEntries()
 
   const checkedCount = useMemo(() => getCheckedCountForDate(selectedDate), [getCheckedCountForDate, selectedDate])
   const totalCount = habits.length
+
+  // Calculate current streak: consecutive days backwards from today with at least 1 check
+  const currentStreak = useMemo(() => {
+    if (habits.length === 0) return 0
+    const today = new Date()
+    let streak = 0
+    for (let i = 0; i < 365; i++) {
+      const d = format(subDays(today, i), 'yyyy-MM-dd')
+      if (getCheckedCountForDate(d) > 0) streak++
+      else break
+    }
+    return streak
+  }, [habits.length, getCheckedCountForDate])
 
   const { weekChecks, weekTotal, monthChecks, monthTotal } = useMemo(() => {
     if (habits.length === 0) return { weekChecks: 0, weekTotal: 0, monthChecks: 0, monthTotal: 0 }
@@ -46,6 +60,11 @@ export default function HabitDashboard() {
           </span>
           <span className="text-sm text-gray-500 dark:text-gray-400">{t('habit.completed')}</span>
         </div>
+        {currentStreak > 0 && (
+          <p className="mt-2 text-sm text-[#e8a838] font-medium">
+            🔥 {t('habit.currentStreak')}: {currentStreak} {t('habit.days')}
+          </p>
+        )}
         {totalCount > 0 && (
           <div className="mt-2 h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
             <div
@@ -78,6 +97,9 @@ export default function HabitDashboard() {
 
       {/* 7-day grid */}
       <HabitGrid habits={habits} isChecked={isChecked} anchorDate={selectedDate} />
+
+      {/* 12-week heatmap */}
+      <HabitHeatmap getCheckedCountForDate={getCheckedCountForDate} />
 
       {/* Completion rate stats */}
       {habits.length > 0 && (

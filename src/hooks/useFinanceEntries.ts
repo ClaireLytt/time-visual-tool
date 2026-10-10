@@ -103,6 +103,7 @@ export function useFinanceEntries() {
   const setMonthlyBudget = useCallback((budget: number | undefined) => {
     setData(prev => {
       if (budget === undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { monthlyBudget: _, ...rest } = prev
         return rest as FinanceStorageData
       }

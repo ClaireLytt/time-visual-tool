@@ -30,11 +30,16 @@ const UA = 'TimeVisualPodcast/0.1 (+https://github.com/ClaireLytt/time-visual-to
  * They return different JSON formats, so we normalize both.
  */
 
-const FEED_URLS: Record<string, string> = {
-  // 流行榜 — US top chart (subscription/editorial ranking)
-  top: 'https://itunes.apple.com/us/rss/toppodcasts/limit=30/json',
-  // 大家在听 — UK top chart (different ranking, also English-language)
-  popular: 'https://rss.marketingtools.apple.com/api/v2/gb/podcasts/top/30/podcasts.json',
+/** Build chart URL with country and optional genre */
+function buildChartUrl(feed: string, country: string, genreId?: string): string {
+  const cc = country.toLowerCase()
+  if (feed === 'popular') {
+    const genrePart = genreId ? `/genre=${genreId}` : ''
+    return `https://rss.marketingtools.apple.com/api/v2/${cc}/podcasts/top/30${genrePart}/podcasts.json`
+  }
+  // iTunes RSS format
+  const genrePart = genreId ? `/genre=${genreId}` : ''
+  return `https://itunes.apple.com/${cc}/rss/toppodcasts${genrePart}/limit=30/json`
 }
 
 /** Parse the old iTunes RSS JSON format */
@@ -70,18 +75,21 @@ function parseMarketingTools(data: any): ChartPodcast[] {
 }
 
 /**
- * GET /api/charts?feed=top|popular
+ * GET /api/charts?feed=top|popular&country=us&genreId=1469
  * Returns: { results: ChartPodcast[] }
- * Cached for 30 minutes per feed type.
+ * Cached for 30 minutes per feed+country+genre combination.
  */
 chartsRouter.get('/charts', async (req, res, next) => {
   try {
     const feed = String(req.query.feed ?? 'top')
-    const url = FEED_URLS[feed]
-    if (!url) throw new HttpError(400, `unknown feed type: ${feed} (use "top" or "popular")`)
+    if (feed !== 'top' && feed !== 'popular') throw new HttpError(400, `unknown feed type: ${feed}`)
+    const country = String(req.query.country ?? (feed === 'popular' ? 'gb' : 'us'))
+    const genreId = req.query.genreId ? String(req.query.genreId) : undefined
+    const url = buildChartUrl(feed, country, genreId)
 
-    // Check cache
-    const cached = cache.get(feed)
+    // Check cache (keyed by feed+country+genre)
+    const cacheKey = `${feed}:${country}:${genreId ?? ''}`
+    const cached = cache.get(cacheKey)
     if (cached && Date.now() - cached.ts < CACHE_TTL) {
       res.setHeader('x-cache', 'hit')
       res.json({ results: cached.data })
@@ -104,7 +112,7 @@ chartsRouter.get('/charts', async (req, res, next) => {
       ? parseMarketingTools(data)
       : parseItunesRss(data)
 
-    cache.set(feed, { data: results, ts: Date.now() })
+    cache.set(cacheKey, { data: results, ts: Date.now() })
 
     res.setHeader('x-cache', 'miss')
     res.setHeader('cache-control', 'public, max-age=1800')

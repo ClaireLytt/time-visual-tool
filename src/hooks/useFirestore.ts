@@ -51,6 +51,7 @@ export function useFirestore<T>(
     // If cache already has data, ensure loading is false immediately
     const key = cacheKey(uid, collectionName)
     if (cache.has(key)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- synchronous cache hit, intentional
       setLoading(false)
     }
 

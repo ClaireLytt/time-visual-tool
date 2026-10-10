@@ -25,6 +25,10 @@ function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpda
   })
   const [category, setCategory] = useState('')
   const [note, setNote] = useState('')
+  const [protein, setProtein] = useState('')
+  const [carbs, setCarbs] = useState('')
+  const [fat, setFat] = useState('')
+  const [showMacros, setShowMacros] = useState(false)
   const [error, setError] = useState('')
   const [showFoodSearch, setShowFoodSearch] = useState(false)
   const [foodQuery, setFoodQuery] = useState('')
@@ -61,6 +65,10 @@ function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpda
       setMealTime(editingEntry.mealTime)
       setCategory(editingEntry.category)
       setNote(editingEntry.note)
+      setProtein(editingEntry.protein != null ? String(editingEntry.protein) : '')
+      setCarbs(editingEntry.carbs != null ? String(editingEntry.carbs) : '')
+      setFat(editingEntry.fat != null ? String(editingEntry.fat) : '')
+      setShowMacros(!!(editingEntry.protein || editingEntry.carbs || editingEntry.fat))
       setError('')
     } else {
       setFood('')
@@ -71,6 +79,10 @@ function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpda
       })
       setCategory('')
       setNote('')
+      setProtein('')
+      setCarbs('')
+      setFat('')
+      setShowMacros(false)
       setError('')
     }
     setBaseCalories(null)
@@ -143,6 +155,16 @@ function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpda
       return
     }
 
+    const parsedProtein = protein.trim() ? parseFloat(protein) : undefined
+    const parsedCarbs = carbs.trim() ? parseFloat(carbs) : undefined
+    const parsedFat = fat.trim() ? parseFloat(fat) : undefined
+
+    const macroFields = {
+      ...(parsedProtein != null && !isNaN(parsedProtein) ? { protein: parsedProtein } : {}),
+      ...(parsedCarbs != null && !isNaN(parsedCarbs) ? { carbs: parsedCarbs } : {}),
+      ...(parsedFat != null && !isNaN(parsedFat) ? { fat: parsedFat } : {}),
+    }
+
     if (isEditing && onUpdate) {
       onUpdate(editingEntry.id, {
         food: food.trim(),
@@ -150,6 +172,7 @@ function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpda
         mealTime,
         category: effectiveCategory,
         note: note.trim(),
+        ...macroFields,
       })
       onCancelEdit?.()
     } else {
@@ -160,10 +183,15 @@ function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpda
         mealTime,
         category: effectiveCategory,
         note: note.trim(),
+        ...macroFields,
       })
       setFood('')
       setCalorieInput('')
       setNote('')
+      setProtein('')
+      setCarbs('')
+      setFat('')
+      setShowMacros(false)
       setError('')
       setBaseCalories(null)
       setMultiplier(1)
@@ -297,6 +325,62 @@ function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpda
             maxLength={200}
           />
         </div>
+      </div>
+
+      {/* Macro nutrients toggle */}
+      <div className="mb-3">
+        <button
+          type="button"
+          onClick={() => setShowMacros(s => !s)}
+          className="text-xs font-medium text-mode-eating hover:opacity-80 transition-colors flex items-center gap-1"
+          aria-expanded={showMacros}
+        >
+          <span>{t('eating.macroToggle')}</span>
+          <svg className={`w-3 h-3 transition-transform ${showMacros ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        <AnimatedCollapse open={showMacros}>
+          <div className="grid grid-cols-3 gap-2 mt-2">
+            <div>
+              <label className="text-[10px] text-gray-500 dark:text-gray-400 mb-0.5 block">{t('eating.proteinLabel')}</label>
+              <input
+                type="number"
+                value={protein}
+                onChange={e => setProtein(e.target.value)}
+                placeholder="g"
+                className="input-base text-sm"
+                min="0"
+                step="0.1"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] text-gray-500 dark:text-gray-400 mb-0.5 block">{t('eating.carbsLabel')}</label>
+              <input
+                type="number"
+                value={carbs}
+                onChange={e => setCarbs(e.target.value)}
+                placeholder="g"
+                className="input-base text-sm"
+                min="0"
+                step="0.1"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] text-gray-500 dark:text-gray-400 mb-0.5 block">{t('eating.fatLabel')}</label>
+              <input
+                type="number"
+                value={fat}
+                onChange={e => setFat(e.target.value)}
+                placeholder="g"
+                className="input-base text-sm"
+                min="0"
+                step="0.1"
+              />
+            </div>
+          </div>
+        </AnimatedCollapse>
       </div>
 
       <div className="mb-3">

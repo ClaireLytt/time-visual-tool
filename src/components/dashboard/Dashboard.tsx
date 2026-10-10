@@ -24,7 +24,7 @@ function Dashboard() {
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null)
   const [showSettings, setShowSettings] = useState(false)
   const {
-    entries, categories, data, loading,
+    entries, categories, data,
     addEntry, deleteEntry, updateEntry,
     addCategory, updateCategory, deleteCategory,
     importData,

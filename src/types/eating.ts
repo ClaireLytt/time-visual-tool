@@ -11,6 +11,12 @@ export interface EatingEntry {
   category: string
   note: string
   createdAt: string
+  /** Protein in grams (optional) */
+  protein?: number
+  /** Carbohydrates in grams (optional) */
+  carbs?: number
+  /** Fat in grams (optional) */
+  fat?: number
 }
 
 export interface EatingCategory {

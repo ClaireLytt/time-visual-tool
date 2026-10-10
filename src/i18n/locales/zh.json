@@ -68,7 +68,9 @@
     "expense": "支出",
     "meals": "餐",
     "budget": "预算",
-    "hoursGoal": "时间目标"
+    "hoursGoal": "时间目标",
+    "dailyRings": "今日进度",
+    "startTimer": "开始计时"
   },
   "finance": {
     "income": "收入",
@@ -91,11 +93,35 @@
     "chartTypeLabel": "占比类型",
     "chartDaily": "每日收支",
     "chartMonthly": "每月收支",
-    "chartOverview": "收支总览"
+    "chartOverview": "收支总览",
+    "budgetTitle": "本月预算",
+    "budgetUsed": "已花费",
+    "budgetProgress": "{{spent}} / {{budget}}",
+    "categoryBreakdown": "分类支出",
+    "budgetOf": "/ ¥{{budget}}"
   },
   "time": {
     "hoursGoalLabel": "设置每日时间目标",
     "hoursUnit": "小时"
+  },
+  "timer": {
+    "idle": "计时器",
+    "start": "开始计时",
+    "pause": "暂停",
+    "resume": "继续",
+    "stop": "停止",
+    "reset": "重置",
+    "freeMode": "自由",
+    "pomodoroMode": "番茄钟",
+    "breakTime": "休息时间!",
+    "breakStart": "开始休息",
+    "skipBreak": "跳过",
+    "pomodoroComplete": "番茄钟完成!",
+    "selectCategory": "选择分类",
+    "saveEntry": "保存记录",
+    "discard": "丢弃",
+    "entryActivity": "计时器任务",
+    "pomoActivity": "番茄钟任务"
   },
   "mode": {
     "overview": "总览",
@@ -161,7 +187,29 @@
     "templateNamePlaceholder": "模板名称",
     "dailyAvg": "日均热量",
     "vsGoal": "于目标",
-    "goalLabel": "目标"
+    "goalLabel": "目标",
+    "macros": "营养素",
+    "macroTitle": "今日营养素",
+    "proteinLabel": "蛋白质 (g)",
+    "carbsLabel": "碳水 (g)",
+    "fatLabel": "脂肪 (g)",
+    "proteinPlaceholder": "蛋白质（克）",
+    "carbsPlaceholder": "碳水（克）",
+    "fatPlaceholder": "脂肪（克）",
+    "protein": "蛋白质",
+    "proteinShort": "蛋白",
+    "carbs": "碳水",
+    "carbsShort": "碳水",
+    "fat": "脂肪",
+    "fatShort": "脂肪",
+    "showMacros": "填写营养素",
+    "macroToggle": "填写营养素",
+    "mealType": {
+      "breakfast": "早餐",
+      "lunch": "午餐",
+      "dinner": "晚餐",
+      "snack": "加餐"
+    }
   },
   "sport": {
     "addTitle": "添加运动记录",
@@ -203,7 +251,15 @@
     "reflectionListTitle": "历史感想 ({{count}})",
     "yearReviewTitle": "年度运动回顾",
     "yearAllSports": "今年参与了 {{count}} 种运动",
-    "yearNewSports": "今年新尝试的运动 ({{count}})"
+    "yearNewSports": "今年新尝试的运动 ({{count}})",
+    "weeklyGoal": "本周",
+    "weeklyGoalProgress": "{{done}}/{{goal}} 次运动",
+    "weeklyGoalComplete": "目标达成!",
+    "quickTemplates": "快速添加",
+    "templateRunning": "跑步 30分钟",
+    "templateGym": "健身 60分钟",
+    "templateYoga": "瑜伽 45分钟",
+    "templateCycling": "骑行 40分钟"
   },
   "theme": {
     "light": "浅色模式",
@@ -402,6 +458,11 @@
     "readFailed": "文件读取失败",
     "exportFailed": "导出失败"
   },
+  "profile": {
+    "guest": "未登录",
+    "account": "个人账号",
+    "appearance": "外观"
+  },
   "auth": {
     "login": "登录",
     "register": "注册",
@@ -457,7 +518,10 @@
     "deleteMessage": "确定删除「{{name}}」？相关打卡记录也会一并删除。",
     "emptyTitle": "还没有习惯，添加一个吧",
     "weekRate": "近 7 天",
-    "monthRate": "近 30 天"
+    "monthRate": "近 30 天",
+    "currentStreak": "当前连续",
+    "days": "天",
+    "heatmapTitle": "打卡热力图"
   },
   "todo": {
     "addTitle": "添加任务",
@@ -469,6 +533,8 @@
     "deleteTitle": "删除任务",
     "deleteMessage": "确定删除这个任务？",
     "emptyTitle": "没有任务",
+    "notes": "备注",
+    "addNotes": "添加备注",
     "priority": {
       "high": "高",
       "medium": "中",
@@ -556,6 +622,121 @@
     "chartPopular": "大家在听",
     "chartError": "榜单加载失败",
     "chartEmpty": "暂无榜单数据",
-    "retry": "重试"
+    "noFilterResults": "未找到匹配的播客",
+    "filter": {
+      "country": "国家",
+      "allCategories": "所有类别"
+    },
+    "country": {
+      "us": "美国", "gb": "英国", "ca": "加拿大", "es": "西班牙", "fr": "法国",
+      "de": "德国", "pt": "葡萄牙", "jp": "日本", "kr": "韩国", "se": "瑞典",
+      "it": "意大利", "ru": "俄罗斯", "tr": "土耳其", "no": "挪威", "ae": "阿联酋"
+    },
+    "genre": {
+      "languageLearning": "语言学习", "science": "科学", "technology": "科技",
+      "education": "教育", "healthFitness": "健康与健身", "business": "商务",
+      "news": "新闻", "societyCulture": "社会与文化", "arts": "艺术",
+      "comedy": "喜剧", "fiction": "小说", "history": "历史",
+      "kidsFamily": "儿童与家庭", "leisure": "休闲", "music": "音乐", "sports": "体育"
+    },
+    "retry": "重试",
+    "dictLoading": "正在查询…",
+    "dictNoResult": "词典中未收录该词",
+    "dictUkPron": "英",
+    "dictUsPron": "美",
+    "favorites": "收藏播客",
+    "noFavorites": "还没有收藏的播客",
+    "reviewTitle": "回顾",
+    "reviewWeek": "周",
+    "reviewMonth": "月",
+    "review6Month": "6个月",
+    "reviewYear": "年",
+    "reviewTotal": "总计",
+    "reviewUnit": "个",
+    "reviewTo": "至",
+    "reviewMax": "最多",
+    "reviewAvg": "平均",
+    "reviewVocab": "生词库",
+    "reviewSentences": "收藏的句子",
+    "reviewSpaced": "间隔重复",
+    "reviewDictation": "听写练习",
+    "saveSentence": "收藏句子",
+    "unsaveSentence": "取消收藏",
+    "noSavedSentences": "还没有收藏的句子，在字幕中点击书签图标收藏",
+    "sortDefault": "默认",
+    "sortDifficulty": "难度由低到高",
+    "sortRecent": "最近收听",
+    "sortWords": "生词最多",
+    "badgeStarred": "已收藏",
+    "badgeToLearn": "待学习",
+    "badgeLearning": "正在学习",
+    "toggleStar": "收藏",
+    "toggleToLearn": "标记待学习",
+    "statSegments": "个片段",
+    "statWords": "个生词",
+    "extractWords": "提取生词",
+    "dictationClip": "听写练习",
+    "clipSelectStart": "点击时间戳选择起始位置",
+    "clipSelectEnd": "点击时间戳选择结束位置",
+    "clipActive": "循环播放中",
+    "clipReset": "重选",
+    "dictationHint": "听音频，在空格处填入你听到的单词（Enter 提交，Tab 查看答案）",
+    "dictationCheck": "提交",
+    "dictationReveal": "查看答案",
+    "dictationNext": "下一题",
+    "dictationTryAgain": "再试一次",
+    "dictationCorrect": "正确！",
+    "goalTitle": "本周学习目标",
+    "goalEpisodes": "精听 {{done}}/{{total}} 段",
+    "goalWords": "生词 {{done}}/{{total}} 个",
+    "subtitleEn": "纯英文",
+    "subtitleBilingual": "中英双语",
+    "startTranslation": "翻译字幕",
+    "translating": "正在翻译...",
+    "addToVocab": "加入生词库",
+    "wordAdded": "已加入",
+    "sentenceSaved": "已收藏",
+    "dictAiExplain": "AI解释",
+    "dictEnDef": "英文释义",
+    "dictWebDict": "网络词典",
+    "dictEudict": "欧路词典"
+  },
+  "game": {
+    "gapFill": "选词游戏",
+    "typeFill": "打字填空",
+    "start": "开始游戏",
+    "exit": "退出游戏",
+    "correct": "正确！",
+    "wrong": "答错了",
+    "result": "游戏结果",
+    "score": "得分",
+    "retry": "重试",
+    "playAgain": "再玩一次",
+    "addWrongWords": "错词加入生词库",
+    "difficulty": "难度",
+    "easy": "初级",
+    "medium": "中级",
+    "hard": "高级",
+    "progress": "进度",
+    "attemptsLeft": "剩余次数"
+  },
+  "typing": {
+    "title": "抄写练习",
+    "start": "开始练习",
+    "exit": "退出练习",
+    "wpm": "打字速度",
+    "accuracy": "正确率",
+    "pressEnter": "按回车继续",
+    "complete": "练习完成！",
+    "linesCompleted": "完成行数",
+    "errorWords": "拼错的单词",
+    "practiceAgain": "再练一次"
+  },
+  "episodeWords": {
+    "title": "本集生词",
+    "viewAll": "查看本集生词",
+    "empty": "本集还没有收藏的生词",
+    "byEpisode": "按播客分组",
+    "wordCount": "{{count}} 个生词"
   }
 }

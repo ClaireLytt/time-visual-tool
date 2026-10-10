@@ -9,9 +9,10 @@ interface TodoListProps {
   filter: 'all' | 'active' | 'completed'
   onToggle: (id: string) => void
   onDelete: (id: string) => void
+  onUpdate?: (id: string, updates: Partial<TodoItemType>) => void
 }
 
-export default function TodoList({ items, filter, onToggle, onDelete }: TodoListProps) {
+export default function TodoList({ items, filter, onToggle, onDelete, onUpdate }: TodoListProps) {
   const { t } = useTranslation()
 
   const filtered = useMemo(() => {
@@ -39,7 +40,7 @@ export default function TodoList({ items, filter, onToggle, onDelete }: TodoList
   return (
     <div className="divide-y divide-gray-100 dark:divide-gray-700/50">
       {filtered.map(item => (
-        <TodoItem key={item.id} item={item} onToggle={onToggle} onDelete={onDelete} />
+        <TodoItem key={item.id} item={item} onToggle={onToggle} onDelete={onDelete} onUpdate={onUpdate} />
       ))}
     </div>
   )

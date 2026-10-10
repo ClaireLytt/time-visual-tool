@@ -68,7 +68,9 @@
     "expense": "Out",
     "meals": "meals",
     "budget": "Budget",
-    "hoursGoal": "Hours goal"
+    "hoursGoal": "Hours goal",
+    "dailyRings": "Daily Progress",
+    "startTimer": "Start Timer"
   },
   "finance": {
     "income": "Income",
@@ -91,11 +93,35 @@
     "chartTypeLabel": "Breakdown type",
     "chartDaily": "Daily income & expense",
     "chartMonthly": "Monthly income & expense",
-    "chartOverview": "Overview"
+    "chartOverview": "Overview",
+    "budgetTitle": "Monthly Budget",
+    "budgetUsed": "Spent",
+    "budgetProgress": "{{spent}} / {{budget}}",
+    "categoryBreakdown": "Category Spending",
+    "budgetOf": "/ ${{budget}}"
   },
   "time": {
     "hoursGoalLabel": "Set daily hours goal",
     "hoursUnit": "h"
+  },
+  "timer": {
+    "idle": "Timer",
+    "start": "Start Timer",
+    "pause": "Pause",
+    "resume": "Resume",
+    "stop": "Stop",
+    "reset": "Reset",
+    "freeMode": "Free",
+    "pomodoroMode": "Pomodoro",
+    "breakTime": "Break!",
+    "breakStart": "Start Break",
+    "skipBreak": "Skip",
+    "pomodoroComplete": "Pomodoro complete!",
+    "selectCategory": "Select category",
+    "saveEntry": "Save Entry",
+    "discard": "Discard",
+    "entryActivity": "Timer session",
+    "pomoActivity": "Pomodoro session"
   },
   "mode": {
     "overview": "Today",
@@ -161,7 +187,29 @@
     "templateNamePlaceholder": "Template name",
     "dailyAvg": "Daily Avg",
     "vsGoal": "vs goal",
-    "goalLabel": "Goal"
+    "goalLabel": "Goal",
+    "macros": "Macros",
+    "macroTitle": "Today's Macros",
+    "proteinLabel": "Protein (g)",
+    "carbsLabel": "Carbs (g)",
+    "fatLabel": "Fat (g)",
+    "proteinPlaceholder": "Protein (grams)",
+    "carbsPlaceholder": "Carbs (grams)",
+    "fatPlaceholder": "Fat (grams)",
+    "protein": "Protein",
+    "proteinShort": "P",
+    "carbs": "Carbs",
+    "carbsShort": "C",
+    "fat": "Fat",
+    "fatShort": "F",
+    "showMacros": "Add macros",
+    "macroToggle": "Add macros",
+    "mealType": {
+      "breakfast": "Breakfast",
+      "lunch": "Lunch",
+      "dinner": "Dinner",
+      "snack": "Snack"
+    }
   },
   "sport": {
     "addTitle": "Add exercise entry",
@@ -203,7 +251,15 @@
     "reflectionListTitle": "Past Reflections ({{count}})",
     "yearReviewTitle": "Year in Review",
     "yearAllSports": "Participated in {{count}} sport(s) this year",
-    "yearNewSports": "New sports tried this year ({{count}})"
+    "yearNewSports": "New sports tried this year ({{count}})",
+    "weeklyGoal": "This week",
+    "weeklyGoalProgress": "{{done}}/{{goal}} workouts",
+    "weeklyGoalComplete": "Goal reached!",
+    "quickTemplates": "Quick add",
+    "templateRunning": "Running 30min",
+    "templateGym": "Gym 60min",
+    "templateYoga": "Yoga 45min",
+    "templateCycling": "Cycling 40min"
   },
   "theme": {
     "light": "Light mode",
@@ -402,6 +458,11 @@
     "readFailed": "Failed to read file",
     "exportFailed": "Export failed"
   },
+  "profile": {
+    "guest": "Not logged in",
+    "account": "Account",
+    "appearance": "Appearance"
+  },
   "auth": {
     "login": "Login",
     "register": "Register",
@@ -457,7 +518,10 @@
     "deleteMessage": "Delete \"{{name}}\"? All check-in records will also be removed.",
     "emptyTitle": "No habits yet. Add one!",
     "weekRate": "Last 7 days",
-    "monthRate": "Last 30 days"
+    "monthRate": "Last 30 days",
+    "currentStreak": "Current Streak",
+    "days": "days",
+    "heatmapTitle": "Check-in Heatmap"
   },
   "todo": {
     "addTitle": "Add Task",
@@ -469,6 +533,8 @@
     "deleteTitle": "Delete Task",
     "deleteMessage": "Delete this task?",
     "emptyTitle": "No tasks",
+    "notes": "Notes",
+    "addNotes": "Add notes",
     "priority": {
       "high": "High",
       "medium": "Medium",
@@ -556,6 +622,121 @@
     "chartPopular": "Everyone's Listening",
     "chartError": "Failed to load charts",
     "chartEmpty": "No podcasts found",
-    "retry": "Retry"
+    "noFilterResults": "No matching podcasts found",
+    "filter": {
+      "country": "Country",
+      "allCategories": "All Categories"
+    },
+    "country": {
+      "us": "United States", "gb": "United Kingdom", "ca": "Canada", "es": "Spain", "fr": "France",
+      "de": "Germany", "pt": "Portugal", "jp": "Japan", "kr": "South Korea", "se": "Sweden",
+      "it": "Italy", "ru": "Russia", "tr": "Turkey", "no": "Norway", "ae": "UAE"
+    },
+    "genre": {
+      "languageLearning": "Language Learning", "science": "Science", "technology": "Technology",
+      "education": "Education", "healthFitness": "Health & Fitness", "business": "Business",
+      "news": "News", "societyCulture": "Society & Culture", "arts": "Arts",
+      "comedy": "Comedy", "fiction": "Fiction", "history": "History",
+      "kidsFamily": "Kids & Family", "leisure": "Leisure", "music": "Music", "sports": "Sports"
+    },
+    "retry": "Retry",
+    "dictLoading": "Looking up…",
+    "dictNoResult": "Word not in dictionary",
+    "dictUkPron": "UK",
+    "dictUsPron": "US",
+    "favorites": "Favorites",
+    "noFavorites": "No favorite podcasts yet",
+    "reviewTitle": "Review",
+    "reviewWeek": "Week",
+    "reviewMonth": "Month",
+    "review6Month": "6 Months",
+    "reviewYear": "Year",
+    "reviewTotal": "Total",
+    "reviewUnit": "words",
+    "reviewTo": "to",
+    "reviewMax": "Max",
+    "reviewAvg": "Avg",
+    "reviewVocab": "Vocabulary",
+    "reviewSentences": "Saved Sentences",
+    "reviewSpaced": "Spaced Repetition",
+    "reviewDictation": "Dictation Practice",
+    "saveSentence": "Bookmark sentence",
+    "unsaveSentence": "Remove bookmark",
+    "noSavedSentences": "No saved sentences yet. Tap the bookmark icon in the transcript to save one.",
+    "sortDefault": "Default",
+    "sortDifficulty": "Easiest first",
+    "sortRecent": "Recently played",
+    "sortWords": "Most words",
+    "badgeStarred": "Starred",
+    "badgeToLearn": "To Learn",
+    "badgeLearning": "Learning",
+    "toggleStar": "Star",
+    "toggleToLearn": "Mark to learn",
+    "statSegments": "segments",
+    "statWords": "words",
+    "extractWords": "Extract words",
+    "dictationClip": "Dictation",
+    "clipSelectStart": "Tap a timestamp to set the start",
+    "clipSelectEnd": "Tap a timestamp to set the end",
+    "clipActive": "Looping",
+    "clipReset": "Reset",
+    "dictationHint": "Listen and fill in the blank (Enter = submit, Tab = reveal)",
+    "dictationCheck": "Submit",
+    "dictationReveal": "Reveal",
+    "dictationNext": "Next",
+    "dictationTryAgain": "Try again",
+    "dictationCorrect": "Correct!",
+    "goalTitle": "Weekly Learning Goal",
+    "goalEpisodes": "Listen {{done}}/{{total}} episodes",
+    "goalWords": "Words {{done}}/{{total}}",
+    "subtitleEn": "English",
+    "subtitleBilingual": "Bilingual",
+    "startTranslation": "Translate",
+    "translating": "Translating...",
+    "addToVocab": "Add to vocab",
+    "wordAdded": "Added",
+    "sentenceSaved": "Saved",
+    "dictAiExplain": "AI Explain",
+    "dictEnDef": "English Def",
+    "dictWebDict": "Web Dict",
+    "dictEudict": "Eudic"
+  },
+  "game": {
+    "gapFill": "Word Game",
+    "typeFill": "Type Fill",
+    "start": "Start Game",
+    "exit": "Exit Game",
+    "correct": "Correct!",
+    "wrong": "Wrong",
+    "result": "Results",
+    "score": "Score",
+    "retry": "Retry",
+    "playAgain": "Play Again",
+    "addWrongWords": "Add wrong words to vocab",
+    "difficulty": "Difficulty",
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard",
+    "progress": "Progress",
+    "attemptsLeft": "Attempts left"
+  },
+  "typing": {
+    "title": "Typing Practice",
+    "start": "Start Practice",
+    "exit": "Exit Practice",
+    "wpm": "WPM",
+    "accuracy": "Accuracy",
+    "pressEnter": "Press Enter to continue",
+    "complete": "Practice Complete!",
+    "linesCompleted": "Lines Completed",
+    "errorWords": "Misspelled Words",
+    "practiceAgain": "Practice Again"
+  },
+  "episodeWords": {
+    "title": "Episode Words",
+    "viewAll": "View Episode Words",
+    "empty": "No words collected for this episode",
+    "byEpisode": "By Episode",
+    "wordCount": "{{count}} words"
   }
 }

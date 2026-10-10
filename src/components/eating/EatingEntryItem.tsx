@@ -29,10 +29,20 @@ const EatingEntryItem = memo(function EatingEntryItem({ entry, onDelete, onEdit 
       />
 
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{displayName}</p>
+        <div className="flex items-center gap-1.5 mb-0.5">
+          <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{displayName}</p>
+          <span
+            className="shrink-0 inline-block px-1.5 py-0.5 rounded text-[10px] font-medium leading-none"
+            style={{
+              backgroundColor: `${color}18`,
+              color: color,
+              border: `1px solid ${color}30`,
+            }}
+          >
+            {categoryName}
+          </span>
+        </div>
         <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-          <span>{categoryName}</span>
-          <span className="text-gray-300 dark:text-gray-600">·</span>
           <span>{entry.mealTime}</span>
           {entry.note && (
             <>
@@ -41,6 +51,27 @@ const EatingEntryItem = memo(function EatingEntryItem({ entry, onDelete, onEdit 
             </>
           )}
         </div>
+        {(entry.protein != null || entry.carbs != null || entry.fat != null) && (() => {
+          const p = entry.protein ?? 0
+          const c = entry.carbs ?? 0
+          const f = entry.fat ?? 0
+          const total = p + c + f
+          if (total === 0) return null
+          return (
+            <div className="mt-1">
+              <div className="flex h-1.5 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700">
+                {p > 0 && <div className="h-full" style={{ width: `${(p / total) * 100}%`, backgroundColor: '#5b8def' }} />}
+                {c > 0 && <div className="h-full" style={{ width: `${(c / total) * 100}%`, backgroundColor: '#e8a838' }} />}
+                {f > 0 && <div className="h-full" style={{ width: `${(f / total) * 100}%`, backgroundColor: '#e45858' }} />}
+              </div>
+              <div className="flex gap-2 mt-0.5 text-[10px] text-gray-400 dark:text-gray-500 tabular-nums">
+                {p > 0 && <span>{t('eating.proteinShort')} {p}g</span>}
+                {c > 0 && <span>{t('eating.carbsShort')} {c}g</span>}
+                {f > 0 && <span>{t('eating.fatShort')} {f}g</span>}
+              </div>
+            </div>
+          )
+        })()}
       </div>
 
       <span className="text-sm font-bold shrink-0 text-mode-eating tabular-nums">

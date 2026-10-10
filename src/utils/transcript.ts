@@ -66,7 +66,7 @@ export function parseVtt(text: string): Segment[] {
 export function parseJsonTranscript(json: string): Segment[] {
   const data = JSON.parse(json)
   if (Array.isArray(data)) {
-    return data.map((s: any) => ({
+    return data.map((s: Record<string, unknown>) => ({
       start: Number(s.start ?? s.startTime ?? 0),
       end: Number(s.end ?? s.endTime ?? s.start ?? 0),
       text: String(s.text ?? s.body ?? ''),

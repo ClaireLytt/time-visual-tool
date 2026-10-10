@@ -4,16 +4,22 @@
  * Each scene is a small 64×40 pixel grid rendered at display size.
  */
 
-const PX = 1.5 // pixel scale factor
-
 interface SceneProps {
   className?: string
 }
 
+/** Shared SVG props — viewBox-only sizing, crisp pixel rendering */
+const svgProps = (className?: string) => ({
+  className,
+  viewBox: '0 0 64 40',
+  preserveAspectRatio: 'xMidYMid slice' as const,
+  style: { imageRendering: 'pixelated' as const, width: '100%', height: '100%' },
+})
+
 /** ⚔️ Dungeon — stone walls, torches, clock */
 export function DungeonScene({ className }: SceneProps) {
   return (
-    <svg className={className} viewBox="0 0 64 40" width={64 * PX} height={40 * PX} style={{ imageRendering: 'pixelated' }}>
+    <svg {...svgProps(className)}>
       {/* Stone wall */}
       <rect x="0" y="0" width="64" height="40" fill="#2a2a3a" />
       <rect x="0" y="32" width="64" height="8" fill="#1a1a2a" />
@@ -41,7 +47,7 @@ export function DungeonScene({ className }: SceneProps) {
 /** 💰 Treasure — chest, coins */
 export function TreasureScene({ className }: SceneProps) {
   return (
-    <svg className={className} viewBox="0 0 64 40" width={64 * PX} height={40 * PX} style={{ imageRendering: 'pixelated' }}>
+    <svg {...svgProps(className)}>
       <rect x="0" y="0" width="64" height="40" fill="#2a1a0a" />
       <rect x="0" y="32" width="64" height="8" fill="#1a0f05" />
       {/* Chest */}
@@ -64,7 +70,7 @@ export function TreasureScene({ className }: SceneProps) {
 /** 🍺 Tavern — bar counter, mugs */
 export function TavernScene({ className }: SceneProps) {
   return (
-    <svg className={className} viewBox="0 0 64 40" width={64 * PX} height={40 * PX} style={{ imageRendering: 'pixelated' }}>
+    <svg {...svgProps(className)}>
       <rect x="0" y="0" width="64" height="40" fill="#3a2510" />
       {/* Shelves */}
       <rect x="4" y="4" width="56" height="2" fill="#5a3a1a" />
@@ -86,7 +92,7 @@ export function TavernScene({ className }: SceneProps) {
 /** ⚔️ Arena — colosseum pillars, sand */
 export function ArenaScene({ className }: SceneProps) {
   return (
-    <svg className={className} viewBox="0 0 64 40" width={64 * PX} height={40 * PX} style={{ imageRendering: 'pixelated' }}>
+    <svg {...svgProps(className)}>
       <rect x="0" y="0" width="64" height="28" fill="#87CEEB" />
       <rect x="0" y="28" width="64" height="12" fill="#d4b483" />
       {/* Pillars */}
@@ -108,7 +114,7 @@ export function ArenaScene({ className }: SceneProps) {
 /** 📜 Library — bookshelves */
 export function LibraryScene({ className }: SceneProps) {
   return (
-    <svg className={className} viewBox="0 0 64 40" width={64 * PX} height={40 * PX} style={{ imageRendering: 'pixelated' }}>
+    <svg {...svgProps(className)}>
       <rect x="0" y="0" width="64" height="40" fill="#2a2030" />
       <rect x="0" y="34" width="64" height="6" fill="#1a1520" />
       {/* Bookshelves */}
@@ -134,7 +140,7 @@ export function LibraryScene({ className }: SceneProps) {
 /** 🏰 Castle — fortress walls, flag */
 export function CastleScene({ className }: SceneProps) {
   return (
-    <svg className={className} viewBox="0 0 64 40" width={64 * PX} height={40 * PX} style={{ imageRendering: 'pixelated' }}>
+    <svg {...svgProps(className)}>
       <rect x="0" y="0" width="64" height="28" fill="#4a6090" />
       <rect x="0" y="28" width="64" height="12" fill="#3e8948" />
       {/* Castle */}
@@ -156,7 +162,7 @@ export function CastleScene({ className }: SceneProps) {
 /** 📋 Quest board — pinboard with notes */
 export function QuestScene({ className }: SceneProps) {
   return (
-    <svg className={className} viewBox="0 0 64 40" width={64 * PX} height={40 * PX} style={{ imageRendering: 'pixelated' }}>
+    <svg {...svgProps(className)}>
       <rect x="0" y="0" width="64" height="40" fill="#3a2a1a" />
       {/* Board */}
       <rect x="6" y="4" width="52" height="32" fill="#8B6914" stroke="#6a4a0a" strokeWidth="2" />
@@ -177,7 +183,7 @@ export function QuestScene({ className }: SceneProps) {
 /** 🎓 Academy — classroom, chalkboard */
 export function AcademyScene({ className }: SceneProps) {
   return (
-    <svg className={className} viewBox="0 0 64 40" width={64 * PX} height={40 * PX} style={{ imageRendering: 'pixelated' }}>
+    <svg {...svgProps(className)}>
       <rect x="0" y="0" width="64" height="40" fill="#2a2a3a" />
       <rect x="0" y="32" width="64" height="8" fill="#4a3a2a" />
       {/* Chalkboard */}
@@ -200,7 +206,7 @@ export function AcademyScene({ className }: SceneProps) {
 /** 🏢 Guild Hall — medieval office, table, scrolls */
 export function GuildHallScene({ className }: SceneProps) {
   return (
-    <svg className={className} viewBox="0 0 64 40" width={64 * PX} height={40 * PX} style={{ imageRendering: 'pixelated' }}>
+    <svg {...svgProps(className)}>
       <rect x="0" y="0" width="64" height="40" fill="#3a2a1a" />
       {/* Banner */}
       <rect x="24" y="2" width="16" height="14" fill="#e67e22" />
@@ -222,6 +228,46 @@ export function GuildHallScene({ className }: SceneProps) {
   )
 }
 
+/** 🎧 Bard Hall — stage, lute, musical notes */
+export function BardHallScene({ className }: SceneProps) {
+  return (
+    <svg {...svgProps(className)}>
+      {/* Dark tavern background */}
+      <rect x="0" y="0" width="64" height="40" fill="#2a1a2a" />
+      <rect x="0" y="32" width="64" height="8" fill="#1a0f1a" />
+      {/* Stage */}
+      <rect x="4" y="28" width="56" height="6" fill="#5a3a2a" />
+      <rect x="2" y="27" width="60" height="2" fill="#6a4a3a" />
+      {/* Curtains */}
+      <rect x="2" y="2" width="8" height="26" fill="#8b2252" rx="2" />
+      <rect x="54" y="2" width="8" height="26" fill="#8b2252" rx="2" />
+      <rect x="2" y="2" width="60" height="3" fill="#a0336a" />
+      {/* Lute */}
+      <ellipse cx="32" cy="24" rx="5" ry="4" fill="#c4a36b" />
+      <ellipse cx="32" cy="22" rx="3" ry="2.5" fill="#8B6914" />
+      <rect x="31" y="14" width="2" height="9" fill="#6a4a2a" />
+      <rect x="29" y="13" width="6" height="2" fill="#6a4a2a" rx="1" />
+      {/* Musical notes */}
+      <g fill="#c2417a">
+        <circle cx="16" cy="10" r="2" />
+        <rect x="17.5" y="4" width="1" height="6" />
+        <rect x="17.5" y="4" width="4" height="1" />
+        <circle cx="22" cy="8" r="1.5" />
+        <rect x="23" y="3" width="1" height="5" />
+      </g>
+      <g fill="#e07aaa">
+        <circle cx="46" cy="12" r="2" />
+        <rect x="47.5" y="6" width="1" height="6" />
+        <circle cx="52" cy="8" r="1.5" />
+        <rect x="53" y="3" width="1" height="5" />
+        <rect x="47.5" y="6" width="6" height="1" />
+      </g>
+      {/* Spotlight glow */}
+      <ellipse cx="32" cy="20" rx="12" ry="8" fill="#c2417a" opacity="0.08" />
+    </svg>
+  )
+}
+
 /** Map of mode to scene component */
 export const SCENE_COMPONENTS: Record<string, React.FC<SceneProps>> = {
   time: DungeonScene,
@@ -233,4 +279,5 @@ export const SCENE_COMPONENTS: Record<string, React.FC<SceneProps>> = {
   todo: QuestScene,
   study: AcademyScene,
   work: GuildHallScene,
+  podcast: BardHallScene,
 }

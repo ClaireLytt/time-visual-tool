@@ -15,6 +15,8 @@ import SportDailyChart from './SportDailyChart'
 import SportReflectionEditor from './SportReflectionEditor'
 import SportReflectionList from './SportReflectionList'
 import SportYearReview from './SportYearReview'
+import SportWeeklyGoal from './SportWeeklyGoal'
+import SportQuickTemplates from './SportQuickTemplates'
 import { getPeriodKey, periodKeyToAnchorDate } from '../../utils/diaryPeriod'
 import AnimatedCollapse from '../common/AnimatedCollapse'
 import { exportSportToFile, readSportImportFile } from '../../utils/sportTransfer'
@@ -28,8 +30,9 @@ function SportDashboard() {
   const [viewMode, setViewMode] = useState<SportViewMode>('day')
   const [editingEntry, setEditingEntry] = useState<SportEntry | null>(null)
   const [showSettings, setShowSettings] = useState(false)
+  const [templateFill, setTemplateFill] = useState<{ content: string; duration: number; sportType: string } | null>(null)
   const {
-    entries, categories, reflections, data, loading,
+    entries, categories, reflections, data,
     addEntry, deleteEntry, updateEntry,
     addCategory, updateCategory, deleteCategory, reorderCategories,
     getReflection, upsertReflection, deleteReflection,
@@ -134,6 +137,7 @@ function SportDashboard() {
         </AnimatedCollapse>
 
         <DatePicker selectedDate={selectedDate} onDateChange={handleDateChange} viewMode={viewMode} />
+        <SportWeeklyGoal entries={entries} selectedDate={selectedDate} />
         <SportSummaryCard
           totalDuration={periodSummary.totalDuration}
           totalCalories={periodSummary.totalCalories}
@@ -152,14 +156,19 @@ function SportDashboard() {
 
         {isDaily && (
           <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-6">
-            <SportEntryForm
-              selectedDate={selectedDate}
-              categories={categories}
-              onAdd={addEntry}
-              editingEntry={editingEntry}
-              onUpdate={updateEntry}
-              onCancelEdit={handleCancelEdit}
-            />
+            <div>
+              <SportQuickTemplates onSelect={tpl => setTemplateFill({ content: tpl.content, duration: tpl.duration, sportType: tpl.sportType })} />
+              <SportEntryForm
+                selectedDate={selectedDate}
+                categories={categories}
+                onAdd={addEntry}
+                editingEntry={editingEntry}
+                onUpdate={updateEntry}
+                onCancelEdit={handleCancelEdit}
+                templateFill={templateFill}
+                onTemplateFillConsumed={() => setTemplateFill(null)}
+              />
+            </div>
             <SportEntryList entries={dayEntries} onDelete={deleteEntry} onEdit={setEditingEntry} bestDurations={bestDurations} />
           </div>
         )}

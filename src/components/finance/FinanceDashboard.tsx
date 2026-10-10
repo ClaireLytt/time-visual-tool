@@ -26,7 +26,7 @@ function FinanceDashboard() {
   const [editingEntry, setEditingEntry] = useState<FinanceEntry | null>(null)
   const [showSettings, setShowSettings] = useState(false)
   const {
-    entries, categories, data, loading,
+    entries, categories, data,
     addEntry, deleteEntry, updateEntry,
     addCategory, updateCategory, deleteCategory,
     importData,
@@ -109,23 +109,83 @@ function FinanceDashboard() {
           entryCount={periodSummary.entryCount}
         />
 
-        {monthlyBudget != null && monthlyBudget > 0 && (
-          <div className="panel p-3 mb-4">
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
-              <span>¥{monthlySummary.expense.toLocaleString()}</span>
-              <span>¥{monthlyBudget.toLocaleString()}</span>
+        {monthlyBudget != null && monthlyBudget > 0 && (() => {
+          const ratio = monthlySummary.expense / monthlyBudget
+          const pct = ratio * 100
+          const barColor = pct > 90 ? '#e43b44' : pct > 60 ? '#e8a838' : '#3e8948'
+          return (
+            <div className="panel p-3 mb-4">
+              <div className="flex justify-between items-baseline mb-1.5">
+                <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                  {t('finance.budgetProgress', {
+                    spent: `${t('currency.symbol')}${monthlySummary.expense.toLocaleString()}`,
+                    budget: `${t('currency.symbol')}${monthlyBudget.toLocaleString()}`,
+                  })}
+                </span>
+                <span className="text-xs font-medium tabular-nums" style={{ color: barColor }}>
+                  {Math.round(pct)}%
+                </span>
+              </div>
+              <div className="h-2.5 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-300"
+                  style={{
+                    width: `${Math.min(pct, 100)}%`,
+                    backgroundColor: barColor,
+                  }}
+                />
+              </div>
             </div>
-            <div className="h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all duration-300"
-                style={{
-                  width: `${Math.min((monthlySummary.expense / monthlyBudget) * 100, 100)}%`,
-                  backgroundColor: monthlySummary.expense > monthlyBudget ? '#e43b44' : '#3e8948',
-                }}
-              />
+          )
+        })()}
+
+        {/* Category expense breakdown for current month */}
+        {(() => {
+          const breakdown = monthlySummary.expenseBreakdown
+          const sortedCats = Object.entries(breakdown)
+            .sort(([, a], [, b]) => b.amount - a.amount)
+            .slice(0, 6)
+          if (sortedCats.length === 0) return null
+          const maxAmount = sortedCats[0][1].amount
+          return (
+            <div className="panel p-3 mb-4">
+              <h3 className="text-xs font-semibold tracking-wide uppercase text-calm-muted dark:text-gray-400 mb-3">
+                {t('finance.categoryBreakdown')}
+              </h3>
+              <div className="space-y-2">
+                {sortedCats.map(([catName, data]) => {
+                  const cat = categories.find(c => c.name === catName)
+                  const color = cat?.color ?? '#888'
+                  return (
+                    <div key={catName} className="flex items-center gap-2">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: color }}
+                        aria-hidden="true"
+                      />
+                      <span className="text-xs text-gray-700 dark:text-gray-300 w-16 truncate shrink-0">
+                        {t('category.names.' + catName, catName)}
+                      </span>
+                      <div className="flex-1 h-4 rounded bg-gray-100 dark:bg-gray-700 overflow-hidden">
+                        <div
+                          className="h-full rounded transition-all duration-300"
+                          style={{
+                            width: `${maxAmount > 0 ? (data.amount / maxAmount) * 100 : 0}%`,
+                            backgroundColor: color,
+                            opacity: 0.8,
+                          }}
+                        />
+                      </div>
+                      <span className="text-xs font-medium tabular-nums text-gray-600 dark:text-gray-400 w-16 text-right shrink-0">
+                        {t('currency.symbol')}{data.amount.toLocaleString()}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          )
+        })()}
 
         {!isDaily && (
           <div className="mb-4">
