@@ -132,21 +132,17 @@ export default memo(function WordPopover({
           )}
         </div>
 
-        {/* ③ Phonetics + POS info */}
-        {data?.phonetics && (data.phonetics.uk.text || data.phonetics.us.text) && (
+        {/* ③ Phonetics — always show pronunciation buttons (Youdao fallback) */}
+        {data && (
           <div className="flex items-center gap-3 px-4 py-1.5 text-[12px] text-gray-400 dark:text-gray-500 border-t border-gray-50 dark:border-gray-700/50">
-            {data.phonetics.uk.text && (
-              <button onClick={() => playPronunciation(data.phonetics.uk.audio)} className="flex items-center gap-1 hover:text-mode-podcast transition-colors">
-                <svg className="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8.5v7a4.49 4.49 0 0 0 2.5-3.5z" /></svg>
-                <span>{t('podcast.dictUkPron')} <span className="font-mono">{data.phonetics.uk.text}</span></span>
-              </button>
-            )}
-            {data.phonetics.us.text && (
-              <button onClick={() => playPronunciation(data.phonetics.us.audio)} className="flex items-center gap-1 hover:text-mode-podcast transition-colors">
-                <svg className="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8.5v7a4.49 4.49 0 0 0 2.5-3.5z" /></svg>
-                <span>{t('podcast.dictUsPron')} <span className="font-mono">{data.phonetics.us.text}</span></span>
-              </button>
-            )}
+            <button onClick={() => playPronunciation(data.phonetics.uk.audio, cleanedWord)} className="flex items-center gap-1 hover:text-mode-podcast transition-colors">
+              <svg className="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8.5v7a4.49 4.49 0 0 0 2.5-3.5z" /></svg>
+              <span>{t('podcast.dictUkPron')}{data.phonetics.uk.text && <span className="font-mono ml-1">{data.phonetics.uk.text}</span>}</span>
+            </button>
+            <button onClick={() => playPronunciation(data.phonetics.us.audio, cleanedWord)} className="flex items-center gap-1 hover:text-mode-podcast transition-colors">
+              <svg className="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8.5v7a4.49 4.49 0 0 0 2.5-3.5z" /></svg>
+              <span>{t('podcast.dictUsPron')}{data.phonetics.us.text && <span className="font-mono ml-1">{data.phonetics.us.text}</span>}</span>
+            </button>
           </div>
         )}
 
