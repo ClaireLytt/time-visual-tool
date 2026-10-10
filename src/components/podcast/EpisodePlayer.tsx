@@ -93,6 +93,7 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
   const [dictationRevealed, setDictationRevealed] = useState(false)
   const [dictationCorrect, setDictationCorrect] = useState<boolean | null>(null)
   const dictationInputRef = useRef<HTMLInputElement>(null)
+  const [dictationPickId, setDictationPickId] = useState(0) // bump to pick new word
 
   // Loop playback within clip range using a tight rAF loop for smooth looping
   useEffect(() => {
@@ -125,6 +126,37 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
     const words = [...wordSet].filter(w => !stopWords.has(w))
     onExtractWords?.(words)
   }, [segments, onExtractWords])
+
+  // Pick a dictation gap word when clip is active
+  useEffect(() => {
+    if (!clipMode || clipStart == null || clipEnd == null) return
+    const clipSegs = segments.filter(s => s.start >= clipStart && s.end <= clipEnd)
+    if (clipSegs.length === 0) return
+
+    let cancelled = false
+    ;(async () => {
+      const rawCandidates: Array<{ segIdx: number; wordIdx: number; word: string }> = []
+      for (let si = 0; si < clipSegs.length; si++) {
+        const words = clipSegs[si].text.split(/\s+/)
+        for (let wi = 0; wi < words.length; wi++) {
+          const raw = words[wi].replace(/[^a-zA-Z']/g, '')
+          const clean = raw.toLowerCase()
+          if (clean.length < 5) continue
+          if (STOP_WORDS.has(clean)) continue
+          // Skip mid-sentence capitalized (proper nouns)
+          if (wi > 0 && raw[0] === raw[0].toUpperCase() && raw[0] !== raw[0].toLowerCase()) continue
+          rawCandidates.push({ segIdx: si, wordIdx: wi, word: clean })
+        }
+      }
+      // Filter by offline dictionary
+      const checks = await Promise.all(rawCandidates.map(c => isKnownWord(c.word)))
+      const candidates = rawCandidates.filter((_, i) => checks[i])
+      if (!cancelled && candidates.length > 0) {
+        setDictationGap(candidates[Math.floor(Math.random() * candidates.length)])
+      }
+    })()
+    return () => { cancelled = true }
+  }, [clipMode, clipStart, clipEnd, segments, dictationPickId])
 
   // Dismiss popover — only on Escape key or explicit close button (in WordPopover).
   // Double-clicking another word naturally replaces selectedWord (no dismiss needed).
@@ -618,7 +650,7 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
               }
               {clipStart != null && clipEnd != null && (
                 <button
-                  onClick={() => { setClipStart(null); setClipEnd(null); setDictationInput(''); setDictationResult(null) }}
+                  onClick={() => { setClipStart(null); setClipEnd(null); setDictationGap(null); setDictationInput(''); setDictationRevealed(false); setDictationCorrect(null) }}
                   className="ml-2 underline text-xs"
                 >
                   {t('podcast.clipReset')}
@@ -626,34 +658,9 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
               )}
             </div>
 
-            {/* Dictation gap-fill — pick a word to blank, user types it */}
+            {/* Dictation gap-fill */}
             {clipStart != null && clipEnd != null && (() => {
               const clipSegs = segments.filter(s => s.start >= clipStart && s.end <= clipEnd)
-              // Generate a gap if none exists yet
-              if (!dictationGap && clipSegs.length > 0) {
-                const rawCandidates: Array<{ segIdx: number; wordIdx: number; word: string }> = []
-                for (let si = 0; si < clipSegs.length; si++) {
-                  const words = clipSegs[si].text.split(/\s+/)
-                  for (let wi = 0; wi < words.length; wi++) {
-                    const clean = words[wi].replace(/[^a-zA-Z']/g, '').toLowerCase()
-                    // Must be 5+ letters, not a stop word, all lowercase in original
-                    // (uppercase mid-sentence = proper noun)
-                    const raw = words[wi].replace(/[^a-zA-Z']/g, '')
-                    const midSentenceCapital = wi > 0 && raw[0] === raw[0]?.toUpperCase() && raw[0] !== raw[0]?.toLowerCase()
-                    if (clean.length >= 5 && !STOP_WORDS.has(clean) && !midSentenceCapital) {
-                      rawCandidates.push({ segIdx: si, wordIdx: wi, word: clean })
-                    }
-                  }
-                }
-                // Filter by dictionary — only real English words
-                ;(async () => {
-                  const checks = await Promise.all(rawCandidates.map(c => isKnownWord(c.word)))
-                  const candidates = rawCandidates.filter((_, i) => checks[i])
-                  if (candidates.length > 0) {
-                    setDictationGap(candidates[Math.floor(Math.random() * candidates.length)])
-                  }
-                })()
-              }
 
               return (
                 <div className="space-y-3">
@@ -710,7 +717,7 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
                     <span>Enter = {t('podcast.dictationCheck')} · Tab = {t('podcast.dictationReveal')}</span>
                     <button
                       onClick={() => {
-                        setDictationGap(null); setDictationInput(''); setDictationRevealed(false); setDictationCorrect(null)
+                        setDictationGap(null); setDictationInput(''); setDictationRevealed(false); setDictationCorrect(null); setDictationPickId(n => n + 1)
                       }}
                       className="ml-auto text-mode-podcast hover:underline"
                     >
