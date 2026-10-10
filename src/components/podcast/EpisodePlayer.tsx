@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { audioProxyUrl, fetchTranscriptText, requestTranscription, pollTranscription } from '../../api/podcast'
 import { findActiveIndex, formatClock, parseSrt, parseVtt, parseJsonTranscript } from '../../utils/transcript'
@@ -681,9 +682,9 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
           </div>
         )}
 
-        {/* Dictionary popover — no overlay, dismiss via document click listener
-            registered only while the popover is open (see effect below). */}
-        {selectedWord && (
+        {/* Dictionary popover — rendered via portal to body so it is NOT
+            clipped by the transcript's overflow-y-auto container. */}
+        {selectedWord && createPortal(
           <WordPopover
             word={selectedWord.word}
             anchorRect={selectedWord.rect}
@@ -693,7 +694,8 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
             onSaveSentence={() => onSaveSentence?.(selectedWord.sentence, episode.title, selectedWord.segStart)}
             isSentenceSaved={savedSentences?.has(selectedWord.sentence) ?? false}
             sentenceContext={selectedWord.sentence}
-          />
+          />,
+          document.body,
         )}
 
         {/* ASR failed */}
