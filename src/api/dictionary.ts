@@ -1,11 +1,10 @@
 /**
- * Client-side dictionary lookup — calls public APIs directly, no backend needed.
- * Works on GitHub Pages and any static hosting.
+ * Client-side dictionary lookup — uses OFFLINE bundled ECDICT data.
+ * 26 JSON shard files (a.json ~ z.json) in /dict/, loaded on demand.
+ * No backend server or external API needed. Instant lookups.
  *
- * Sources:
- *  - Free Dictionary API (dictionaryapi.dev) — phonetics + English definitions
- *  - MyMemory Translation API — English → Chinese translation as definitions
- *  - Youdao dictvoice — pronunciation audio (direct URL, no API call)
+ * Data source: ECDICT (https://github.com/skywind3000/ECDICT, MIT license)
+ * Each shard: { w: { word: [DisplayWord, phonetic, translation], ... }, l: { inflected: lemma, ... } }
  */
 
 // ─── Types ───
@@ -18,171 +17,107 @@ export interface DictPhonetics {
 export interface DictResult {
   word: string
   phonetics: DictPhonetics
-  /** Chinese definitions, e.g. ["n. 时代；次数", "v. 计时"] */
+  /** Chinese definitions */
   definitions: string[]
-  /** English definitions, e.g. ["verb. to come into conflict"] */
+  /** English definitions (not available in offline dict, always empty) */
   enDefinitions?: string[]
 }
 
-// ─── In-memory client cache with TTL + LRU eviction ───
+// ─── Shard loader (lazy, cached) ───
 
-interface CacheEntry { data: DictResult; ts: number }
-const clientCache = new Map<string, CacheEntry>()
-const CLIENT_CACHE_MAX = 300
-const CLIENT_CACHE_TTL = 7 * 24 * 60 * 60 * 1000 // 7 days
-
-// ─── External API types ───
-
-type FreeDictEntry = {
-  phonetics?: Array<{ text?: string; audio?: string }>
-  meanings?: Array<{
-    partOfSpeech?: string
-    definitions?: Array<{ definition?: string }>
-  }>
+interface ShardData {
+  w: Record<string, [string, string, string]>  // word -> [display, phonetic, translation]
+  l: Record<string, string>                     // inflected -> lemma
 }
 
-type MyMemoryResponse = {
-  responseStatus?: number
-  responseData?: { translatedText?: string }
+const shards: Record<string, Promise<ShardData>> = {}
+const BASE = import.meta.env.BASE_URL ?? '/'
+
+function loadShard(letter: string): Promise<ShardData> {
+  if (!shards[letter]) {
+    shards[letter] = fetch(`${BASE}dict/${letter}.json`)
+      .then(r => r.json() as Promise<ShardData>)
+      .catch(() => ({ w: {}, l: {} }))
+  }
+  return shards[letter]
 }
 
-// ─── Youdao dictvoice URLs (no API key needed, direct audio) ───
+// ─── Suffix candidate generation (lemmatization) ───
+// Ported from lyric_agent's dictionary._candidates logic
+
+function suffixCandidates(w: string): string[] {
+  const out: string[] = []
+  const rules: [string, string][] = [
+    ['ies', 'y'], ['es', ''], ['s', ''],
+    ['ing', ''], ['ing', 'e'],
+    ['ed', ''], ['ed', 'e'],
+  ]
+  for (const [suf, rep] of rules) {
+    if (w.endsWith(suf) && w.length - suf.length >= 2) {
+      out.push(w.slice(0, w.length - suf.length) + rep)
+    }
+  }
+  return out
+}
+
+// ─── Youdao dictvoice URLs (pronunciation, no API key needed) ───
 
 function youdaoAudio(word: string, type: 1 | 2): string {
   return `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(word)}&type=${type}`
 }
 
-// ─── Public API lookup ───
+// ─── In-memory result cache ───
 
-/** Fetch with a hard timeout — avoids infinite spinning on slow/blocked APIs */
-function fetchWithTimeout(url: string, timeoutMs: number, signal?: AbortSignal): Promise<Response> {
-  const ctrl = new AbortController()
-  // Abort on caller signal or timeout, whichever comes first
-  signal?.addEventListener('abort', () => ctrl.abort())
-  const timer = setTimeout(() => ctrl.abort(), timeoutMs)
-  return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(timer))
-}
+const resultCache = new Map<string, DictResult | null>()
 
-async function fetchFreeDictionary(word: string, signal?: AbortSignal): Promise<FreeDictEntry | null> {
-  try {
-    const res = await fetchWithTimeout(
-      `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`,
-      4000, signal
-    )
-    if (!res.ok) return null
-    const data = (await res.json()) as FreeDictEntry[]
-    return Array.isArray(data) ? data[0] ?? null : null
-  } catch {
-    return null
-  }
-}
-
-async function fetchTranslation(word: string, signal?: AbortSignal): Promise<string | null> {
-  try {
-    const res = await fetchWithTimeout(
-      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=en|zh`,
-      4000, signal
-    )
-    if (!res.ok) return null
-    const data = (await res.json()) as MyMemoryResponse
-    const text = data?.responseData?.translatedText
-    if (text && text.toLowerCase() !== word.toLowerCase()) return text
-    return null
-  } catch {
-    return null
-  }
-}
-
-// ─── Main lookup function ───
+// ─── Main lookup ───
 
 /**
- * Look up a word's phonetics and definitions.
- * Calls Free Dictionary API + MyMemory Translation directly from the client.
- * No backend server required.
+ * Look up a word using the bundled offline ECDICT dictionary.
+ * Instant — no network latency. Supports lemmatization (running→run, cities→city).
  */
-export async function lookupWord(word: string, signal?: AbortSignal): Promise<DictResult | null> {
-  const key = word.toLowerCase().trim()
-  if (!key || !/^[a-z'-]+$/.test(key)) return null
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function lookupWord(word: string, _signal?: AbortSignal): Promise<DictResult | null> {
+  const w = word.toLowerCase().replace(/^['-]+|['-]+$/g, '')
+  if (!w || !/^[a-z][a-z'-]*$/.test(w)) return null
 
-  // LRU cache check
-  const cached = clientCache.get(key)
-  if (cached) {
-    if (Date.now() - cached.ts < CLIENT_CACHE_TTL) {
-      clientCache.delete(key)
-      clientCache.set(key, cached)
-      return cached.data
-    }
-    clientCache.delete(key)
-  }
+  // Result cache hit
+  if (resultCache.has(w)) return resultCache.get(w) ?? null
 
-  // Fetch both APIs in parallel — both are free and CORS-friendly
-  const [freeDictResult, translationResult] = await Promise.allSettled([
-    fetchFreeDictionary(key, signal),
-    fetchTranslation(key, signal),
-  ])
+  // Build candidate list: original, lemma, suffix variants
+  const candidates = [w]
+  const sh = await loadShard(w[0])
+  if (sh.l[w]) candidates.push(sh.l[w])
+  candidates.push(...suffixCandidates(w))
 
-  // ── Extract phonetics + English definitions from Free Dictionary API ──
-  const freeDict = freeDictResult.status === 'fulfilled' ? freeDictResult.value : null
-  const phonetics = freeDict?.phonetics ?? []
-  const ukPhon = phonetics.find(p => p.audio?.includes('-uk'))
-  const usPhon = phonetics.find(p => p.audio?.includes('-us'))
-  const anyPhon = phonetics.find(p => p.text)
-
-  const enDefinitions: string[] = []
-  if (freeDict?.meanings) {
-    for (const m of freeDict.meanings) {
-      const pos = m.partOfSpeech ?? ''
-      const defs = (m.definitions ?? []).slice(0, 2).map(d => d.definition).filter(Boolean)
-      if (defs.length > 0) {
-        enDefinitions.push(`${pos}. ${defs.join('; ')}`)
+  const seen = new Set<string>()
+  for (const c of candidates) {
+    if (!c || seen.has(c)) continue
+    seen.add(c)
+    const hit = (await loadShard(c[0])).w[c]
+    if (hit) {
+      const [display, phonetic, translation] = hit
+      const result: DictResult = {
+        word: display,
+        phonetics: {
+          uk: { text: phonetic ? `/${phonetic}/` : '', audio: youdaoAudio(display, 1) },
+          us: { text: phonetic ? `/${phonetic}/` : '', audio: youdaoAudio(display, 2) },
+        },
+        definitions: translation ? translation.split(/\\n|\n/).filter(Boolean) : [],
+        enDefinitions: [],
       }
+      resultCache.set(w, result)
+      return result
     }
   }
 
-  // ── Chinese definitions from MyMemory ──
-  let definitions: string[] = []
-  const translation = translationResult.status === 'fulfilled' ? translationResult.value : null
-  if (translation) {
-    definitions = [translation]
-  }
-
-  // Fallback: use English definitions if no Chinese
-  if (definitions.length === 0 && enDefinitions.length > 0) {
-    definitions = enDefinitions
-  }
-
-  // If both APIs returned nothing, return null
-  if (definitions.length === 0 && enDefinitions.length === 0) return null
-
-  const result: DictResult = {
-    word: key,
-    phonetics: {
-      uk: {
-        text: ukPhon?.text ?? anyPhon?.text ?? '',
-        audio: ukPhon?.audio ?? youdaoAudio(key, 1),
-      },
-      us: {
-        text: usPhon?.text ?? anyPhon?.text ?? '',
-        audio: usPhon?.audio ?? youdaoAudio(key, 2),
-      },
-    },
-    definitions,
-    enDefinitions,
-  }
-
-  // LRU eviction + cache
-  if (clientCache.size >= CLIENT_CACHE_MAX) {
-    const firstKey = clientCache.keys().next().value
-    if (firstKey !== undefined) clientCache.delete(firstKey)
-  }
-  clientCache.set(key, { data: result, ts: Date.now() })
-
-  return result
+  resultCache.set(w, null)
+  return null
 }
 
 /**
- * Play a pronunciation audio URL.
- * If the URL is empty, falls back to Youdao dictvoice.
+ * Play pronunciation audio.
+ * Uses Youdao dictvoice URL — always works, no API key needed.
  */
 export function playPronunciation(audioUrl: string, word?: string): void {
   const url = audioUrl || (word ? youdaoAudio(word, 2) : '')
