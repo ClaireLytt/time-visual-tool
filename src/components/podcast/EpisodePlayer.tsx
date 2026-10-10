@@ -88,12 +88,9 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
   const [clipMode, setClipMode] = useState(false)
   const [clipStart, setClipStart] = useState<number | null>(null)
   const [clipEnd, setClipEnd] = useState<number | null>(null)
-  const [dictationGap, setDictationGap] = useState<{ segIdx: number; wordIdx: number; word: string } | null>(null)
-  const [dictationInput, setDictationInput] = useState('')
-  const [dictationRevealed, setDictationRevealed] = useState(false)
-  const [dictationCorrect, setDictationCorrect] = useState<boolean | null>(null)
-  const dictationInputRef = useRef<HTMLInputElement>(null)
-  const [dictationPickId, setDictationPickId] = useState(0) // bump to pick new word
+  const [dictationGaps, setDictationGaps] = useState<Array<{ segIdx: number; wordIdx: number; word: string }>>([])
+  const [dictationAnswers, setDictationAnswers] = useState<Record<string, { input: string; correct: boolean | null; revealed: boolean }>>({})
+  const [dictationPickId, setDictationPickId] = useState(0)
 
   // Loop playback within clip range using a tight rAF loop for smooth looping
   useEffect(() => {
@@ -127,11 +124,15 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
     onExtractWords?.(words)
   }, [segments, onExtractWords])
 
-  // Pick a dictation gap word when clip is active
+  // Pick multiple dictation gap words when clip is active (~5% of total words)
   useEffect(() => {
     if (!clipMode || clipStart == null || clipEnd == null) return
     const clipSegs = segments.filter(s => s.start >= clipStart && s.end <= clipEnd)
     if (clipSegs.length === 0) return
+
+    // Count total words in clip
+    const totalWords = clipSegs.reduce((sum, s) => sum + s.text.split(/\s+/).length, 0)
+    const targetCount = Math.max(2, Math.min(10, Math.round(totalWords * 0.05)))
 
     let cancelled = false
     ;(async () => {
@@ -143,16 +144,36 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
           const clean = raw.toLowerCase()
           if (clean.length < 5) continue
           if (STOP_WORDS.has(clean)) continue
-          // Skip mid-sentence capitalized (proper nouns)
           if (wi > 0 && raw[0] === raw[0].toUpperCase() && raw[0] !== raw[0].toLowerCase()) continue
           rawCandidates.push({ segIdx: si, wordIdx: wi, word: clean })
         }
       }
-      // Filter by offline dictionary
       const checks = await Promise.all(rawCandidates.map(c => isKnownWord(c.word)))
       const candidates = rawCandidates.filter((_, i) => checks[i])
       if (!cancelled && candidates.length > 0) {
-        setDictationGap(candidates[Math.floor(Math.random() * candidates.length)])
+        // Shuffle and pick targetCount, spread across segments
+        const shuffled = [...candidates].sort(() => Math.random() - 0.5)
+        const picked: typeof candidates = []
+        const usedSegs = new Set<number>()
+        // First pass: one per segment for spread
+        for (const c of shuffled) {
+          if (picked.length >= targetCount) break
+          if (!usedSegs.has(c.segIdx)) {
+            picked.push(c)
+            usedSegs.add(c.segIdx)
+          }
+        }
+        // Second pass: fill remaining from any segment
+        for (const c of shuffled) {
+          if (picked.length >= targetCount) break
+          if (!picked.some(p => p.segIdx === c.segIdx && p.wordIdx === c.wordIdx)) {
+            picked.push(c)
+          }
+        }
+        // Sort by position in text
+        picked.sort((a, b) => a.segIdx - b.segIdx || a.wordIdx - b.wordIdx)
+        setDictationGaps(picked)
+        setDictationAnswers({})
       }
     })()
     return () => { cancelled = true }
@@ -650,7 +671,7 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
               }
               {clipStart != null && clipEnd != null && (
                 <button
-                  onClick={() => { setClipStart(null); setClipEnd(null); setDictationGap(null); setDictationInput(''); setDictationRevealed(false); setDictationCorrect(null) }}
+                  onClick={() => { setClipStart(null); setClipEnd(null); setDictationGaps([]); setDictationAnswers({}) }}
                   className="ml-2 underline text-xs"
                 >
                   {t('podcast.clipReset')}
@@ -658,67 +679,74 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
               )}
             </div>
 
-            {/* Dictation gap-fill */}
+            {/* Dictation gap-fill — multiple blanks */}
             {clipStart != null && clipEnd != null && (() => {
               const clipSegs = segments.filter(s => s.start >= clipStart && s.end <= clipEnd)
+              const answeredCount = Object.values(dictationAnswers).filter(a => a.correct === true || a.revealed).length
+              const totalGaps = dictationGaps.length
 
               return (
                 <div className="space-y-3">
-                  <p className="text-xs text-gray-500 px-1">{t('podcast.dictationHint')}</p>
-                  {/* Show sentences with gap */}
+                  <div className="flex items-center justify-between px-1">
+                    <p className="text-xs text-gray-500">{t('podcast.dictationHint')}</p>
+                    {totalGaps > 0 && (
+                      <span className="text-xs text-mode-podcast tabular-nums">{answeredCount}/{totalGaps}</span>
+                    )}
+                  </div>
                   <div className="space-y-1.5">
                     {clipSegs.map((seg, si) => {
                       const words = seg.text.split(/\s+/)
                       return (
                         <p key={si} className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed px-1">
                           {words.map((w, wi) => {
-                            const isGap = dictationGap?.segIdx === si && dictationGap?.wordIdx === wi
-                            if (isGap) {
-                              if (dictationRevealed || dictationCorrect === true) {
-                                return <span key={wi} className={`font-bold ${dictationCorrect ? 'text-green-600' : 'text-red-500'}`}>{w} </span>
-                              }
-                              return (
-                                <span key={wi} className="inline-flex items-center gap-1 mx-0.5">
-                                  <input
-                                    ref={dictationInputRef}
-                                    value={dictationInput}
-                                    onChange={e => { setDictationInput(e.target.value); setDictationCorrect(null) }}
-                                    onKeyDown={e => {
-                                      if (e.key === 'Enter') {
-                                        const ok = dictationInput.trim().toLowerCase() === dictationGap.word.toLowerCase()
-                                        setDictationCorrect(ok)
-                                        if (ok) onWordLookup?.(dictationGap.word)
-                                      }
-                                      if (e.key === 'Tab') {
-                                        e.preventDefault()
-                                        setDictationRevealed(true)
-                                      }
-                                    }}
-                                    className={`inline-block w-24 px-2 py-0.5 text-sm font-mono border-b-2 bg-transparent outline-none text-center ${
-                                      dictationCorrect === true ? 'border-green-500' : dictationCorrect === false ? 'border-red-500' : 'border-mode-podcast'
-                                    }`}
-                                    placeholder="____"
-                                    autoFocus
-                                  />
-                                  {dictationCorrect === false && (
-                                    <span className="text-[10px] text-red-400">{t('podcast.dictationTryAgain')}</span>
-                                  )}
-                                </span>
-                              )
+                            const gapKey = `${si}-${wi}`
+                            const gap = dictationGaps.find(g => g.segIdx === si && g.wordIdx === wi)
+                            if (!gap) return <span key={wi}>{w} </span>
+
+                            const answer = dictationAnswers[gapKey]
+                            // Answered correctly or revealed — show the word
+                            if (answer?.correct === true || answer?.revealed) {
+                              return <span key={wi} className={`font-bold ${answer.correct ? 'text-green-600' : 'text-red-500'}`}>{w} </span>
                             }
-                            return <span key={wi}>{w} </span>
+                            // Input field
+                            return (
+                              <span key={wi} className="inline-flex items-center gap-1 mx-0.5">
+                                <input
+                                  value={answer?.input ?? ''}
+                                  onChange={e => {
+                                    setDictationAnswers(prev => ({ ...prev, [gapKey]: { input: e.target.value, correct: null, revealed: false } }))
+                                  }}
+                                  onKeyDown={e => {
+                                    if (e.key === 'Enter') {
+                                      const val = (answer?.input ?? '').trim().toLowerCase()
+                                      const ok = val === gap.word.toLowerCase()
+                                      setDictationAnswers(prev => ({ ...prev, [gapKey]: { ...prev[gapKey], correct: ok } }))
+                                      if (ok) onWordLookup?.(gap.word)
+                                    }
+                                    if (e.key === 'Tab') {
+                                      e.preventDefault()
+                                      setDictationAnswers(prev => ({ ...prev, [gapKey]: { input: gap.word, correct: false, revealed: true } }))
+                                    }
+                                  }}
+                                  className={`inline-block w-24 px-2 py-0.5 text-sm font-mono border-b-2 bg-transparent outline-none text-center ${
+                                    answer?.correct === true ? 'border-green-500' : answer?.correct === false ? 'border-red-500' : 'border-mode-podcast'
+                                  }`}
+                                  placeholder="____"
+                                />
+                                {answer?.correct === false && !answer?.revealed && (
+                                  <span className="text-[10px] text-red-400">✕</span>
+                                )}
+                              </span>
+                            )
                           })}
                         </p>
                       )
                     })}
                   </div>
-                  {/* Controls */}
                   <div className="flex gap-2 items-center text-xs text-gray-400 px-1">
                     <span>Enter = {t('podcast.dictationCheck')} · Tab = {t('podcast.dictationReveal')}</span>
                     <button
-                      onClick={() => {
-                        setDictationGap(null); setDictationInput(''); setDictationRevealed(false); setDictationCorrect(null); setDictationPickId(n => n + 1)
-                      }}
+                      onClick={() => { setDictationGaps([]); setDictationAnswers({}); setDictationPickId(n => n + 1) }}
                       className="ml-auto text-mode-podcast hover:underline"
                     >
                       {t('podcast.dictationNext')}
