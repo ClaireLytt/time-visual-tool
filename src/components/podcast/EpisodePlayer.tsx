@@ -6,6 +6,7 @@ import { translateText, batchTranslateViaBackend, loadTranslationCache, saveTran
 import { isKnownWord } from '../../api/dictionary'
 import { findActiveIndex, formatClock, parseSrt, parseVtt, parseJsonTranscript } from '../../utils/transcript'
 import { STOP_WORDS } from '../../utils/gapFill'
+// peekReveal utility available at ../../utils/peekReveal for other components
 import WordPopover from './WordPopover'
 import GapFillGame from './GapFillGame'
 import TypeFillGame from './TypeFillGame'
@@ -89,8 +90,9 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
   const [clipStart, setClipStart] = useState<number | null>(null)
   const [clipEnd, setClipEnd] = useState<number | null>(null)
   const [dictationGaps, setDictationGaps] = useState<Array<{ segIdx: number; wordIdx: number; word: string }>>([])
-  const [dictationAnswers, setDictationAnswers] = useState<Record<string, { input: string; correct: boolean | null; revealed: boolean }>>({})
+  const [dictationAnswers, setDictationAnswers] = useState<Record<string, { input: string; correct: boolean | null; peeking: boolean }>>({})
   const [dictationPickId, setDictationPickId] = useState(0)
+  const peekTimerRef = useRef<ReturnType<typeof setTimeout>>()
 
   // Loop playback within clip range using a tight rAF loop for smooth looping
   useEffect(() => {
@@ -134,18 +136,21 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
     const totalWords = clipSegs.reduce((sum, s) => sum + s.text.split(/\s+/).length, 0)
     const targetCount = Math.max(2, Math.min(10, Math.round(totalWords * 0.05)))
 
+    // Map clip segments to their global indices
+    const clipSegIndices = segments.map((s, i) => ({ s, i })).filter(({ s }) => s.start >= clipStart && s.end <= clipEnd).map(({ i }) => i)
+
     let cancelled = false
     ;(async () => {
       const rawCandidates: Array<{ segIdx: number; wordIdx: number; word: string }> = []
-      for (let si = 0; si < clipSegs.length; si++) {
-        const words = clipSegs[si].text.split(/\s+/)
+      for (const gi of clipSegIndices) {
+        const words = segments[gi].text.split(/\s+/)
         for (let wi = 0; wi < words.length; wi++) {
           const raw = words[wi].replace(/[^a-zA-Z']/g, '')
           const clean = raw.toLowerCase()
           if (clean.length < 5) continue
           if (STOP_WORDS.has(clean)) continue
           if (wi > 0 && raw[0] === raw[0].toUpperCase() && raw[0] !== raw[0].toLowerCase()) continue
-          rawCandidates.push({ segIdx: si, wordIdx: wi, word: clean })
+          rawCandidates.push({ segIdx: gi, wordIdx: wi, word: clean })
         }
       }
       const checks = await Promise.all(rawCandidates.map(c => isKnownWord(c.word)))
@@ -659,102 +664,27 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
           )}
         </div>
 
-        {/* Clip mode — dictation practice */}
+        {/* Clip mode status bar */}
         {clipMode && (
-          <div className="mb-3 space-y-3">
-            <div className="px-3 py-2 rounded-lg bg-mode-podcast/10 text-sm text-mode-podcast">
+          <div className="mb-3 px-3 py-2 rounded-lg bg-mode-podcast/10 text-sm text-mode-podcast flex items-center flex-wrap gap-2">
+            <span>
               {clipStart == null
                 ? t('podcast.clipSelectStart')
                 : clipEnd == null
                   ? t('podcast.clipSelectEnd')
                   : `${t('podcast.clipActive')} ${formatClock(clipStart)} → ${formatClock(clipEnd)}`
               }
-              {clipStart != null && clipEnd != null && (
-                <button
-                  onClick={() => { setClipStart(null); setClipEnd(null); setDictationGaps([]); setDictationAnswers({}) }}
-                  className="ml-2 underline text-xs"
-                >
-                  {t('podcast.clipReset')}
-                </button>
-              )}
-            </div>
-
-            {/* Dictation gap-fill — multiple blanks */}
-            {clipStart != null && clipEnd != null && (() => {
-              const clipSegs = segments.filter(s => s.start >= clipStart && s.end <= clipEnd)
-              const answeredCount = Object.values(dictationAnswers).filter(a => a.correct === true || a.revealed).length
-              const totalGaps = dictationGaps.length
-
-              return (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between px-1">
-                    <p className="text-xs text-gray-500">{t('podcast.dictationHint')}</p>
-                    {totalGaps > 0 && (
-                      <span className="text-xs text-mode-podcast tabular-nums">{answeredCount}/{totalGaps}</span>
-                    )}
-                  </div>
-                  <div className="space-y-1.5">
-                    {clipSegs.map((seg, si) => {
-                      const words = seg.text.split(/\s+/)
-                      return (
-                        <p key={si} className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed px-1">
-                          {words.map((w, wi) => {
-                            const gapKey = `${si}-${wi}`
-                            const gap = dictationGaps.find(g => g.segIdx === si && g.wordIdx === wi)
-                            if (!gap) return <span key={wi}>{w} </span>
-
-                            const answer = dictationAnswers[gapKey]
-                            // Answered correctly or revealed — show the word
-                            if (answer?.correct === true || answer?.revealed) {
-                              return <span key={wi} className={`font-bold ${answer.correct ? 'text-green-600' : 'text-red-500'}`}>{w} </span>
-                            }
-                            // Input field
-                            return (
-                              <span key={wi} className="inline-flex items-center gap-1 mx-0.5">
-                                <input
-                                  value={answer?.input ?? ''}
-                                  onChange={e => {
-                                    setDictationAnswers(prev => ({ ...prev, [gapKey]: { input: e.target.value, correct: null, revealed: false } }))
-                                  }}
-                                  onKeyDown={e => {
-                                    if (e.key === 'Enter') {
-                                      const val = (answer?.input ?? '').trim().toLowerCase()
-                                      const ok = val === gap.word.toLowerCase()
-                                      setDictationAnswers(prev => ({ ...prev, [gapKey]: { ...prev[gapKey], correct: ok } }))
-                                      if (ok) onWordLookup?.(gap.word)
-                                    }
-                                    if (e.key === 'Tab') {
-                                      e.preventDefault()
-                                      setDictationAnswers(prev => ({ ...prev, [gapKey]: { input: gap.word, correct: false, revealed: true } }))
-                                    }
-                                  }}
-                                  className={`inline-block w-24 px-2 py-0.5 text-sm font-mono border-b-2 bg-transparent outline-none text-center ${
-                                    answer?.correct === true ? 'border-green-500' : answer?.correct === false ? 'border-red-500' : 'border-mode-podcast'
-                                  }`}
-                                  placeholder="____"
-                                />
-                                {answer?.correct === false && !answer?.revealed && (
-                                  <span className="text-[10px] text-red-400">✕</span>
-                                )}
-                              </span>
-                            )
-                          })}
-                        </p>
-                      )
-                    })}
-                  </div>
-                  <div className="flex gap-2 items-center text-xs text-gray-400 px-1">
-                    <span>Enter = {t('podcast.dictationCheck')} · Tab = {t('podcast.dictationReveal')}</span>
-                    <button
-                      onClick={() => { setDictationGaps([]); setDictationAnswers({}); setDictationPickId(n => n + 1) }}
-                      className="ml-auto text-mode-podcast hover:underline"
-                    >
-                      {t('podcast.dictationNext')}
-                    </button>
-                  </div>
-                </div>
-              )
-            })()}
+            </span>
+            {clipStart != null && clipEnd != null && (
+              <>
+                <span className="tabular-nums">{Object.values(dictationAnswers).filter(a => a.correct === true).length}/{dictationGaps.length}</span>
+                <button onClick={() => { setDictationGaps([]); setDictationAnswers({}); setDictationPickId(n => n + 1) }} className="underline text-xs">{t('podcast.dictationNext')}</button>
+                <button onClick={() => { setClipStart(null); setClipEnd(null); setDictationGaps([]); setDictationAnswers({}) }} className="underline text-xs">{t('podcast.clipReset')}</button>
+              </>
+            )}
+            {dictationGaps.length > 0 && (
+              <span className="text-xs text-gray-400 ml-auto">Enter={t('podcast.dictationCheck')} Tab={t('podcast.dictationReveal')}</span>
+            )}
           </div>
         )}
 
@@ -883,9 +813,12 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
                     if (clipMode) {
                       if (clipStart == null) { setClipStart(seg.start); seekTo(seg.start) }
                       else if (clipEnd == null) { setClipEnd(seg.end); seekTo(clipStart) }
-                      else {
-                        // Both set — reset and start new selection from this segment
-                        setClipStart(seg.start); setClipEnd(null); seekTo(seg.start)
+                      else if (inClip) {
+                        // Inside active clip — replay this sentence
+                        seekTo(seg.start)
+                      } else {
+                        // Outside clip — start new selection
+                        setClipStart(seg.start); setClipEnd(null); setDictationGaps([]); setDictationAnswers({}); seekTo(seg.start)
                       }
                     } else {
                       closePopover(); seekTo(seg.start)
@@ -898,38 +831,73 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
                   {formatClock(seg.start)}
                 </button>
 
-                {/* Words — each word is tappable for dictionary lookup */}
+                {/* Words — tappable for dictionary, or inline gap input in clip mode */}
                 <span className="text-base leading-relaxed flex-1">
-                  {seg.text.split(/(\s+)/).map((token, j) => {
-                    if (/^\s+$/.test(token)) return token
-                    if (!token) return null
-                    // Check if this token contains any letters
-                    const hasLetters = /[a-zA-Z]/.test(token)
-                    if (!hasLetters) return <span key={j}>{token}</span>
-                    const openWord = (el: HTMLElement) => {
-                      const clean = token.replace(/^[^a-zA-Z']+|[^a-zA-Z']+$/g, '')
-                      if (!clean) return
-                      setSelectedWord({ word: clean, rect: el.getBoundingClientRect(), sentence: seg.text, segStart: seg.start })
-                    }
-                    return (
-                      <span
-                        key={j}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          openWord(e.currentTarget)
-                        }}
-                        onTouchEnd={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          openWord(e.currentTarget)
-                        }}
-                        className="hover:bg-mode-podcast/20 active:bg-mode-podcast/30 rounded px-0.5 cursor-pointer transition-colors"
-                        style={{ touchAction: 'manipulation' }}
-                      >
-                        {token}
-                      </span>
-                    )
-                  })}
+                  {(() => {
+                    const words = seg.text.split(/\s+/)
+                    return words.map((token, wi) => {
+                      // Check if this word is a dictation gap
+                      const gapKey = `${i}-${wi}`
+                      const gap = dictationGaps.find(g => g.segIdx === i && g.wordIdx === wi)
+                      if (gap && inClip) {
+                        const answer = dictationAnswers[gapKey]
+                        if (answer?.correct === true) {
+                          return <span key={wi} className="font-bold text-green-600">{token} </span>
+                        }
+                        if (answer?.peeking) {
+                          return <span key={wi} className="font-bold text-yellow-500 animate-pulse">{token} </span>
+                        }
+                        return (
+                          <span key={wi} className="inline-flex items-center mx-0.5">
+                            <input
+                              value={answer?.input ?? ''}
+                              onChange={e => setDictationAnswers(prev => ({ ...prev, [gapKey]: { input: e.target.value, correct: null, peeking: false } }))}
+                              onKeyDown={e => {
+                                if (e.key === 'Enter') {
+                                  const ok = (answer?.input ?? '').trim().toLowerCase() === gap.word.toLowerCase()
+                                  setDictationAnswers(prev => ({ ...prev, [gapKey]: { ...prev[gapKey], correct: ok } }))
+                                  if (ok) onWordLookup?.(gap.word)
+                                }
+                                if (e.key === 'Tab') {
+                                  e.preventDefault()
+                                  // Peek: flash answer for 200ms then clear
+                                  setDictationAnswers(prev => ({ ...prev, [gapKey]: { input: gap.word, correct: null, peeking: true } }))
+                                  clearTimeout(peekTimerRef.current)
+                                  peekTimerRef.current = setTimeout(() => {
+                                    setDictationAnswers(prev => ({ ...prev, [gapKey]: { input: '', correct: null, peeking: false } }))
+                                  }, 200)
+                                }
+                              }}
+                              className={`inline-block w-24 px-1.5 py-0.5 text-sm font-mono border-b-2 bg-white/50 dark:bg-gray-800/50 outline-none text-center rounded-sm ${
+                                answer?.correct === false ? 'border-red-500' : 'border-mode-podcast'
+                              }`}
+                              placeholder="____"
+                            />{' '}
+                          </span>
+                        )
+                      }
+
+                      // Normal word — click for dictionary
+                      const hasLetters = /[a-zA-Z]/.test(token)
+                      if (!hasLetters) return <span key={wi}>{token} </span>
+                      const openWord = (el: HTMLElement) => {
+                        const clean = token.replace(/^[^a-zA-Z']+|[^a-zA-Z']+$/g, '')
+                        if (!clean) return
+                        setSelectedWord({ word: clean, rect: el.getBoundingClientRect(), sentence: seg.text, segStart: seg.start })
+                      }
+                      return (
+                        <span
+                          key={wi}
+                          onClick={(e) => { e.stopPropagation(); openWord(e.currentTarget) }}
+                          onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); openWord(e.currentTarget) }}
+                          className="hover:bg-mode-podcast/20 active:bg-mode-podcast/30 rounded px-0.5 cursor-pointer transition-colors"
+                          style={{ touchAction: 'manipulation' }}
+                        >
+                          {token}{' '}
+                        </span>
+                      )
+                    })
+                  })()}
                 </span>
 
                 {/* Bookmark sentence button -- toggle save/remove */}
