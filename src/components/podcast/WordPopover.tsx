@@ -104,10 +104,21 @@ export default memo(function WordPopover({
       transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
     >
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-dialog overflow-hidden border border-gray-100 dark:border-gray-700">
-        {/* ① Header: word + close */}
-        <div className="flex items-center justify-between px-4 pt-3.5 pb-1">
-          <span className="text-[17px] font-semibold text-gray-900 dark:text-gray-100">{cleanedWord}</span>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-0.5 -mr-1" aria-label="close">
+        {/* ① Header: word + star + close */}
+        <div className="flex items-center gap-2 px-4 pt-3.5 pb-1">
+          <span className="text-[17px] font-semibold text-gray-900 dark:text-gray-100 flex-1">{cleanedWord}</span>
+          <button
+            onClick={() => { if (added) { setAdded(false) } else { onAddToVocab?.(cleanedWord); setAdded(true) } }}
+            className="p-1 transition-colors"
+            aria-label={added ? 'Remove from vocab' : 'Add to vocab'}
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" stroke={added ? '#c2417a' : 'currentColor'} strokeWidth={1.5}
+              fill={added ? '#c2417a' : 'none'}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+            </svg>
+          </button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-0.5" aria-label="close">
             <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
               <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
             </svg>
@@ -174,24 +185,11 @@ export default memo(function WordPopover({
           ))}
         </div>
 
-        {/* ⑥ Quick action buttons */}
-        <div className="border-t border-gray-100 dark:border-gray-700 flex">
-          <button
-            onClick={() => { onAddToVocab?.(cleanedWord); setAdded(true) }}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium transition-colors rounded-bl-2xl ${
-              added ? 'text-green-500 bg-green-50 dark:bg-green-900/20' : 'text-mode-podcast hover:bg-mode-podcast/5'
-            }`}
-          >
-            {added ? (
-              <><svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" /></svg>{t('podcast.wordAdded')}</>
-            ) : (
-              <><svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" /></svg>{t('podcast.addToVocab')}</>
-            )}
-          </button>
-          <div className="w-px bg-gray-100 dark:bg-gray-700" />
+        {/* ⑥ Save sentence button */}
+        <div className="border-t border-gray-100 dark:border-gray-700">
           <button
             onClick={onSaveSentence}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium transition-colors rounded-br-2xl ${
+            className={`w-full flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium transition-colors rounded-b-2xl ${
               isSentenceSaved ? 'text-yellow-500 bg-yellow-50 dark:bg-yellow-900/20' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
             }`}
           >
