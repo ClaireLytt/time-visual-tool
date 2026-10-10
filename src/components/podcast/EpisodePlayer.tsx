@@ -49,7 +49,10 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
   const [audioError, setAudioError] = useState<string | null>(null)
   const [audioSrc, setAudioSrc] = useState(() => audioProxyUrl(episode.audioUrl))
   const triedDirectRef = useRef(false)
-  const [playbackRate, setPlaybackRate] = useState(1)
+  const progressKey = `podcast-progress-${episode.id}`
+  const [playbackRate, setPlaybackRate] = useState(() => {
+    try { return Number(localStorage.getItem('podcast-playback-rate')) || 1 } catch { return 1 }
+  })
 
   const [segments, setSegments] = useState<Segment[]>([])
   const [transcriptLoading, setTranscriptLoading] = useState(false)
@@ -263,15 +266,43 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
     }
   }, [t, episode.audioUrl])
 
-  // Sync playback rate to audio element
+  // Sync playback rate to audio element + persist
   useEffect(() => {
     if (audioRef.current) audioRef.current.playbackRate = playbackRate
+    try { localStorage.setItem('podcast-playback-rate', String(playbackRate)) } catch { /* */ }
   }, [playbackRate])
 
-  // Auto-scroll active subtitle into view
-  const activeIndex = findActiveIndex(segments, currentTime)
+  // Restore saved progress on mount
   useEffect(() => {
-    activeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    const audio = audioRef.current
+    if (!audio) return
+    try {
+      const saved = Number(localStorage.getItem(progressKey))
+      if (saved > 0 && isFinite(saved)) {
+        audio.currentTime = saved
+      }
+    } catch { /* */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Save progress every 5 seconds while playing
+  useEffect(() => {
+    if (!playing) return
+    const timer = setInterval(() => {
+      try { localStorage.setItem(progressKey, String(Math.floor(currentTime))) } catch { /* */ }
+    }, 5000)
+    return () => clearInterval(timer)
+  }, [playing, currentTime, progressKey])
+
+  // Auto-scroll active subtitle into view (smooth, no jump)
+  const activeIndex = findActiveIndex(segments, currentTime)
+  const prevActiveRef = useRef(activeIndex)
+  useEffect(() => {
+    // Only scroll when active line actually changes (not on every render)
+    if (activeIndex !== prevActiveRef.current) {
+      prevActiveRef.current = activeIndex
+      activeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }
   }, [activeIndex])
 
   // Load cached translations from localStorage on mount (instant, no network)
