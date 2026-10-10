@@ -100,33 +100,14 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
     onExtractWords?.(words)
   }, [segments, onExtractWords])
 
-  // Dismiss popover on click/tap outside — only active while popover is open.
-  // Word spans call stopPropagation so their events never reach document.
-  // Audio controls, back button, etc. are NOT blocked (no overlay).
+  // Dismiss popover — only on Escape key or explicit close button (in WordPopover).
+  // Double-clicking another word naturally replaces selectedWord (no dismiss needed).
+  // This avoids all mousedown/click race conditions with double-click.
   useEffect(() => {
     if (!isPopoverOpen) return
-    const dismiss = (e: Event) => {
-      const target = e.target as HTMLElement
-      // Don't dismiss if clicking inside the popover
-      if (target.closest('[data-word-popover]')) return
-      // Don't dismiss if clicking another word (it will open a new popover)
-      if (target.closest('[style*="touch-action"]')) return
-      setSelectedWord(null)
-    }
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelectedWord(null) }
-    // Delay listener registration so the current click that opened the
-    // popover doesn't immediately dismiss it
-    const timer = setTimeout(() => {
-      document.addEventListener('mousedown', dismiss)
-      document.addEventListener('touchstart', dismiss)
-      document.addEventListener('keydown', onKey)
-    }, 100)
-    return () => {
-      clearTimeout(timer)
-      document.removeEventListener('mousedown', dismiss)
-      document.removeEventListener('touchstart', dismiss)
-      document.removeEventListener('keydown', onKey)
-    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
   }, [isPopoverOpen])
 
   // Elapsed time tracking for transcript generation
