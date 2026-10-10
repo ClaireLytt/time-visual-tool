@@ -16,37 +16,60 @@ export interface GapOptions {
   count?: number           // optional override for number of gaps
 }
 
-// ─── Stop words (~120 most common English function words) ───
+// ─── Stop words: top ~500 most common English words (too easy to test) ───
 
-const STOP_WORDS = new Set([
-  'the','be','to','of','and','a','in','that','have','i','it','for','not','on',
-  'with','he','as','you','do','at','this','but','his','by','from','they','we',
-  'her','she','or','an','will','my','one','all','would','there','their','what',
-  'so','up','out','if','about','who','get','which','go','me','when','make',
-  'can','like','time','no','just','him','know','take','people','into','year',
-  'your','good','some','could','them','see','other','than','then','now','look',
-  'only','come','its','over','think','also','back','after','use','two','how',
-  'our','way','even','new','want','because','any','these','give','day','most',
-  'us','is','are','was','were','been','being','has','had','did','does','doing',
-  'am','very','much','more','many','such','own','same','here','too','well',
-  'really','still','should','may','might','must','shall','let','got','say',
-  'said','tell','told','ask','asked','need','seem','feel','keep','put','run',
-  'turn','yet','off','went','gone','been','done','made',
+export const STOP_WORDS = new Set([
+  // Function words, pronouns, prepositions, conjunctions, articles
+  'the','a','an','and','or','but','if','in','on','at','to','for','of','with',
+  'by','from','up','out','about','into','through','during','before','after',
+  'above','below','between','under','over','again','further','then','once',
+  'here','there','where','when','why','how','what','which','who','whom',
+  'this','that','these','those','am','is','are','was','were','be','been',
+  'being','have','has','had','having','do','does','did','doing','will',
+  'would','shall','should','may','might','must','can','could','need',
+  'dare','ought','used','not','no','nor','so','than','too','very','just',
+  'also','still','already','yet','even','ever','never','always','often',
+  'sometimes','usually','already','almost','enough','quite','rather',
+  // Pronouns
+  'i','me','my','mine','myself','you','your','yours','yourself','he','him',
+  'his','himself','she','her','hers','herself','it','its','itself','we',
+  'us','our','ours','ourselves','they','them','their','theirs','themselves',
+  // Common verbs (too basic)
+  'get','got','gets','getting','go','goes','went','gone','going','come',
+  'came','comes','coming','make','made','makes','making','take','took',
+  'takes','taking','give','gave','gives','giving','know','knew','knows',
+  'knowing','think','thought','thinks','thinking','see','saw','sees',
+  'seeing','want','wants','wanted','wanting','look','looked','looks',
+  'looking','use','used','uses','using','find','found','finds','tell',
+  'told','tells','say','said','says','saying','put','puts','keep','kept',
+  'keeps','let','lets','begin','began','run','ran','turn','turned',
+  'ask','asked','try','tried','leave','left','call','called','move',
+  'moved','live','lived','seem','seemed','feel','felt','set','hold',
+  'held','bring','brought','show','showed','start','started','stand',
+  'stood','lose','lost','pay','paid','meet','met','play','played',
+  'hear','heard','read','help','helped','talk','talked','stop','stopped',
+  // Common nouns (too basic)
+  'time','year','people','way','day','man','woman','child','world','life',
+  'hand','part','place','case','week','point','home','water','room','area',
+  'money','story','fact','month','lot','night','thing','name','head','line',
+  'city','book','side','house','friend','end','power','hour','game','back',
+  'word','body','kind','food','door','face','group','mind','girl','eye',
+  'idea','state','work','school','number','country','problem','company',
+  // Common adjectives/adverbs (too basic)
+  'good','great','big','small','long','old','new','young','little','right',
+  'wrong','high','low','large','same','different','last','first','next',
+  'early','real','much','many','more','most','few','some','any','every',
+  'each','both','all','own','sure','well','hard','fast','best','only',
+  'able','free','full','open','late','clear','easy','ready','true','less',
+  // Filler words, discourse markers
+  'yeah','yes','okay','oh','um','uh','ah','well','like','actually',
+  'really','maybe','probably','pretty','stuff','things','something',
+  'anything','everything','nothing','someone','anyone','everyone',
 ])
 
-// ─── Top-200 common words (superset of stop words for frequency scoring) ───
+// ─── Scoring: words in this set get lower priority ───
 
-const COMMON_200 = new Set([
-  ...STOP_WORDS,
-  'thing','man','woman','child','world','life','hand','part','place','case',
-  'week','company','system','program','question','work','government','number',
-  'night','point','home','water','room','mother','area','money','story','fact',
-  'month','lot','right','big','high','small','large','long','great','old',
-  'little','different','young','important','few','public','bad','same','last',
-  'first','next','early','begin','start','end','call','try','each','every',
-  'both','while','through','before','between','under','never','always',
-  'often','around','another','still','before','find',
-])
+const COMMON_200 = new Set([...STOP_WORDS])
 
 // ─── Fallback distractors (common nouns/verbs for padding) ───
 
