@@ -58,11 +58,10 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
   // Subtitle display mode
   const [subtitleMode, setSubtitleMode] = useState<'en' | 'bilingual'>('en')
 
-  // Bilingual translation
+  // Bilingual translation — batch translate + localStorage persistence
   const translationCache = useRef<Map<string, string>>(new Map())
-  const translationInFlight = useRef<Set<string>>(new Set())
   const [translationVersion, setTranslationVersion] = useState(0)
-  const [translationLoading, setTranslationLoading] = useState<Set<string>>(new Set())
+  const [translationLoading, setTranslationLoading] = useState(false)
 
   // Dictation clip mode: select a segment range and loop-play it
   const [clipMode, setClipMode] = useState(false)
@@ -254,49 +253,93 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
     activeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, [activeIndex])
 
-  // Translate visible segments when bilingual mode is active
+  // Batch translate all segments when bilingual mode is activated.
+  // Cached in localStorage by episode ID for instant reload.
   useEffect(() => {
     if (subtitleMode !== 'bilingual' || segments.length === 0) return
-    const start = Math.max(0, activeIndex - 3)
-    const end = Math.min(segments.length - 1, activeIndex + 3)
     let cancelled = false
 
-    const translateSegment = async (text: string) => {
-      if (translationCache.current.has(text) || translationInFlight.current.has(text)) return
-      translationInFlight.current.add(text)
-      setTranslationLoading(prev => new Set(prev).add(text))
+    const STORAGE_KEY = `podcast-trans-${episode.id}`
 
+    // 1. Try loading from localStorage first (instant, offline)
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY)
+      if (stored) {
+        const parsed = JSON.parse(stored) as Record<string, string>
+        for (const [k, v] of Object.entries(parsed)) {
+          translationCache.current.set(k, v)
+        }
+        if (Object.keys(parsed).length > 0) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          setTranslationVersion(v => v + 1) // trigger re-render with cached data
+          // Check if all segments are cached
+          const missing = segments.filter(s => !translationCache.current.has(s.text))
+          if (missing.length === 0) return // fully cached, done
+        }
+      }
+    } catch { /* localStorage unavailable */ }
+
+    // 2. Batch translate uncached segments via MyMemory API
+    const uncached = segments.filter(s => !translationCache.current.has(s.text))
+    if (uncached.length === 0) return
+
+    setTranslationLoading(true)
+
+    // Split into chunks of ~20 segments (MyMemory has query length limits)
+    const CHUNK_SIZE = 20
+    const chunks: string[][] = []
+    for (let i = 0; i < uncached.length; i += CHUNK_SIZE) {
+      chunks.push(uncached.slice(i, i + CHUNK_SIZE).map(s => s.text))
+    }
+
+    const translateChunk = async (texts: string[]) => {
+      // Join with newlines — MyMemory preserves line structure
+      const joined = texts.join('\n')
+      const ctrl = new AbortController()
+      const timer = setTimeout(() => ctrl.abort(), 8000)
       try {
         const res = await fetch(
-          `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|zh`
+          `https://api.mymemory.translated.net/get?q=${encodeURIComponent(joined)}&langpair=en|zh`,
+          { signal: ctrl.signal }
         )
+        clearTimeout(timer)
         if (cancelled) return
         const json = await res.json()
-        const translated = json?.responseData?.translatedText
-        if (translated && translated !== text) {
-          translationCache.current.set(text, translated)
+        const translated = json?.responseData?.translatedText ?? ''
+        const lines = translated.split('\n')
+        for (let i = 0; i < texts.length; i++) {
+          const tr = lines[i]?.trim()
+          if (tr && tr.toLowerCase() !== texts[i].toLowerCase()) {
+            translationCache.current.set(texts[i], tr)
+          }
         }
       } catch {
-        // Graceful degradation: just show English
+        // Timeout or network error — graceful degradation
       } finally {
-        translationInFlight.current.delete(text)
-        if (!cancelled) {
-          setTranslationLoading(prev => {
-            const next = new Set(prev)
-            next.delete(text)
-            return next
-          })
-          setTranslationVersion(v => v + 1)
-        }
+        clearTimeout(timer)
       }
     }
 
-    for (let i = start; i <= end; i++) {
-      translateSegment(segments[i].text)
-    }
+    // Translate all chunks sequentially (avoid hammering the API)
+    ;(async () => {
+      for (const chunk of chunks) {
+        if (cancelled) break
+        await translateChunk(chunk)
+        if (!cancelled) setTranslationVersion(v => v + 1) // trigger re-render
+      }
+      if (!cancelled) {
+        setTranslationLoading(false)
+        // Persist all translations to localStorage
+        try {
+          const obj: Record<string, string> = {}
+          for (const [k, v] of translationCache.current) obj[k] = v
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(obj))
+        } catch { /* quota exceeded — not critical */ }
+      }
+    })()
 
     return () => { cancelled = true }
-  }, [subtitleMode, activeIndex, segments])
+  }, [subtitleMode, segments, episode.id])
 
   const togglePlay = useCallback(async () => {
     const audio = audioRef.current
@@ -659,7 +702,6 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
                 {/* Bilingual translation */}
                 {subtitleMode === 'bilingual' && translationVersion >= 0 && (() => {
                   const cached = translationCache.current.get(seg.text)
-                  const isLoading = translationLoading.has(seg.text)
                   if (cached) {
                     return (
                       <p className="w-full text-xs text-gray-400 dark:text-gray-500 mt-0.5 leading-relaxed pl-12">
@@ -667,7 +709,7 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
                       </p>
                     )
                   }
-                  if (isLoading) {
+                  if (translationLoading) {
                     return (
                       <p className="w-full text-[10px] text-gray-300 dark:text-gray-600 mt-0.5 pl-12">
                         ...
