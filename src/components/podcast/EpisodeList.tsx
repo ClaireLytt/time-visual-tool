@@ -16,7 +16,6 @@ interface EpisodeListProps {
   /** Per-episode learning metadata */
   episodeStats?: Record<string, EpisodeMeta>
   onToggleStar?: (id: string) => void
-  onToggleToLearn?: (id: string) => void
 }
 
 export default function EpisodeList({
@@ -124,6 +123,7 @@ export default function EpisodeList({
           <select
             value={sortMode}
             onChange={e => setSortMode(e.target.value as SortMode)}
+            aria-label={t('podcast.sortLabel', 'Sort episodes')}
             className="px-3 py-2.5 rounded-xl bg-white/60 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-mode-podcast/30"
           >
             {sortOptions.map(o => (
@@ -217,7 +217,7 @@ export default function EpisodeList({
                             ? 'text-yellow-500'
                             : 'text-gray-300 dark:text-gray-600 hover:text-yellow-500'
                         }`}
-                        title={isStarred ? t('podcast.unsaveSentence') : t('podcast.saveSentence')}
+                        title={isStarred ? t('podcast.unstarEpisode', t('podcast.unsaveSentence')) : t('podcast.starEpisode', t('podcast.saveSentence'))}
                       >
                         <svg className="w-4 h-4" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}
                           fill={isStarred ? 'currentColor' : 'none'}
