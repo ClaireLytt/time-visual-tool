@@ -72,7 +72,7 @@ function paramsToView(params: URLSearchParams): View | null {
     if (eid && audio) {
       const episode: Episode = {
         id: eid, title: etitle ?? '', audioUrl: audio,
-        pubDate: null, duration: null, summary: null, transcript: null,
+        pubDate: null, duration: null, transcript: undefined,
       }
       return { kind: 'player', source, episode }
     }

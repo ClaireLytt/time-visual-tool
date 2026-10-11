@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { generateGaps, collectAllWords } from '../../utils/gapFill'
+import { generateGaps } from '../../utils/gapFill'
 import { lookupWord } from '../../api/dictionary'
 import type { Segment } from '../../types/podcast'
 import type { GapWord } from '../../utils/gapFill'
@@ -48,9 +48,6 @@ export default function TypeFillGame({
   const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const activeGapRef = useRef<HTMLSpanElement>(null)
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _allWords = useMemo(() => collectAllWords(segments), [segments])
 
   // Preview gap count for setup screen
   const [previewCount, setPreviewCount] = useState(0)
