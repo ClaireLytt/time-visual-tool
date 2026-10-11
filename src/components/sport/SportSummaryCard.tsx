@@ -20,9 +20,9 @@ const SportSummaryCard = memo(function SportSummaryCard({ totalDuration, totalCa
   ]
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+    <div className="flex flex-wrap gap-3 mb-4">
       {stats.map(stat => (
-        <div key={stat.label} className="panel p-3 text-center">
+        <div key={stat.label} className="panel p-3 text-center w-[140px] max-w-[180px]">
           <p className={`text-2xl font-bold tracking-display tabular-nums ${stat.color}`}>{stat.value}</p>
           <p className="text-xs tracking-wide uppercase text-gray-500 dark:text-gray-400 mt-0.5">{stat.label}</p>
         </div>

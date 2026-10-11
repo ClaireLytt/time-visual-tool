@@ -1,0 +1,1467 @@
+<title>霓虹篮球 NEON HOOPS</title>
+<style>
+  /* === Single dark theme — neon arcade, one visual world === */
+  :root {
+    --bg: #080810;
+    --cyan: #00fff0;
+    --pink: #ff2d7b;
+    --gold: #ffd700;
+    --white: #e8e8f0;
+    --dim: #223;
+    color-scheme: dark;
+  }
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--white);
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    font-family: 'Courier New', monospace;
+  }
+  canvas {
+    display: block;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+</style>
+
+<canvas id="c"></canvas>
+
+<script>
+// ============================================================
+//  霓虹篮球 NEON HOOPS
+//  Canvas 投篮游戏 — 拖拽蓄力瞄准，松手投篮
+//  60fps · 自适应竖屏横屏 · 触屏 + 鼠标
+// ============================================================
+(function () {
+  'use strict';
+
+  // ── Canvas Setup ─────────────────────────────────────────
+  const cvs = document.getElementById('c');
+  const ctx = cvs.getContext('2d');
+  let W, H, U;  // logical width, height, base unit
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    W = window.innerWidth;
+    H = window.innerHeight;
+    cvs.width  = W * dpr;
+    cvs.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    U = Math.min(W, H) / 38;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // ── Palette ──────────────────────────────────────────────
+  const CYAN = '#00fff0';
+  const PINK = '#ff2d7b';
+  const GOLD = '#ffd700';
+  const BG   = '#080810';
+
+  // ── 发射 & 轨迹常量 ──────────────────────────────────────
+  const TRAJ_DT  = 1;
+  const MIN_DRAG = 12;
+
+  // ── 音效系统 (Web Audio API, 纯合成, 无外部文件) ──────────
+  let audioCtx = null;
+  function getAudio() {
+    if (!audioCtx) try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (_) {}
+    return audioCtx;
+  }
+  function playTone(freq, dur, type, vol) {
+    const ac = getAudio(); if (!ac) return;
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    o.type = type || 'sine';
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(vol || 0.15, ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
+    o.connect(g); g.connect(ac.destination);
+    o.start(); o.stop(ac.currentTime + dur);
+  }
+  function sfxScore()    { playTone(880, 0.15, 'sine', 0.18); setTimeout(() => playTone(1320, 0.2, 'sine', 0.15), 80); }
+  function sfxSwish()    { playTone(1200, 0.12, 'sine', 0.2); setTimeout(() => playTone(1600, 0.15, 'sine', 0.18), 60); setTimeout(() => playTone(2000, 0.2, 'sine', 0.12), 140); }
+  function sfxRimHit()   { playTone(220, 0.08, 'triangle', 0.12); }
+  function sfxMiss()     { playTone(150, 0.25, 'sawtooth', 0.06); }
+  function sfxCountdown(){ playTone(660, 0.12, 'square', 0.1); }
+  function sfxGo()       { playTone(1320, 0.3, 'sine', 0.2); }
+  function sfxHeartbeat(){ playTone(80, 0.15, 'sine', 0.12); setTimeout(() => playTone(80, 0.1, 'sine', 0.08), 180); }
+  function sfxAchieve()  { playTone(880, 0.1, 'sine', 0.15); setTimeout(() => playTone(1100, 0.1, 'sine', 0.15), 100); setTimeout(() => playTone(1320, 0.25, 'sine', 0.18), 200); }
+
+  // ── 成就系统 ────────────────────────────────────────────
+  const ACHIEVEMENTS = [
+    { id: 'first_swish',  icon: '💎', label: '首次空心球',   check: (s) => s.swishes >= 1 },
+    { id: 'combo5',       icon: '🔥', label: '连击 x5',     check: (s) => s.maxCombo >= 5 },
+    { id: 'score30',      icon: '🏆', label: '单局30分',    check: (s) => s.score >= 30 },
+    { id: 'score50',      icon: '👑', label: '单局50分',    check: (s) => s.score >= 50 },
+    { id: 'baskets10',    icon: '🎯', label: '单局10球',    check: (s) => s.baskets >= 10 },
+    { id: 'all_swish',    icon: '✨', label: '全空心球',    check: (s) => s.baskets >= 3 && s.swishes === s.baskets },
+  ];
+  let earnedAchievements = [];  // achievements earned THIS game
+  let achieveQueue = [];        // pending display queue
+  let achieveDisplay = null;    // currently showing { icon, label, timer }
+  let allTimeAchievements = new Set();
+  try { const a = localStorage.getItem('nh_ach'); if (a) allTimeAchievements = new Set(JSON.parse(a)); } catch (_) {}
+
+  function checkAchievements() {
+    const s = { score, baskets, swishes, maxCombo };
+    for (const a of ACHIEVEMENTS) {
+      if (!earnedAchievements.includes(a.id) && a.check(s)) {
+        earnedAchievements.push(a.id);
+        if (!allTimeAchievements.has(a.id)) {
+          allTimeAchievements.add(a.id);
+          try { localStorage.setItem('nh_ach', JSON.stringify([...allTimeAchievements])); } catch (_) {}
+        }
+        achieveQueue.push({ icon: a.icon, label: a.label });
+        sfxAchieve();
+      }
+    }
+  }
+
+  // ── 倒计时状态 ──────────────────────────────────────────
+  let countdownVal = 0;
+  let countdownTimer = 0;
+  let lastHeartbeat = 0;
+
+  // ── 篮网物理 (进球时下坠回弹) ───────────────────────────
+  let netSag = 0;          // 0 = rest, positive = sagging down
+  let netSagVel = 0;
+
+  // ── 触觉反馈 ──────────────────────────────────────────
+  function vibrate(ms) {
+    try { if (navigator.vibrate) navigator.vibrate(ms); } catch (_) {}
+  }
+
+  // ── 评级系统 ──────────────────────────────────────────
+  function getGrade(sc) {
+    if (sc >= 60) return { letter: 'S',  color: GOLD, glow: 20 };
+    if (sc >= 40) return { letter: 'A',  color: CYAN, glow: 16 };
+    if (sc >= 25) return { letter: 'B',  color: '#80ff80', glow: 12 };
+    if (sc >= 10) return { letter: 'C',  color: 'rgba(255,255,255,0.6)', glow: 8 };
+    return              { letter: 'D',  color: 'rgba(255,255,255,0.3)', glow: 4 };
+  }
+
+  // ── 难度预设 (简单 / 普通 / 困难) ───────────────────────
+  const DIFFS = [
+    { // 0 = 简单
+      key: 'easy', label: '简单', labelEn: 'EASY', color: CYAN,
+      desc: '大篮筐 · 90秒 · 完整轨迹',
+      time: 90, gravity: 0.11, launchK: 0.15, maxVMult: 2.4,
+      hoopW: 5.8,            // 篮筐宽度 (×U)
+      ballX: 0.60,           // 球 X 位置 (占屏宽比)
+      hoopX: 0.32,           // 篮筐 X 位置
+      trajDots: [40, 35, 28],// 轨迹点数 [前3球, 前8球, 之后]
+      moveAfter: 8,          // 几个球后篮筐开始移动
+      obsAfter: 5,           // 内部 difficulty 达到几后出障碍 (=baskets/5)
+    },
+    { // 1 = 普通
+      key: 'normal', label: '普通', labelEn: 'NORMAL', color: GOLD,
+      desc: '标准篮筐 · 60秒 · 渐弱轨迹',
+      time: 60, gravity: 0.15, launchK: 0.15, maxVMult: 2.2,
+      hoopW: 4.4,
+      ballX: 0.72, hoopX: 0.25,
+      trajDots: [30, 20, 12],
+      moveAfter: 5, obsAfter: 3,
+    },
+    { // 2 = 困难
+      key: 'hard', label: '困难', labelEn: 'HARD', color: PINK,
+      desc: '小篮筐 · 45秒 · 极短轨迹',
+      time: 45, gravity: 0.20, launchK: 0.14, maxVMult: 2.0,
+      hoopW: 3.4,
+      ballX: 0.78, hoopX: 0.18,
+      trajDots: [15, 8, 4],
+      moveAfter: 3, obsAfter: 1,
+    },
+  ];
+  let gameDiff = 1;           // 当前选择的难度 (0/1/2)
+  let dp = DIFFS[1];         // = DIFFS[gameDiff], 运行时快捷引用
+
+  // ── Game States ──────────────────────────────────────────
+  const S = { MENU: 0, DIFF: 4, COUNTDOWN: 5, PLAY: 1, PAUSE: 2, OVER: 3 };
+  let state = S.MENU;
+
+  // ── Game Variables ───────────────────────────────────────
+  let score, combo, maxCombo, baskets, swishes;
+  let timeLeft, timerMs;
+  let difficulty;
+  // ── 进度记录数据 ────────────────────────────────────────
+  // 每个难度独立记录: 最高分、游玩次数、总命中、最近5次得分
+  let stats = {
+    hi:     [0, 0, 0],       // 最高分
+    plays:  [0, 0, 0],       // 游玩次数
+    hits:   [0, 0, 0],       // 总命中次数
+    recent: [[], [], []],    // 最近5次得分 (newest first)
+  };
+  try {
+    const s = localStorage.getItem('nh_stats');
+    if (s) { stats = JSON.parse(s); }
+    else {
+      // 兼容旧存储
+      const s3 = localStorage.getItem('nh_hi3');
+      if (s3) stats.hi = JSON.parse(s3);
+      else {
+        const old = parseInt(localStorage.getItem('nh_hi')) || 0;
+        if (old) stats.hi = [old, old, old];
+      }
+    }
+  } catch (_) {}
+  // 便捷别名
+  let highScores = stats.hi;
+
+  function saveStats() {
+    try { localStorage.setItem('nh_stats', JSON.stringify(stats)); } catch (_) {}
+  }
+
+  // Screen-shake
+  let shakeX = 0, shakeY = 0, shakeMag = 0;
+
+  // ── Ball ─────────────────────────────────────────────────
+  let ball, ballReady, trail;
+
+  function ballR() { return U * 0.62; }
+
+  function spawnBall() {
+    const portrait = H > W;
+    ball = {
+      x: portrait ? W * 0.5 : W * dp.ballX,
+      y: portrait ? H - U * 4.5 : H - U * 5,
+      vx: 0, vy: 0,
+      r: ballR(),
+      live: false,   // in flight?
+      scored: false,
+      rimHits: 0,
+    };
+    ballReady = true;
+    trail = [];
+  }
+
+  // ── Hoop ─────────────────────────────────────────────────
+  let hoop, hoopDir, hoopSpd;
+  const RIM_R  = () => U * 0.28;
+  const BB_H   = () => U * 4;
+
+  function spawnHoop() {
+    const portrait = H > W;
+    hoop = {
+      x: portrait ? W * 0.5 : W * dp.hoopX,
+      y: H * (portrait ? 0.26 : 0.25),
+      w: U * dp.hoopW,
+      rimR: RIM_R(),
+      bbH: BB_H(),
+      bbW: U * 0.32,
+    };
+    hoopDir = 1;
+    hoopSpd = 0;
+  }
+
+  // ── Obstacles ────────────────────────────────────────────
+  let obstacles = [];
+
+  function genObstacles() {
+    obstacles = [];
+    if (difficulty < dp.obsAfter) return;
+    const n = difficulty >= dp.obsAfter + 2 ? 2 : 1;
+    for (let i = 0; i < n; i++) {
+      obstacles.push({
+        x: W * 0.2 + Math.random() * W * 0.6,
+        y: H * 0.38 + Math.random() * H * 0.14,
+        w: U * (3 + Math.random() * 2),
+        h: U * 0.4,
+        a: (Math.random() - 0.5) * 0.5,
+      });
+    }
+  }
+
+  // ── Particles ────────────────────────────────────────────
+  let parts = [];
+
+  function emit(x, y, col, n, spd) {
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const s = spd * (0.4 + Math.random());
+      parts.push({
+        x, y,
+        vx: Math.cos(a) * s,
+        vy: Math.sin(a) * s,
+        life: 1,
+        dec: 0.014 + Math.random() * 0.022,
+        r: 1.5 + Math.random() * 2.5,
+        col,
+      });
+    }
+  }
+
+  // ── Floating Text ────────────────────────────────────────
+  let texts = [];
+
+  function addText(x, y, str, col) {
+    texts.push({ x, y, str, col, life: 1, vy: -1.8 });
+  }
+
+  // ── Net Flash ────────────────────────────────────────────
+  let netFlash = 0;
+
+  // ── Drag / Aim ───────────────────────────────────────────
+  let dragging = false, aimOn = false;
+  let dStart = { x: 0, y: 0 }, dEnd = { x: 0, y: 0 };
+
+  function pos(e) {
+    const t = e.touches ? e.touches[0] : e;
+    return { x: t.clientX, y: t.clientY };
+  }
+
+  function onDown(e) {
+    e.preventDefault();
+    if (state === S.MENU) { state = S.DIFF; return; }
+    if (state === S.DIFF) { pickDifficulty(e); return; }
+    if (state === S.OVER) { state = S.DIFF; return; }
+    if (state !== S.PLAY || !ballReady) return;
+    const p = pos(e);
+    dragging = aimOn = true;
+    dStart = dEnd = p;
+  }
+  function onMove(e) {
+    e.preventDefault();
+    if (dragging) dEnd = pos(e);
+  }
+  // 共用的发射速度计算 — 瞄准预览和实际发射必须用同一个 v
+  // drag = current − start;  v = −drag × k (弹弓式，反向发射)
+  function calcLaunchVel() {
+    const dragX = dEnd.x - dStart.x;
+    const dragY = dEnd.y - dStart.y;
+    const dist  = Math.hypot(dragX, dragY);
+    const k = dp.launchK;
+    let vx = -dragX * k;
+    let vy = -dragY * k;
+    const maxV  = U * dp.maxVMult;
+    const speed = Math.hypot(vx, vy);
+    if (speed > maxV) { vx *= maxV / speed; vy *= maxV / speed; }
+    const power = Math.min(speed / maxV, 1);
+    return { vx, vy, power, dist };
+  }
+
+  function onUp(e) {
+    e.preventDefault();
+    if (!dragging) return;
+    dragging = aimOn = false;
+    if (state !== S.PLAY || !ballReady) return;
+
+    const { vx, vy, dist } = calcLaunchVel();
+    if (dist < MIN_DRAG) return;
+
+    ball.vx = vx;
+    ball.vy = vy;
+    ball.live = true;
+    ball.scored = false;
+    ball.rimHits = 0;
+    ballReady = false;
+    trail = [];
+  }
+
+  cvs.addEventListener('mousedown',  onDown);
+  cvs.addEventListener('mousemove',  onMove);
+  cvs.addEventListener('mouseup',    onUp);
+  cvs.addEventListener('touchstart', onDown, { passive: false });
+  cvs.addEventListener('touchmove',  onMove, { passive: false });
+  cvs.addEventListener('touchend',   onUp,   { passive: false });
+
+  // ── Keyboard ─────────────────────────────────────────────
+  document.addEventListener('keydown', function (e) {
+    const k = e.key;
+    if (k === 'p' || k === 'P' || k === 'Escape') {
+      if (state === S.PLAY)  { state = S.PAUSE; return; }
+      if (state === S.PAUSE) { state = S.PLAY; lastT = performance.now(); return; }
+    }
+    if (k === 'r' || k === 'R') {
+      if (state !== S.MENU) startGame();
+    }
+    if ((k === 'Enter' || k === ' ') && (state === S.MENU || state === S.OVER)) {
+      state = S.DIFF;
+    }
+    // 1/2/3 keys to pick difficulty on the selection screen
+    if (state === S.DIFF) {
+      if (k === '1') startGame(0);
+      if (k === '2') startGame(1);
+      if (k === '3') startGame(2);
+    }
+  });
+
+  // ── Difficulty Selection ──────────────────────────────────
+  // 3 个按钮的碰撞检测区域，在 drawDiffScreen 中计算
+  let diffBtns = [];
+
+  function pickDifficulty(e) {
+    const p = pos(e);
+    for (let i = 0; i < diffBtns.length; i++) {
+      const b = diffBtns[i];
+      if (p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h) {
+        startGame(i);
+        return;
+      }
+    }
+  }
+
+  // ── Start / Reset ───────────────────────────────────────
+  function startGame(diff) {
+    if (diff !== undefined) gameDiff = diff;
+    dp = DIFFS[gameDiff];
+    score = combo = maxCombo = baskets = swishes = 0;
+    timeLeft = dp.time; timerMs = 0;
+    difficulty = 0;
+    parts = []; texts = [];
+    earnedAchievements = [];
+    achieveQueue = [];
+    achieveDisplay = null;
+    shakeMag = 0;
+    lastHeartbeat = 0;
+    netSag = 0; netSagVel = 0;
+    resize();
+    spawnHoop();
+    spawnBall();
+    genObstacles();
+    // 进入倒计时
+    state = S.COUNTDOWN;
+    countdownVal = 3;
+    countdownTimer = 0;
+    sfxCountdown();
+    lastT = performance.now();
+  }
+
+  // ── Physics ──────────────────────────────────────────────
+  function stepBall(dt) {
+    if (!ball.live) return;
+
+    ball.vy += dp.gravity * dt;
+    ball.x  += ball.vx * dt;
+    ball.y  += ball.vy * dt;
+
+    // trail
+    trail.push({ x: ball.x, y: ball.y });
+    if (trail.length > 14) trail.shift();
+
+    // walls
+    if (ball.x - ball.r < 0)  { ball.x = ball.r;     ball.vx *= -0.55; }
+    if (ball.x + ball.r > W)  { ball.x = W - ball.r;  ball.vx *= -0.55; }
+    if (ball.y - ball.r < 0)  { ball.y = ball.r;      ball.vy *= -0.45; }
+
+    // rim collisions (two circles at rim ends)
+    const lx = hoop.x - hoop.w / 2;
+    const rx = hoop.x + hoop.w / 2;
+    hitCircle(ball, lx, hoop.y, hoop.rimR);
+    hitCircle(ball, rx, hoop.y, hoop.rimR);
+
+    // backboard (LEFT side of hoop)
+    const bbRight = lx;                    // right edge of backboard = left rim
+    const bbLft   = lx - hoop.bbW;        // left edge of backboard
+    const bbTop   = hoop.y - hoop.bbH / 2;
+    const bbBot   = hoop.y + hoop.bbH / 2;
+    if (ball.x - ball.r < bbRight && ball.x + ball.r > bbLft &&
+        ball.y + ball.r > bbTop  && ball.y - ball.r < bbBot) {
+      ball.x = bbRight + ball.r;
+      ball.vx *= -0.6;
+      ball.vy *= 0.88;
+      emit(bbRight, ball.y, CYAN, 5, 2);
+    }
+
+    // obstacles
+    for (const o of obstacles) hitRect(ball, o);
+
+    // score detection: ball drops through the opening
+    if (!ball.scored && ball.vy > 0) {
+      const gapL = hoop.x - hoop.w / 2 + hoop.rimR;
+      const gapR = hoop.x + hoop.w / 2 - hoop.rimR;
+      if (ball.x > gapL && ball.x < gapR &&
+          ball.y > hoop.y - ball.r * 0.4 && ball.y < hoop.y + U * 1.5) {
+        onScore();
+      }
+    }
+
+    // out of bounds → miss or already scored → respawn
+    if (ball.y - ball.r > H + 40) {
+      if (!ball.scored) onMiss();
+      spawnBall();
+    }
+  }
+
+  function hitCircle(b, cx, cy, cr) {
+    const dx = b.x - cx, dy = b.y - cy;
+    const d = Math.hypot(dx, dy);
+    const min = b.r + cr;
+    if (d < min && d > 0.01) {
+      const nx = dx / d, ny = dy / d;
+      b.x = cx + nx * min;
+      b.y = cy + ny * min;
+      const dot = b.vx * nx + b.vy * ny;
+      b.vx -= 1.5 * dot * nx;
+      b.vy -= 1.5 * dot * ny;
+      b.vx *= 0.72;
+      b.vy *= 0.72;
+      b.rimHits++;
+      sfxRimHit();
+      emit(cx, cy, PINK, 4, 2);
+    }
+  }
+
+  function hitRect(b, o) {
+    const cos = Math.cos(-o.a), sin = Math.sin(-o.a);
+    const lx = (b.x - o.x) * cos - (b.y - o.y) * sin;
+    const ly = (b.x - o.x) * sin + (b.y - o.y) * cos;
+    const hw = o.w / 2, hh = o.h / 2;
+    const cx = Math.max(-hw, Math.min(hw, lx));
+    const cy = Math.max(-hh, Math.min(hh, ly));
+    const dx = lx - cx, dy = ly - cy;
+    const d = Math.hypot(dx, dy);
+    if (d < b.r && d > 0.01) {
+      const nx = dx / d, ny = dy / d;
+      const px = cx + nx * b.r, py = cy + ny * b.r;
+      const cr = Math.cos(o.a), sr = Math.sin(o.a);
+      b.x = o.x + px * cr - py * sr;
+      b.y = o.y + px * sr + py * cr;
+      const lvx = b.vx * cos - b.vy * sin;
+      const lvy = b.vx * sin + b.vy * cos;
+      const dot = lvx * nx + lvy * ny;
+      const rlx = lvx - 2 * dot * nx;
+      const rly = lvy - 2 * dot * ny;
+      b.vx = (rlx * cr - rly * sr) * 0.68;
+      b.vy = (rlx * sr + rly * cr) * 0.68;
+      emit(b.x, b.y, CYAN, 4, 2);
+    }
+  }
+
+  // ── Score & Miss ─────────────────────────────────────────
+  function onScore() {
+    ball.scored = true;
+    baskets++;
+    combo++;
+    if (combo > maxCombo) maxCombo = combo;
+
+    const swish = ball.rimHits === 0;
+    if (swish) swishes++;
+
+    const mult = combo >= 3 ? 3 : combo >= 2 ? 2 : 1;
+    const base = swish ? 3 : 2;
+    const pts  = base * mult;
+    score += pts;
+
+    netFlash = 1;
+    netSag = 0; netSagVel = 3.5;  // kick the net downward
+    shakeMag = 6;
+    vibrate(swish ? [30, 20, 50] : 30);
+    if (swish) sfxSwish(); else sfxScore();
+
+    const lbl = (swish ? 'SWISH! ' : '') + '+' + pts + (mult > 1 ? ' x' + mult : '');
+    addText(hoop.x, hoop.y - U * 2, lbl, swish ? GOLD : CYAN);
+
+    emit(hoop.x, hoop.y + U, swish ? GOLD : CYAN, 28, 5);
+    emit(hoop.x, hoop.y + U, PINK, 16, 3.5);
+
+    checkAchievements();
+
+    // difficulty bump every 5 baskets
+    const newDiff = Math.floor(baskets / 5);
+    if (newDiff > difficulty) {
+      difficulty = newDiff;
+      genObstacles();
+      addText(W / 2, H * 0.45, 'LEVEL UP!', PINK);
+    }
+    // moveAfter: 多少球后开始移动 (baskets/5 = difficulty)
+    const moveThresh = Math.ceil(dp.moveAfter / 5);
+    hoopSpd = difficulty >= moveThresh ? U * 0.28 * Math.min(difficulty - moveThresh + 1, 5) : 0;
+  }
+
+  function onMiss() {
+    combo = 0;
+    sfxMiss();
+    emit(ball.x, Math.min(ball.y, H), '#446', 8, 2);
+  }
+
+  // ── Hoop Movement ───────────────────────────────────────
+  function stepHoop(dt) {
+    if (hoopSpd <= 0) return;
+    hoop.x += hoopDir * hoopSpd * dt * 0.28;
+    const m = hoop.w / 2 + U * 2;
+    if (hoop.x > W - m) { hoop.x = W - m; hoopDir = -1; }
+    if (hoop.x < m)     { hoop.x = m;     hoopDir =  1; }
+  }
+
+  // ── Particle Update ──────────────────────────────────────
+  function stepParts(dt) {
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const p = parts[i];
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      p.vy += 0.06 * dt;
+      p.life -= p.dec * dt;
+      if (p.life <= 0) parts.splice(i, 1);
+    }
+    for (let i = texts.length - 1; i >= 0; i--) {
+      const t = texts[i];
+      t.y += t.vy * dt;
+      t.life -= 0.013 * dt;
+      if (t.life <= 0) texts.splice(i, 1);
+    }
+  }
+
+  // ── Drawing Helpers ──────────────────────────────────────
+  function glow(color, blur) {
+    ctx.shadowColor = color;
+    ctx.shadowBlur  = blur;
+  }
+  function noGlow() { ctx.shadowBlur = 0; }
+
+  // ── Draw Background ──────────────────────────────────────
+  function drawBg() {
+    ctx.fillStyle = BG;
+    ctx.fillRect(0, 0, W, H);
+    // Subtle neon grid
+    ctx.strokeStyle = 'rgba(0,255,240,0.025)';
+    ctx.lineWidth = 1;
+    const g = U * 3;
+    for (let x = g; x < W; x += g) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let y = g; y < H; y += g) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    // Floor line
+    ctx.strokeStyle = 'rgba(0,255,240,0.06)';
+    ctx.lineWidth = 2;
+    const floorY = H - U * 2;
+    ctx.beginPath(); ctx.moveTo(0, floorY); ctx.lineTo(W, floorY); ctx.stroke();
+  }
+
+  // ── Draw Hoop ────────────────────────────────────────────
+  function drawHoop() {
+    const lx = hoop.x - hoop.w / 2;
+    const rx = hoop.x + hoop.w / 2;
+    const y  = hoop.y;
+
+    // Backboard (LEFT side — ball approaches from the right)
+    ctx.save();
+    ctx.strokeStyle = CYAN;
+    ctx.lineWidth = 3;
+    glow(CYAN, 10);
+    ctx.beginPath();
+    ctx.moveTo(lx, y - hoop.bbH / 2);
+    ctx.lineTo(lx, y + hoop.bbH / 2);
+    ctx.stroke();
+    // Bracket
+    ctx.beginPath();
+    ctx.moveTo(lx, y); ctx.lineTo(lx + U * 0.6, y); ctx.stroke();
+    ctx.restore();
+
+    // Rim line
+    ctx.save();
+    ctx.strokeStyle = PINK;
+    ctx.lineWidth = 3;
+    glow(PINK, 14);
+    ctx.beginPath(); ctx.moveTo(lx, y); ctx.lineTo(rx, y); ctx.stroke();
+    ctx.restore();
+
+    // Rim end circles
+    for (const cx of [lx, rx]) {
+      ctx.save();
+      ctx.fillStyle = PINK;
+      glow(PINK, 8);
+      ctx.beginPath();
+      ctx.arc(cx, y, hoop.rimR, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // Net
+    drawNet(lx, rx, y);
+  }
+
+  function drawNet(lx, rx, y) {
+    const cols = 7, rows = 5;
+    const baseNetH = U * 2.6;
+    const taper = 0.5;
+    const flash = netFlash > 0;
+
+    // Net physics: spring back toward 0
+    netSagVel += -netSag * 0.15;   // spring force
+    netSagVel *= 0.88;              // damping
+    netSag += netSagVel;
+    if (Math.abs(netSag) < 0.05 && Math.abs(netSagVel) < 0.05) { netSag = 0; netSagVel = 0; }
+
+    ctx.save();
+    const a = flash ? 0.4 + netFlash * 0.6 : 0.22;
+    ctx.strokeStyle = flash ? `rgba(255,215,0,${a})` : `rgba(0,255,240,${a})`;
+    ctx.lineWidth = 1.2;
+    if (flash) glow(GOLD, 14);
+
+    for (let r = 0; r < rows; r++) {
+      const t  = r / (rows - 1);
+      // Each row sags more the further from the rim (t=0 is rim, t=1 is bottom)
+      const sagOffset = netSag * t * t * U;
+      const netH = baseNetH + netSag * U * 0.5;
+      const rw = (rx - lx) * (1 - t * (1 - taper));
+      const ox = (lx + rx) / 2 - rw / 2;
+      const oy = y + t * netH + sagOffset;
+      for (let c = 0; c < cols; c++) {
+        const ct = c / (cols - 1);
+        const px = ox + ct * rw;
+        if (r < rows - 1) {
+          const nt  = (r + 1) / (rows - 1);
+          const nSag = netSag * nt * nt * U;
+          const nNetH = baseNetH + netSag * U * 0.5;
+          const nrw = (rx - lx) * (1 - nt * (1 - taper));
+          const nox = (lx + rx) / 2 - nrw / 2;
+          ctx.beginPath(); ctx.moveTo(px, oy); ctx.lineTo(nox + ct * nrw, y + nt * nNetH + nSag); ctx.stroke();
+        }
+        if (c < cols - 1) {
+          ctx.beginPath(); ctx.moveTo(px, oy); ctx.lineTo(ox + (c + 1) / (cols - 1) * rw, oy); ctx.stroke();
+        }
+      }
+    }
+    ctx.restore();
+    if (netFlash > 0) netFlash = Math.max(0, netFlash - 0.028);
+  }
+
+  // ── Draw Ball ────────────────────────────────────────────
+  function drawBall() {
+    if (!ball) return;
+
+    // Gradient glow trail — smooth line with fading width and radial glow
+    if (trail.length >= 2 && ball.live) {
+      ctx.save();
+      for (let i = 1; i < trail.length; i++) {
+        const t = i / trail.length;        // 0→1, tail→head
+        const prev = trail[i - 1];
+        const cur  = trail[i];
+        ctx.globalAlpha = t * t * 0.4;
+        ctx.strokeStyle = PINK;
+        ctx.lineWidth = ball.r * t * 1.1;
+        glow(PINK, 8 * t);
+        ctx.beginPath();
+        ctx.moveTo(prev.x, prev.y);
+        ctx.lineTo(cur.x, cur.y);
+        ctx.stroke();
+      }
+      // Bright head glow
+      const head = trail[trail.length - 1];
+      const grad = ctx.createRadialGradient(head.x, head.y, 0, head.x, head.y, ball.r * 1.5);
+      grad.addColorStop(0, 'rgba(255,45,123,0.25)');
+      grad.addColorStop(1, 'rgba(255,45,123,0)');
+      ctx.globalAlpha = 0.6;
+      ctx.fillStyle = grad;
+      noGlow();
+      ctx.beginPath();
+      ctx.arc(head.x, head.y, ball.r * 1.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // Ball body
+    ctx.save();
+    ctx.fillStyle = '#120610';
+    ctx.strokeStyle = PINK;
+    ctx.lineWidth = 2.5;
+    glow(PINK, ballReady ? 18 : 12);
+    ctx.beginPath();
+    ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Seams
+    noGlow();
+    ctx.strokeStyle = 'rgba(255,45,123,0.4)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(ball.x - ball.r, ball.y);
+    ctx.lineTo(ball.x + ball.r, ball.y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(ball.x, ball.y, ball.r * 0.33, ball.r, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // ── Draw Obstacles ───────────────────────────────────────
+  function drawObstacles() {
+    for (const o of obstacles) {
+      ctx.save();
+      ctx.translate(o.x, o.y);
+      ctx.rotate(o.a);
+      ctx.fillStyle = 'rgba(0,255,240,0.12)';
+      ctx.strokeStyle = CYAN;
+      ctx.lineWidth = 2;
+      glow(CYAN, 6);
+      ctx.fillRect(-o.w / 2, -o.h / 2, o.w, o.h);
+      ctx.strokeRect(-o.w / 2, -o.h / 2, o.w, o.h);
+      ctx.restore();
+    }
+  }
+
+  // ── Draw Particles & Texts ───────────────────────────────
+  function drawParts() {
+    for (const p of parts) {
+      ctx.save();
+      ctx.globalAlpha = p.life;
+      ctx.fillStyle = p.col;
+      glow(p.col, 5);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r * p.life, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+  function drawTexts() {
+    for (const t of texts) {
+      ctx.save();
+      ctx.globalAlpha = t.life;
+      ctx.fillStyle = t.col;
+      glow(t.col, 10);
+      ctx.font = `bold ${U * 1.25}px 'Courier New',monospace`;
+      ctx.textAlign = 'center';
+      ctx.fillText(t.str, t.x, t.y);
+      ctx.restore();
+    }
+  }
+
+  // ── Draw Aim / Trajectory ────────────────────────────────
+  // ── 瞄准 & 轨迹预测 ──────────────────────────────────────
+  // 使用 calcLaunchVel() 保证预测和实际发射用同一个 v
+  function drawAim() {
+    if (!aimOn || !ballReady || !ball) return;
+
+    const { vx, vy, power, dist } = calcLaunchVel();
+    // 力度太小 → 不显示（不限方向，任意拖拽都可瞄准）
+    if (dist < MIN_DRAG || power < 0.05) return;
+
+    // 方向指示虚线 (从球心沿发射方向)
+    ctx.save();
+    ctx.strokeStyle = 'rgba(0,255,240,0.35)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 4]);
+    ctx.beginPath();
+    ctx.moveTo(ball.x, ball.y);
+    ctx.lineTo(ball.x + vx * 8, ball.y + vy * 8);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+
+    // 轨迹虚线点 — 与实际飞行使用相同的 g 和 dt
+    const td = dp.trajDots;
+    const maxDots = baskets < 3 ? td[0] : baskets < 8 ? td[1] : td[2];
+    let tx = ball.x, ty = ball.y, tvx = vx, tvy = vy;
+    ctx.save();
+    for (let i = 0; i < maxDots; i++) {
+      tvy += dp.gravity * TRAJ_DT;
+      tx  += tvx * TRAJ_DT;
+      ty  += tvy * TRAJ_DT;
+      if (ty > H || tx < 0 || tx > W) break;
+      const a = 0.45 * (1 - i / maxDots);
+      ctx.fillStyle = `rgba(0,255,240,${a})`;
+      ctx.beginPath();
+      ctx.arc(tx, ty, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    // 力度百分比
+    ctx.save();
+    ctx.fillStyle = power > 0.85 ? PINK : CYAN;
+    glow(ctx.fillStyle, 5);
+    ctx.font = `bold ${U * 0.65}px 'Courier New',monospace`;
+    ctx.textAlign = 'center';
+    ctx.fillText(Math.round(power * 100) + '%', ball.x, ball.y + ball.r + U * 1.4);
+    ctx.restore();
+
+  }
+
+  // ── HUD ──────────────────────────────────────────────────
+  function drawHUD() {
+    const p = U * 0.8;
+    const fs = U * 0.85;
+    ctx.save();
+
+    // Timer — last 10s: flash + scale pulse
+    const urgent = timeLeft <= 10 && timeLeft > 0;
+    const tc = urgent ? PINK : CYAN;
+    if (urgent) {
+      const flash = 0.6 + Math.sin(Date.now() / 150) * 0.4;
+      ctx.globalAlpha = flash;
+      const scale = 1 + Math.sin(Date.now() / 300) * 0.08;
+      ctx.font = `bold ${fs * scale}px 'Courier New',monospace`;
+      // Heartbeat sound every ~1s
+      if (Date.now() - lastHeartbeat > 1000) { sfxHeartbeat(); lastHeartbeat = Date.now(); }
+    } else {
+      ctx.font = `bold ${fs}px 'Courier New',monospace`;
+    }
+    ctx.fillStyle = tc;
+    glow(tc, urgent ? 14 : 6);
+    ctx.textAlign = 'left';
+    ctx.fillText('⏱ ' + Math.ceil(timeLeft) + 's', p, p + fs);
+    ctx.globalAlpha = 1;
+
+    // Score
+    ctx.fillStyle = CYAN;
+    glow(CYAN, 8);
+    ctx.textAlign = 'center';
+    ctx.font = `bold ${fs * 1.5}px 'Courier New',monospace`;
+    ctx.fillText('' + score, W / 2, p + fs);
+
+    // Combo badge
+    if (combo >= 2) {
+      const cc = combo >= 3 ? GOLD : PINK;
+      ctx.fillStyle = cc;
+      glow(cc, 8);
+      ctx.font = `bold ${fs * 0.75}px 'Courier New',monospace`;
+      ctx.fillText('x' + Math.min(combo, 3) + ' COMBO', W / 2, p + fs * 2.1);
+    }
+
+    // Difficulty badge + Level
+    noGlow();
+    ctx.fillStyle = dp.color;
+    ctx.globalAlpha = 0.55;
+    ctx.textAlign = 'right';
+    ctx.font = `${fs * 0.55}px 'Courier New',monospace`;
+    ctx.fillText(dp.label + ' LV.' + (difficulty + 1), W - p, p + fs);
+    ctx.globalAlpha = 1;
+
+    ctx.restore();
+  }
+
+  // ── Screens ──────────────────────────────────────────────
+  function drawMenu() {
+    drawBg();
+    const cx = W / 2;
+    ctx.save();
+    ctx.textAlign = 'center';
+
+    // Title
+    glow(CYAN, 35);
+    ctx.fillStyle = CYAN;
+    ctx.font = `bold ${U * 2.6}px 'Courier New',monospace`;
+    ctx.fillText('NEON', cx, H * 0.28);
+    glow(PINK, 35);
+    ctx.fillStyle = PINK;
+    ctx.fillText('HOOPS', cx, H * 0.28 + U * 3);
+
+    // Chinese subtitle
+    glow(CYAN, 6);
+    ctx.fillStyle = 'rgba(0,255,240,0.55)';
+    ctx.font = `${U * 0.8}px 'Courier New',monospace`;
+    ctx.fillText('霓  虹  篮  球', cx, H * 0.28 + U * 5);
+
+    // Decorative bouncing ball
+    noGlow();
+    const bx = cx + Math.sin(Date.now() / 900) * U * 2.5;
+    const by = H * 0.5 + Math.cos(Date.now() / 700) * U * 1.2;
+    ctx.fillStyle = '#120610';
+    ctx.strokeStyle = PINK;
+    ctx.lineWidth = 2;
+    glow(PINK, 14);
+    ctx.beginPath(); ctx.arc(bx, by, U * 1.1, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+    // Controls
+    noGlow();
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.font = `${U * 0.6}px 'Courier New',monospace`;
+    const touch = 'ontouchstart' in window;
+    ctx.fillText(touch ? '← 反向拖拽瞄准 · 松手投篮 →' : '← Drag to aim · Release to shoot →', cx, H * 0.64);
+    if (!touch) ctx.fillText('P/Esc 暂停  ·  R 重开', cx, H * 0.64 + U * 1.3);
+
+    // Start CTA (pulsing)
+    const pulse = 0.45 + Math.sin(Date.now() / 380) * 0.45;
+    ctx.globalAlpha = pulse;
+    ctx.fillStyle = GOLD;
+    glow(GOLD, 12);
+    ctx.font = `bold ${U * 0.95}px 'Courier New',monospace`;
+    ctx.fillText(touch ? '[ 点击开始 ]' : '[ CLICK / ENTER ]', cx, H * 0.79);
+
+    // High score
+    // Per-difficulty high scores
+    const anyBest = highScores.some(h => h > 0);
+    if (anyBest) {
+      ctx.globalAlpha = 0.55;
+      noGlow();
+      ctx.font = `${U * 0.5}px 'Courier New',monospace`;
+      const labels = ['简单', '普通', '困难'];
+      const bestStr = labels.map((l, i) => l + ' ' + highScores[i]).join('  ·  ');
+      ctx.fillStyle = GOLD;
+      ctx.fillText(bestStr, cx, H * 0.89);
+    }
+    ctx.restore();
+  }
+
+  // ── Difficulty Selection Screen ───────────────────────────
+  function drawDiffScreen() {
+    drawBg();
+    const cx = W / 2;
+    ctx.save();
+    ctx.textAlign = 'center';
+
+    // 3 difficulty buttons — responsive for portrait
+    const portrait = H > W;
+
+    // Title
+    glow(CYAN, 20);
+    ctx.fillStyle = CYAN;
+    ctx.font = `bold ${U * (portrait ? 1.1 : 1.6)}px 'Courier New',monospace`;
+    ctx.fillText('SELECT DIFFICULTY', cx, portrait ? H * 0.08 : H * 0.14);
+    noGlow();
+    ctx.fillStyle = 'rgba(0,255,240,0.5)';
+    ctx.font = `${U * (portrait ? 0.55 : 0.7)}px 'Courier New',monospace`;
+    ctx.fillText('选 择 难 度', cx, (portrait ? H * 0.08 : H * 0.14) + U * 1.5);
+    const btnW = portrait ? Math.min(U * 10, (W - U * 4) / 3) : Math.min(U * 14, W * 0.28);
+    const btnH = portrait ? U * 6.5 : U * 8;
+    const gap = portrait ? U * 0.8 : U * 1.5;
+    const totalW = btnW * 3 + gap * 2;
+    const startX = cx - totalW / 2;
+    const btnY = portrait ? H * 0.22 : H * 0.32;
+    diffBtns = [];
+
+    for (let i = 0; i < 3; i++) {
+      const d = DIFFS[i];
+      const bx = startX + i * (btnW + gap);
+      diffBtns.push({ x: bx, y: btnY, w: btnW, h: btnH });
+
+      // Button background
+      ctx.fillStyle = 'rgba(255,255,255,0.03)';
+      ctx.strokeStyle = d.color;
+      ctx.lineWidth = 2;
+      glow(d.color, 10);
+      const r = U * 0.6;
+      ctx.beginPath();
+      ctx.moveTo(bx + r, btnY);
+      ctx.lineTo(bx + btnW - r, btnY);
+      ctx.quadraticCurveTo(bx + btnW, btnY, bx + btnW, btnY + r);
+      ctx.lineTo(bx + btnW, btnY + btnH - r);
+      ctx.quadraticCurveTo(bx + btnW, btnY + btnH, bx + btnW - r, btnY + btnH);
+      ctx.lineTo(bx + r, btnY + btnH);
+      ctx.quadraticCurveTo(bx, btnY + btnH, bx, btnY + btnH - r);
+      ctx.lineTo(bx, btnY + r);
+      ctx.quadraticCurveTo(bx, btnY, bx + r, btnY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Number badge
+      const s = portrait ? 0.75 : 1;  // font scale for portrait
+      ctx.fillStyle = d.color;
+      glow(d.color, 8);
+      ctx.font = `bold ${U * 1.6 * s}px 'Courier New',monospace`;
+      ctx.fillText('' + (i + 1), bx + btnW / 2, btnY + U * 1.8 * s + U * 0.3);
+
+      // Chinese label
+      ctx.font = `bold ${U * 1.1 * s}px 'Courier New',monospace`;
+      ctx.fillText(d.label, bx + btnW / 2, btnY + U * 3.2 * s + U * 0.3);
+
+      // English label
+      noGlow();
+      ctx.fillStyle = `rgba(255,255,255,0.35)`;
+      ctx.font = `${U * 0.55 * s}px 'Courier New',monospace`;
+      ctx.fillText(d.labelEn, bx + btnW / 2, btnY + U * 4.2 * s + U * 0.3);
+
+      // Description
+      ctx.fillStyle = `rgba(255,255,255,0.3)`;
+      ctx.font = `${U * 0.48 * s}px 'Courier New',monospace`;
+      ctx.fillText(d.desc, bx + btnW / 2, btnY + U * 5.2 * s + U * 0.3);
+
+      // Best score for this difficulty
+      if (highScores[i] > 0) {
+        ctx.fillStyle = GOLD;
+        ctx.font = `${U * 0.5 * s}px 'Courier New',monospace`;
+        ctx.fillText('BEST: ' + highScores[i], bx + btnW / 2, btnY + U * 6.2 * s + U * 0.3);
+      }
+    }
+
+    // ── PROGRESS RECORD 进度记录 (无外框，独立卡片) ──────────
+    const hasAny = stats.plays[0] + stats.plays[1] + stats.plays[2] > 0;
+    if (hasAny) {
+      const prY = btnY + btnH + gap * 2;
+      const r = U * 0.6;                         // 统一圆角
+
+      // ── Title: neon glow text, no box ──
+      glow(CYAN, 8);
+      ctx.fillStyle = CYAN;
+      ctx.font = `bold ${U * 0.65}px 'Courier New',monospace`;
+      ctx.fillText('PROGRESS RECORD｜进度记录', cx, prY);
+      noGlow();
+
+      // ── Global stats row ──
+      const gsY = prY + U * 2;
+      const totalPlays = stats.plays[0] + stats.plays[1] + stats.plays[2];
+      const totalHits  = stats.hits[0]  + stats.hits[1]  + stats.hits[2];
+      const allScores  = stats.recent[0].concat(stats.recent[1], stats.recent[2]);
+      const avgScore   = allScores.length > 0 ? Math.round(allScores.reduce((a, b) => a + b, 0) / allScores.length) : 0;
+
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      ctx.font = `${U * 0.5}px 'Courier New',monospace`;
+      const gsItems = [
+        `游玩 ${totalPlays} 局`,
+        `命中 ${totalHits} 次`,
+        `平均 ${avgScore} 分`,
+      ];
+      const gsSpan = totalW / 3;
+      for (let i = 0; i < 3; i++) {
+        ctx.fillText(gsItems[i], startX + gsSpan * i + gsSpan / 2, gsY);
+      }
+
+      // ── 3 independent progress cards (same size & position as difficulty cards) ──
+      const scY = gsY + U * 1.8;
+      const scH = U * 7;                         // 与上方 btnH=U*8 呼应
+
+      for (let i = 0; i < 3; i++) {
+        const d = DIFFS[i];
+        const scX = startX + i * (btnW + gap);
+        const rec = stats.recent[i];
+
+        // Card background — same style as difficulty cards
+        ctx.fillStyle = 'rgba(255,255,255,0.03)';
+        ctx.strokeStyle = d.color;
+        ctx.lineWidth = 1.5;
+        glow(d.color, 8);
+        ctx.beginPath();
+        ctx.moveTo(scX + r, scY);
+        ctx.lineTo(scX + btnW - r, scY);
+        ctx.quadraticCurveTo(scX + btnW, scY, scX + btnW, scY + r);
+        ctx.lineTo(scX + btnW, scY + scH - r);
+        ctx.quadraticCurveTo(scX + btnW, scY + scH, scX + btnW - r, scY + scH);
+        ctx.lineTo(scX + r, scY + scH);
+        ctx.quadraticCurveTo(scX, scY + scH, scX, scY + scH - r);
+        ctx.lineTo(scX, scY + r);
+        ctx.quadraticCurveTo(scX, scY, scX + r, scY);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        noGlow();
+
+        const scCx = scX + btnW / 2;
+
+        // Difficulty label (colored)
+        ctx.fillStyle = d.color;
+        glow(d.color, 4);
+        ctx.font = `bold ${U * 0.55}px 'Courier New',monospace`;
+        ctx.fillText(d.label, scCx, scY + U * 1.1);
+        noGlow();
+
+        // Best score
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.font = `${U * 0.45}px 'Courier New',monospace`;
+        ctx.fillText(`最高 ${highScores[i]} 分`, scCx, scY + U * 2.1);
+
+        // Plays count
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        ctx.fillText(`游玩 ${stats.plays[i]} 局`, scCx, scY + U * 2.9);
+
+        // Mini neon line chart — last 5 scores
+        if (rec.length >= 2) {
+          const chartX = scX + U * 1;
+          const chartW = btnW - U * 2;
+          const chartY = scY + U * 3.5;
+          const chartH = U * 2.8;
+          const maxVal = Math.max(...rec, 1);
+
+          ctx.strokeStyle = d.color;
+          ctx.lineWidth = 1.5;
+          glow(d.color, 5);
+          ctx.beginPath();
+          for (let j = 0; j < rec.length; j++) {
+            const px = chartX + (j / (rec.length - 1)) * chartW;
+            const py = chartY + chartH - (rec[j] / maxVal) * chartH;
+            if (j === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.stroke();
+
+          // Data point dots
+          for (let j = 0; j < rec.length; j++) {
+            const px = chartX + (j / (rec.length - 1)) * chartW;
+            const py = chartY + chartH - (rec[j] / maxVal) * chartH;
+            ctx.fillStyle = d.color;
+            ctx.beginPath();
+            ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          noGlow();
+        } else if (rec.length === 1) {
+          ctx.fillStyle = 'rgba(255,255,255,0.35)';
+          ctx.font = `${U * 0.4}px 'Courier New',monospace`;
+          ctx.fillText(`最近得分 ${rec[0]}`, scCx, scY + U * 5);
+        } else {
+          ctx.fillStyle = 'rgba(255,255,255,0.2)';
+          ctx.font = `${U * 0.4}px 'Courier New',monospace`;
+          ctx.fillText('暂无记录', scCx, scY + U * 5);
+        }
+      }
+    }
+
+    // Hint
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.font = `${U * 0.5}px 'Courier New',monospace`;
+    const touch = 'ontouchstart' in window;
+    ctx.fillText(touch ? '点击选择' : '点击选择 或按 1 / 2 / 3', cx, H * 0.95);
+
+    ctx.restore();
+  }
+
+  function drawPauseScreen() {
+    // Semi-transparent overlay (keep the game visible beneath)
+    ctx.save();
+    ctx.fillStyle = 'rgba(8,8,16,0.7)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = CYAN;
+    glow(CYAN, 22);
+    ctx.font = `bold ${U * 2.2}px 'Courier New',monospace`;
+    ctx.fillText('PAUSED', W / 2, H / 2 - U);
+    noGlow();
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = `${U * 0.65}px 'Courier New',monospace`;
+    ctx.fillText('P / Esc 继续  ·  R 重开', W / 2, H / 2 + U * 1.8);
+    ctx.restore();
+  }
+
+  function drawGameOver() {
+    ctx.save();
+    ctx.fillStyle = 'rgba(8,8,16,0.85)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.textAlign = 'center';
+    const cx = W / 2;
+    let y = H * 0.18;
+
+    // Header
+    ctx.fillStyle = PINK;
+    glow(PINK, 22);
+    ctx.font = `bold ${U * 2}px 'Courier New',monospace`;
+    ctx.fillText('GAME OVER', cx, y);
+
+    // Grade badge
+    const grade = getGrade(score);
+    y += U * 2.5;
+    ctx.fillStyle = grade.color;
+    glow(grade.color, grade.glow);
+    const gpulse = 1 + Math.sin(Date.now() / 500) * 0.06;
+    ctx.font = `bold ${U * 3 * gpulse}px 'Courier New',monospace`;
+    ctx.fillText(grade.letter, cx, y);
+    noGlow();
+
+    // Big score
+    y += U * 2.5;
+    ctx.fillStyle = CYAN;
+    glow(CYAN, 18);
+    ctx.font = `bold ${U * 3.2}px 'Courier New',monospace`;
+    ctx.fillText('' + score, cx, y);
+    noGlow();
+    ctx.fillStyle = 'rgba(0,255,240,0.45)';
+    ctx.font = `${U * 0.65}px 'Courier New',monospace`;
+    ctx.fillText('SCORE', cx, y + U * 1.2);
+
+    // Stats table
+    y += U * 3.2;
+    ctx.font = `${U * 0.72}px 'Courier New',monospace`;
+    const rows = [
+      ['进球',     '' + baskets],
+      ['空心球',   '' + swishes],
+      ['最高连击', 'x' + maxCombo],
+      ['最高纪录', '' + highScores[gameDiff]],
+    ];
+    for (const [label, val] of rows) {
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.textAlign = 'right';
+      ctx.fillText(label, cx - U * 0.6, y);
+      ctx.fillStyle = (label === '最高纪录' && score >= highScores[gameDiff] && score > 0) ? GOLD : CYAN;
+      ctx.textAlign = 'left';
+      ctx.fillText(val, cx + U * 0.6, y);
+      y += U * 1.5;
+    }
+
+    // New best
+    if (score >= highScores[gameDiff] && score > 0) {
+      ctx.textAlign = 'center';
+      ctx.fillStyle = GOLD;
+      glow(GOLD, 14);
+      ctx.font = `bold ${U * 0.9}px 'Courier New',monospace`;
+      ctx.fillText('★ NEW BEST ★', cx, y + U);
+    }
+
+    // Restart CTA
+    const pulse = 0.45 + Math.sin(Date.now() / 380) * 0.45;
+    ctx.globalAlpha = pulse;
+    ctx.fillStyle = GOLD;
+    glow(GOLD, 10);
+    ctx.textAlign = 'center';
+    ctx.font = `bold ${U * 0.8}px 'Courier New',monospace`;
+    const touch = 'ontouchstart' in window;
+    ctx.fillText(touch ? '[ 点击再来 ]' : '[ CLICK / R / ENTER ]', cx, H * 0.91);
+    ctx.restore();
+  }
+
+  // ── Main Loop ────────────────────────────────────────────
+  let lastT = performance.now();
+
+  function frame(now) {
+    requestAnimationFrame(frame);
+    // Menu / Difficulty selection — standalone draws
+    if (state === S.MENU) { drawMenu(); return; }
+    if (state === S.DIFF) { drawDiffScreen(); return; }
+
+    // Delta time, capped for stability
+    const raw = now - lastT;
+    lastT = now;
+    const dt = Math.min(raw / 16.667, 3);
+
+    // ── Countdown 3-2-1-GO ──
+    if (state === S.COUNTDOWN) {
+      countdownTimer += raw;
+      if (countdownTimer >= 800) {
+        countdownTimer = 0;
+        countdownVal--;
+        if (countdownVal > 0) sfxCountdown();
+        else if (countdownVal === 0) sfxGo();
+        else { state = S.PLAY; lastT = performance.now(); }
+      }
+      // Draw the game scene frozen behind the countdown
+      renderGame(0);
+      // Overlay
+      ctx.save();
+      ctx.fillStyle = 'rgba(8,8,16,0.5)';
+      ctx.fillRect(0, 0, W, H);
+      ctx.textAlign = 'center';
+      const cdText = countdownVal > 0 ? '' + countdownVal : 'GO!';
+      const cdColor = countdownVal > 0 ? CYAN : GOLD;
+      const cdScale = 1 + (1 - countdownTimer / 800) * 0.4;
+      ctx.fillStyle = cdColor;
+      glow(cdColor, 30);
+      ctx.font = `bold ${U * 4 * cdScale}px 'Courier New',monospace`;
+      ctx.globalAlpha = 0.5 + (countdownTimer / 800) * 0.5;
+      ctx.fillText(cdText, W / 2, H / 2 + U);
+      noGlow();
+      ctx.restore();
+      return;
+    }
+
+    // Pause — draw frozen game + overlay
+    if (state === S.PAUSE) {
+      renderGame(0);
+      drawPauseScreen();
+      return;
+    }
+
+    // Game-over — keep particles alive
+    if (state === S.OVER) {
+      stepParts(dt);
+      renderGame(0);
+      drawGameOver();
+      return;
+    }
+
+    // ── Playing ──
+    // Timer
+    timerMs += raw;
+    if (timerMs >= 1000) {
+      const secs = Math.floor(timerMs / 1000);
+      timeLeft -= secs;
+      timerMs %= 1000;
+    }
+    if (timeLeft <= 0) {
+      timeLeft = 0;
+      state = S.OVER;
+      // 记录本局数据
+      if (score > highScores[gameDiff]) highScores[gameDiff] = score;
+      stats.plays[gameDiff]++;
+      stats.hits[gameDiff] += baskets;
+      stats.recent[gameDiff].unshift(score);
+      if (stats.recent[gameDiff].length > 5) stats.recent[gameDiff].length = 5;
+      saveStats();
+      emit(W / 2, H / 2, CYAN, 45, 7);
+      emit(W / 2, H / 2, PINK, 35, 5);
+    }
+
+    // Physics
+    stepBall(dt);
+    stepHoop(dt);
+    stepParts(dt);
+
+    // Screen shake decay
+    if (shakeMag > 0) {
+      shakeX = (Math.random() - 0.5) * shakeMag;
+      shakeY = (Math.random() - 0.5) * shakeMag;
+      shakeMag *= 0.88;
+      if (shakeMag < 0.3) shakeMag = 0;
+    } else {
+      shakeX = shakeY = 0;
+    }
+
+    renderGame(dt);
+  }
+
+  function renderGame() {
+    ctx.save();
+    ctx.translate(shakeX, shakeY);
+    drawBg();
+    drawObstacles();
+    drawHoop();
+    drawBall();
+    drawAim();
+    drawParts();
+    drawTexts();
+    ctx.restore();
+    drawHUD();
+    drawAchieveBanner();
+  }
+
+  // ── Achievement Banner Display ──────────────────────────
+  function drawAchieveBanner() {
+    // Pop next from queue
+    if (!achieveDisplay && achieveQueue.length > 0) {
+      achieveDisplay = { ...achieveQueue.shift(), timer: 2.5 };
+    }
+    if (!achieveDisplay) return;
+
+    achieveDisplay.timer -= 1 / 60;
+    if (achieveDisplay.timer <= 0) { achieveDisplay = null; return; }
+
+    const a = achieveDisplay;
+    const alpha = Math.min(a.timer * 2, 1); // fade out in last 0.5s
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.textAlign = 'center';
+
+    // Banner background
+    const bw = U * 12;
+    const bh = U * 2.2;
+    const bx = W / 2 - bw / 2;
+    const by = H * 0.15;
+    ctx.fillStyle = 'rgba(10,12,24,0.85)';
+    ctx.strokeStyle = GOLD;
+    ctx.lineWidth = 1.5;
+    glow(GOLD, 10);
+    const br = U * 0.4;
+    ctx.beginPath();
+    ctx.moveTo(bx + br, by);
+    ctx.lineTo(bx + bw - br, by);
+    ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + br);
+    ctx.lineTo(bx + bw, by + bh - br);
+    ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - br, by + bh);
+    ctx.lineTo(bx + br, by + bh);
+    ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - br);
+    ctx.lineTo(bx, by + br);
+    ctx.quadraticCurveTo(bx, by, bx + br, by);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    noGlow();
+
+    // Icon + text
+    ctx.font = `${U * 1.1}px 'Courier New',monospace`;
+    ctx.fillStyle = '#fff';
+    ctx.fillText(a.icon, W / 2 - U * 3.5, by + bh * 0.62);
+    ctx.fillStyle = GOLD;
+    glow(GOLD, 6);
+    ctx.font = `bold ${U * 0.65}px 'Courier New',monospace`;
+    ctx.fillText('成就解锁  ' + a.label, W / 2 + U * 0.5, by + bh * 0.58);
+    noGlow();
+
+    ctx.restore();
+  }
+
+  requestAnimationFrame(frame);
+})();
+</script>

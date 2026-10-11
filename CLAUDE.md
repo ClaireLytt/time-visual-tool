@@ -18,6 +18,17 @@ TimeVisual — a React 18 + TypeScript + Tailwind + Vite productivity app with F
 - Types: `src/types/*.ts`
 - i18n: `src/i18n/locales/zh.json` + `en.json`
 
+## Design / Color Rules
+
+### NO Purple or Blue-Purple
+
+**NEVER** use purple, blue-purple, bright blue-purple gradients, or purple-blue color schemes anywhere in the UI.
+
+The app's palette is **low-saturation gray-blue, soft haze blue (雾霾蓝), and light gray-blue**:
+- Avatar backgrounds: solid `#8B9DAB` (muted gray-blue), not gradients
+- Accent tones: `#7B929F`, `#9AABB5`, `#A3B5BF` range
+- Avoid: `blue-400 to purple-500`, any `purple-*`, any `violet-*`, any saturated blue-purple gradient
+
 ## Critical Rules
 
 ### NO BLOCKING LOADING SPINNERS
@@ -64,3 +75,13 @@ When adding a new module, add its `use*Entries()` call to the preload block in A
 10. `src/components/layout/Header.tsx` — icon/title/subtitle/border
 11. `src/components/overview/OverviewDashboard.tsx` — add overview card
 12. `tailwind.config.js` — add `mode.{module}` color
+
+## Git & Commit Rules
+
+### Auto-Commit After Every Change
+
+**ALWAYS** commit your changes after making any code modifications.
+- Run `git add` and `git commit` immediately after finishing any code edits (e.g., adding a module, fixing a bug, or adjusting styles).
+- Commit messages must be clear and descriptive (e.g., `feat: move game entry below settings`, `fix: change avatar color to muted gray-blue`).
+- **NEVER** leave uncommitted changes in the working directory.
+- **NEVER** add your own name, signature, `Co-authored-by` tag (e.g., `Co-authored-by: Claude`), or any AI attribution to the commit message or author fields.

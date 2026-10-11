@@ -34,7 +34,7 @@ export default function SportQuickTemplates({ onSelect }: SportQuickTemplatesPro
             key={tpl.labelKey}
             type="button"
             onClick={() => onSelect(tpl)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-700/60 hover:bg-mode-sport/15 dark:hover:bg-mode-sport/20 text-sm text-gray-700 dark:text-gray-200 rounded-full transition-colors border border-transparent hover:border-mode-sport/30"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 min-w-[120px] bg-gray-100 dark:bg-gray-700/60 hover:bg-mode-sport/15 dark:hover:bg-mode-sport/20 text-sm text-gray-700 dark:text-gray-200 rounded-full transition-colors border border-transparent hover:border-mode-sport/30"
           >
             <span>{tpl.emoji}</span>
             <span>{t(tpl.labelKey, tpl.fallback)}</span>
