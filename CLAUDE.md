@@ -29,6 +29,30 @@ The app's palette is **low-saturation gray-blue, soft haze blue (雾霾蓝), and
 - Accent tones: `#7B929F`, `#9AABB5`, `#A3B5BF` range
 - Avoid: `blue-400 to purple-500`, any `purple-*`, any `violet-*`, any saturated blue-purple gradient
 
+## Common TypeScript Pitfalls (avoid these)
+
+### ES Target Compatibility
+Project target is **ES2020**. Do NOT use ES2022+ features:
+- ❌ `new Error('msg', { cause: err })` — use `Object.assign(new Error('msg'), { cause: err })`
+- ❌ `Array.at()`, `Object.hasOwn()` — use bracket access / `hasOwnProperty`
+
+### Motion / Framer Motion Types
+- `ease` must be a typed tuple, not a plain array:
+  - ❌ `ease: [0.25, 0.1, 0.25, 1]`
+  - ✅ `ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number]`
+
+### React Hook Imports
+- Every hook you use (`useState`, `useMemo`, `useCallback`, `useEffect`, `useRef`) **must** be in the import statement. Do NOT assume the previous import covers it.
+
+### Optional vs Nullable Fields
+- TypeScript `?:` fields are `T | undefined`, NOT `T | null`. When constructing objects with optional fields, use `undefined` (or omit the field), never `null`.
+
+### Unused Variables
+- `tsconfig` has `noUnusedLocals` and `noUnusedParameters` enabled. Any declared-but-unused variable is a build error. Remove it or use it.
+
+### Pre-Push Verification
+**ALWAYS** run `npm run predeploy-check` (or at minimum `npx tsc -b`) before pushing. IDE type-checking may miss errors that the strict CLI build catches.
+
 ## Critical Rules
 
 ### NO BLOCKING LOADING SPINNERS
