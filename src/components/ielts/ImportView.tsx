@@ -9,7 +9,7 @@ import { validateImportJson } from './validation'
 import type { ParsedImport } from './validation'
 import { useIeltsSessions, useIeltsMistakes, useIeltsItems, useIeltsReviews, useIeltsReflections, useIeltsImports } from './hooks'
 import { IELTS_TAGS, SUBJECT_COLORS } from './constants'
-import { ACCENT, btnPrimary, btnSecondary, textareaClass } from './styles'
+import { ACCENT, btnPrimary, btnSecondary, btnGhost, textareaClass } from './styles'
 import { getNextReviewDate } from './utils'
 import type { IeltsSubject } from './types'
 
@@ -28,12 +28,60 @@ const AI_PROMPT = `请把我们今天的学习对话整理成 JSON，严格遵�
 3. 今天没聊到的内容，对应数组写 []
 4. 不确定的信息宁可留空字符串，不要编造`
 
+const EXAMPLE_JSON = `{
+  "version": 1,
+  "date": "${format(new Date(), 'yyyy-MM-dd')}",
+  "sessions": [
+    {
+      "subject": "listening",
+      "source": "剑雅 21 Test 2",
+      "score": "32/40",
+      "minutes": 30,
+      "note": "选择题容易漏听定位词"
+    },
+    {
+      "subject": "reading",
+      "source": "剑雅 21 Test 2",
+      "score": "34/40",
+      "minutes": 40,
+      "note": "判断题NG和FALSE容易混淆"
+    }
+  ],
+  "mistakes": [
+    {
+      "subject": "listening",
+      "source": "剑雅 21 Test 2",
+      "question_no": "Q23",
+      "question_type": "填空",
+      "my_answer": "libary",
+      "correct_answer": "library",
+      "tag": "拼写",
+      "explanation": "漏写了r"
+    }
+  ],
+  "expressions": [
+    {
+      "text": "in the long run",
+      "meaning": "从长远来看",
+      "example": "In the long run, this will benefit everyone."
+    }
+  ],
+  "todos": [
+    {
+      "content": "复习剑雅21听力Section3",
+      "due_in_days": 3
+    }
+  ],
+  "reflection": "今天听力进步明显，阅读还需加强时间管理。"
+}`
+
 export default function ImportView({ onNavigate }: { onNavigate?: (tab: string) => void }) {
   const { t } = useTranslation()
   const [raw, setRaw] = useState('')
   const [errors, setErrors] = useState<string[]>([])
   const [parsed, setParsed] = useState<ParsedImport | null>(null)
   const [showTagTable, setShowTagTable] = useState(false)
+  const [showExample, setShowExample] = useState(false)
   const [copied, setCopied] = useState(false)
   const [importing, setImporting] = useState(false)
   const [importResult, setImportResult] = useState<{ sessions: number; mistakes: number; expressions: number; todos: number } | null>(null)
@@ -65,6 +113,7 @@ export default function ImportView({ onNavigate }: { onNavigate?: (tab: string) 
     try {
       await navigator.clipboard.writeText(AI_PROMPT)
       setCopied(true)
+      toast.success('已复制指令到剪贴板')
       setTimeout(() => setCopied(false), 2000)
     } catch {
       toast.error('复制失败')
@@ -74,6 +123,7 @@ export default function ImportView({ onNavigate }: { onNavigate?: (tab: string) 
   const handleValidate = useCallback(() => {
     setErrors([])
     setParsed(null)
+    setImportResult(null)
     let obj: unknown
     try {
       obj = JSON.parse(raw)
@@ -91,6 +141,7 @@ export default function ImportView({ onNavigate }: { onNavigate?: (tab: string) 
       setCheckedMistakes(result.data.mistakes.map(() => true))
       setCheckedExpressions(result.data.expressions.map(() => true))
       setCheckedTodos(result.data.todos.map(() => true))
+      toast.success('校验通过，请预览后确认导入')
     }
   }, [raw])
 
@@ -102,21 +153,17 @@ export default function ImportView({ onNavigate }: { onNavigate?: (tab: string) 
     const date = parsed.date
     const importedCounts = { sessions: 0, mistakes: 0, expressions: 0, todos: 0 }
 
-    // Build session ID lookup: new sessions + existing ones
     const sessionIdMap = new Map<string, string>()
-
-    // Pre-populate with existing sessions for this date (for dedup-skipped ones)
     for (const existing of sessions.entries) {
       if (existing.date === date) {
         sessionIdMap.set(`${existing.subject}|${existing.source}`, existing.id)
       }
     }
 
-    // Create new sessions (skipping duplicates)
     parsed.sessions.forEach((s, i) => {
       if (!checkedSessions[i]) return
       const key = `${date}|${s.source}`
-      if (existingSessions.has(key)) return // already in sessionIdMap from above
+      if (existingSessions.has(key)) return
       const id = crypto.randomUUID()
       sessionIdMap.set(`${s.subject}|${s.source}`, id)
       sessions.addEntry({
@@ -129,7 +176,6 @@ export default function ImportView({ onNavigate }: { onNavigate?: (tab: string) 
     parsed.mistakes.forEach((m, i) => {
       if (!checkedMistakes[i]) return
       const mistakeId = crypto.randomUUID()
-      // Link to session (new or existing)
       const linkedSessionId = sessionIdMap.get(`${m.subject}|${m.source}`) ?? ''
       mistakes.addEntry({
         id: mistakeId, sessionId: linkedSessionId, questionNo: m.question_no,
@@ -194,35 +240,26 @@ export default function ImportView({ onNavigate }: { onNavigate?: (tab: string) 
       rawJson: raw, status: 'success',
     })
 
-    // Optimistic: data is written to React state immediately (visible in UI).
-    // Firestore writes happen async in the background via setDoc.
-    // If Firestore fails, the error state on each hook will update,
-    // but data remains in React state until page refresh.
-    toast.success(`已导入 ${importedCounts.sessions} 条练习、${importedCounts.mistakes} 条错题、${importedCounts.expressions} 条表达、${importedCounts.todos} 条待办`)
+    toast.success(`✓ 导入成功`)
     setImportResult(importedCounts)
     setImporting(false)
     setRaw('')
     setParsed(null)
-  }, [parsed, raw, importing, checkedSessions, checkedMistakes, checkedExpressions, checkedTodos, existingSessions, sessions, mistakes, items, reviews, reflections, imports, t])
+  }, [parsed, raw, importing, checkedSessions, checkedMistakes, checkedExpressions, checkedTodos, existingSessions, sessions, mistakes, items, reviews, reflections, imports])
 
-  // Preview summary counts
   const previewSummary = useMemo(() => {
     if (!parsed) return null
-    const sessionCount = checkedSessions.filter(Boolean).length
-    const mistakeCount = checkedMistakes.filter(Boolean).length
-    const exprCount = checkedExpressions.filter(Boolean).length
-    const todoCount = checkedTodos.filter(Boolean).length
-    return { sessionCount, mistakeCount, exprCount, todoCount }
+    return {
+      sessionCount: checkedSessions.filter(Boolean).length,
+      mistakeCount: checkedMistakes.filter(Boolean).length,
+      exprCount: checkedExpressions.filter(Boolean).length,
+      todoCount: checkedTodos.filter(Boolean).length,
+    }
   }, [parsed, checkedSessions, checkedMistakes, checkedExpressions, checkedTodos])
 
-  // Reactive Firestore error detection
   const writeErrors = [
-    sessions.error && '练习记录',
-    mistakes.error && '错题',
-    items.error && '知识库',
-    reviews.error && '复习计划',
-    reflections.error && '反思',
-    imports.error && '导入记录',
+    sessions.error && '练习记录', mistakes.error && '错题', items.error && '知识库',
+    reviews.error && '复习计划', reflections.error && '反思', imports.error && '导入记录',
   ].filter(Boolean) as string[]
 
   return (
@@ -232,36 +269,34 @@ export default function ImportView({ onNavigate }: { onNavigate?: (tab: string) 
         <div className="panel p-4 border-l-4 border-amber-500">
           <p className="text-sm font-semibold text-amber-600 dark:text-amber-400">⚠ 数据保存异常</p>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            以下数据可能未同步到云端：{writeErrors.join('、')}。请检查网络连接或登录状态，刷新后查看数据是否存在。
+            以下数据可能未同步到云端：{writeErrors.join('、')}。请检查网络连接或登录状态。
           </p>
         </div>
       )}
 
-      {/* Tip + Copy prompt + Tag table */}
+      {/* Tip + action buttons */}
       <div className="panel p-4 space-y-3">
         <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-          在外部 AI 中用固定指令整理学习记录为 JSON，粘贴到下方即可导入。
+          在 ChatGPT / Claude / Kimi 中用固定指令整理学习记录为 JSON，粘贴到下方即可一键导入。
         </p>
-        <button
-          onClick={handleCopyPrompt}
-          className={`${btnSecondary} h-9 px-4 text-sm`}
-        >
-          {copied ? '✓ 已复制' : '📋 复制固定指令'}
-        </button>
-        <button
-          onClick={() => setShowTagTable(!showTagTable)}
-          className="block text-[13px] text-[#c0392b] font-medium no-press"
-        >
-          {showTagTable ? '▲ 收起标签表' : '▶ 查看标签表'}
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button onClick={handleCopyPrompt} className={`${btnSecondary} h-9 px-4 text-sm`}>
+            {copied ? '✓ 已复制' : '📋 复制固定指令'}
+          </button>
+          <button onClick={() => setShowTagTable(!showTagTable)} className={`${btnGhost} h-9 px-3 text-sm`}>
+            {showTagTable ? '▲ 收起标签表' : '🏷 查看标签表'}
+          </button>
+          <button onClick={() => setShowExample(!showExample)} className={`${btnGhost} h-9 px-3 text-sm`}>
+            {showExample ? '▲ 收起示例' : '📄 查看示例JSON'}
+          </button>
+        </div>
+
+        {/* Tag table */}
         <AnimatedCollapse open={showTagTable}>
-          <div className="space-y-2 pt-2 border-t border-gray-100 dark:border-gray-700/50">
+          <div className="space-y-2 pt-3 border-t border-gray-100 dark:border-gray-700/50">
             {(Object.entries(IELTS_TAGS) as [IeltsSubject, string[]][]).map(([subj, tags]) => (
               <div key={subj} className="flex items-start gap-2">
-                <span
-                  className="text-[13px] font-semibold shrink-0 w-10"
-                  style={{ color: SUBJECT_COLORS[subj] }}
-                >
+                <span className="text-[13px] font-semibold shrink-0 w-10" style={{ color: SUBJECT_COLORS[subj] }}>
                   {t(`ielts.${subj}`)}
                 </span>
                 <div className="flex flex-wrap gap-1.5">
@@ -273,27 +308,52 @@ export default function ImportView({ onNavigate }: { onNavigate?: (tab: string) 
             ))}
           </div>
         </AnimatedCollapse>
+
+        {/* Example JSON */}
+        <AnimatedCollapse open={showExample}>
+          <div className="pt-3 border-t border-gray-100 dark:border-gray-700/50">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">JSON 示例</p>
+              <button
+                onClick={() => { setRaw(EXAMPLE_JSON); setShowExample(false); toast.success('已填入示例数据') }}
+                className="text-xs text-[#c0392b] font-medium hover:underline select-none">
+                使用此示例 →
+              </button>
+            </div>
+            <pre className="p-3 bg-gray-50 dark:bg-gray-800/40 rounded-lg text-xs font-mono text-gray-600 dark:text-gray-400
+              overflow-auto max-h-64 whitespace-pre-wrap leading-relaxed">
+              {EXAMPLE_JSON}
+            </pre>
+          </div>
+        </AnimatedCollapse>
       </div>
 
       {/* JSON textarea */}
       <div className="panel p-4">
+        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 block">
+          {t('ielts.importJson')}
+        </label>
         <textarea
           value={raw}
-          onChange={e => { setRaw(e.target.value); setParsed(null); setErrors([]) }}
-          placeholder="粘贴 JSON..."
+          onChange={e => { setRaw(e.target.value); setParsed(null); setErrors([]); setImportResult(null) }}
+          placeholder='{"version": 1, "date": "2026-10-12", "sessions": [...], ...}'
           rows={6}
-          className={`${textareaClass} font-mono`}
+          className={`${textareaClass} font-mono text-[13px]`}
           style={{ minHeight: 120 }}
           spellCheck={false}
         />
-        <div className="flex justify-end mt-3">
-          <button
-            onClick={handleValidate}
-            disabled={!raw.trim()}
+        <div className="flex items-center justify-between mt-3">
+          {raw.trim() && (
+            <button onClick={() => { setRaw(''); setParsed(null); setErrors([]) }}
+              className={`${btnGhost} h-9 px-3 text-sm`}>
+              清空
+            </button>
+          )}
+          <div className="flex-1" />
+          <button onClick={handleValidate} disabled={!raw.trim()}
             className={`${btnPrimary(!raw.trim())} h-11 px-6`}
-            style={{ backgroundColor: ACCENT }}
-          >
-            {t('ielts.validate')}
+            style={{ backgroundColor: ACCENT }}>
+            🔍 {t('ielts.validate')}
           </button>
         </div>
       </div>
@@ -314,40 +374,43 @@ export default function ImportView({ onNavigate }: { onNavigate?: (tab: string) 
       {parsed && previewSummary && (
         <div className="space-y-3">
           <div className="panel p-4">
-            {/* Summary line */}
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-              将导入：
+              📋 预览 — 将导入：
               <span className="text-[#c0392b] font-semibold ml-1">{previewSummary.sessionCount} 条记录</span>
               {previewSummary.mistakeCount > 0 && <span className="text-gray-500">、{previewSummary.mistakeCount} 条错题</span>}
               {previewSummary.exprCount > 0 && <span className="text-gray-500">、{previewSummary.exprCount} 条表达</span>}
               {previewSummary.todoCount > 0 && <span className="text-gray-500">、{previewSummary.todoCount} 条待办</span>}
             </p>
 
-            <p className="text-xs text-gray-400 mb-2">日期：{parsed.date}</p>
+            <p className="text-xs text-gray-400 mb-3">📅 日期：{parsed.date}</p>
 
             {/* Sessions */}
             {parsed.sessions.length > 0 && (
               <PreviewSection title={`练习 (${parsed.sessions.length})`}>
-                {parsed.sessions.map((s, i) => (
-                  <label key={i} className="flex items-start gap-2 py-1.5">
-                    <input
-                      type="checkbox"
-                      checked={checkedSessions[i] ?? true}
-                      onChange={e => {
-                        const next = [...checkedSessions]
-                        next[i] = e.target.checked
-                        setCheckedSessions(next)
-                      }}
-                      className="mt-0.5"
-                    />
-                    <span className="text-[13px] text-gray-700 dark:text-gray-300">
-                      [{s.subject}] {s.source} {s.score && `— ${s.score}`} {s.minutes}min
-                      {existingSessions.has(`${parsed.date}|${s.source}`) && (
-                        <span className="ml-1 text-amber-500 font-medium">⚠ {t('ielts.duplicate')}</span>
-                      )}
-                    </span>
-                  </label>
-                ))}
+                {parsed.sessions.map((s, i) => {
+                  const isDup = existingSessions.has(`${parsed.date}|${s.source}`)
+                  const color = SUBJECT_COLORS[s.subject as IeltsSubject] ?? '#888'
+                  return (
+                    <label key={i} className={`flex items-center gap-2.5 py-1.5 rounded-md px-1 -mx-1
+                      hover:bg-gray-50 dark:hover:bg-gray-700/20 cursor-pointer transition-colors ${
+                      isDup ? 'opacity-60' : ''}`}>
+                      <input type="checkbox" checked={checkedSessions[i] ?? true}
+                        onChange={e => { const n = [...checkedSessions]; n[i] = e.target.checked; setCheckedSessions(n) }}
+                        className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600
+                          text-[#c0392b] focus:ring-[#c0392b]/30 cursor-pointer shrink-0" />
+                      <span className="px-1.5 py-px rounded text-[10px] font-bold text-white leading-tight shrink-0"
+                        style={{ backgroundColor: color }}>
+                        {t(`ielts.${s.subject}`)}
+                      </span>
+                      <span className="text-[13px] text-gray-700 dark:text-gray-300 truncate">
+                        {s.source}
+                      </span>
+                      {s.score && <span className="text-[13px] font-bold tabular-nums shrink-0" style={{ color }}>{s.score}</span>}
+                      <span className="text-xs text-gray-400 tabular-nums shrink-0">{s.minutes}min</span>
+                      {isDup && <span className="text-[10px] text-amber-500 font-medium shrink-0">⚠ 已存在</span>}
+                    </label>
+                  )
+                })}
               </PreviewSection>
             )}
 
@@ -355,19 +418,16 @@ export default function ImportView({ onNavigate }: { onNavigate?: (tab: string) 
             {parsed.mistakes.length > 0 && (
               <PreviewSection title={`错题 (${parsed.mistakes.length})`}>
                 {parsed.mistakes.map((m, i) => (
-                  <label key={i} className="flex items-start gap-2 py-1.5">
-                    <input
-                      type="checkbox"
-                      checked={checkedMistakes[i] ?? true}
-                      onChange={e => {
-                        const next = [...checkedMistakes]
-                        next[i] = e.target.checked
-                        setCheckedMistakes(next)
-                      }}
-                      className="mt-0.5"
-                    />
-                    <span className="text-[13px] text-gray-700 dark:text-gray-300">
-                      {m.question_no} <span className="text-[#c0392b] font-medium">[{m.tag}]</span> {m.my_answer} → {m.correct_answer}
+                  <label key={i} className="flex items-center gap-2.5 py-1.5 rounded-md px-1 -mx-1
+                    hover:bg-gray-50 dark:hover:bg-gray-700/20 cursor-pointer transition-colors">
+                    <input type="checkbox" checked={checkedMistakes[i] ?? true}
+                      onChange={e => { const n = [...checkedMistakes]; n[i] = e.target.checked; setCheckedMistakes(n) }}
+                      className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600
+                        text-[#c0392b] focus:ring-[#c0392b]/30 cursor-pointer shrink-0" />
+                    <span className="px-1.5 py-px rounded text-[10px] font-medium shrink-0
+                      bg-[#c0392b]/8 text-[#c0392b] dark:text-[#ef6f6f] leading-tight">{m.tag}</span>
+                    <span className="text-[13px] text-gray-700 dark:text-gray-300 truncate">
+                      {m.question_no} <span className="text-gray-400">{m.my_answer}</span> → <span className="font-medium">{m.correct_answer}</span>
                     </span>
                   </label>
                 ))}
@@ -378,19 +438,14 @@ export default function ImportView({ onNavigate }: { onNavigate?: (tab: string) 
             {parsed.expressions.length > 0 && (
               <PreviewSection title={`表达 (${parsed.expressions.length})`}>
                 {parsed.expressions.map((e, i) => (
-                  <label key={i} className="flex items-start gap-2 py-1.5">
-                    <input
-                      type="checkbox"
-                      checked={checkedExpressions[i] ?? true}
-                      onChange={ev => {
-                        const next = [...checkedExpressions]
-                        next[i] = ev.target.checked
-                        setCheckedExpressions(next)
-                      }}
-                      className="mt-0.5"
-                    />
+                  <label key={i} className="flex items-center gap-2.5 py-1.5 rounded-md px-1 -mx-1
+                    hover:bg-gray-50 dark:hover:bg-gray-700/20 cursor-pointer transition-colors">
+                    <input type="checkbox" checked={checkedExpressions[i] ?? true}
+                      onChange={ev => { const n = [...checkedExpressions]; n[i] = ev.target.checked; setCheckedExpressions(n) }}
+                      className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600
+                        text-[#c0392b] focus:ring-[#c0392b]/30 cursor-pointer shrink-0" />
                     <span className="text-[13px] text-gray-700 dark:text-gray-300">
-                      <strong>{e.text}</strong> — {e.meaning}
+                      <strong>{e.text}</strong> <span className="text-gray-400">— {e.meaning}</span>
                     </span>
                   </label>
                 ))}
@@ -401,19 +456,14 @@ export default function ImportView({ onNavigate }: { onNavigate?: (tab: string) 
             {parsed.todos.length > 0 && (
               <PreviewSection title={`待办 (${parsed.todos.length})`}>
                 {parsed.todos.map((td, i) => (
-                  <label key={i} className="flex items-start gap-2 py-1.5">
-                    <input
-                      type="checkbox"
-                      checked={checkedTodos[i] ?? true}
-                      onChange={e => {
-                        const next = [...checkedTodos]
-                        next[i] = e.target.checked
-                        setCheckedTodos(next)
-                      }}
-                      className="mt-0.5"
-                    />
+                  <label key={i} className="flex items-center gap-2.5 py-1.5 rounded-md px-1 -mx-1
+                    hover:bg-gray-50 dark:hover:bg-gray-700/20 cursor-pointer transition-colors">
+                    <input type="checkbox" checked={checkedTodos[i] ?? true}
+                      onChange={e => { const n = [...checkedTodos]; n[i] = e.target.checked; setCheckedTodos(n) }}
+                      className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600
+                        text-[#c0392b] focus:ring-[#c0392b]/30 cursor-pointer shrink-0" />
                     <span className="text-[13px] text-gray-700 dark:text-gray-300">
-                      {td.content} <span className="text-gray-400">({td.due_in_days}天后)</span>
+                      {td.content} <span className="text-gray-400 text-xs">({td.due_in_days}天后)</span>
                     </span>
                   </label>
                 ))}
@@ -423,42 +473,33 @@ export default function ImportView({ onNavigate }: { onNavigate?: (tab: string) 
             {/* Reflection */}
             {parsed.reflection && (
               <PreviewSection title="反思">
-                <p className="text-[13px] text-gray-600 dark:text-gray-400 py-1">{parsed.reflection}</p>
+                <p className="text-[13px] text-gray-600 dark:text-gray-400 py-1 pl-1">{parsed.reflection}</p>
               </PreviewSection>
             )}
           </div>
 
-          {/* Actions — confirm + back */}
+          {/* Actions */}
           <div className="flex justify-end gap-2">
-            <button
-              onClick={() => { setParsed(null); setErrors([]) }}
-              className={`${btnSecondary} h-11 px-5`}
-            >
+            <button onClick={() => { setParsed(null); setErrors([]) }} className={`${btnSecondary} h-11 px-5`}>
               返回修改
             </button>
-            <button
-              onClick={handleConfirmImport}
-              disabled={importing}
-              className={`${btnPrimary(importing)} h-11 px-6`}
-              style={{ backgroundColor: ACCENT }}
-            >
-              {importing ? '导入中...' : t('ielts.confirmImport')}
+            <button onClick={handleConfirmImport} disabled={importing}
+              className={`${btnPrimary(importing)} h-11 px-6`} style={{ backgroundColor: ACCENT }}>
+              {importing ? '导入中...' : `✓ ${t('ielts.confirmImport')}`}
             </button>
           </div>
         </div>
       )}
+
       {/* Import result */}
       {importResult && (
         <div className="panel p-4 border-l-4 border-green-500 space-y-2">
-          <p className="text-sm font-semibold text-green-700 dark:text-green-400">✓ 导入成功</p>
+          <p className="text-sm font-semibold text-green-700 dark:text-green-400">✓ {t('ielts.importSuccess')}</p>
           <p className="text-sm text-gray-600 dark:text-gray-400">
             已导入 {importResult.sessions} 条练习、{importResult.mistakes} 条错题、
             {importResult.expressions} 条表达、{importResult.todos} 条待办
           </p>
-          <button
-            onClick={() => onNavigate?.('record')}
-            className={`${btnSecondary} h-9 px-4 text-sm`}
-          >
+          <button onClick={() => onNavigate?.('record')} className={`${btnSecondary} h-9 px-4 text-sm`}>
             → 查看记录
           </button>
         </div>
@@ -484,7 +525,6 @@ function ImportHistoryItem({ record }: { record: import('./types').IeltsImportRe
   const date = new Date(record.importedAt)
   const label = `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
 
-  // Count items in the raw JSON
   let counts = ''
   try {
     const data = JSON.parse(record.rawJson)
@@ -498,28 +538,35 @@ function ImportHistoryItem({ record }: { record: import('./types').IeltsImportRe
 
   return (
     <div>
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="flex items-center gap-2 w-full text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-800/40 rounded-lg px-2 py-1.5 -mx-2 no-press"
-      >
-        <span className="text-gray-500 tabular-nums shrink-0">{label}</span>
+      <button onClick={() => setExpanded(!expanded)}
+        className="flex items-center gap-2 w-full text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-800/40
+          rounded-lg px-2 py-1.5 -mx-2 no-press transition-colors">
+        <span className={`text-[11px] px-1.5 py-0.5 rounded shrink-0 ${
+          record.status === 'success'
+            ? 'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400'
+            : 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400'
+        }`}>
+          {record.status === 'success' ? '✓' : '✗'}
+        </span>
+        <span className="text-gray-500 tabular-nums shrink-0 text-xs">{label}</span>
         <span className="text-gray-400 text-xs truncate flex-1">{counts}</span>
         <span className="text-gray-400 text-xs shrink-0">{expanded ? '▲' : '▼'}</span>
       </button>
-      {expanded && (
-        <pre className="mt-1 p-3 bg-gray-50 dark:bg-gray-800/40 rounded-lg text-xs font-mono text-gray-600 dark:text-gray-400 overflow-auto max-h-48 whitespace-pre-wrap">
+      <AnimatedCollapse open={expanded}>
+        <pre className="mt-1 p-3 bg-gray-50 dark:bg-gray-800/40 rounded-lg text-xs font-mono text-gray-600 dark:text-gray-400
+          overflow-auto max-h-48 whitespace-pre-wrap">
           {(() => { try { return JSON.stringify(JSON.parse(record.rawJson), null, 2) } catch { return record.rawJson } })()}
         </pre>
-      )}
+      </AnimatedCollapse>
     </div>
   )
 }
 
 function PreviewSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="mb-3">
-      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">{title}</p>
-      <div className="pl-1">{children}</div>
+    <div className="mb-4">
+      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{title}</p>
+      <div>{children}</div>
     </div>
   )
 }

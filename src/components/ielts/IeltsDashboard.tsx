@@ -10,6 +10,7 @@ import StatsView from './StatsView'
 import HomeView from './HomeView'
 import KnowledgeView from './KnowledgeView'
 import WeeklyView from './WeeklyView'
+import VocabView from './VocabView'
 import type { IeltsView } from './types'
 
 const TABS: { kind: IeltsView['kind']; label: string; icon: string }[] = [
@@ -19,6 +20,7 @@ const TABS: { kind: IeltsView['kind']; label: string; icon: string }[] = [
   { kind: 'knowledge', label: '知识库', icon: '📚' },
   { kind: 'stats',     label: '分析', icon: '📊' },
   { kind: 'weekly',    label: '周报', icon: '📅' },
+  { kind: 'vocab',     label: '词汇', icon: '📖' },
 ]
 
 function IeltsDashboard() {
@@ -65,6 +67,7 @@ function IeltsDashboard() {
       {view.kind === 'stats' && <StatsView />}
       {view.kind === 'knowledge' && <KnowledgeView />}
       {view.kind === 'weekly' && <WeeklyView />}
+      {view.kind === 'vocab' && <VocabView />}
     </div>
   )
 }

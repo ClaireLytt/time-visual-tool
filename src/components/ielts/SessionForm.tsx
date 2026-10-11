@@ -17,11 +17,13 @@ interface SessionFormProps {
   onAddCategory: (cat: IeltsSourceCategory) => void
   onUpdateCategory: (id: string, patch: Partial<IeltsSourceCategory>) => void
   onDeleteCategory: (id: string) => void
+  defaultMinutes?: number
 }
 
 export default function SessionForm({
   date, categories, onAdd, onAddMistake,
   onAddCategory, onUpdateCategory, onDeleteCategory,
+  defaultMinutes,
 }: SessionFormProps) {
   const { t } = useTranslation()
   const [isMockMode, setIsMockMode] = useState(false)
@@ -39,6 +41,13 @@ export default function SessionForm({
   const [minutes, setMinutes] = useState('')
   const [note, setNote] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
+
+  // Auto-fill minutes from timer
+  useEffect(() => {
+    if (defaultMinutes && defaultMinutes > 0) {
+      setMinutes(String(defaultMinutes))
+    }
+  }, [defaultMinutes])
 
   const selectedCat = categories.find(c => c.id === categoryId)
   const source = selectedCat

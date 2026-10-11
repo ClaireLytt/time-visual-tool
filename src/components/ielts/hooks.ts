@@ -1,6 +1,7 @@
 /* ─── IELTS Review Module — Firestore Hooks ─── */
 
 import { useCallback, useMemo } from 'react'
+import { format } from 'date-fns'
 import { useFirestore } from '../../hooks/useFirestore'
 import { DEFAULT_SOURCE_CATEGORIES } from './constants'
 import type {
@@ -10,6 +11,7 @@ import type {
   IeltsReview, IeltsReviewsData,
   IeltsReflection, IeltsReflectionsData,
   IeltsImportRecord, IeltsImportsData,
+  IeltsVocabWord,
 } from './types'
 
 /* ── Generic helpers ── */
@@ -45,7 +47,7 @@ function isValidSession(e: unknown): boolean {
 function isValidMistake(e: unknown): boolean {
   if (!e || typeof e !== 'object') return false
   const o = e as Record<string, unknown>
-  return isString(o.id) && isString(o.sessionId) && isString(o.tag) && isString(o.createdAt)
+  return isString(o.id) && isString(o.sessionId) && isString(o.tag) && isString(o.date) && isString(o.createdAt)
 }
 
 function isValidItem(e: unknown): boolean {
@@ -70,6 +72,15 @@ function isValidImport(e: unknown): boolean {
   if (!e || typeof e !== 'object') return false
   const o = e as Record<string, unknown>
   return isString(o.id) && isString(o.importedAt) && isString(o.rawJson)
+}
+
+function isValidVocabWord(e: unknown): boolean {
+  if (!e || typeof e !== 'object') return false
+  const o = e as Record<string, unknown>
+  return isString(o.id) && isString(o.word) && isString(o.meaning)
+    && isNumber(o.easeFactor) && isNumber(o.interval) && isNumber(o.repetitions)
+    && isString(o.nextReview) && isString(o.createdAt) && isString(o.source)
+    && isString(o.listType)
 }
 
 /* ── Hook factory ── */
@@ -160,7 +171,7 @@ export function useIeltsReviews() {
   const result = useIeltsCollection<IeltsReview>('ieltsReviews', isValidReview)
 
   const dueReviews = useMemo(() => {
-    const today = new Date().toISOString().slice(0, 10)
+    const today = format(new Date(), 'yyyy-MM-dd')
     return result.entries.filter(r => r.nextReviewDate <= today)
   }, [result.entries])
 
@@ -173,4 +184,8 @@ export function useIeltsReflections() {
 
 export function useIeltsImports() {
   return useIeltsCollection<IeltsImportRecord>('ieltsImports', isValidImport)
+}
+
+export function useIeltsVocab() {
+  return useIeltsCollection<IeltsVocabWord>('ieltsVocab', isValidVocabWord)
 }

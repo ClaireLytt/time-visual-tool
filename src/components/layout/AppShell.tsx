@@ -43,7 +43,7 @@ const MODE_COLORS: Record<AppMode, { light: string; dark: string }> = {
   study:    { light: '#dce4f4', dark: '#141c2a' },
   work:     { light: '#f4e6d0', dark: '#281e14' },
   podcast:  { light: '#f2dde6', dark: '#28141e' },
-  ielts:    { light: '#f4dde0', dark: '#281418' },
+  ielts:    { light: '#f8e2e6', dark: '#281418' },
 }
 
 function validateMode(raw: unknown): AppMode | null {

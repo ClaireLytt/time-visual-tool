@@ -16,6 +16,7 @@ export function viewToParams(view: IeltsView): Record<string, string> {
     case 'stats':     return { [VIEW_PARAM]: 'stats' }
     case 'knowledge': return { [VIEW_PARAM]: 'knowledge' }
     case 'weekly':    return { [VIEW_PARAM]: 'weekly' }
+    case 'vocab':     return { [VIEW_PARAM]: 'vocab' }
   }
 }
 
@@ -28,6 +29,7 @@ export function paramsToView(params: URLSearchParams): IeltsView {
     case 'stats':     return { kind: 'stats' }
     case 'knowledge': return { kind: 'knowledge' }
     case 'weekly':    return { kind: 'weekly' }
+    case 'vocab':     return { kind: 'vocab' }
     default:          return { kind: 'home' }
   }
 }

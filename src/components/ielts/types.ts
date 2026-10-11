@@ -44,7 +44,9 @@ export interface IeltsReview {
   itemId: string
   nextReviewDate: string  // yyyy-MM-dd
   reviewCount: number
-  result: 'good' | 'again'
+  result: 'good' | 'again' | 'hard' | 'easy'
+  easeFactor?: number     // SM-2 ease factor (default 2.5 for legacy reviews)
+  interval?: number       // SM-2 interval in days
   createdAt: string
 }
 
@@ -105,6 +107,28 @@ export interface IeltsImportsData {
   entries: IeltsImportRecord[]
 }
 
+/* ─── Vocabulary ─── */
+
+export interface IeltsVocabWord {
+  id: string
+  word: string
+  meaning: string
+  phonetic?: string
+  example?: string
+  source: string
+  listType: 'core' | 'academic' | 'custom'
+  easeFactor: number
+  interval: number
+  repetitions: number
+  nextReview: string        // yyyy-MM-dd
+  createdAt: string
+}
+
+export interface IeltsVocabData {
+  version: number
+  entries: IeltsVocabWord[]
+}
+
 /* ─── Internal view routing ─── */
 
 export type IeltsView =
@@ -114,3 +138,4 @@ export type IeltsView =
   | { kind: 'stats' }
   | { kind: 'knowledge' }
   | { kind: 'weekly' }
+  | { kind: 'vocab' }

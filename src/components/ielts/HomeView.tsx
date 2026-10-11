@@ -2,17 +2,20 @@
 
 import { useMemo, useCallback, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
 import { format, subDays } from 'date-fns'
 import ExamCountdown from './ExamCountdown'
 import ReviewCard from './ReviewCard'
 import StudyHeatmap from './StudyHeatmap'
 import { useIeltsSessions, useIeltsMistakes, useIeltsItems, useIeltsReviews } from './hooks'
-import { getNextReviewDate } from './utils'
+import { sm2, DEFAULT_EF, type Quality } from './sm2'
 import { SUBJECT_COLORS } from './constants'
 import type { IeltsSubject } from './types'
 
 export default function HomeView() {
   const { t } = useTranslation()
+  const [, setSearchParams] = useSearchParams()
+
   // Reactive: updates if the app stays open past midnight
   const [today, setToday] = useState(() => format(new Date(), 'yyyy-MM-dd'))
   useEffect(() => {
@@ -30,14 +33,14 @@ export default function HomeView() {
   const { dueReviews, updateEntry: updateReview } = useIeltsReviews()
 
   const weekMinutes = useMemo(() => {
-    const weekAgo = format(subDays(new Date(), 7), 'yyyy-MM-dd')
+    const weekAgo = format(subDays(new Date(), 6), 'yyyy-MM-dd')
     return sessions.entries
       .filter(s => s.date >= weekAgo)
       .reduce((sum, s) => sum + s.minutes, 0)
   }, [sessions.entries])
 
   const weekWeaknesses = useMemo(() => {
-    const weekAgo = format(subDays(new Date(), 7), 'yyyy-MM-dd')
+    const weekAgo = format(subDays(new Date(), 6), 'yyyy-MM-dd')
     const recentMistakes = mistakes.entries.filter(m => m.date >= weekAgo)
     const counts = new Map<string, number>()
     for (const m of recentMistakes) {
@@ -63,19 +66,18 @@ export default function HomeView() {
       .filter(Boolean) as { review: typeof dueReviews[0]; item: typeof items.entries[0] }[]
   }, [dueReviews, items.entries])
 
-  const handleGood = useCallback((reviewId: string, currentCount: number) => {
+  const handleRate = useCallback((reviewId: string, quality: Quality, review: typeof dueReviews[0]) => {
+    const ef = review.easeFactor ?? DEFAULT_EF
+    const interval = review.interval ?? 0
+    const result = sm2(quality, review.reviewCount, ef, interval)
+    const resultLabel: 'good' | 'again' | 'hard' | 'easy' =
+      quality === 0 ? 'again' : quality === 3 ? 'hard' : quality === 5 ? 'easy' : 'good'
     updateReview(reviewId, {
-      result: 'good',
-      reviewCount: currentCount + 1,
-      nextReviewDate: getNextReviewDate(currentCount + 1),
-    })
-  }, [updateReview])
-
-  const handleAgain = useCallback((reviewId: string) => {
-    updateReview(reviewId, {
-      result: 'again',
-      reviewCount: 0,
-      nextReviewDate: getNextReviewDate(0),
+      result: resultLabel,
+      reviewCount: result.repetitions,
+      nextReviewDate: result.nextReviewDate,
+      easeFactor: result.easeFactor,
+      interval: result.interval,
     })
   }, [updateReview])
 
@@ -106,7 +108,7 @@ export default function HomeView() {
 
       {/* Empty state */}
       {!hasData && (
-        <div className="panel p-8 text-center space-y-3">
+        <div className="panel p-10 text-center space-y-3">
           <p className="text-3xl">📝</p>
           <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
             开始你的雅思复盘之旅
@@ -151,8 +153,7 @@ export default function HomeView() {
                 key={review.id}
                 item={item}
                 review={review}
-                onGood={() => handleGood(review.id, review.reviewCount)}
-                onAgain={() => handleAgain(review.id)}
+                onRate={(quality) => handleRate(review.id, quality, review)}
               />
             ))}
             {dueItems.length > 5 && (
@@ -170,7 +171,10 @@ export default function HomeView() {
           <SectionHeader title="最近练习" />
           <div className="panel divide-y divide-gray-100 dark:divide-gray-700/50 overflow-hidden">
             {recentSessions.map(s => (
-              <div key={s.id} className="flex items-center gap-2.5 px-3 py-2.5">
+              <button key={s.id}
+                onClick={() => setSearchParams({ iv: 'record' }, { replace: true })}
+                className="flex items-center gap-2.5 px-3 py-2.5 w-full text-left
+                  hover:bg-gray-50/60 dark:hover:bg-gray-700/20 transition-colors no-press">
                 <span
                   className="w-10 text-center py-0.5 rounded text-[11px] font-bold text-white shrink-0"
                   style={{ backgroundColor: SUBJECT_COLORS[s.subject as IeltsSubject] ?? '#888' }}
@@ -182,7 +186,7 @@ export default function HomeView() {
                   <span className="text-sm text-gray-600 dark:text-gray-400 tabular-nums shrink-0 font-medium">{s.score}</span>
                 )}
                 <span className="text-xs text-gray-400 tabular-nums shrink-0">{s.date.slice(5)}</span>
-              </div>
+              </button>
             ))}
           </div>
         </section>

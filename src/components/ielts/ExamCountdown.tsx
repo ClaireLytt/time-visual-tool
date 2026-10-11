@@ -14,6 +14,7 @@ export default function ExamCountdown() {
   const [editing, setEditing] = useState(false)
 
   const daysLeft = examDate ? differenceInCalendarDays(new Date(examDate), new Date()) : null
+  const isExpired = daysLeft !== null && daysLeft < 0
 
   const handleSave = (date: string) => {
     setExamDate(date)
@@ -21,7 +22,14 @@ export default function ExamCountdown() {
     setEditing(false)
   }
 
+  const handleClear = () => {
+    setExamDate('')
+    try { localStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
+  }
+
   const color = daysLeft === null ? '#888'
+    : isExpired ? '#9ca3af'
+    : daysLeft === 0 ? '#e74c3c'
     : daysLeft < 7 ? '#e74c3c'
     : daysLeft < 30 ? '#f59e0b'
     : '#10b981'
@@ -41,20 +49,33 @@ export default function ExamCountdown() {
   }
 
   return (
-    <button onClick={() => setEditing(true)} className="panel p-2.5 text-center w-full no-press">
+    <div className="panel p-2.5 text-center">
       <span className="text-base">🎯</span>
       {daysLeft !== null ? (
-        <>
-          <p className="text-lg font-bold tabular-nums mt-0.5" style={{ color }}>
-            {daysLeft > 0 ? daysLeft : '🔥'}
-          </p>
-          <p className="text-[10px] text-gray-400 mt-0.5 leading-tight">
-            {daysLeft > 0 ? t('ielts.daysLeft') : '考试日'}
-          </p>
-        </>
+        isExpired ? (
+          <>
+            <p className="text-sm font-bold text-gray-400 mt-0.5">考试已结束</p>
+            <button onClick={handleClear}
+              className="text-[10px] text-[#c0392b] font-medium mt-0.5 hover:underline select-none">
+              设置新日期
+            </button>
+          </>
+        ) : daysLeft === 0 ? (
+          <>
+            <p className="text-lg font-bold mt-0.5" style={{ color }}>🔥 今天</p>
+            <p className="text-[10px] text-gray-400 mt-0.5 leading-tight">考试日</p>
+          </>
+        ) : (
+          <button onClick={() => setEditing(true)} className="w-full no-press">
+            <p className="text-lg font-bold tabular-nums mt-0.5" style={{ color }}>{daysLeft}</p>
+            <p className="text-[10px] text-gray-400 mt-0.5 leading-tight">{t('ielts.daysLeft')}</p>
+          </button>
+        )
       ) : (
-        <p className="text-[10px] text-gray-400 mt-1 leading-tight">{t('ielts.setExamDate')}</p>
+        <button onClick={() => setEditing(true)} className="w-full no-press">
+          <p className="text-[10px] text-gray-400 mt-1 leading-tight">{t('ielts.setExamDate')}</p>
+        </button>
       )}
-    </button>
+    </div>
   )
 }
