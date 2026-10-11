@@ -255,6 +255,8 @@
     "weeklyGoal": "本周",
     "weeklyGoalProgress": "{{done}}/{{goal}} 次运动",
     "weeklyGoalComplete": "目标达成!",
+    "decreaseGoal": "减少目标",
+    "increaseGoal": "增加目标",
     "quickTemplates": "快速添加",
     "templateRunning": "跑步 30分钟",
     "templateGym": "健身 60分钟",

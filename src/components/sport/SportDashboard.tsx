@@ -40,19 +40,24 @@ function SportDashboard() {
     getReflection, upsertReflection, deleteReflection,
     importData,
     getEntriesForDate, getSummaryForPeriod,
+    weeklyGoal, setWeeklyGoal,
   } = useSportEntries()
 
   const dayEntries = useMemo(() => getEntriesForDate(selectedDate), [getEntriesForDate, selectedDate])
 
-  // Personal best durations per sport type
-  const bestDurations = useMemo(() => {
-    const bests: Record<string, number> = {}
+  // Personal best: track the ID of the entry that first achieved the best duration per sport type
+  const bestEntryIds = useMemo(() => {
+    const bests: Record<string, { duration: number; id: string; createdAt: string }> = {}
     for (const e of entries) {
-      if (!bests[e.sportType] || e.duration > bests[e.sportType]) {
-        bests[e.sportType] = e.duration
+      if (e.duration <= 0) continue
+      const cur = bests[e.sportType]
+      if (!cur || e.duration > cur.duration || (e.duration === cur.duration && e.createdAt < cur.createdAt)) {
+        bests[e.sportType] = { duration: e.duration, id: e.id, createdAt: e.createdAt }
       }
     }
-    return bests
+    const ids = new Set<string>()
+    for (const v of Object.values(bests)) ids.add(v.id)
+    return ids
   }, [entries])
   const periodSummary = useMemo(() => getSummaryForPeriod(selectedDate, viewMode), [getSummaryForPeriod, selectedDate, viewMode])
 
@@ -149,7 +154,7 @@ function SportDashboard() {
         </AnimatedCollapse>
 
         <DatePicker selectedDate={selectedDate} onDateChange={handleDateChange} viewMode={viewMode} />
-        <SportWeeklyGoal entries={entries} selectedDate={selectedDate} />
+        <SportWeeklyGoal entries={entries} selectedDate={selectedDate} weeklyGoal={weeklyGoal} onWeeklyGoalChange={setWeeklyGoal} />
         <SportSummaryCard
           totalDuration={periodSummary.totalDuration}
           totalCalories={periodSummary.totalCalories}
@@ -181,7 +186,7 @@ function SportDashboard() {
                 onTemplateFillConsumed={() => setTemplateFill(null)}
               />
             </div>
-            <SportEntryList entries={dayEntries} onDelete={deleteEntry} onEdit={setEditingEntry} bestDurations={bestDurations} />
+            <SportEntryList entries={dayEntries} onDelete={deleteEntry} onEdit={setEditingEntry} bestEntryIds={bestEntryIds} />
           </div>
         )}
 

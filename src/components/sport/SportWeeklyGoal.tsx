@@ -1,17 +1,18 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { startOfWeek, endOfWeek, format, parseISO } from 'date-fns'
 import type { SportEntry } from '../../types/sport'
 
-const WEEKLY_GOAL = 3
-
 interface SportWeeklyGoalProps {
   entries: SportEntry[]
   selectedDate: string
+  weeklyGoal: number
+  onWeeklyGoalChange: (goal: number) => void
 }
 
-export default function SportWeeklyGoal({ entries, selectedDate }: SportWeeklyGoalProps) {
+export default function SportWeeklyGoal({ entries, selectedDate, weeklyGoal, onWeeklyGoalChange }: SportWeeklyGoalProps) {
   const { t } = useTranslation()
+  const [editing, setEditing] = useState(false)
 
   const weekCount = useMemo(() => {
     const anchor = parseISO(selectedDate)
@@ -22,8 +23,8 @@ export default function SportWeeklyGoal({ entries, selectedDate }: SportWeeklyGo
     return entries.filter(e => e.date >= startStr && e.date <= endStr).length
   }, [entries, selectedDate])
 
-  const progress = Math.min(weekCount / WEEKLY_GOAL, 1)
-  const isComplete = weekCount >= WEEKLY_GOAL
+  const progress = Math.min(weekCount / weeklyGoal, 1)
+  const isComplete = weekCount >= weeklyGoal
 
   return (
     <div className="panel p-4 mb-4">
@@ -31,11 +32,46 @@ export default function SportWeeklyGoal({ entries, selectedDate }: SportWeeklyGo
         <span className="text-xs font-semibold tracking-wide uppercase text-calm-muted dark:text-gray-400">
           {t('sport.weeklyGoal')}
         </span>
-        <span className={`text-sm font-medium ${isComplete ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-gray-300'}`}>
-          {isComplete
-            ? t('sport.weeklyGoalComplete')
-            : t('sport.weeklyGoalProgress', { done: weekCount, goal: WEEKLY_GOAL })}
-        </span>
+        <div className="flex items-center gap-2">
+          {editing ? (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => { onWeeklyGoalChange(weeklyGoal - 1); }}
+                disabled={weeklyGoal <= 1}
+                className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm font-bold flex items-center justify-center hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-30 transition-colors"
+                aria-label={t('sport.decreaseGoal')}
+              >
+                −
+              </button>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-200 w-5 text-center tabular-nums">
+                {weeklyGoal}
+              </span>
+              <button
+                onClick={() => { onWeeklyGoalChange(weeklyGoal + 1); }}
+                disabled={weeklyGoal >= 14}
+                className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm font-bold flex items-center justify-center hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-30 transition-colors"
+                aria-label={t('sport.increaseGoal')}
+              >
+                +
+              </button>
+              <button
+                onClick={() => setEditing(false)}
+                className="text-xs text-mode-sport ml-1"
+              >
+                ✓
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setEditing(true)}
+              className={`text-sm font-medium ${isComplete ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-gray-300'} hover:underline`}
+            >
+              {isComplete
+                ? t('sport.weeklyGoalComplete')
+                : t('sport.weeklyGoalProgress', { done: weekCount, goal: weeklyGoal })}
+            </button>
+          )}
+        </div>
       </div>
       <div className="w-full h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
         <div

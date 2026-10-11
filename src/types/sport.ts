@@ -32,6 +32,7 @@ export interface SportStorageData {
   entries: SportEntry[]
   categories: SportCategory[]
   reflections: SportReflection[]
+  weeklyGoal?: number
 }
 
 export interface SportCategoryBreakdown {

@@ -18,6 +18,11 @@ export function useSportEntries() {
   const entries = data.entries
   const categories = data.categories
   const reflections = data.reflections
+  const weeklyGoal = data.weeklyGoal ?? 3
+
+  const setWeeklyGoal = useCallback((goal: number) => {
+    setData(prev => ({ ...prev, weeklyGoal: Math.max(1, Math.min(goal, 14)) }))
+  }, [setData])
 
   const addEntry = useCallback((entry: Omit<SportEntry, 'id' | 'createdAt'>) => {
     const newEntry: SportEntry = {
@@ -152,6 +157,7 @@ export function useSportEntries() {
 
   return {
     entries, categories, reflections, data, loading,
+    weeklyGoal, setWeeklyGoal,
     addEntry, deleteEntry, updateEntry,
     addCategory, updateCategory, deleteCategory, reorderCategories,
     getReflection, upsertReflection, deleteReflection,

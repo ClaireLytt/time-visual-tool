@@ -255,6 +255,8 @@
     "weeklyGoal": "This week",
     "weeklyGoalProgress": "{{done}}/{{goal}} workouts",
     "weeklyGoalComplete": "Goal reached!",
+    "decreaseGoal": "Decrease goal",
+    "increaseGoal": "Increase goal",
     "quickTemplates": "Quick add",
     "templateRunning": "Running 30min",
     "templateGym": "Gym 60min",
