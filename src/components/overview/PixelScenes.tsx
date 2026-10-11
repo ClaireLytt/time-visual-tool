@@ -268,6 +268,38 @@ export function BardHallScene({ className }: SceneProps) {
   )
 }
 
+/** 📝 Exam Hall — desk, paper, pen, clock */
+export function ExamHallScene({ className }: SceneProps) {
+  return (
+    <svg {...svgProps(className)}>
+      {/* Floor & wall */}
+      <rect x="0" y="0" width="64" height="40" fill="#3a2a2a" />
+      <rect x="0" y="30" width="64" height="10" fill="#2a1a1a" />
+      {/* Desk */}
+      <rect x="8" y="22" width="48" height="4" fill="#8B6914" />
+      <rect x="10" y="26" width="4" height="8" fill="#6B4F12" />
+      <rect x="50" y="26" width="4" height="8" fill="#6B4F12" />
+      {/* Paper */}
+      <rect x="16" y="16" width="12" height="6" fill="#f0f0e8" />
+      <rect x="18" y="18" width="8" height="1" fill="#ccc" />
+      <rect x="18" y="20" width="6" height="1" fill="#ccc" />
+      {/* Pen */}
+      <rect x="30" y="17" width="1" height="5" fill="#e74c3c" transform="rotate(-15 30 19)" />
+      {/* Second paper */}
+      <rect x="36" y="15" width="12" height="7" fill="#f0f0e8" />
+      <rect x="38" y="17" width="8" height="1" fill="#ccc" />
+      <rect x="38" y="19" width="6" height="1" fill="#ccc" />
+      {/* Checkmark on paper */}
+      <path d="M40 17 L42 19 L46 15" stroke="#10b981" strokeWidth="1.5" fill="none" />
+      {/* Clock on wall */}
+      <circle cx="52" cy="8" r="4" fill="#333345" stroke="#555" strokeWidth="0.5" />
+      <circle cx="52" cy="8" r="3" fill="#f0f0e8" />
+      <line x1="52" y1="8" x2="52" y2="6" stroke="#333" strokeWidth="0.5" />
+      <line x1="52" y1="8" x2="54" y2="8" stroke="#e74c3c" strokeWidth="0.5" />
+    </svg>
+  )
+}
+
 /** Map of mode to scene component */
 export const SCENE_COMPONENTS: Record<string, React.FC<SceneProps>> = {
   time: DungeonScene,
@@ -280,4 +312,5 @@ export const SCENE_COMPONENTS: Record<string, React.FC<SceneProps>> = {
   study: AcademyScene,
   work: GuildHallScene,
   podcast: BardHallScene,
+  ielts: ExamHallScene,
 }
