@@ -718,7 +718,10 @@
     "medium": "Medium",
     "hard": "Hard",
     "progress": "Progress",
-    "attemptsLeft": "Attempts left"
+    "attemptsLeft": "Attempts left",
+    "neonHoops": "Neon Hoops",
+    "neonHoopsDesc": "Basketball shooting game",
+    "closeGame": "Close game"
   },
   "typing": {
     "title": "Typing Practice",

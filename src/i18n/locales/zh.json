@@ -718,7 +718,10 @@
     "medium": "中级",
     "hard": "高级",
     "progress": "进度",
-    "attemptsLeft": "剩余次数"
+    "attemptsLeft": "剩余次数",
+    "neonHoops": "霓虹篮球",
+    "neonHoopsDesc": "篮球投篮小游戏",
+    "closeGame": "关闭游戏"
   },
   "typing": {
     "title": "抄写练习",

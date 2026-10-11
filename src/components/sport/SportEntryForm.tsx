@@ -130,24 +130,22 @@ function SportEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdat
         {isEditing ? t('sport.editTitle') : t('sport.addTitle')}
       </h3>
 
-      <div className="grid grid-cols-2 gap-3 mb-3">
-        <div className="col-span-2">
-          <input type="text" value={content} onChange={e => setContent(e.target.value)} placeholder={t('sport.contentPlaceholder')} aria-label={t('sport.contentLabel')} className="input-base" maxLength={100} />
-        </div>
+      <div className="space-y-3 mb-3">
+        {/* 训练内容 — 通栏 */}
+        <input type="text" value={content} onChange={e => setContent(e.target.value)} placeholder={t('sport.contentPlaceholder')} aria-label={t('sport.contentLabel')} className="input-base w-full" maxLength={100} />
 
-        <div className="relative">
-          <input type="text" value={durationInput} onChange={e => setDurationInput(e.target.value)} placeholder={t('sport.durationPlaceholder')} aria-label={t('sport.durationLabel')} className="input-base pr-10" inputMode="numeric" />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-gray-500 pointer-events-none">min</span>
-        </div>
-        <div className="col-span-2">
+        {/* 时长输入 + 快捷标签 — 同行 */}
+        <div className="flex items-center gap-3">
+          <div className="relative w-[140px] shrink-0">
+            <input type="text" value={durationInput} onChange={e => setDurationInput(e.target.value)} placeholder={t('sport.durationPlaceholder')} aria-label={t('sport.durationLabel')} className="input-base w-full pr-10" inputMode="numeric" />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-gray-500 pointer-events-none">min</span>
+          </div>
           <DurationPresets onSelect={v => setDurationInput(String(v))} selected={durationInput ? parseInt(durationInput, 10) : undefined} />
         </div>
 
-        <div>
+        {/* 热量输入 + 运动类型 — 同行 */}
+        <div className="grid grid-cols-2 gap-3">
           <input type="text" value={calorieInput} onChange={e => setCalorieInput(e.target.value)} placeholder={t('sport.caloriePlaceholder')} aria-label={t('sport.calorieLabel')} className="input-base" inputMode="decimal" />
-        </div>
-
-        <div>
           <select value={effectiveSportType} onChange={e => setSportType(e.target.value)} aria-label={t('sport.sportTypeLabel')} className="input-base">
             {categories.map(cat => (
               <option key={cat.name} value={cat.name}>{t('category.names.' + cat.name, cat.name)}</option>
@@ -155,14 +153,14 @@ function SportEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdat
           </select>
         </div>
 
-        <div>
-          <input type="text" value={note} onChange={e => setNote(e.target.value)} placeholder={t('sport.notePlaceholder')} aria-label={t('sport.noteLabel')} className="input-base" maxLength={200} />
-        </div>
+        {/* 备注 — 通栏 */}
+        <input type="text" value={note} onChange={e => setNote(e.target.value)} placeholder={t('sport.notePlaceholder')} aria-label={t('sport.noteLabel')} className="input-base w-full" maxLength={200} />
       </div>
 
       {error && <p className="text-red-500 dark:text-red-400 text-xs mb-2" role="alert">{error}</p>}
 
-      <div className={isEditing ? 'flex gap-2' : ''}>
+      {/* 按钮 — 限制最大宽度，左对齐 */}
+      <div className={isEditing ? 'flex gap-2 max-w-[300px]' : 'max-w-[300px]'}>
         <button type="submit" className={`${isEditing ? 'flex-1' : 'w-full'} py-2 bg-mode-sport hover:opacity-90 text-white text-sm font-medium rounded-lg transition-colors`}>
           {isEditing ? t('entry.saveButton') : t('sport.addButton')}
         </button>
