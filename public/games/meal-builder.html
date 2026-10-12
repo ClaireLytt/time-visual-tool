@@ -1,7 +1,7 @@
 <title>MEAL BUILDER</title>
 <style>
   :root {
-    --bg: #081018;
+    --bg: #0e1a24;
     --teal: #00bcd4;
     --green: #00e676;
     --red: #ff5252;
@@ -693,7 +693,7 @@
     cx.translate(shakeX, shakeY);
 
     // BG
-    cx.fillStyle = '#081018';
+    cx.fillStyle = '#0e1a24';
     cx.fillRect(-10, -10, W + 20, H + 20);
 
     // Subtle grid
@@ -962,23 +962,15 @@
       cx.translate(ch.x, ch.y + bobY);
       cx.scale(enterScale, enterScale);
 
-      // Category color indicator ring
-      cx.strokeStyle = CAT_COLORS[ch.cat];
+      // Neutral ring (no category hint)
+      cx.strokeStyle = 'rgba(255,255,255,0.15)';
       cx.lineWidth = 1.5;
-      cx.globalAlpha = 0.5;
       cx.beginPath(); cx.arc(0, 0, ch.size * 1.3, 0, Math.PI * 2); cx.stroke();
-      cx.globalAlpha = 1;
 
       // Emoji
       cx.font = (ch.size * 2) + 'px serif';
       cx.textAlign = 'center'; cx.textBaseline = 'middle';
       cx.fillText(ch.emoji, 0, 0);
-
-      // Category label below
-      cx.fillStyle = CAT_COLORS[ch.cat];
-      cx.font = (1 * U) + 'px Courier New';
-      cx.textBaseline = 'alphabetic';
-      cx.fillText(CAT_LABELS[ch.cat], 0, ch.size * 1.8);
 
       cx.restore();
     }
