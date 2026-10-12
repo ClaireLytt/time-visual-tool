@@ -22,10 +22,14 @@ export default function SliceDiceOverlay({ open, onClose }: SliceDiceOverlayProp
 
   useEffect(() => {
     if (!open) return
+    let popped = false
     window.history.pushState({ sliceDice: true }, '', '#game')
-    const onPopState = () => onClose()
+    const onPopState = () => { popped = true; onClose() }
     window.addEventListener('popstate', onPopState)
-    return () => window.removeEventListener('popstate', onPopState)
+    return () => {
+      window.removeEventListener('popstate', onPopState)
+      if (!popped && window.location.hash === '#game') window.history.back()
+    }
   }, [open, onClose])
 
   const handleClose = useCallback(() => {
