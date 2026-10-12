@@ -45,6 +45,7 @@ export default function TypeFillGame({
   const [attemptsLeft, setAttemptsLeft] = useState(MAX_RETRIES)
   const [answers, setAnswers] = useState<AnswerRecord[]>([])
   const [feedback, setFeedback] = useState<{ correct: boolean; definition: string; correctWord?: string } | null>(null)
+  const [hintCount, setHintCount] = useState(0) // how many chars revealed
   const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const activeGapRef = useRef<HTMLSpanElement>(null)
@@ -61,6 +62,7 @@ export default function TypeFillGame({
     if (generated.length === 0) return
     setGaps(generated)
     setCurrentIndex(0)
+    setHintCount(0)
     setAnswers([])
     setFeedback(null)
     setInputValue('')
@@ -116,6 +118,7 @@ export default function TypeFillGame({
     setFeedback(null)
     setInputValue('')
     setAttemptsLeft(MAX_RETRIES)
+    setHintCount(0)
 
     const nextIndex = currentIndex + 1
     if (nextIndex >= gaps.length) {
@@ -198,13 +201,25 @@ export default function TypeFillGame({
     }
   }, [feedback, gaps, currentIndex, inputValue, attemptsLeft, moveToNext])
 
-  // Handle Enter key
+  // Handle keyboard: Enter = submit/skip, Tab = hint
   const onKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault()
-      handleSubmit()
+      if (!inputValue.trim() && gaps[currentIndex]) {
+        // Enter with empty input = skip (count as wrong)
+        handleSubmit()
+      } else {
+        handleSubmit()
+      }
+    } else if (e.key === 'Tab') {
+      e.preventDefault()
+      const word = gaps[currentIndex]?.word
+      if (!word) return
+      const nextHint = Math.min(hintCount + 1, word.length - 1)
+      setHintCount(nextHint)
+      setInputValue(word.slice(0, nextHint))
     }
-  }, [handleSubmit])
+  }, [handleSubmit, inputValue, gaps, currentIndex, hintCount])
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -541,6 +556,11 @@ export default function TypeFillGame({
             {t('game.attemptsLeft')}: {attemptsLeft}
           </span>
         </div>
+      )}
+      {!feedback && phase === 'playing' && (
+        <p className="text-[11px] text-gray-400 text-center">
+          Tab = {t('game.hint')} · Enter = {inputValue.trim() ? t('confirm.ok') : t('game.skip')}
+        </p>
       )}
     </div>
   )
