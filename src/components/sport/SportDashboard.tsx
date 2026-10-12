@@ -17,7 +17,7 @@ import SportReflectionList from './SportReflectionList'
 import SportYearReview from './SportYearReview'
 import SportWeeklyGoal from './SportWeeklyGoal'
 import SportQuickTemplates from './SportQuickTemplates'
-import NeonHoopsOverlay from './NeonHoopsOverlay'
+import GameOverlay from '../common/GameOverlay'
 import { getPeriodKey, periodKeyToAnchorDate } from '../../utils/diaryPeriod'
 import AnimatedCollapse from '../common/AnimatedCollapse'
 import { exportSportToFile, readSportImportFile } from '../../utils/sportTransfer'
@@ -304,7 +304,7 @@ function SportDashboard() {
           </div>
         )}
       </div>
-      <NeonHoopsOverlay open={showGame} onClose={() => setShowGame(false)} />
+      <GameOverlay open={showGame} onClose={() => setShowGame(false)} gamePath="games/neon-hoops.html" titleKey="game.neonHoops" />
     </CategoryProvider>
   )
 }

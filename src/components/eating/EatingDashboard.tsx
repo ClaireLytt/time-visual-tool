@@ -14,9 +14,7 @@ import EatingEntryList from './EatingEntryList'
 import EatingProportionChart from './EatingProportionChart'
 import EatingDailyChart from './EatingDailyChart'
 import MealTemplates from './MealTemplates'
-import FoodCatcherOverlay from './FoodCatcherOverlay'
-import SliceDiceOverlay from './SliceDiceOverlay'
-import MealBuilderOverlay from './MealBuilderOverlay'
+import GameOverlay from '../common/GameOverlay'
 import { exportEatingToFile, readEatingImportFile } from '../../utils/eatingTransfer'
 import { LATE_NIGHT_CATEGORY_NAME } from '../../constants/eating'
 import type { EatingEntry, EatingStorageData, EatingViewMode } from '../../types/eating'
@@ -235,9 +233,9 @@ function EatingDashboard() {
           </div>
         )}
       </div>
-      <FoodCatcherOverlay open={showGame === 'catcher'} onClose={() => setShowGame(null)} />
-      <SliceDiceOverlay open={showGame === 'slice'} onClose={() => setShowGame(null)} />
-      <MealBuilderOverlay open={showGame === 'meal'} onClose={() => setShowGame(null)} />
+      <GameOverlay open={showGame === 'catcher'} onClose={() => setShowGame(null)} gamePath="games/food-catcher.html" titleKey="game.foodCatcher" />
+      <GameOverlay open={showGame === 'slice'} onClose={() => setShowGame(null)} gamePath="games/slice-dice.html" titleKey="game.sliceDice" />
+      <GameOverlay open={showGame === 'meal'} onClose={() => setShowGame(null)} gamePath="games/meal-builder.html" titleKey="game.mealBuilder" />
     </CategoryProvider>
   )
 }
