@@ -166,6 +166,7 @@ function YouTubePlayer({
             episodeTitle={info.title}
             onClose={() => setShowWordList(false)}
             onRemoveWord={onRemoveWord}
+            storagePrefix="youtube"
           />
         </div>
       )}

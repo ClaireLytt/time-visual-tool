@@ -38,7 +38,7 @@ function YouTubeDashboard() {
   const {
     recordLookup, toggleBookmark, saveSentence, removeSentence,
     removeWord, sentences,
-  } = useWordHistory()
+  } = useWordHistory('youtube')
 
   const savedSentenceTexts = useMemo(() => new Set(sentences.map(s => s.text)), [sentences])
 
