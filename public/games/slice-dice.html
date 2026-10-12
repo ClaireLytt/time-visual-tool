@@ -1,7 +1,7 @@
 <title>SLICE & DICE</title>
 <style>
   :root {
-    --bg: #100810;
+    --bg: #1e1220;
     --orange: #ff6b35;
     --green: #00e676;
     --gold: #ffd700;
@@ -77,6 +77,7 @@
       noBombs: '零炸弹通关', firstSlice: '首次切割',
       lives: '生命',
       gameOver: '游戏结束',
+      exitGame: '退出游戏',
     },
     en: {
       subtitle: 'S L I C E  &  D I C E',
@@ -110,6 +111,7 @@
       noBombs: 'No Bombs', firstSlice: 'First Slice',
       lives: 'Lives',
       gameOver: 'GAME OVER',
+      exitGame: 'Exit Game',
     }
   };
   var T = I18N[LANG] || I18N.zh;
@@ -346,7 +348,7 @@
     e.preventDefault(); ensureAudio();
     var t = e.changedTouches[0];
     if (state === S.MENU || state === S.OVER || state === S.DIFF) { handleClick(t.clientX, t.clientY); return; }
-    if (state === S.PAUSE) { state = S.PLAY; return; }
+    if (state === S.PAUSE) { handlePauseClick(t.clientX, t.clientY); return; }
     swiping = true;
     lastTouchX = t.clientX; lastTouchY = t.clientY;
     slashTrail.push({ x: t.clientX, y: t.clientY, life: 1 });
@@ -371,7 +373,7 @@
   cv.addEventListener('mousedown', function(e) {
     ensureAudio();
     if (state === S.MENU || state === S.OVER || state === S.DIFF) { handleClick(e.clientX, e.clientY); return; }
-    if (state === S.PAUSE) { state = S.PLAY; return; }
+    if (state === S.PAUSE) { handlePauseClick(e.clientX, e.clientY); return; }
     mouseDown = true;
     lastTouchX = e.clientX; lastTouchY = e.clientY;
     slashTrail.push({ x: e.clientX, y: e.clientY, life: 1 });
@@ -398,12 +400,24 @@
       if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') { state = S.PAUSE; e.preventDefault(); }
       if (e.key === 'r' || e.key === 'R') { startCountdown(); }
     } else if (state === S.PAUSE) {
+      if (e.key === 'q' || e.key === 'Q') { window.parent.postMessage({ type: 'game-exit' }, '*'); return; }
       if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') { state = S.PLAY; e.preventDefault(); }
       if (e.key === 'r' || e.key === 'R') { startCountdown(); }
     } else if (state === S.OVER) {
+      if (e.key === 'q' || e.key === 'Q') { window.parent.postMessage({ type: 'game-exit' }, '*'); return; }
       if (e.key === 'Enter' || e.key === ' ' || e.key === 'r' || e.key === 'R') { state = S.DIFF; e.preventDefault(); }
     }
   });
+
+  function handlePauseClick(mx, my) {
+    var exitW = 36 * U, exitH = 5 * U;
+    var exitX = W/2 - exitW/2, exitY = H/2 + 9*U;
+    if (mx >= exitX && mx <= exitX + exitW && my >= exitY && my <= exitY + exitH) {
+      window.parent.postMessage({ type: 'game-exit' }, '*');
+      return;
+    }
+    state = S.PLAY;
+  }
 
   function handleClick(mx, my) {
     if (state === S.MENU) {
@@ -422,6 +436,12 @@
         }
       }
     } else if (state === S.OVER) {
+      var exitW = 36 * U, exitH = 5 * U;
+      var exitX = W/2 - exitW/2, exitY = H * 0.90;
+      if (mx >= exitX && mx <= exitX + exitW && my >= exitY && my <= exitY + exitH) {
+        window.parent.postMessage({ type: 'game-exit' }, '*');
+        return;
+      }
       state = S.DIFF;
     }
   }
@@ -559,7 +579,7 @@
     cx.translate(shakeX, shakeY);
 
     // BG
-    cx.fillStyle = '#100810';
+    cx.fillStyle = '#1e1220';
     cx.fillRect(-10, -10, W + 20, H + 20);
 
     // Subtle radial gradient in center
@@ -736,12 +756,16 @@
         cx.globalAlpha = alpha;
         if (it.halfL) {
           cx.save(); cx.translate(it.halfL.x, it.halfL.y); cx.rotate(it.halfL.rot);
+          cx.fillStyle = 'rgba(255,255,255,0.1)';
+          cx.beginPath(); cx.arc(0, 0, it.size * 0.9, 0, Math.PI * 2); cx.fill();
           cx.font = (it.size * 2) + 'px serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle';
           cx.fillText(it.emoji, -it.size * 0.3, 0);
           cx.restore();
         }
         if (it.halfR) {
           cx.save(); cx.translate(it.halfR.x, it.halfR.y); cx.rotate(it.halfR.rot);
+          cx.fillStyle = 'rgba(255,255,255,0.1)';
+          cx.beginPath(); cx.arc(0, 0, it.size * 0.9, 0, Math.PI * 2); cx.fill();
           cx.font = (it.size * 2) + 'px serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle';
           cx.fillText(it.emoji, it.size * 0.3, 0);
           cx.restore();
@@ -749,6 +773,9 @@
         cx.globalAlpha = 1;
       } else {
         cx.save(); cx.translate(it.x, it.y); cx.rotate(it.rot);
+        // Light backing for emoji visibility
+        cx.fillStyle = 'rgba(255,255,255,0.12)';
+        cx.beginPath(); cx.arc(0, 0, it.size * 1.1, 0, Math.PI * 2); cx.fill();
         if (it.isBomb) { cx.shadowColor = '#ff5252'; cx.shadowBlur = 10; }
         else if (it.isChili) { cx.shadowColor = '#ff9800'; cx.shadowBlur = 8; }
         cx.font = (it.size * 2) + 'px serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle';
@@ -772,6 +799,16 @@
       cx.fillStyle = 'rgba(255,255,255,0.4)';
       cx.font = (1.8*U) + 'px Courier New';
       cx.fillText(T.pauseHint, W/2, H/2 + 5*U);
+      // Exit button
+      cx.fillStyle = 'rgba(255,255,255,0.08)';
+      cx.strokeStyle = 'rgba(255,255,255,0.2)';
+      cx.lineWidth = 1;
+      var exitW = 36 * U, exitH = 5 * U;
+      roundRect(cx, W/2 - exitW/2, H/2 + 9*U, exitW, exitH, 6);
+      cx.fill(); cx.stroke();
+      cx.fillStyle = 'rgba(255,255,255,0.6)';
+      cx.font = (1.8*U) + 'px Courier New';
+      cx.fillText(T.exitGame, W/2, H/2 + 12*U);
     }
   }
 
@@ -811,7 +848,7 @@
 
   // ── Draw: Game Over ──────────────────────────────────────
   function drawGameOver() {
-    cx.fillStyle = 'rgba(16, 8, 16, 0.85)'; cx.fillRect(0, 0, W, H);
+    cx.fillStyle = 'rgba(30, 18, 32, 0.85)'; cx.fillRect(0, 0, W, H);
     cx.textAlign = 'center';
 
     cx.fillStyle = '#ff5252'; cx.shadowColor = '#ff5252'; cx.shadowBlur = 20;
@@ -854,8 +891,19 @@
     cx.globalAlpha = pulse;
     cx.fillStyle = '#ff6b35';
     cx.font = 'bold ' + (2.2*U) + 'px Courier New';
-    cx.fillText(isDesktop ? T.clickReplayDesktop : T.clickReplay, W/2, H * 0.88);
+    cx.fillText(isDesktop ? T.clickReplayDesktop : T.clickReplay, W/2, H * 0.84);
     cx.globalAlpha = 1;
+
+    // Exit button
+    cx.fillStyle = 'rgba(255,255,255,0.08)';
+    cx.strokeStyle = 'rgba(255,255,255,0.2)';
+    cx.lineWidth = 1;
+    var exitW = 36 * U, exitH = 5 * U;
+    roundRect(cx, W/2 - exitW/2, H * 0.90, exitW, exitH, 6);
+    cx.fill(); cx.stroke();
+    cx.fillStyle = 'rgba(255,255,255,0.6)';
+    cx.font = (1.8*U) + 'px Courier New';
+    cx.fillText(T.exitGame, W/2, H * 0.90 + 3*U);
   }
 
   // ── Draw: Achievement banner ─────────────────────────────

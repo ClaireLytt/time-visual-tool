@@ -66,6 +66,7 @@
       recentScore: '最近得分',
       noRecord: '暂无记录',
       pauseHint: 'P / Esc 继续  ·  R 重开',
+      exitGame: '退出游戏',
       recipe: '目标配方',
       protein: '蛋白质', carbs: '碳水', fat: '脂肪', vitamin: '维生素',
       roundLabel: '第 {n} 轮',
@@ -105,6 +106,7 @@
       recentScore: 'Recent Scores',
       noRecord: 'No records yet',
       pauseHint: 'P / Esc Resume  ·  R Restart',
+      exitGame: 'Exit Game',
       recipe: 'Target Recipe',
       protein: 'Protein', carbs: 'Carbs', fat: 'Fat', vitamin: 'Vitamin',
       roundLabel: 'Round {n}',
@@ -565,16 +567,16 @@
     e.preventDefault();
     ensureAudio();
     var t = e.changedTouches[0];
+    if (state === S.PAUSE) { if (!checkExitClick(t.clientX, t.clientY)) state = S.PLAY; return; }
     if (state === S.MENU || state === S.OVER) { handleClick(t.clientX, t.clientY); return; }
     if (state === S.DIFF) { handleClick(t.clientX, t.clientY); return; }
-    if (state === S.PAUSE) { state = S.PLAY; return; }
     if (state === S.PLAY) { handleGameClick(t.clientX, t.clientY); }
   }, { passive: false });
 
   cv.addEventListener('mousedown', function(e) {
     ensureAudio();
+    if (state === S.PAUSE) { if (!checkExitClick(e.clientX, e.clientY)) state = S.PLAY; return; }
     if (state === S.MENU || state === S.OVER || state === S.DIFF) { handleClick(e.clientX, e.clientY); return; }
-    if (state === S.PAUSE) { state = S.PLAY; return; }
     if (state === S.PLAY) { handleGameClick(e.clientX, e.clientY); }
   });
 
@@ -597,6 +599,22 @@
     }
   });
 
+  function checkExitClick(mx, my) {
+    var exitW = 36 * U, exitH = 5 * U;
+    if (state === S.PAUSE) {
+      var exitY = H / 2 + 9 * U;
+      if (mx >= W / 2 - exitW / 2 && mx <= W / 2 + exitW / 2 && my >= exitY && my <= exitY + exitH) {
+        window.parent.postMessage({ type: 'game-exit' }, '*'); return true;
+      }
+    } else if (state === S.OVER) {
+      var exitY2 = H * 0.91;
+      if (mx >= W / 2 - exitW / 2 && mx <= W / 2 + exitW / 2 && my >= exitY2 && my <= exitY2 + exitH) {
+        window.parent.postMessage({ type: 'game-exit' }, '*'); return true;
+      }
+    }
+    return false;
+  }
+
   function handleClick(mx, my) {
     if (state === S.MENU) { state = S.DIFF; }
     else if (state === S.DIFF) {
@@ -612,7 +630,9 @@
           diff = i; startCountdown(); return;
         }
       }
-    } else if (state === S.OVER) { state = S.DIFF; }
+    } else if (state === S.OVER) {
+      if (!checkExitClick(mx, my)) state = S.DIFF;
+    }
   }
 
   // ── Main loop ────────────────────────────────────────────
@@ -1006,6 +1026,17 @@
       cx.fillStyle = 'rgba(255,255,255,0.4)';
       cx.font = (1.8 * U) + 'px Courier New';
       cx.fillText(T.pauseHint, W / 2, H / 2 + 5 * U);
+
+      // Exit button
+      cx.fillStyle = 'rgba(255,255,255,0.08)';
+      cx.strokeStyle = 'rgba(255,255,255,0.2)';
+      cx.lineWidth = 1;
+      var exitW = 36 * U, exitH = 5 * U;
+      roundRect(cx, W / 2 - exitW / 2, H / 2 + 9 * U, exitW, exitH, 6);
+      cx.fill(); cx.stroke();
+      cx.fillStyle = 'rgba(255,255,255,0.6)';
+      cx.font = (1.8 * U) + 'px Courier New';
+      cx.fillText(T.exitGame, W / 2, H / 2 + 12 * U);
     }
   }
 
@@ -1057,8 +1088,19 @@
     cx.globalAlpha = pulse;
     cx.fillStyle = '#00bcd4';
     cx.font = 'bold ' + (2.2 * U) + 'px Courier New';
-    cx.fillText(isDesktop ? T.clickReplayDesktop : T.clickReplay, W / 2, H * 0.88);
+    cx.fillText(isDesktop ? T.clickReplayDesktop : T.clickReplay, W / 2, H * 0.85);
     cx.globalAlpha = 1;
+
+    // Exit button
+    cx.fillStyle = 'rgba(255,255,255,0.08)';
+    cx.strokeStyle = 'rgba(255,255,255,0.2)';
+    cx.lineWidth = 1;
+    var exitW = 36 * U, exitH = 5 * U;
+    roundRect(cx, W / 2 - exitW / 2, H * 0.91, exitW, exitH, 6);
+    cx.fill(); cx.stroke();
+    cx.fillStyle = 'rgba(255,255,255,0.6)';
+    cx.font = (1.8 * U) + 'px Courier New';
+    cx.fillText(T.exitGame, W / 2, H * 0.91 + 3 * U);
   }
 
   // ── Achievement banner ───────────────────────────────────

@@ -23,6 +23,16 @@ export default function GameOverlay({ open, onClose, gamePath, titleKey }: GameO
     return () => { document.body.style.overflow = prev; clearTimeout(timer) }
   }, [open])
 
+  // Listen for game-exit postMessage from iframe
+  useEffect(() => {
+    if (!open) return
+    const onMsg = (e: MessageEvent) => {
+      if (e.data && e.data.type === 'game-exit') window.history.back()
+    }
+    window.addEventListener('message', onMsg)
+    return () => window.removeEventListener('message', onMsg)
+  }, [open])
+
   // Push browser history so that back button closes the game instead of leaving the page
   useEffect(() => {
     if (!open) return
