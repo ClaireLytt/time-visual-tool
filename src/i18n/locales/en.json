@@ -754,5 +754,25 @@
     "empty": "No words collected for this episode",
     "byEpisode": "By Episode",
     "wordCount": "{{count}} words"
+  },
+  "youtubeApp": {
+    "title": "YouTubeVisual",
+    "subtitle": "Learn English with YouTube",
+    "scene": "THEATER"
+  },
+  "youtube": {
+    "urlPlaceholder": "Paste a YouTube URL...",
+    "load": "Load",
+    "invalidUrl": "Please enter a valid YouTube URL",
+    "loadingInfo": "Loading video info...",
+    "loadingTranscript": "Loading subtitles...",
+    "noTranscript": "No subtitles available for this video",
+    "history": "Watch History",
+    "noHistory": "No videos watched yet",
+    "clearHistory": "Clear History",
+    "back": "Back",
+    "showTranslation": "Translate",
+    "hideTranslation": "Hide Translation",
+    "translating": "Translating..."
   }
 }

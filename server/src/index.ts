@@ -13,6 +13,7 @@ import { transcribeRouter } from './routes/transcribe.js'
 import { chartsRouter } from './routes/charts.js'
 import { dictionaryRouter } from './routes/dictionary.js'
 import { translateRouter } from './routes/translate.js'
+import { youtubeRouter } from './routes/youtube.js'
 
 const app = express()
 app.use(cors())
@@ -26,6 +27,7 @@ app.use('/api', transcribeRouter)
 app.use('/api', chartsRouter)
 app.use('/api', dictionaryRouter)
 app.use('/api', translateRouter)
+app.use('/api', youtubeRouter)
 
 const onError: ErrorRequestHandler = (err, _req, res, _next) => {
   const status = err instanceof HttpError ? err.status : 500

@@ -33,6 +33,7 @@ export default {
           study: '#4a90d9',
           work: '#e67e22',
           podcast: '#c2417a',
+          youtube: '#b33e3e',
         },
         clash: {
           red: '#e63946',

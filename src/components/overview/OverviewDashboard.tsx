@@ -201,6 +201,10 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
             {podcastStarred === 0 && podcastWords === 0 && <span className="text-xs text-gray-400">{t('podcastApp.subtitle')}</span>}
           </div>
         </Card>
+
+        <Card mode="youtube" scene="📺 THEATER" onClick={() => onNavigate('youtube')}>
+          <span className="text-xs text-gray-400">{t('youtubeApp.subtitle')}</span>
+        </Card>
       </div>
 
       {/* ── Habit: inline check-in ── */}

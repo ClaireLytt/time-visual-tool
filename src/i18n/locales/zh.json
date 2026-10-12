@@ -754,5 +754,25 @@
     "empty": "本集还没有收藏的生词",
     "byEpisode": "按播客分组",
     "wordCount": "{{count}} 个生词"
+  },
+  "youtubeApp": {
+    "title": "YouTubeVisual",
+    "subtitle": "用YouTube学英语",
+    "scene": "THEATER"
+  },
+  "youtube": {
+    "urlPlaceholder": "粘贴 YouTube 链接...",
+    "load": "加载",
+    "invalidUrl": "请输入有效的 YouTube 链接",
+    "loadingInfo": "正在加载视频信息...",
+    "loadingTranscript": "正在加载字幕...",
+    "noTranscript": "该视频没有可用的字幕",
+    "history": "观看历史",
+    "noHistory": "暂无观看记录",
+    "clearHistory": "清空历史",
+    "back": "返回",
+    "showTranslation": "翻译",
+    "hideTranslation": "隐藏翻译",
+    "translating": "翻译中..."
   }
 }
