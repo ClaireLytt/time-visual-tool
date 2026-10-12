@@ -56,7 +56,7 @@ function YouTubePlayer({
 
   useEffect(() => {
     if (activeIndex >= 0 && activeRef.current && !userScrolling.current) {
-      activeRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      activeRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
   }, [activeIndex])
 
