@@ -67,10 +67,10 @@ export default function TypeFillGame({
     setAttemptsLeft(MAX_RETRIES)
     setPhase('playing')
 
-    // Start playing from the beginning — continuous playback until first gap
+    // Seek audio to first gap
     const audio = audioRef.current
     if (audio) {
-      audio.currentTime = 0
+      audio.currentTime = Math.max(0, generated[0].startTime - 1)
       audio.play().catch(() => {})
     }
   }, [segments, difficulty, audioRef])
@@ -127,9 +127,10 @@ export default function TypeFillGame({
 
     setCurrentIndex(nextIndex)
 
-    // Resume playback — continue from where we paused, don't seek
+    // Seek audio to next gap
     const audio = audioRef.current
     if (audio) {
+      audio.currentTime = Math.max(0, gaps[nextIndex].startTime - 1)
       audio.play().catch(() => {})
     }
   }, [currentIndex, gaps, audioRef])
