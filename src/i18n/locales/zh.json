@@ -776,6 +776,11 @@
     "translating": "翻译中...",
     "segments": "句",
     "saveSentence": "收藏句子",
-    "unsaveSentence": "取消收藏"
+    "unsaveSentence": "取消收藏",
+    "hideVideo": "收起视频",
+    "showVideo": "展开视频",
+    "hideTranscript": "字幕",
+    "showTranscript": "字幕",
+    "wordList": "生词本"
   }
 }

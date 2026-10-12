@@ -93,6 +93,7 @@ function YouTubeDashboard() {
           onRemoveFromVocab={removeWord}
           onSaveSentence={saveSentence}
           onRemoveSentence={removeSentence}
+          onRemoveWord={removeWord}
           savedSentences={savedSentenceTexts}
         />
       </div>

@@ -776,6 +776,11 @@
     "translating": "Translating...",
     "segments": "lines",
     "saveSentence": "Save sentence",
-    "unsaveSentence": "Remove saved sentence"
+    "unsaveSentence": "Remove saved sentence",
+    "hideVideo": "Hide video",
+    "showVideo": "Show video",
+    "hideTranscript": "Subtitles",
+    "showTranscript": "Subtitles",
+    "wordList": "Words"
   }
 }
