@@ -80,10 +80,10 @@ export default function SportWeeklyGoal({ entries, selectedDate, weeklyGoal, onW
           )}
         </div>
       </div>
-      <div className="w-full h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-3">
+      <div className="w-full h-2 bg-gray-200/60 dark:bg-gray-700/50 rounded-full overflow-hidden mb-3">
         <div
           className={`h-full rounded-full transition-all duration-500 ${
-            isComplete ? 'bg-green-500' : 'bg-mode-sport'
+            isComplete ? 'bg-[#2d7a6f]' : 'bg-mode-sport/80'
           }`}
           style={{ width: `${progress * 100}%` }}
         />

@@ -231,7 +231,7 @@
     "distanceLabel": "距离 (公里)",
     "errorDistance": "请输入有效的距离",
     "emptyTitle": "今天还没有运动记录",
-    "emptySubtitle": "添加你的第一条运动记录吧",
+    "emptySubtitle": "添加你的第一条运动记录吧 🏃",
     "listTitle": "运动记录 ({{count}})",
     "totalDuration": "总时长",
     "totalCalories": "总消耗",

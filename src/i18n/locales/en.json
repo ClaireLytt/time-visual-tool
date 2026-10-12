@@ -231,7 +231,7 @@
     "distanceLabel": "Distance (km)",
     "errorDistance": "Please enter a valid distance",
     "emptyTitle": "No exercise entries yet",
-    "emptySubtitle": "Add your first exercise entry",
+    "emptySubtitle": "Add your first workout to get started 🏃",
     "listTitle": "Exercise entries ({{count}})",
     "totalDuration": "Total Duration",
     "totalCalories": "Calories Burned",

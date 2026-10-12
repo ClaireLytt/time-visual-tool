@@ -260,13 +260,13 @@ function SportEntryForm({ selectedDate, categories, allEntries, onAdd, editingEn
 
       {error && <p className="text-red-500 dark:text-red-400 text-xs mb-2" role="alert">{error}</p>}
 
-      {/* 按钮 — 限制最大宽度，左对齐 */}
-      <div className={isEditing ? 'flex gap-2 max-w-[300px]' : 'max-w-[300px]'}>
-        <button type="submit" className={`${isEditing ? 'flex-1' : 'w-full'} py-2 bg-mode-sport hover:opacity-90 text-white text-sm font-medium rounded-lg transition-colors`}>
+      {/* 按钮 — 深绿色提交 */}
+      <div className={isEditing ? 'flex gap-2' : ''}>
+        <button type="submit" className={`${isEditing ? 'flex-1' : 'w-full'} py-2.5 bg-[#2d7a6f] hover:bg-[#256b61] text-white text-sm font-medium rounded-xl transition-colors`}>
           {isEditing ? t('entry.saveButton') : t('sport.addButton')}
         </button>
         {isEditing && (
-          <button type="button" onClick={onCancelEdit} className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          <button type="button" onClick={onCancelEdit} className="px-4 py-2.5 border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-300 text-sm font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
             {t('entry.cancelButton')}
           </button>
         )}

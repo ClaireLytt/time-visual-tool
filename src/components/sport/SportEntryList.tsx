@@ -16,9 +16,9 @@ function SportEntryList({ entries, onDelete, onEdit, bestEntryIds }: SportEntryL
 
   if (entries.length === 0) {
     return (
-      <div className="panel p-6 text-center">
-        <p className="text-gray-400 dark:text-gray-500 text-sm">{t('sport.emptyTitle')}</p>
-        <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">{t('sport.emptySubtitle')}</p>
+      <div className="panel p-8 text-center">
+        <p className="text-gray-400 dark:text-gray-500 text-sm leading-relaxed">{t('sport.emptyTitle')}</p>
+        <p className="text-gray-300 dark:text-gray-600 text-xs mt-1.5">{t('sport.emptySubtitle')}</p>
       </div>
     )
   }
@@ -28,7 +28,7 @@ function SportEntryList({ entries, onDelete, onEdit, bestEntryIds }: SportEntryL
       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 px-3 pt-2 pb-1">
         {t('sport.listTitle', { count: entries.length })}
       </h3>
-      <div className="divide-y divide-gray-100 dark:divide-gray-700">
+      <div className="divide-y divide-gray-100/60 dark:divide-gray-700/40">
         {sorted.map(entry => (
           <SportEntryItem key={entry.id} entry={entry} onDelete={onDelete} onEdit={onEdit} isPB={!!bestEntryIds && bestEntryIds.has(entry.id)} />
         ))}

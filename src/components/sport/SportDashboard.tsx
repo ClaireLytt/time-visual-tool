@@ -130,7 +130,7 @@ function SportDashboard() {
 
   return (
     <CategoryProvider categories={categories}>
-      <div id="main-content" className="max-w-2xl mx-auto">
+      <div id="main-content" className="sport-scope max-w-2xl mx-auto">
         {/* ── Top bar: view toggle + date + actions ── */}
         <div className="flex items-center justify-between gap-2 mb-3">
           <ViewModeToggle viewMode={viewMode} modes={SPORT_MODES} onViewModeChange={handleViewModeChange} />
