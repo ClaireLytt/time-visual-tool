@@ -1,4 +1,19 @@
+import { fetch as undiciFetch, ProxyAgent } from 'undici'
+
 const UA = 'TimeVisualPodcast/0.1 (+https://github.com/ClaireLytt/time-visual-tool)'
+
+/** Resolve proxy URL from env — checks HTTPS_PROXY, HTTP_PROXY, ALL_PROXY */
+function getProxyUrl(): string | undefined {
+  return process.env.HTTPS_PROXY || process.env.HTTP_PROXY || process.env.ALL_PROXY
+    || process.env.https_proxy || process.env.http_proxy || process.env.all_proxy
+}
+
+/** Get a fetch dispatcher that routes through the proxy (if configured) */
+function getProxyDispatcher(): ProxyAgent | undefined {
+  const proxy = getProxyUrl()
+  if (!proxy) return undefined
+  return new ProxyAgent(proxy)
+}
 
 export class HttpError extends Error {
   constructor(public status: number, message: string) {
@@ -39,6 +54,7 @@ export function assertHttpUrl(raw: unknown): URL {
 
 /**
  * Fetch with timeout and clear error messages.
+ * Uses undici's fetch with ProxyAgent so HTTPS_PROXY env var is respected.
  * @param timeoutMs — default 15s for API/RSS, pass higher for large audio downloads
  */
 export async function fetchOk(url: string | URL, init: RequestInit & { timeoutMs?: number } = {}): Promise<Response> {
@@ -50,14 +66,16 @@ export async function fetchOk(url: string | URL, init: RequestInit & { timeoutMs
 
   const host = typeof url === 'string' ? new URL(url).host : url.host
   try {
-    const res = await fetch(url, {
-      ...fetchInit,
+    const dispatcher = getProxyDispatcher()
+    const res = await undiciFetch(url as any, {
+      ...fetchInit as any,
       signal,
       redirect: 'follow',
       headers: { 'user-agent': UA, ...(fetchInit.headers as Record<string, string> | undefined) },
+      ...(dispatcher ? { dispatcher } : {}),
     })
     if (!res.ok) throw new HttpError(502, `Upstream HTTP ${res.status} from ${host}`)
-    return res
+    return res as unknown as Response
   } catch (err) {
     const e = err as Error
     if (e.name === 'TimeoutError') {
