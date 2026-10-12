@@ -97,7 +97,7 @@ function YouTubePlayer({
     const trans: Record<number, string> = {}
     for (let i = 0; i < segments.length; i += 10) {
       const batch = segments.slice(i, i + 10)
-      const results = await Promise.all(batch.map(s => translateText(s.text).catch(() => '...')))
+      const results = await Promise.all(batch.map(s => translateText(s.text).then(r => r ?? '...').catch(() => '...')))
       results.forEach((r, j) => { trans[i + j] = r })
       setTranslations({ ...trans })
     }
