@@ -131,6 +131,19 @@ export default function GapFillGame({
     if (audio) audio.play().catch(() => {})
   }, [feedback, moveToNext, audioRef])
 
+  // ─── Jump to next gap (seek directly) ───
+  const jumpToNextGap = useCallback(() => {
+    if (feedback) moveToNext()
+    const idx = feedback ? Math.min(currentIndex + 1, gaps.length - 1) : currentIndex
+    const nextGap = gaps[idx]
+    if (!nextGap) return
+    const audio = audioRef.current
+    if (audio) {
+      audio.currentTime = Math.max(0, nextGap.startTime - 0.5)
+      audio.play().catch(() => {})
+    }
+  }, [feedback, moveToNext, currentIndex, gaps, audioRef])
+
   // ─── Handle answer selection ───
   const handleAnswer = useCallback(async (answer: string) => {
     if (feedback) return
@@ -457,7 +470,7 @@ export default function GapFillGame({
         </div>
       )}
 
-      {/* ▶ Continue button — shown after answering */}
+      {/* Action buttons — shown after answering */}
       {feedback && (
         <div className="flex items-center gap-2">
           <button
@@ -481,6 +494,15 @@ export default function GapFillGame({
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
             {t('game.continuePlaying')}
+          </button>
+          <button
+            onClick={jumpToNextGap}
+            className="p-3 rounded-xl bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shrink-0"
+            title={t('game.jumpToNext')}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 8.689c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 0 1 0 1.954l-7.108 4.061A1.125 1.125 0 0 1 3 16.811V8.69ZM12.75 8.689c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 0 1 0 1.954l-7.108 4.061a1.125 1.125 0 0 1-1.683-.977V8.69Z" />
+            </svg>
           </button>
         </div>
       )}

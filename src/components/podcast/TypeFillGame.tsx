@@ -142,6 +142,19 @@ export default function TypeFillGame({
     }
   }, [feedback, moveToNext, audioRef])
 
+  // ─── Jump to next gap (seek directly) ───
+  const jumpToNextGap = useCallback(() => {
+    if (feedback) moveToNext()
+    const idx = feedback ? Math.min(currentIndex + 1, gaps.length - 1) : currentIndex
+    const nextGap = gaps[idx]
+    if (!nextGap) return
+    const audio = audioRef.current
+    if (audio) {
+      audio.currentTime = Math.max(0, nextGap.startTime - 0.5)
+      audio.play().catch(() => {})
+    }
+  }, [feedback, moveToNext, currentIndex, gaps, audioRef])
+
   // ─── Handle submit ───
   const handleSubmit = useCallback(async () => {
     if (feedback) return
@@ -582,15 +595,42 @@ export default function TypeFillGame({
         </div>
       )}
 
-      {/* ▶ Continue button — shown after answering, resumes playback */}
+      {/* Action buttons — shown after answering */}
       {feedback && (feedback.correct || feedback.correctWord) && (
-        <button
-          onClick={continuePlayback}
-          className="w-full py-3 rounded-xl bg-mode-podcast text-white font-medium text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-        >
-          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-          {t('game.continuePlaying')}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              const audio = audioRef.current
+              const cg = gaps[currentIndex]
+              if (audio && cg) {
+                audio.currentTime = Math.max(0, cg.startTime - 0.5)
+                audio.play().catch(() => {})
+              }
+            }}
+            className="p-3 rounded-xl bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shrink-0"
+            title={t('game.replay')}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
+            </svg>
+          </button>
+          <button
+            onClick={continuePlayback}
+            className="flex-1 py-3 rounded-xl bg-mode-podcast text-white font-medium text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+            {t('game.continuePlaying')}
+          </button>
+          <button
+            onClick={jumpToNextGap}
+            className="p-3 rounded-xl bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shrink-0"
+            title={t('game.jumpToNext')}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 8.689c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 0 1 0 1.954l-7.108 4.061A1.125 1.125 0 0 1 3 16.811V8.69ZM12.75 8.689c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 0 1 0 1.954l-7.108 4.061a1.125 1.125 0 0 1-1.683-.977V8.69Z" />
+            </svg>
+          </button>
+        </div>
       )}
 
       {/* Submit button + replay + attempts indicator */}

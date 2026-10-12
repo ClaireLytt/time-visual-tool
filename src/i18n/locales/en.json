@@ -730,6 +730,7 @@
     "peek": "Peek",
     "skip": "Skip",
     "continuePlaying": "Continue Playing",
+    "jumpToNext": "Jump to next gap",
     "addWrongWords": "Add wrong words to vocab",
     "difficulty": "Difficulty",
     "easy": "Easy",
