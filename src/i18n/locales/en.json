@@ -729,6 +729,7 @@
     "replay": "Replay sentence",
     "peek": "Peek",
     "skip": "Skip",
+    "continuePlaying": "Continue Playing",
     "addWrongWords": "Add wrong words to vocab",
     "difficulty": "Difficulty",
     "easy": "Easy",

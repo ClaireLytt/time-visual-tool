@@ -67,10 +67,10 @@ export default function TypeFillGame({
     setAttemptsLeft(MAX_RETRIES)
     setPhase('playing')
 
-    // Seek audio to first gap
+    // Play from beginning — continuous until first gap
     const audio = audioRef.current
     if (audio) {
-      audio.currentTime = Math.max(0, generated[0].startTime - 1)
+      audio.currentTime = 0
       audio.play().catch(() => {})
     }
   }, [segments, difficulty, audioRef])
@@ -111,7 +111,7 @@ export default function TypeFillGame({
     return () => cancelAnimationFrame(rafId)
   }, [phase, gaps, currentIndex, audioRef])
 
-  // ─── Move to next gap ───
+  // ─── Move to next gap (no auto-play) ───
   const moveToNext = useCallback(() => {
     setFeedback(null)
     setInputValue('')
@@ -126,14 +126,21 @@ export default function TypeFillGame({
     }
 
     setCurrentIndex(nextIndex)
+    // Don't auto-play — user clicks ▶ to continue
+  }, [currentIndex, gaps, audioRef])
 
-    // Seek audio to next gap
+  // ─── Continue playback (user clicks ▶) ───
+  const continuePlayback = useCallback(() => {
+    // If feedback is still showing, advance first
+    if (feedback) {
+      moveToNext()
+    }
+    // Resume from where we paused
     const audio = audioRef.current
     if (audio) {
-      audio.currentTime = Math.max(0, gaps[nextIndex].startTime - 1)
       audio.play().catch(() => {})
     }
-  }, [currentIndex, gaps, audioRef])
+  }, [feedback, moveToNext, audioRef])
 
   // ─── Handle submit ───
   const handleSubmit = useCallback(async () => {
@@ -156,7 +163,7 @@ export default function TypeFillGame({
         attemptsUsed: MAX_RETRIES - attemptsLeft,
       }])
 
-      feedbackTimer.current = setTimeout(moveToNext, 1000)
+      // Don't auto-advance — wait for user to click ▶
     } else {
       const newAttemptsLeft = attemptsLeft - 1
 
@@ -193,10 +200,10 @@ export default function TypeFillGame({
           })
         })
 
-        feedbackTimer.current = setTimeout(moveToNext, 2500)
+        // Don't auto-advance — wait for user to click ▶
       }
     }
-  }, [feedback, gaps, currentIndex, inputValue, attemptsLeft, moveToNext])
+  }, [feedback, gaps, currentIndex, inputValue, attemptsLeft])
 
   // Skip current word (counts as wrong)
   const skipWord = useCallback(() => {
@@ -224,8 +231,8 @@ export default function TypeFillGame({
       })
     })
 
-    feedbackTimer.current = setTimeout(moveToNext, 2500)
-  }, [feedback, gaps, currentIndex, moveToNext])
+    // Don't auto-advance — wait for user to click ▶
+  }, [feedback, gaps, currentIndex])
 
   // Tab = flash answer for 0.2s; Enter = submit or skip
   const onKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -557,6 +564,17 @@ export default function TypeFillGame({
             <p>{t('game.retry')} - {t('game.attemptsLeft')}: {attemptsLeft}</p>
           )}
         </div>
+      )}
+
+      {/* ▶ Continue button — shown after answering, resumes playback */}
+      {feedback && (feedback.correct || feedback.correctWord) && (
+        <button
+          onClick={continuePlayback}
+          className="w-full py-3 rounded-xl bg-mode-podcast text-white font-medium text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+        >
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+          {t('game.continuePlaying')}
+        </button>
       )}
 
       {/* Submit button + replay + attempts indicator */}
