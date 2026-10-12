@@ -68,10 +68,10 @@ export default function GapFillGame({
 
     setPhase('playing')
 
-    // Seek audio to first gap
+    // Play from beginning — continuous until first gap
     const audio = audioRef.current
     if (audio) {
-      audio.currentTime = Math.max(0, first.startTime - 1)
+      audio.currentTime = 0
       audio.play().catch(() => {})
     }
   }, [segments, difficulty, allWords, audioRef])
@@ -83,7 +83,7 @@ export default function GapFillGame({
     }
   }, [currentIndex, phase])
 
-  // ─── Auto-pause audio at gap segment ───
+  // ─── Auto-pause audio at gap segment end ───
   useEffect(() => {
     if (phase !== 'playing' || gaps.length === 0) return
     const audio = audioRef.current
@@ -92,13 +92,11 @@ export default function GapFillGame({
     const currentGap = gaps[currentIndex]
     if (!currentGap) return
 
-    // Find the segment that contains this gap to get its end time
     const gapSegment = segments[currentGap.segmentIndex]
     const pauseAt = gapSegment ? gapSegment.end : currentGap.startTime + 5
 
     let rafId: number
     const check = () => {
-      // Wait until the entire sentence finishes playing, then pause for the question
       if (audio.currentTime >= pauseAt && !audio.paused) {
         audio.pause()
       }
@@ -108,15 +106,39 @@ export default function GapFillGame({
     return () => cancelAnimationFrame(rafId)
   }, [phase, gaps, currentIndex, audioRef, segments])
 
+  // ─── Move to next gap (no auto-play) ───
+  const moveToNext = useCallback(() => {
+    setFeedback(null)
+    const nextIndex = currentIndex + 1
+    if (nextIndex >= gaps.length) {
+      setPhase('results')
+      const audio = audioRef.current
+      if (audio) audio.pause()
+      return
+    }
+
+    setCurrentIndex(nextIndex)
+    const nextGap = gaps[nextIndex]
+    const distractors = generateDistractors(nextGap.word, allWords)
+    setOptions(shuffleArray([nextGap.word, ...distractors]))
+    // Don't auto-play — user clicks ▶
+  }, [currentIndex, gaps, allWords, audioRef])
+
+  // ─── Continue playback (user-initiated) ───
+  const continuePlayback = useCallback(() => {
+    if (feedback) moveToNext()
+    const audio = audioRef.current
+    if (audio) audio.play().catch(() => {})
+  }, [feedback, moveToNext, audioRef])
+
   // ─── Handle answer selection ───
   const handleAnswer = useCallback(async (answer: string) => {
-    if (feedback) return // already answered
+    if (feedback) return
     const currentGap = gaps[currentIndex]
     if (!currentGap) return
 
     const isCorrect = answer.toLowerCase() === currentGap.word.toLowerCase()
 
-    // Look up definition for wrong answers
     let definition = ''
     if (!isCorrect) {
       const result = await lookupWord(currentGap.word)
@@ -130,33 +152,45 @@ export default function GapFillGame({
       correct: isCorrect,
       definition,
     }])
+    // Don't auto-advance — wait for user to click ▶
+  }, [feedback, gaps, currentIndex])
 
-    // Move to next gap after delay
-    feedbackTimer.current = setTimeout(() => {
-      setFeedback(null)
-      const nextIndex = currentIndex + 1
-      if (nextIndex >= gaps.length) {
-        setPhase('results')
-        const audio = audioRef.current
-        if (audio) audio.pause()
-        return
+  // ─── Skip current word ───
+  const skipWord = useCallback(async () => {
+    if (feedback) return
+    const currentGap = gaps[currentIndex]
+    if (!currentGap) return
+
+    const result = await lookupWord(currentGap.word)
+    const definition = result?.definitions?.join('; ') ?? ''
+
+    setFeedback({ correct: false, definition })
+    setAnswers(prev => [...prev, {
+      gap: currentGap,
+      userAnswer: '',
+      correct: false,
+      definition,
+    }])
+  }, [feedback, gaps, currentIndex])
+
+  // ─── Global keyboard shortcuts ───
+  useEffect(() => {
+    if (phase !== 'playing') return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && e.shiftKey) {
+        e.preventDefault()
+        continuePlayback()
+      } else if (e.key === 'Enter' && feedback) {
+        e.preventDefault()
+        continuePlayback()
+      } else if (e.key === 'Enter' && !feedback) {
+        e.preventDefault()
+        skipWord()
       }
-
-      setCurrentIndex(nextIndex)
-      const nextGap = gaps[nextIndex]
-
-      // Generate new options
-      const distractors = generateDistractors(nextGap.word, allWords)
-      setOptions(shuffleArray([nextGap.word, ...distractors]))
-
-      // Seek audio to next gap
-      const audio = audioRef.current
-      if (audio) {
-        audio.currentTime = Math.max(0, nextGap.startTime - 1)
-        audio.play().catch(() => {})
-      }
-    }, isCorrect ? 1000 : 2500)
-  }, [feedback, gaps, currentIndex, allWords, audioRef])
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [phase, feedback, continuePlayback, skipWord])
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -192,7 +226,6 @@ export default function GapFillGame({
           </button>
         </div>
 
-        {/* Difficulty selector */}
         <div className="space-y-2">
           <p className="text-sm text-gray-500 dark:text-gray-400">{t('game.difficulty')}</p>
           <div className="flex gap-2">
@@ -212,15 +245,11 @@ export default function GapFillGame({
           </div>
         </div>
 
-        {/* Gap count preview */}
         <div className="text-center py-4">
           <p className="text-3xl font-bold text-mode-podcast">{previewCount}</p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {t('game.progress')}
-          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('game.progress')}</p>
         </div>
 
-        {/* Start button */}
         <button
           onClick={startGame}
           disabled={previewCount === 0}
@@ -240,7 +269,6 @@ export default function GapFillGame({
           {t('game.result')}
         </h3>
 
-        {/* Score */}
         <div className="text-center py-6 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
           <p className="text-4xl font-bold text-mode-podcast">{scorePercent}%</p>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
@@ -248,7 +276,6 @@ export default function GapFillGame({
           </p>
         </div>
 
-        {/* Wrong words list */}
         {wrongAnswers.length > 0 && (
           <div className="space-y-2">
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -257,7 +284,7 @@ export default function GapFillGame({
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {wrongAnswers.map((a, i) => (
                 <div key={i} className="flex items-start gap-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 rounded-lg text-sm">
-                  <span className="text-red-500 line-through shrink-0">{a.userAnswer}</span>
+                  <span className="text-red-500 line-through shrink-0">{a.userAnswer || '—'}</span>
                   <span className="text-gray-400 shrink-0">&rarr;</span>
                   <div className="min-w-0">
                     <span className="text-green-600 dark:text-green-400 font-medium">{a.gap.word}</span>
@@ -271,7 +298,6 @@ export default function GapFillGame({
           </div>
         )}
 
-        {/* Action buttons */}
         <div className="space-y-2">
           {wrongAnswers.length > 0 && onAddToVocab && (
             <button
@@ -303,14 +329,12 @@ export default function GapFillGame({
   // ─── Render: Playing screen ───
   const currentGap = gaps[currentIndex]
 
-  // Build the set of gap segment indices and word indices that have been blanked
   const gapMap = new Map<number, Set<number>>()
   for (const g of gaps) {
     if (!gapMap.has(g.segmentIndex)) gapMap.set(g.segmentIndex, new Set())
     gapMap.get(g.segmentIndex)!.add(g.wordIndex)
   }
 
-  // Which gaps have been answered already
   const answeredGapWords = new Set(answers.map(a => `${a.gap.segmentIndex}-${a.gap.wordIndex}`))
 
   return (
@@ -347,18 +371,13 @@ export default function GapFillGame({
         {segments.map((seg, si) => {
           const segGaps = gapMap.get(si)
           if (!segGaps) {
-            // No gaps in this segment — show normally
             return (
-              <div
-                key={si}
-                className="px-3 py-2 rounded-lg text-sm text-gray-500 dark:text-gray-400 leading-relaxed"
-              >
+              <div key={si} className="px-3 py-2 rounded-lg text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
                 {seg.text}
               </div>
             )
           }
 
-          // This segment has gaps — render word by word
           const words = seg.text.split(/\s+/)
           const isCurrentSegment = currentGap?.segmentIndex === si
 
@@ -384,7 +403,6 @@ export default function GapFillGame({
                 )
 
                 if (isAnswered && answerRecord) {
-                  // Show answered gap
                   return (
                     <span key={wi}>
                       {wi > 0 ? ' ' : ''}
@@ -399,7 +417,6 @@ export default function GapFillGame({
                   )
                 }
 
-                // Show blank
                 return (
                   <span key={wi}>
                     {wi > 0 ? ' ' : ''}
@@ -421,7 +438,7 @@ export default function GapFillGame({
         })}
       </div>
 
-      {/* Feedback overlay */}
+      {/* Feedback */}
       {feedback && (
         <div className={`px-4 py-3 rounded-xl text-sm font-medium ${
           feedback.correct
@@ -431,32 +448,84 @@ export default function GapFillGame({
           <p>{feedback.correct ? t('game.correct') : t('game.wrong')}</p>
           {!feedback.correct && (
             <div className="mt-1">
-              <p className="text-green-600 dark:text-green-400">
-                {currentGap?.word}
-              </p>
+              <p className="text-green-600 dark:text-green-400">{currentGap?.word}</p>
               {feedback.definition && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                  {feedback.definition}
-                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{feedback.definition}</p>
               )}
             </div>
           )}
         </div>
       )}
 
-      {/* Answer options */}
-      {!feedback && (
-        <div className="grid grid-cols-2 gap-2">
-          {options.map((opt, i) => (
-            <button
-              key={i}
-              onClick={() => handleAnswer(opt)}
-              className="py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm font-medium hover:border-mode-podcast hover:bg-mode-podcast/5 transition-colors active:scale-95"
-            >
-              {opt}
-            </button>
-          ))}
+      {/* ▶ Continue button — shown after answering */}
+      {feedback && (
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              const audio = audioRef.current
+              if (audio && currentGap) {
+                audio.currentTime = Math.max(0, currentGap.startTime - 0.5)
+                audio.play().catch(() => {})
+              }
+            }}
+            className="p-3 rounded-xl bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shrink-0"
+            title={t('game.replay')}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
+            </svg>
+          </button>
+          <button
+            onClick={continuePlayback}
+            className="flex-1 py-3 rounded-xl bg-mode-podcast text-white font-medium text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+            {t('game.continuePlaying')}
+          </button>
         </div>
+      )}
+
+      {/* Answer options + skip */}
+      {!feedback && (
+        <>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const audio = audioRef.current
+                if (audio && currentGap) {
+                  audio.currentTime = Math.max(0, currentGap.startTime - 0.5)
+                  audio.play().catch(() => {})
+                }
+              }}
+              className="p-3 rounded-xl bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shrink-0"
+              title={t('game.replay')}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
+              </svg>
+            </button>
+            <div className="flex-1 grid grid-cols-2 gap-2">
+              {options.map((opt, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleAnswer(opt)}
+                  className="py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm font-medium hover:border-mode-podcast hover:bg-mode-podcast/5 transition-colors active:scale-95"
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Keyboard hints */}
+      {phase === 'playing' && (
+        <p className="text-[11px] text-gray-400 text-center">
+          {feedback
+            ? `Enter / Shift+Enter = ${t('game.continuePlaying')}`
+            : `Enter = ${t('game.skip')} · Shift+Enter = ${t('game.continuePlaying')}`}
+        </p>
       )}
     </div>
   )
