@@ -781,6 +781,13 @@
     "showVideo": "Show video",
     "hideTranscript": "Subtitles",
     "showTranscript": "Subtitles",
-    "wordList": "Words"
+    "wordList": "Words",
+    "folders": "Collections",
+    "newFolder": "New Collection",
+    "folderNamePlaceholder": "Collection name...",
+    "create": "Create",
+    "folderEmpty": "No videos in this collection",
+    "videoCount": "videos",
+    "removeFromFolder": "Remove from collection"
   }
 }

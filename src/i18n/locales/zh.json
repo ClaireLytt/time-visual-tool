@@ -781,6 +781,13 @@
     "showVideo": "展开视频",
     "hideTranscript": "字幕",
     "showTranscript": "字幕",
-    "wordList": "生词本"
+    "wordList": "生词本",
+    "folders": "收藏夹",
+    "newFolder": "新建收藏夹",
+    "folderNamePlaceholder": "收藏夹名称...",
+    "create": "创建",
+    "folderEmpty": "该收藏夹暂无视频",
+    "videoCount": "个视频",
+    "removeFromFolder": "移出收藏夹"
   }
 }
