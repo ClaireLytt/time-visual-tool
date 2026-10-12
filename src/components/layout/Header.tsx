@@ -35,7 +35,7 @@ function AvatarButton({ size = 32, onClick }: { size?: number; onClick: () => vo
     <motion.button
       onClick={onClick}
       whileTap={{ scale: 0.92 }}
-      className="rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold shrink-0 shadow-sm"
+      className="rounded-full bg-[#8B9DAB] flex items-center justify-center text-white font-bold shrink-0 shadow-sm"
       style={{ width: size, height: size, fontSize: size * 0.4 }}
       aria-label="Profile"
     >

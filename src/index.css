@@ -147,6 +147,27 @@ button, a, [role="button"] {
     border-bottom-left-radius: 0.25rem;
   }
 
+  /* ── Sport scope — Apple-minimal: mint bg, cream cards, ultra-soft shadow ── */
+  .sport-scope {
+    --sport-card-bg: #faf8f4;
+    --sport-card-border: #e8e4dc;
+    --sport-card-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  }
+  .sport-scope .panel {
+    background: var(--sport-card-bg);
+    border-color: var(--sport-card-border);
+    box-shadow: var(--sport-card-shadow);
+  }
+  .sport-scope .panel:hover {
+    transform: none;
+    box-shadow: var(--sport-card-shadow);
+  }
+  :is(.dark) .sport-scope {
+    --sport-card-bg: #1e2334;
+    --sport-card-border: #2e3450;
+    --sport-card-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+
   /* ── Stat card — rounded, soft shadow, colored top accent ── */
   .stat-card {
     @apply p-3 text-center rounded-xl transition-all;

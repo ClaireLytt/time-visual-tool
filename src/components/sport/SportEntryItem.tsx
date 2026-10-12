@@ -34,6 +34,7 @@ const SportEntryItem = memo(function SportEntryItem({ entry, onDelete, onEdit, i
         <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
           <span>{categoryName}</span>
           {entry.duration > 0 && <span>{formatDuration(entry.duration)}</span>}
+          {entry.distance != null && entry.distance > 0 && <span>{entry.distance} km</span>}
           {entry.note && <span className="truncate max-w-[120px]">{entry.note}</span>}
         </div>
       </div>
