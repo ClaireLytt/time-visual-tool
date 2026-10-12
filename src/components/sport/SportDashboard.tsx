@@ -219,6 +219,7 @@ function SportDashboard() {
               <SportEntryForm
                 selectedDate={selectedDate}
                 categories={categories}
+                allEntries={entries}
                 onAdd={addEntry}
                 editingEntry={editingEntry}
                 onUpdate={updateEntry}

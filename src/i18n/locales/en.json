@@ -269,6 +269,7 @@
     "templateGym": "Gym 60min",
     "templateYoga": "Yoga 45min",
     "templateCycling": "Cycling 40min",
+    "frequentSports": "Frequently used",
     "addTemplate": "Add template",
     "templateName": "Template name",
     "noTemplates": "Tap + to add quick templates"

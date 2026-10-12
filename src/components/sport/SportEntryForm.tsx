@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { parseCalorieInput } from '../../utils/calories'
 import DurationPresets from '../common/DurationPresets'
@@ -10,9 +10,18 @@ export interface SportFormFill {
   sportType: string
 }
 
+interface FrequentSport {
+  content: string
+  sportType: string
+  avgDuration: number
+  avgCalories: number
+  count: number
+}
+
 interface SportEntryFormProps {
   selectedDate: string
   categories: SportCategory[]
+  allEntries: SportEntry[]
   onAdd: (entry: Omit<SportEntry, 'id' | 'createdAt'>) => void
   editingEntry?: SportEntry | null
   onUpdate?: (id: string, updates: Partial<SportEntry>) => void
@@ -21,7 +30,7 @@ interface SportEntryFormProps {
   onTemplateFillConsumed?: () => void
 }
 
-function SportEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdate, onCancelEdit, templateFill, onTemplateFillConsumed }: SportEntryFormProps) {
+function SportEntryForm({ selectedDate, categories, allEntries, onAdd, editingEntry, onUpdate, onCancelEdit, templateFill, onTemplateFillConsumed }: SportEntryFormProps) {
   const { t } = useTranslation()
   const [content, setContent] = useState('')
   const [durationInput, setDurationInput] = useState('')
@@ -71,6 +80,41 @@ function SportEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdat
   const effectiveSportType = categories.some(c => c.name === sportType)
     ? sportType
     : (categories[0]?.name ?? '')
+
+  // Compute frequently used sport combos from history
+  const frequentSports = useMemo((): FrequentSport[] => {
+    const map = new Map<string, { content: string; sportType: string; totalDur: number; totalCal: number; count: number }>()
+    for (const e of allEntries) {
+      const key = `${e.content}||${e.sportType}`
+      const existing = map.get(key)
+      if (existing) {
+        existing.totalDur += e.duration
+        existing.totalCal += e.calories
+        existing.count++
+      } else {
+        map.set(key, { content: e.content, sportType: e.sportType, totalDur: e.duration, totalCal: e.calories, count: 1 })
+      }
+    }
+    return [...map.values()]
+      .filter(v => v.count >= 2) // only show items used 2+ times
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6)
+      .map(v => ({
+        content: v.content,
+        sportType: v.sportType,
+        avgDuration: Math.round(v.totalDur / v.count),
+        avgCalories: Math.round(v.totalCal / v.count),
+        count: v.count,
+      }))
+  }, [allEntries])
+
+  const handleQuickFill = (fs: FrequentSport) => {
+    setContent(fs.content)
+    setSportType(fs.sportType)
+    setDurationInput(String(fs.avgDuration))
+    if (fs.avgCalories > 0) setCalorieInput(String(fs.avgCalories))
+    setError('')
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -145,6 +189,28 @@ function SportEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdat
       <h3 className="text-xs font-semibold tracking-wide uppercase text-calm-muted dark:text-gray-200 mb-3">
         {isEditing ? t('sport.editTitle') : t('sport.addTitle')}
       </h3>
+
+      {/* Frequent sports quick-fill */}
+      {!isEditing && frequentSports.length > 0 && (
+        <div className="mb-3">
+          <p className="text-xs text-gray-400 dark:text-gray-500 mb-1.5">{t('sport.frequentSports')}</p>
+          <div className="flex flex-wrap gap-1.5">
+            {frequentSports.map(fs => (
+              <button
+                key={`${fs.content}||${fs.sportType}`}
+                type="button"
+                onClick={() => handleQuickFill(fs)}
+                className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 dark:bg-gray-700/60 hover:bg-mode-sport/15 dark:hover:bg-mode-sport/20 text-xs text-gray-700 dark:text-gray-200 rounded-full transition-colors border border-transparent hover:border-mode-sport/30"
+              >
+                <span>{t('category.names.' + fs.sportType, fs.sportType)}</span>
+                <span className="text-gray-400 dark:text-gray-500">·</span>
+                <span>{fs.content}</span>
+                <span className="text-gray-400 dark:text-gray-500">{fs.avgDuration}min</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="space-y-3 mb-3">
         {/* 训练内容 — 通栏 */}
