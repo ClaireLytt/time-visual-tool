@@ -1,7 +1,7 @@
 <title>MEAL BUILDER</title>
 <style>
   :root {
-    --bg: #0e1a24;
+    --bg: #152535;
     --teal: #00bcd4;
     --green: #00e676;
     --red: #ff5252;
@@ -693,11 +693,11 @@
     cx.translate(shakeX, shakeY);
 
     // BG
-    cx.fillStyle = '#0e1a24';
+    cx.fillStyle = '#152535';
     cx.fillRect(-10, -10, W + 20, H + 20);
 
     // Subtle grid
-    cx.strokeStyle = 'rgba(0, 188, 212, 0.03)';
+    cx.strokeStyle = 'rgba(0, 188, 212, 0.05)';
     cx.lineWidth = 1;
     var gs = 6 * U;
     for (var gx = 0; gx < W; gx += gs) { cx.beginPath(); cx.moveTo(gx, 0); cx.lineTo(gx, H); cx.stroke(); }
@@ -936,6 +936,9 @@
       var pr = Math.min(plateR * 0.55, plateR * 0.3 + plateItems.length * U);
       var px = W / 2 + Math.cos(pa) * pr;
       var py = plateY + Math.sin(pa) * pr;
+      // Light backing for visibility
+      cx.fillStyle = 'rgba(255,255,255,0.1)';
+      cx.beginPath(); cx.arc(px, py, 2.5 * U, 0, Math.PI * 2); cx.fill();
       cx.font = (3.5 * U) + 'px serif';
       cx.textAlign = 'center'; cx.textBaseline = 'middle';
       cx.fillText(plateItems[pi].emoji, px, py);
@@ -962,8 +965,11 @@
       cx.translate(ch.x, ch.y + bobY);
       cx.scale(enterScale, enterScale);
 
-      // Neutral ring (no category hint)
-      cx.strokeStyle = 'rgba(255,255,255,0.15)';
+      // Light background circle so emoji are clearly visible
+      cx.fillStyle = 'rgba(255,255,255,0.12)';
+      cx.beginPath(); cx.arc(0, 0, ch.size * 1.3, 0, Math.PI * 2); cx.fill();
+      // Ring
+      cx.strokeStyle = 'rgba(255,255,255,0.25)';
       cx.lineWidth = 1.5;
       cx.beginPath(); cx.arc(0, 0, ch.size * 1.3, 0, Math.PI * 2); cx.stroke();
 
