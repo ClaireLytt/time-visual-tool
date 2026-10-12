@@ -191,7 +191,7 @@ export default function WeeklyView() {
         )}
 
         <button onClick={() => dateInputRef.current?.showPicker()}
-          className="text-base font-bold text-gray-800 dark:text-gray-100 hover:text-[#c0392b]
+          className="text-lg font-bold text-gray-800 dark:text-gray-100 hover:text-[#c0392b]
             transition-colors cursor-pointer select-none tabular-nums">
           {rangeLabel}
         </button>
@@ -229,7 +229,7 @@ export default function WeeklyView() {
 
         <div className="relative">
           <button onClick={() => setRangeOpen(!rangeOpen)}
-            className={`h-8 px-3 rounded-lg text-xs font-medium flex items-center gap-1
+            className={`h-9 px-4 rounded-lg text-sm font-medium flex items-center gap-1
               transition-colors select-none no-press ${
               quickRange !== 'this' ? 'bg-[#c0392b]/10 text-[#c0392b]' : 'bg-gray-100 dark:bg-gray-700/50 text-gray-500 hover:text-gray-700'
             }`}>
@@ -246,7 +246,7 @@ export default function WeeklyView() {
                 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 min-w-[130px]">
                 {RANGES.map(r => (
                   <button key={r.key} onClick={() => handleRangeSelect(r.key)}
-                    className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
+                    className={`w-full px-4 py-2.5 text-left text-base transition-colors ${
                       quickRange === r.key ? 'text-[#c0392b] font-semibold bg-[#c0392b]/5'
                         : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
                     }`}>
@@ -262,18 +262,18 @@ export default function WeeklyView() {
       {/* Stats cards — delta colors: study time ↑=green ↓=red, mistakes ↑=red ↓=green */}
       <div className="grid grid-cols-3 gap-3">
         <div className="panel p-3 text-center">
-          <p className="text-xs text-gray-400 mb-0.5">⏱ 总学时</p>
-          <p className="text-xl font-bold tabular-nums text-gray-900 dark:text-gray-100">{fmtDuration(totalMinutes)}</p>
+          <p className="text-sm text-gray-400 mb-0.5">⏱ 总学时</p>
+          <p className="text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">{fmtDuration(totalMinutes)}</p>
           <DeltaBadge value={deltaMinutes} />
         </div>
         <div className="panel p-3 text-center">
-          <p className="text-xs text-gray-400 mb-0.5">📝 练习次数</p>
-          <p className="text-xl font-bold tabular-nums text-gray-900 dark:text-gray-100">{weekSessions.length}</p>
+          <p className="text-sm text-gray-400 mb-0.5">📝 练习次数</p>
+          <p className="text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">{weekSessions.length}</p>
           <DeltaBadge value={deltaSessions} />
         </div>
         <div className="panel p-3 text-center">
-          <p className="text-xs text-gray-400 mb-0.5">❌ 错题数</p>
-          <p className="text-xl font-bold tabular-nums text-[#c0392b]">{weekMistakes.length}</p>
+          <p className="text-sm text-gray-400 mb-0.5">❌ 错题数</p>
+          <p className="text-2xl font-bold tabular-nums text-[#c0392b]">{weekMistakes.length}</p>
           <DeltaBadge value={deltaMistakes} invertColor />
         </div>
       </div>
@@ -330,7 +330,7 @@ export default function WeeklyView() {
       {weekSessions.length === 0 && (
         <div className="panel p-10 text-center space-y-3">
           <p className="text-3xl">📅</p>
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-300">该时段暂无练习记录</p>
+          <p className="text-base font-medium text-gray-600 dark:text-gray-300">该时段暂无练习记录</p>
           <p className="text-xs text-gray-400">在「记录」或「导入」页面添加练习数据</p>
         </div>
       )}
@@ -366,7 +366,7 @@ function DeltaBadge({ value, invertColor }: { value: number; invertColor?: boole
   const isUp = value > 0
   const isGood = invertColor ? !isUp : isUp
   return (
-    <p className={`text-[11px] mt-0.5 font-medium ${isGood ? 'text-green-500' : 'text-[#c0392b]'}`}>
+    <p className={`text-xs mt-0.5 font-medium ${isGood ? 'text-green-500' : 'text-[#c0392b]'}`}>
       {isUp ? '↑' : '↓'} {Math.abs(value)}{invertColor ? '' : 'min'}
     </p>
   )

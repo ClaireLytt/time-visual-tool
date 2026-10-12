@@ -41,7 +41,7 @@ function IeltsDashboard() {
             <button
               key={tab.kind}
               onClick={() => setView({ kind: tab.kind } as IeltsView)}
-              className="relative px-4 h-9 rounded-md text-sm font-medium transition-colors select-none no-press z-10"
+              className="relative px-5 h-10 rounded-md text-base font-medium transition-colors select-none no-press z-10"
             >
               {active && (
                 <motion.div

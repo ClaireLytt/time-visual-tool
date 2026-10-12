@@ -106,9 +106,14 @@ export function useFirestore<T>(
 
       setError(null)
       const docRef = doc(db, 'users', uid, collectionName, 'data')
-      setDoc(docRef, newValue as Record<string, unknown>).catch(() => {
-        setError('save_failed')
-      })
+      setDoc(docRef, newValue as Record<string, unknown>)
+        .then(() => {
+          console.log(`[Firestore] ✅ saved ${collectionName} for ${uid}`)
+        })
+        .catch((err) => {
+          console.error(`[Firestore] ❌ save failed for ${collectionName}:`, err)
+          setError('save_failed')
+        })
     },
     [uid, collectionName],
   )

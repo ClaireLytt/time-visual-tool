@@ -67,15 +67,15 @@ export default memo(function VocabReviewSession({ words, onRate, onExit }: Vocab
           <div className="flex justify-center gap-4 pt-2">
             <div className="text-center">
               <p className="text-xl font-bold text-green-500 tabular-nums">{correct}</p>
-              <p className="text-[11px] text-gray-400">✅ 记住</p>
+              <p className="text-xs text-gray-400">✅ 记住</p>
             </div>
             <div className="text-center">
               <p className="text-xl font-bold text-amber-500 tabular-nums">{hard}</p>
-              <p className="text-[11px] text-gray-400">🤔 困难</p>
+              <p className="text-xs text-gray-400">🤔 困难</p>
             </div>
             <div className="text-center">
               <p className="text-xl font-bold text-gray-500 tabular-nums">{wrong}</p>
-              <p className="text-[11px] text-gray-400">❌ 忘了</p>
+              <p className="text-xs text-gray-400">❌ 忘了</p>
             </div>
           </div>
 
@@ -109,10 +109,10 @@ export default memo(function VocabReviewSession({ words, onRate, onExit }: Vocab
             <div className="divide-y divide-gray-100 dark:divide-gray-700/40">
               {results.filter(r => r.quality === 0).map(r => (
                 <div key={r.word.id} className="py-2 flex items-center gap-2">
-                  <span className="text-[13px] font-semibold text-gray-900 dark:text-gray-100">{r.word.word}</span>
-                  {r.word.phonetic && <span className="text-[11px] text-gray-400">{r.word.phonetic}</span>}
-                  <span className="text-[12px] text-gray-500 dark:text-gray-400 truncate flex-1">{r.word.meaning}</span>
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-600
+                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{r.word.word}</span>
+                  {r.word.phonetic && <span className="text-xs text-gray-400">{r.word.phonetic}</span>}
+                  <span className="text-sm text-gray-500 dark:text-gray-400 truncate flex-1">{r.word.meaning}</span>
+                  <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-600
                     dark:bg-amber-900/20 dark:text-amber-400 shrink-0">待复习</span>
                 </div>
               ))}
@@ -130,12 +130,12 @@ export default memo(function VocabReviewSession({ words, onRate, onExit }: Vocab
             <div className="divide-y divide-gray-100 dark:divide-gray-700/40">
               {results.map(r => (
                 <div key={r.word.id} className="px-4 py-2 flex items-center gap-2">
-                  <span className="px-1.5 py-px rounded text-[10px] font-medium shrink-0"
+                  <span className="px-1.5 py-px rounded text-xs font-medium shrink-0"
                     style={{ backgroundColor: `${qualityColor(r.quality)}15`, color: qualityColor(r.quality) }}>
                     {qualityLabel(r.quality)}
                   </span>
-                  <span className="text-[13px] font-medium text-gray-800 dark:text-gray-200">{r.word.word}</span>
-                  <span className="text-[12px] text-gray-400 truncate flex-1">{r.word.meaning}</span>
+                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{r.word.word}</span>
+                  <span className="text-sm text-gray-400 truncate flex-1">{r.word.meaning}</span>
                 </div>
               ))}
             </div>
@@ -211,7 +211,7 @@ export default memo(function VocabReviewSession({ words, onRate, onExit }: Vocab
               {current.phonetic && <p className="text-xs text-gray-400 mt-1">{current.phonetic}</p>}
               <p className="text-base text-gray-700 dark:text-gray-300 mt-3 font-medium">{current.meaning}</p>
               {current.example && <p className="text-sm text-gray-400 italic mt-2 max-w-md">{current.example}</p>}
-              {current.source && <p className="text-[10px] text-gray-400 mt-3">📎 {current.source}</p>}
+              {current.source && <p className="text-xs text-gray-400 mt-3">📎 {current.source}</p>}
             </motion.div>
           )}
         </AnimatePresence>
@@ -229,7 +229,7 @@ export default memo(function VocabReviewSession({ words, onRate, onExit }: Vocab
                   transition-all select-none no-press active:scale-[0.95] hover:brightness-110"
                 style={{ backgroundColor: `${color}15`, color }}>
                 <span>{icon} {label}</span>
-                <span className="text-[10px] opacity-70 tabular-nums">{days}天</span>
+                <span className="text-xs opacity-70 tabular-nums">{days}天</span>
               </button>
             )
           })}

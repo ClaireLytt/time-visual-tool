@@ -56,24 +56,24 @@ export default function ExamCountdown() {
           <>
             <p className="text-sm font-bold text-gray-400 mt-0.5">考试已结束</p>
             <button onClick={handleClear}
-              className="text-[10px] text-[#c0392b] font-medium mt-0.5 hover:underline select-none">
+              className="text-xs text-[#c0392b] font-medium mt-0.5 hover:underline select-none">
               设置新日期
             </button>
           </>
         ) : daysLeft === 0 ? (
           <>
             <p className="text-lg font-bold mt-0.5" style={{ color }}>🔥 今天</p>
-            <p className="text-[10px] text-gray-400 mt-0.5 leading-tight">考试日</p>
+            <p className="text-xs text-gray-400 mt-0.5 leading-tight">考试日</p>
           </>
         ) : (
           <button onClick={() => setEditing(true)} className="w-full no-press">
             <p className="text-lg font-bold tabular-nums mt-0.5" style={{ color }}>{daysLeft}</p>
-            <p className="text-[10px] text-gray-400 mt-0.5 leading-tight">{t('ielts.daysLeft')}</p>
+            <p className="text-xs text-gray-400 mt-0.5 leading-tight">{t('ielts.daysLeft')}</p>
           </button>
         )
       ) : (
         <button onClick={() => setEditing(true)} className="w-full no-press">
-          <p className="text-[10px] text-gray-400 mt-1 leading-tight">{t('ielts.setExamDate')}</p>
+          <p className="text-xs text-gray-400 mt-1 leading-tight">{t('ielts.setExamDate')}</p>
         </button>
       )}
     </div>

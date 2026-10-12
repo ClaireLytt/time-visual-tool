@@ -70,7 +70,7 @@ export function useIsDark() {
 /* ── Input base ── */
 
 export const inputClass =
-  'input-base w-full rounded-lg text-sm h-10'
+  'input-base w-full rounded-lg text-base h-11'
 
 export const textareaClass =
   'input-base w-full rounded-lg text-sm resize-none'

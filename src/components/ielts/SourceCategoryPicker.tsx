@@ -176,7 +176,7 @@ function CategoryManagerInline({
               <div className="flex items-center gap-2">
                 <span className="text-gray-700 dark:text-gray-300 flex-1 font-medium">
                   {cat.name}
-                  {cat.builtIn && <span className="text-[10px] text-gray-400 ml-1">内置</span>}
+                  {cat.builtIn && <span className="text-xs text-gray-400 ml-1">内置</span>}
                 </span>
                 <span className="text-xs text-gray-400 truncate max-w-[160px]">
                   {cat.placeholder}

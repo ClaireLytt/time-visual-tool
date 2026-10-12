@@ -165,7 +165,7 @@ export default function RecordView() {
         )}
 
         <button onClick={() => dateInputRef.current?.showPicker()}
-          className="text-base font-bold text-gray-800 dark:text-gray-100 hover:text-[#c0392b]
+          className="text-lg font-bold text-gray-800 dark:text-gray-100 hover:text-[#c0392b]
             transition-colors cursor-pointer select-none">
           {isDayNav ? dateLabel : activeRangeLabel}
         </button>
@@ -196,7 +196,7 @@ export default function RecordView() {
         {/* Quick range dropdown */}
         <div className="relative">
           <button onClick={() => setRangeOpen(!rangeOpen)}
-            className={`h-8 px-3 rounded-lg text-xs font-medium flex items-center gap-1
+            className={`h-9 px-4 rounded-lg text-sm font-medium flex items-center gap-1
               transition-colors select-none no-press ${
               quickRange !== 'day'
                 ? 'bg-[#c0392b]/10 text-[#c0392b]'
@@ -216,7 +216,7 @@ export default function RecordView() {
                 animate-in fade-in slide-in-from-top-1 duration-150">
                 {RANGES.map(r => (
                   <button key={r.key} onClick={() => handleRangeSelect(r.key)}
-                    className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
+                    className={`w-full px-4 py-2.5 text-left text-base transition-colors ${
                       quickRange === r.key
                         ? 'text-[#c0392b] font-semibold bg-[#c0392b]/5'
                         : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
@@ -241,16 +241,16 @@ export default function RecordView() {
       {/* Stats summary */}
       <div className="flex gap-3">
         <div className="panel p-3 flex-1 text-center">
-          <p className="text-xs text-gray-400 mb-0.5">⏱ {t('ielts.totalMinutes')}</p>
-          <p className="text-xl font-bold tabular-nums text-gray-900 dark:text-gray-100">{fmtDuration(totalMinutes)}</p>
+          <p className="text-sm text-gray-400 mb-0.5">⏱ {t('ielts.totalMinutes')}</p>
+          <p className="text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">{fmtDuration(totalMinutes)}</p>
         </div>
         <div className="panel p-3 flex-1 text-center">
-          <p className="text-xs text-gray-400 mb-0.5">📝 {t('ielts.sessions')}</p>
-          <p className="text-xl font-bold tabular-nums text-gray-900 dark:text-gray-100">{viewSessions.length}</p>
+          <p className="text-sm text-gray-400 mb-0.5">📝 {t('ielts.sessions')}</p>
+          <p className="text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">{viewSessions.length}</p>
         </div>
         <div className="panel p-3 flex-1 text-center">
-          <p className="text-xs text-gray-400 mb-0.5">❌ 错题</p>
-          <p className={`text-xl font-bold tabular-nums ${viewMistakes.length > 0 ? 'text-[#c0392b]' : 'text-gray-900 dark:text-gray-100'}`}>
+          <p className="text-sm text-gray-400 mb-0.5">❌ 错题</p>
+          <p className={`text-2xl font-bold tabular-nums ${viewMistakes.length > 0 ? 'text-[#c0392b]' : 'text-gray-900 dark:text-gray-100'}`}>
             {viewMistakes.length}
           </p>
         </div>
@@ -279,30 +279,30 @@ export default function RecordView() {
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
               fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
             </svg>
             <input value={search} onChange={e => setSearch(e.target.value)}
               placeholder="搜索题库或备注..."
-              className="input-base w-full rounded-lg text-sm h-10 pl-9" />
+              className="input-base w-full rounded-lg text-base h-11 pl-10" />
           </div>
         </div>
 
         {/* Subject filter — scrollable on mobile */}
         <div className="flex gap-1.5 overflow-x-auto pb-0.5 -mx-1 px-1 scrollbar-none">
           <button onClick={() => setSubjectFilter('all')}
-            className={`${btnToggle(subjectFilter === 'all')} h-9 px-3 rounded-lg text-xs shrink-0`}>
+            className={`${btnToggle(subjectFilter === 'all')} h-10 px-4 rounded-lg text-sm shrink-0`}>
             {t('ielts.allSubjects')}
             {viewSessions.length > 0 && (
-              <span className="ml-1 text-[10px] opacity-60">{viewSessions.length}</span>
+              <span className="ml-1 text-xs opacity-60">{viewSessions.length}</span>
             )}
           </button>
           {IELTS_SUBJECTS.map(s => {
             const count = subjectCounts.get(s) ?? 0
             return (
               <button key={s} onClick={() => setSubjectFilter(s)}
-                className={`h-9 px-3 rounded-lg text-xs font-medium transition-all select-none no-press
+                className={`h-10 px-4 rounded-lg text-sm font-medium transition-all select-none no-press
                   active:scale-[0.97] shrink-0 ${
                   subjectFilter === s
                     ? 'text-white shadow-sm'
@@ -310,7 +310,7 @@ export default function RecordView() {
                 }`}
                 style={subjectFilter === s ? { backgroundColor: SUBJECT_COLORS[s] } : undefined}>
                 {t(`ielts.${s}`)}
-                {count > 0 && <span className="ml-1 text-[10px] opacity-60">{count}</span>}
+                {count > 0 && <span className="ml-1 text-xs opacity-60">{count}</span>}
               </button>
             )
           })}

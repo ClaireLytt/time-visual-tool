@@ -32,8 +32,8 @@ export default memo(function ReviewCard({ item, review, onRate }: ReviewCardProp
     <div className="panel p-3 space-y-2">
       {/* Type badge + review count */}
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-medium text-gray-400">{typeLabel}</span>
-        <span className="text-[10px] text-gray-400 tabular-nums">
+        <span className="text-xs font-medium text-gray-400">{typeLabel}</span>
+        <span className="text-xs text-gray-400 tabular-nums">
           第 {review.reviewCount + 1} 次复习
         </span>
       </div>
@@ -48,7 +48,7 @@ export default memo(function ReviewCard({ item, review, onRate }: ReviewCardProp
           <p className="text-xs text-gray-400 italic mt-0.5">{item.example}</p>
         )}
         {item.source && (
-          <p className="text-[10px] text-gray-400 mt-1">📎 {item.source}</p>
+          <p className="text-xs text-gray-400 mt-1">📎 {item.source}</p>
         )}
       </div>
 
@@ -65,7 +65,7 @@ export default memo(function ReviewCard({ item, review, onRate }: ReviewCardProp
               style={{ backgroundColor: `${color}12`, color }}
             >
               <span className="flex items-center gap-1">{icon} {t(labelKey)}</span>
-              <span className="text-[10px] opacity-60 tabular-nums">{days}d</span>
+              <span className="text-xs opacity-60 tabular-nums">{days}d</span>
             </button>
           )
         })}

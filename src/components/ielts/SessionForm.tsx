@@ -211,7 +211,7 @@ export default function SessionForm({
                 key={tag}
                 type="button"
                 onClick={() => toggleTag(tag)}
-                className={`h-9 px-4 rounded-lg text-[13px] font-medium transition-all select-none no-press active:scale-[0.97] ${
+                className={`h-9 px-4 rounded-lg text-sm font-medium transition-all select-none no-press active:scale-[0.97] ${
                   active
                     ? 'text-white shadow-sm'
                     : 'bg-gray-100 dark:bg-gray-700/50 text-gray-500 hover:text-gray-700'

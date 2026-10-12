@@ -296,12 +296,12 @@ export default function ImportView({ onNavigate }: { onNavigate?: (tab: string) 
           <div className="space-y-2 pt-3 border-t border-gray-100 dark:border-gray-700/50">
             {(Object.entries(IELTS_TAGS) as [IeltsSubject, string[]][]).map(([subj, tags]) => (
               <div key={subj} className="flex items-start gap-2">
-                <span className="text-[13px] font-semibold shrink-0 w-10" style={{ color: SUBJECT_COLORS[subj] }}>
+                <span className="text-sm font-semibold shrink-0 w-10" style={{ color: SUBJECT_COLORS[subj] }}>
                   {t(`ielts.${subj}`)}
                 </span>
                 <div className="flex flex-wrap gap-1.5">
                   {tags.map(tag => (
-                    <span key={tag} className="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 text-[13px]">{tag}</span>
+                    <span key={tag} className="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 text-sm">{tag}</span>
                   ))}
                 </div>
               </div>
@@ -338,7 +338,7 @@ export default function ImportView({ onNavigate }: { onNavigate?: (tab: string) 
           onChange={e => { setRaw(e.target.value); setParsed(null); setErrors([]); setImportResult(null) }}
           placeholder='{"version": 1, "date": "2026-10-12", "sessions": [...], ...}'
           rows={6}
-          className={`${textareaClass} font-mono text-[13px]`}
+          className={`${textareaClass} font-mono text-sm`}
           style={{ minHeight: 120 }}
           spellCheck={false}
         />
@@ -364,7 +364,7 @@ export default function ImportView({ onNavigate }: { onNavigate?: (tab: string) 
           <p className="text-sm font-semibold text-[#e74c3c] mb-2">{t('ielts.importErrors')} ({errors.length})</p>
           <ul className="space-y-1">
             {errors.map((err, i) => (
-              <li key={i} className="text-[13px] text-gray-600 dark:text-gray-400 font-mono">• {err}</li>
+              <li key={i} className="text-sm text-gray-600 dark:text-gray-400 font-mono">• {err}</li>
             ))}
           </ul>
         </div>
@@ -398,16 +398,16 @@ export default function ImportView({ onNavigate }: { onNavigate?: (tab: string) 
                         onChange={e => { const n = [...checkedSessions]; n[i] = e.target.checked; setCheckedSessions(n) }}
                         className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600
                           text-[#c0392b] focus:ring-[#c0392b]/30 cursor-pointer shrink-0" />
-                      <span className="px-1.5 py-px rounded text-[10px] font-bold text-white leading-tight shrink-0"
+                      <span className="px-1.5 py-px rounded text-xs font-bold text-white leading-tight shrink-0"
                         style={{ backgroundColor: color }}>
                         {t(`ielts.${s.subject}`)}
                       </span>
-                      <span className="text-[13px] text-gray-700 dark:text-gray-300 truncate">
+                      <span className="text-sm text-gray-700 dark:text-gray-300 truncate">
                         {s.source}
                       </span>
-                      {s.score && <span className="text-[13px] font-bold tabular-nums shrink-0" style={{ color }}>{s.score}</span>}
+                      {s.score && <span className="text-sm font-bold tabular-nums shrink-0" style={{ color }}>{s.score}</span>}
                       <span className="text-xs text-gray-400 tabular-nums shrink-0">{s.minutes}min</span>
-                      {isDup && <span className="text-[10px] text-amber-500 font-medium shrink-0">⚠ 已存在</span>}
+                      {isDup && <span className="text-xs text-amber-500 font-medium shrink-0">⚠ 已存在</span>}
                     </label>
                   )
                 })}
@@ -424,9 +424,9 @@ export default function ImportView({ onNavigate }: { onNavigate?: (tab: string) 
                       onChange={e => { const n = [...checkedMistakes]; n[i] = e.target.checked; setCheckedMistakes(n) }}
                       className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600
                         text-[#c0392b] focus:ring-[#c0392b]/30 cursor-pointer shrink-0" />
-                    <span className="px-1.5 py-px rounded text-[10px] font-medium shrink-0
+                    <span className="px-1.5 py-px rounded text-xs font-medium shrink-0
                       bg-[#c0392b]/8 text-[#c0392b] dark:text-[#ef6f6f] leading-tight">{m.tag}</span>
-                    <span className="text-[13px] text-gray-700 dark:text-gray-300 truncate">
+                    <span className="text-sm text-gray-700 dark:text-gray-300 truncate">
                       {m.question_no} <span className="text-gray-400">{m.my_answer}</span> → <span className="font-medium">{m.correct_answer}</span>
                     </span>
                   </label>
@@ -444,7 +444,7 @@ export default function ImportView({ onNavigate }: { onNavigate?: (tab: string) 
                       onChange={ev => { const n = [...checkedExpressions]; n[i] = ev.target.checked; setCheckedExpressions(n) }}
                       className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600
                         text-[#c0392b] focus:ring-[#c0392b]/30 cursor-pointer shrink-0" />
-                    <span className="text-[13px] text-gray-700 dark:text-gray-300">
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
                       <strong>{e.text}</strong> <span className="text-gray-400">— {e.meaning}</span>
                     </span>
                   </label>
@@ -462,7 +462,7 @@ export default function ImportView({ onNavigate }: { onNavigate?: (tab: string) 
                       onChange={e => { const n = [...checkedTodos]; n[i] = e.target.checked; setCheckedTodos(n) }}
                       className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600
                         text-[#c0392b] focus:ring-[#c0392b]/30 cursor-pointer shrink-0" />
-                    <span className="text-[13px] text-gray-700 dark:text-gray-300">
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
                       {td.content} <span className="text-gray-400 text-xs">({td.due_in_days}天后)</span>
                     </span>
                   </label>
@@ -473,7 +473,7 @@ export default function ImportView({ onNavigate }: { onNavigate?: (tab: string) 
             {/* Reflection */}
             {parsed.reflection && (
               <PreviewSection title="反思">
-                <p className="text-[13px] text-gray-600 dark:text-gray-400 py-1 pl-1">{parsed.reflection}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 py-1 pl-1">{parsed.reflection}</p>
               </PreviewSection>
             )}
           </div>
@@ -541,7 +541,7 @@ function ImportHistoryItem({ record }: { record: import('./types').IeltsImportRe
       <button onClick={() => setExpanded(!expanded)}
         className="flex items-center gap-2 w-full text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-800/40
           rounded-lg px-2 py-1.5 -mx-2 no-press transition-colors">
-        <span className={`text-[11px] px-1.5 py-0.5 rounded shrink-0 ${
+        <span className={`text-xs px-1.5 py-0.5 rounded shrink-0 ${
           record.status === 'success'
             ? 'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400'
             : 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400'

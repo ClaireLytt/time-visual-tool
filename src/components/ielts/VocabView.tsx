@@ -87,18 +87,18 @@ export default function VocabView() {
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-3">
         <div className="panel p-3 text-center">
-          <p className="text-xs text-gray-400 mb-0.5">📚 {t('ielts.vocabTotal')}</p>
-          <p className="text-xl font-bold tabular-nums text-gray-900 dark:text-gray-100">{stats.total}</p>
+          <p className="text-sm text-gray-400 mb-0.5">📚 {t('ielts.vocabTotal')}</p>
+          <p className="text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">{stats.total}</p>
         </div>
         <div className="panel p-3 text-center">
-          <p className="text-xs text-gray-400 mb-0.5">📖 {t('ielts.reviewDue')}</p>
-          <p className={`text-xl font-bold tabular-nums ${stats.due > 0 ? 'text-[#c0392b]' : 'text-gray-900 dark:text-gray-100'}`}>
+          <p className="text-sm text-gray-400 mb-0.5">📖 {t('ielts.reviewDue')}</p>
+          <p className={`text-2xl font-bold tabular-nums ${stats.due > 0 ? 'text-[#c0392b]' : 'text-gray-900 dark:text-gray-100'}`}>
             {stats.due}
           </p>
         </div>
         <div className="panel p-3 text-center">
-          <p className="text-xs text-gray-400 mb-0.5">✅ {t('ielts.vocabMastered')}</p>
-          <p className="text-xl font-bold tabular-nums text-green-600 dark:text-green-400">{stats.mastered}</p>
+          <p className="text-sm text-gray-400 mb-0.5">✅ {t('ielts.vocabMastered')}</p>
+          <p className="text-2xl font-bold tabular-nums text-green-600 dark:text-green-400">{stats.mastered}</p>
         </div>
       </div>
 
@@ -119,13 +119,13 @@ export default function VocabView() {
 
       {/* Search */}
       <div className="relative">
-        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
           fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
         </svg>
         <input value={search} onChange={e => setSearch(e.target.value)}
           placeholder={t('ielts.vocabSearchPlaceholder')}
-          className="input-base w-full rounded-lg text-sm h-10 pl-9" />
+          className="input-base w-full rounded-lg text-base h-11 pl-10" />
       </div>
 
       {/* List type filter */}
@@ -133,7 +133,7 @@ export default function VocabView() {
         <button onClick={() => setListFilter('all')}
           className={`${btnToggle(listFilter === 'all')} h-8 px-3 rounded-lg text-xs shrink-0`}>
           全部
-          {stats.total > 0 && <span className="ml-1 text-[10px] opacity-50">{stats.total}</span>}
+          {stats.total > 0 && <span className="ml-1 text-xs opacity-50">{stats.total}</span>}
         </button>
         {LIST_TYPES.map(lt => {
           const count = listCounts.get(lt.value) ?? 0
@@ -141,7 +141,7 @@ export default function VocabView() {
             <button key={lt.value} onClick={() => setListFilter(lt.value)}
               className={`${btnToggle(listFilter === lt.value)} h-8 px-3 rounded-lg text-xs shrink-0`}>
               {lt.icon} {lt.label}
-              {count > 0 && <span className="ml-1 text-[10px] opacity-50">{count}</span>}
+              {count > 0 && <span className="ml-1 text-xs opacity-50">{count}</span>}
             </button>
           )
         })}
@@ -160,10 +160,10 @@ export default function VocabView() {
       ) : (
         <div className="panel p-10 text-center space-y-3">
           <p className="text-3xl">📖</p>
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+          <p className="text-base font-medium text-gray-600 dark:text-gray-300">
             {search ? '没有匹配的词汇' : t('ielts.vocabEmpty')}
           </p>
-          <p className="text-xs text-gray-400 leading-relaxed">
+          <p className="text-sm text-gray-400 leading-relaxed">
             收集练习中遇到的生词，结合 SM-2 间隔重复高效记忆
           </p>
           {!search && (
@@ -194,38 +194,38 @@ const WordRow = memo(function WordRow({ word, today, onDelete }: {
       {/* Word + phonetic */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
-          <span className="text-[13px] font-semibold text-gray-900 dark:text-gray-100">{word.word}</span>
-          {word.phonetic && <span className="text-[11px] text-gray-400">{word.phonetic}</span>}
-          <span className="text-[10px] text-gray-400">{listIcon}</span>
+          <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{word.word}</span>
+          {word.phonetic && <span className="text-xs text-gray-400">{word.phonetic}</span>}
+          <span className="text-xs text-gray-400">{listIcon}</span>
         </div>
         <div className="flex items-center gap-1.5 mt-0.5">
-          <span className="text-[12px] text-gray-500 dark:text-gray-400 truncate">{word.meaning}</span>
+          <span className="text-sm text-gray-500 dark:text-gray-400 truncate">{word.meaning}</span>
           {word.source && (
-            <span className="text-[10px] text-gray-400 truncate shrink-0">· {word.source}</span>
+            <span className="text-xs text-gray-400 truncate shrink-0">· {word.source}</span>
           )}
         </div>
       </div>
 
       {/* Mastery status */}
       {isMastered ? (
-        <span className="px-1.5 py-0.5 rounded text-[10px] font-medium shrink-0
+        <span className="px-1.5 py-0.5 rounded text-xs font-medium shrink-0
           bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400">
           已掌握
         </span>
       ) : isDue ? (
-        <span className="px-1.5 py-0.5 rounded text-[10px] font-medium shrink-0
+        <span className="px-1.5 py-0.5 rounded text-xs font-medium shrink-0
           bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400">
           待复习
         </span>
       ) : (
-        <span className="text-[10px] text-gray-400 tabular-nums shrink-0">
+        <span className="text-xs text-gray-400 tabular-nums shrink-0">
           {word.nextReview.slice(5)}
         </span>
       )}
 
       {/* Delete */}
       <button onClick={() => setConfirmDelete(true)}
-        className="h-7 w-7 inline-flex items-center justify-center rounded shrink-0
+        className="h-8 w-8 inline-flex items-center justify-center rounded shrink-0
           text-gray-300 hover:text-[#c0392b] hover:bg-gray-100 dark:hover:bg-gray-700/40
           transition-colors select-none no-press">
         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">

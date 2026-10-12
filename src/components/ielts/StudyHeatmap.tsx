@@ -99,7 +99,7 @@ export default function StudyHeatmap({ sessions }: Props) {
       </div>
       {/* Legend */}
       <div className="flex items-center gap-1.5 mt-2 justify-end">
-        <span className="text-[10px] text-gray-400">少</span>
+        <span className="text-xs text-gray-400">少</span>
         {[0, 15, 45, 90, 150].map(m => (
           <div
             key={m}
@@ -107,7 +107,7 @@ export default function StudyHeatmap({ sessions }: Props) {
             style={{ width: 10, height: 10, backgroundColor: getColor(m, isDark) }}
           />
         ))}
-        <span className="text-[10px] text-gray-400">多</span>
+        <span className="text-xs text-gray-400">多</span>
       </div>
     </div>
   )

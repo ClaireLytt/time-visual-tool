@@ -84,14 +84,14 @@ export default function MockTestForm({ date, categories, onAdd }: Props) {
               value={scores[s]}
               onChange={e => setScores(prev => ({ ...prev, [s]: e.target.value }))}
               placeholder="分数"
-              className="input-base rounded-lg text-sm h-10 flex-1"
+              className="input-base rounded-lg text-base h-11 flex-1"
             />
             <input
               type="number"
               value={durations[s]}
               onChange={e => setDurations(prev => ({ ...prev, [s]: e.target.value }))}
               placeholder="min"
-              className="input-base rounded-lg text-sm h-10 w-16 text-center"
+              className="input-base rounded-lg text-base h-11 w-16 text-center"
             />
           </div>
         ))}

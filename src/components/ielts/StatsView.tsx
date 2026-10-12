@@ -106,20 +106,20 @@ export default function StatsView() {
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
         <button onClick={() => setSubject('all')}
-          className={`${btnToggle(subject === 'all')} h-9 px-3 rounded-lg text-xs`}>
+          className={`${btnToggle(subject === 'all')} h-10 px-4 rounded-lg text-sm`}>
           {t('ielts.allSubjects')}
-          <span className="ml-1 text-[10px] opacity-50">{allMistakes.length}</span>
+          <span className="ml-1 text-xs opacity-50">{allMistakes.length}</span>
         </button>
         {IELTS_SUBJECTS.map(s => {
           const count = subjectMistakeCounts.get(s) ?? 0
           return (
             <button key={s} onClick={() => setSubject(s)}
-              className={`h-9 px-3 rounded-lg text-xs font-medium transition-all select-none no-press active:scale-[0.97] ${
+              className={`h-10 px-4 rounded-lg text-sm font-medium transition-all select-none no-press active:scale-[0.97] ${
                 subject === s ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-gray-700/50 text-gray-400 hover:text-gray-600'
               }`}
               style={subject === s ? { backgroundColor: SUBJECT_COLORS[s] } : undefined}>
               {t(`ielts.${s}`)}
-              {count > 0 && <span className="ml-1 text-[10px] opacity-50">{count}</span>}
+              {count > 0 && <span className="ml-1 text-xs opacity-50">{count}</span>}
             </button>
           )
         })}
@@ -128,7 +128,7 @@ export default function StatsView() {
 
         {RANGES.map(r => (
           <button key={r.key} onClick={() => setRange(r.key)}
-            className={`h-8 px-2.5 rounded-lg text-[11px] font-medium transition-all select-none no-press ${
+            className={`h-8 px-2.5 rounded-lg text-xs font-medium transition-all select-none no-press ${
               range === r.key
                 ? 'bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold'
                 : 'bg-gray-50 dark:bg-gray-800/40 text-gray-400 hover:text-gray-600'
@@ -160,7 +160,7 @@ export default function StatsView() {
             错因分布
             {highlightTag && (
               <button onClick={() => setHighlightTag(null)}
-                className="ml-2 text-[10px] text-[#c0392b] font-normal">
+                className="ml-2 text-xs text-[#c0392b] font-normal">
                 ✕ 清除筛选
               </button>
             )}
@@ -190,7 +190,7 @@ export default function StatsView() {
       ) : (
         <div className="panel p-10 text-center space-y-3">
           <p className="text-3xl">📊</p>
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+          <p className="text-base font-medium text-gray-600 dark:text-gray-300">
             导入或记录几场练习后，这里会显示错因分布
           </p>
           <p className="text-xs text-gray-400">切换到「记录」或「导入」页面添加数据</p>
@@ -220,11 +220,11 @@ export default function StatsView() {
                 {i === 0 && <span className="text-xs">🔥</span>}
                 {d.tag}
                 <span className="text-xs opacity-60 tabular-nums">×{d.count}</span>
-                <span className="text-[10px] opacity-40 tabular-nums">{d.percentage}%</span>
+                <span className="text-xs opacity-40 tabular-nums">{d.percentage}%</span>
               </button>
             ))}
           </div>
-          <p className="text-[11px] text-gray-400 mt-2">
+          <p className="text-xs text-gray-400 mt-2">
             💡 点击标签跳转知识库查看对应错题
           </p>
         </div>
@@ -260,7 +260,7 @@ export default function StatsView() {
                 <span className={`text-xs tabular-nums w-8 text-right shrink-0 ${
                   active ? 'text-[#c0392b] font-semibold' : 'text-gray-400'
                 }`}>{d.percentage}%</span>
-                <span className={`text-[11px] tabular-nums w-7 text-right shrink-0 ${
+                <span className={`text-xs tabular-nums w-7 text-right shrink-0 ${
                   active ? 'text-[#c0392b]' : 'text-gray-400'
                 }`}>{d.count}次</span>
               </button>

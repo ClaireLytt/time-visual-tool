@@ -40,10 +40,10 @@ export default function SessionList({
     return (
       <div className="panel p-10 text-center space-y-3">
         <p className="text-3xl">📝</p>
-        <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+        <p className="text-base font-medium text-gray-600 dark:text-gray-300">
           {t('ielts.emptyToday')}
         </p>
-        <p className="text-xs text-gray-400 leading-relaxed">
+        <p className="text-sm text-gray-400 leading-relaxed">
           记录每次练习的分数、用时和错因，追踪你的进步轨迹
         </p>
         {onScrollToForm && (
@@ -76,11 +76,11 @@ export default function SessionList({
               className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600
                 text-[#c0392b] focus:ring-[#c0392b]/30 cursor-pointer"
             />
-            <span className="text-[11px] text-gray-400">
+            <span className="text-xs text-gray-400">
               {allSelected ? '取消全选' : '全选'}
             </span>
           </label>
-          <span className="text-[11px] text-gray-400 ml-auto tabular-nums">
+          <span className="text-xs text-gray-400 ml-auto tabular-nums">
             {sessions.length} 条记录
           </span>
         </div>
@@ -145,19 +145,19 @@ const SessionRow = memo(function SessionRow({
           {/* Line 1: (date) + badge + source + score */}
           <div className="flex items-center gap-1.5">
             {showDate && (
-              <span className="text-[10px] text-gray-400 tabular-nums shrink-0 mr-0.5">
+              <span className="text-sm text-gray-400 tabular-nums shrink-0 mr-0.5">
                 {session.date.slice(5)}
               </span>
             )}
-            <span className="px-1.5 py-px rounded text-[10px] font-bold text-white leading-tight shrink-0"
+            <span className="px-2 py-0.5 rounded text-sm font-bold text-white leading-tight shrink-0"
               style={{ backgroundColor: color }}>
               {t(`ielts.${session.subject}`)}
             </span>
-            <span className="text-[13px] font-medium text-gray-800 dark:text-gray-200 truncate">
+            <span className="text-lg font-medium text-gray-800 dark:text-gray-200 truncate">
               {session.source}
             </span>
             {session.score && (
-              <span className="text-[13px] font-bold tabular-nums shrink-0" style={{ color }}>
+              <span className="text-base font-bold tabular-nums shrink-0" style={{ color }}>
                 {session.score}
               </span>
             )}
@@ -168,13 +168,13 @@ const SessionRow = memo(function SessionRow({
             <div className="flex items-center gap-1 min-w-0">
               {mistakes.map(m => (
                 <span key={m.id}
-                  className="px-1.5 py-px rounded text-[10px] font-medium shrink-0
+                  className="px-2 py-0.5 rounded text-sm font-medium shrink-0
                     bg-[#c0392b]/8 text-[#c0392b] dark:text-[#ef6f6f] leading-tight">
                   {m.tag}
                 </span>
               ))}
               {session.note && (
-                <span className="text-[11px] text-gray-400 truncate ml-0.5">{session.note}</span>
+                <span className="text-sm text-gray-400 truncate ml-0.5">{session.note}</span>
               )}
             </div>
           )}
@@ -182,23 +182,23 @@ const SessionRow = memo(function SessionRow({
 
         {/* Right: duration + actions */}
         <div className="flex items-center gap-1 shrink-0">
-          <span className="text-xs text-gray-400 tabular-nums mr-1">{session.minutes}min</span>
+          <span className="text-sm text-gray-400 tabular-nums mr-1">{session.minutes}min</span>
           <button onClick={() => setShowMistakeForm(!showMistakeForm)}
-            className="h-7 px-2 rounded text-[11px] font-medium
+            className="h-9 px-3 rounded text-sm font-medium
               text-gray-400 hover:text-[#c0392b] hover:bg-gray-100 dark:hover:bg-gray-700/40
               transition-colors select-none no-press">
             +错题
           </button>
           {mistakes.length > 0 && (
             <button onClick={() => setExpanded(!expanded)}
-              className="h-7 px-2 rounded text-[11px] font-medium
+              className="h-9 px-3 rounded text-sm font-medium
                 hover:bg-gray-100 dark:hover:bg-gray-700/40 transition-colors select-none no-press"
               style={{ color }}>
               {expanded ? '▲' : `错题(${mistakes.length})`}
             </button>
           )}
           <button onClick={() => setConfirmDelete(true)}
-            className="h-7 w-7 inline-flex items-center justify-center rounded
+            className="h-8 w-8 inline-flex items-center justify-center rounded
               text-gray-300 hover:text-[#c0392b] hover:bg-gray-100 dark:hover:bg-gray-700/40
               transition-colors select-none no-press">
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -212,7 +212,7 @@ const SessionRow = memo(function SessionRow({
       <AnimatedCollapse open={expanded && mistakes.length > 0}>
         <div className="px-3 pb-2 space-y-1 border-t border-gray-100 dark:border-gray-700/40 pt-2 ml-7">
           {mistakes.map(m => (
-            <div key={m.id} className="flex items-start gap-1.5 text-[11px]">
+            <div key={m.id} className="flex items-start gap-1.5 text-xs">
               <span className="px-1 py-px rounded bg-[#c0392b]/10 text-[#c0392b] font-medium shrink-0 leading-tight">{m.tag}</span>
               <div className="flex-1 min-w-0">
                 {m.questionNo && <span className="text-gray-400 mr-1">{m.questionNo}</span>}

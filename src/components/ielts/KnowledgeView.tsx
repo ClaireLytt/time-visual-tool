@@ -146,7 +146,7 @@ export default function KnowledgeView() {
     <div className="space-y-3">
       {/* Search */}
       <div className="relative">
-        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
           fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
         </svg>
@@ -159,7 +159,7 @@ export default function KnowledgeView() {
         {/* Type filter */}
         {(['all', 'mistake', 'expression'] as ItemType[]).map(tp => (
           <button key={tp} onClick={() => setItemType(tp)}
-            className={`h-9 px-3 rounded-lg text-xs font-medium transition-all select-none no-press active:scale-[0.97] ${
+            className={`h-10 px-4 rounded-lg text-sm font-medium transition-all select-none no-press active:scale-[0.97] ${
               itemType === tp
                 ? 'bg-gray-700 dark:bg-gray-200 text-white dark:text-gray-800 shadow-sm'
                 : 'bg-gray-100 dark:bg-gray-700/50 text-gray-400 hover:text-gray-600'
@@ -172,12 +172,12 @@ export default function KnowledgeView() {
 
         {/* Subject filter */}
         <button onClick={() => { setSubject('all'); setTag('') }}
-          className={`${btnToggle(subject === 'all')} h-9 px-3 rounded-lg text-xs`}>
+          className={`${btnToggle(subject === 'all')} h-10 px-4 rounded-lg text-sm`}>
           全部科目
         </button>
         {IELTS_SUBJECTS.map(s => (
           <button key={s} onClick={() => { setSubject(s); setTag('') }}
-            className={`h-9 px-3 rounded-lg text-xs font-medium transition-all select-none no-press active:scale-[0.97] ${
+            className={`h-10 px-4 rounded-lg text-sm font-medium transition-all select-none no-press active:scale-[0.97] ${
               subject === s ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-gray-700/50 text-gray-400'
             }`}
             style={subject === s ? { backgroundColor: SUBJECT_COLORS[s] } : undefined}>
@@ -191,7 +191,7 @@ export default function KnowledgeView() {
         <div className="flex gap-1">
           {DATE_RANGES.map(r => (
             <button key={r.key} onClick={() => setDateRange(r.key)}
-              className={`h-8 px-2.5 rounded-lg text-[11px] font-medium transition-all select-none no-press ${
+              className={`h-8 px-2.5 rounded-lg text-xs font-medium transition-all select-none no-press ${
                 dateRange === r.key
                   ? 'bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold'
                   : 'bg-gray-50 dark:bg-gray-800/40 text-gray-400 hover:text-gray-600'
@@ -206,14 +206,14 @@ export default function KnowledgeView() {
       {showMistakes && availableTags.length > 0 && (
         <div className="flex gap-1.5 overflow-x-auto pb-0.5 -mx-1 px-1 scrollbar-none">
           <button onClick={() => setTag('')}
-            className={`h-8 px-3 rounded-full text-xs font-medium transition-all no-press shrink-0 ${
+            className={`h-9 px-4 rounded-full text-sm font-medium transition-all no-press shrink-0 ${
               !tag ? 'bg-[#c0392b]/10 text-[#c0392b] font-semibold' : 'bg-gray-100 dark:bg-gray-700/50 text-gray-400'
             }`}>
             全部标签
           </button>
           {availableTags.map(tg => (
             <button key={tg} onClick={() => setTag(tag === tg ? '' : tg)}
-              className={`h-8 px-3 rounded-full text-xs font-medium transition-all no-press shrink-0 ${
+              className={`h-9 px-4 rounded-full text-sm font-medium transition-all no-press shrink-0 ${
                 tag === tg ? 'bg-[#c0392b] text-white shadow-sm' : 'bg-gray-100 dark:bg-gray-700/50 text-gray-400'
               }`}>
               {tg}
@@ -263,14 +263,14 @@ export default function KnowledgeView() {
                     text-[#c0392b] focus:ring-[#c0392b]/30 cursor-pointer shrink-0" />
 
                 {/* Tag badge */}
-                <span className="px-1.5 py-px rounded text-[10px] font-bold text-white leading-tight shrink-0"
+                <span className="px-1.5 py-px rounded text-xs font-bold text-white leading-tight shrink-0"
                   style={{ backgroundColor: color }}>
                   {m.tag}
                 </span>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <div className="text-[13px] text-gray-800 dark:text-gray-200 truncate">
+                  <div className="text-sm text-gray-800 dark:text-gray-200 truncate">
                     {m.questionNo && <span className="text-gray-400 mr-1">{m.questionNo}</span>}
                     {m.myAnswer && m.correctAnswer ? (
                       <><span className="line-through text-gray-400">{m.myAnswer}</span> → <span className="font-medium">{m.correctAnswer}</span></>
@@ -278,20 +278,20 @@ export default function KnowledgeView() {
                       <span className="text-gray-400 italic">暂无答案</span>
                     )}
                   </div>
-                  {source && <p className="text-[11px] text-gray-400 truncate mt-0.5">📎 {source}</p>}
+                  {source && <p className="text-xs text-gray-400 truncate mt-0.5">📎 {source}</p>}
                 </div>
 
                 {/* Mastery + date */}
                 <div className="flex items-center gap-2 shrink-0">
                   {mastery === 'due' && (
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-600
+                    <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-600
                       dark:bg-amber-900/20 dark:text-amber-400">待复习</span>
                   )}
                   {mastery === 'mastered' && (
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-50 text-green-600
+                    <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-green-50 text-green-600
                       dark:bg-green-900/20 dark:text-green-400">已掌握</span>
                   )}
-                  <span className="text-[10px] text-gray-400 tabular-nums">{m.date.slice(5)}</span>
+                  <span className="text-xs text-gray-400 tabular-nums">{m.date.slice(5)}</span>
                 </div>
               </div>
             )
@@ -310,14 +310,14 @@ export default function KnowledgeView() {
               className="px-3 py-2.5 hover:bg-gray-50/60 dark:hover:bg-gray-700/20 transition-colors cursor-pointer"
               onClick={() => setDetailItem({ item })}>
               <div className="flex items-start gap-2">
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 dark:bg-blue-900/30
+                <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-blue-100 dark:bg-blue-900/30
                   text-blue-600 dark:text-blue-400 shrink-0 mt-0.5">表达</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-medium text-gray-800 dark:text-gray-200">{item.content}</p>
-                  {item.meaning && <p className="text-[11px] text-gray-500 mt-0.5">{item.meaning}</p>}
-                  {item.example && <p className="text-[11px] text-gray-400 italic mt-0.5 truncate">{item.example}</p>}
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{item.content}</p>
+                  {item.meaning && <p className="text-xs text-gray-500 mt-0.5">{item.meaning}</p>}
+                  {item.example && <p className="text-xs text-gray-400 italic mt-0.5 truncate">{item.example}</p>}
                 </div>
-                <span className="text-[10px] text-gray-400 tabular-nums shrink-0">{item.date.slice(5)}</span>
+                <span className="text-xs text-gray-400 tabular-nums shrink-0">{item.date.slice(5)}</span>
               </div>
             </div>
           ))}
@@ -328,7 +328,7 @@ export default function KnowledgeView() {
       {totalCount === 0 && (
         <div className="panel p-10 text-center space-y-3">
           <p className="text-3xl">📚</p>
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+          <p className="text-base font-medium text-gray-600 dark:text-gray-300">
             {search ? '没有匹配的结果' : '还没有错题和表达记录'}
           </p>
           <p className="text-xs text-gray-400">
@@ -413,12 +413,12 @@ function DetailModal({ mistake, item, sessionSource, sessionSubject, reviewMap, 
               {/* Subject + tag */}
               <div className="flex items-center gap-2 flex-wrap">
                 {subj && (
-                  <span className="px-2 py-0.5 rounded text-[11px] font-bold text-white"
+                  <span className="px-2 py-0.5 rounded text-xs font-bold text-white"
                     style={{ backgroundColor: color }}>
                     {t(`ielts.${subj}`)}
                   </span>
                 )}
-                <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-[#c0392b]/8 text-[#c0392b]">
+                <span className="px-2 py-0.5 rounded text-xs font-medium bg-[#c0392b]/8 text-[#c0392b]">
                   {mistake.tag}
                 </span>
                 <span className="text-xs text-gray-400 tabular-nums">{mistake.date}</span>
@@ -459,7 +459,7 @@ function DetailModal({ mistake, item, sessionSource, sessionSubject, reviewMap, 
                 <div className="flex flex-wrap gap-1.5">
                   {tags.map(tg => (
                     <button key={tg} onClick={() => setEditTag(tg)}
-                      className={`h-8 px-3 rounded-full text-xs font-medium transition-all no-press shrink-0 ${
+                      className={`h-9 px-4 rounded-full text-sm font-medium transition-all no-press shrink-0 ${
                         editTag === tg ? 'bg-[#c0392b] text-white shadow-sm' : 'bg-gray-100 dark:bg-gray-700/50 text-gray-400'
                       }`}>
                       {tg}

@@ -176,7 +176,7 @@ export default function HomeView() {
                 className="flex items-center gap-2.5 px-3 py-2.5 w-full text-left
                   hover:bg-gray-50/60 dark:hover:bg-gray-700/20 transition-colors no-press">
                 <span
-                  className="w-10 text-center py-0.5 rounded text-[11px] font-bold text-white shrink-0"
+                  className="w-10 text-center py-0.5 rounded text-xs font-bold text-white shrink-0"
                   style={{ backgroundColor: SUBJECT_COLORS[s.subject as IeltsSubject] ?? '#888' }}
                 >
                   {t(`ielts.${s.subject}`)}
