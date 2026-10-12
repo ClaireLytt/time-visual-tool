@@ -247,7 +247,6 @@ export default function TypeFillGame({
       e.preventDefault()
       const word = gaps[currentIndex]?.word
       if (!word || feedback) return
-      // Flash the full word for 200ms then clear
       setInputValue(word)
       if (inputRef.current) inputRef.current.readOnly = true
       setTimeout(() => {
@@ -259,6 +258,23 @@ export default function TypeFillGame({
       }, 200)
     }
   }, [handleSubmit, skipWord, inputValue, gaps, currentIndex, feedback])
+
+  // Global key listener for when input is disabled (feedback showing)
+  // Shift+Enter = continue playing; Enter = continue + skip next
+  useEffect(() => {
+    if (phase !== 'playing') return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && e.shiftKey) {
+        e.preventDefault()
+        continuePlayback()
+      } else if (e.key === 'Enter' && feedback && (feedback.correct || feedback.correctWord)) {
+        e.preventDefault()
+        continuePlayback()
+      }
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [phase, feedback, continuePlayback])
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -607,9 +623,11 @@ export default function TypeFillGame({
           </span>
         </div>
       )}
-      {!feedback && phase === 'playing' && (
+      {phase === 'playing' && (
         <p className="text-[11px] text-gray-400 text-center">
-          Tab = {t('game.peek')} · Enter = {inputValue.trim() ? t('confirm.ok') : t('game.skip')}
+          {feedback
+            ? `Enter / Shift+Enter = ${t('game.continuePlaying')}`
+            : `Tab = ${t('game.peek')} · Enter = ${inputValue.trim() ? t('confirm.ok') : t('game.skip')} · Shift+Enter = ${t('game.continuePlaying')}`}
         </p>
       )}
     </div>
