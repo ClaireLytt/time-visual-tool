@@ -364,6 +364,9 @@
       state = S.PLAY;
       return;
     }
+    if (state === S.PLAY && isExitBtnClick(t.clientX, t.clientY)) {
+      window.parent.postMessage({ type: 'game-exit' }, '*'); return;
+    }
     if (touchId === null) {
       touchId = t.identifier;
       touchStartX = t.clientX;
@@ -408,6 +411,9 @@
       state = S.PLAY;
       return;
     }
+    if (state === S.PLAY && isExitBtnClick(e.clientX, e.clientY)) {
+      window.parent.postMessage({ type: 'game-exit' }, '*'); return;
+    }
     mouseDown = true;
     mouseStartX = e.clientX;
     mousePlateStartX = plateX;
@@ -445,6 +451,13 @@
   });
 
   window.addEventListener('keyup', function(e) { keysDown[e.key] = false; });
+
+  function isExitBtnClick(mx, my) {
+    var pad = 2 * U;
+    var exitBtnW = 8 * U, exitBtnH = 3.5 * U;
+    var exitBtnX = W - pad - exitBtnW, exitBtnY = pad + 5 * U;
+    return mx >= exitBtnX && mx <= exitBtnX + exitBtnW && my >= exitBtnY && my <= exitBtnY + exitBtnH;
+  }
 
   function handleClick(mx, my) {
     if (state === S.MENU) {
@@ -852,8 +865,8 @@
       cx.translate(f.x, f.y);
       cx.rotate(f.rot);
 
-      // Light backing for emoji visibility
-      cx.fillStyle = 'rgba(255,255,255,0.12)';
+      // Opaque white backing so emoji render bright
+      cx.fillStyle = 'rgba(255,255,255,0.85)';
       cx.beginPath(); cx.arc(0, 0, f.size * 1.1, 0, Math.PI * 2); cx.fill();
 
       // Glow for gold/bad
@@ -980,6 +993,19 @@
     cx.font = 'bold ' + (2.8 * U) + 'px Courier New';
     cx.fillText(Math.ceil(timer) + 's', W / 2, pad + 3 * U);
     cx.shadowBlur = 0;
+
+    // ── Exit button top-right ──
+    var exitBtnW = 8 * U, exitBtnH = 3.5 * U;
+    var exitBtnX = W - pad - exitBtnW, exitBtnY = pad + 5 * U;
+    cx.fillStyle = 'rgba(255,255,255,0.08)';
+    cx.strokeStyle = 'rgba(255,255,255,0.25)';
+    cx.lineWidth = 1;
+    roundRect(cx, exitBtnX, exitBtnY, exitBtnW, exitBtnH, 4);
+    cx.fill(); cx.stroke();
+    cx.fillStyle = 'rgba(255,255,255,0.5)';
+    cx.textAlign = 'center';
+    cx.font = (1.3 * U) + 'px Courier New';
+    cx.fillText(T.exitGame, exitBtnX + exitBtnW / 2, exitBtnY + exitBtnH * 0.65);
   }
 
   // ── Draw: Game Over ──────────────────────────────────────

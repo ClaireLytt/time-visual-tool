@@ -349,6 +349,7 @@
     var t = e.changedTouches[0];
     if (state === S.MENU || state === S.OVER || state === S.DIFF) { handleClick(t.clientX, t.clientY); return; }
     if (state === S.PAUSE) { handlePauseClick(t.clientX, t.clientY); return; }
+    if (isExitBtnClick(t.clientX, t.clientY)) { window.parent.postMessage({ type: 'game-exit' }, '*'); return; }
     swiping = true;
     lastTouchX = t.clientX; lastTouchY = t.clientY;
     slashTrail.push({ x: t.clientX, y: t.clientY, life: 1 });
@@ -374,6 +375,7 @@
     ensureAudio();
     if (state === S.MENU || state === S.OVER || state === S.DIFF) { handleClick(e.clientX, e.clientY); return; }
     if (state === S.PAUSE) { handlePauseClick(e.clientX, e.clientY); return; }
+    if (isExitBtnClick(e.clientX, e.clientY)) { window.parent.postMessage({ type: 'game-exit' }, '*'); return; }
     mouseDown = true;
     lastTouchX = e.clientX; lastTouchY = e.clientY;
     slashTrail.push({ x: e.clientX, y: e.clientY, life: 1 });
@@ -408,6 +410,13 @@
       if (e.key === 'Enter' || e.key === ' ' || e.key === 'r' || e.key === 'R') { state = S.DIFF; e.preventDefault(); }
     }
   });
+
+  function isExitBtnClick(mx, my) {
+    var pad = 2 * U;
+    var exitBtnW = 8 * U, exitBtnH = 3.5 * U;
+    var exitBtnX = W - pad - exitBtnW, exitBtnY = pad + 5 * U;
+    return mx >= exitBtnX && mx <= exitBtnX + exitBtnW && my >= exitBtnY && my <= exitBtnY + exitBtnH;
+  }
 
   function handlePauseClick(mx, my) {
     var exitW = 36 * U, exitH = 5 * U;
@@ -756,7 +765,7 @@
         cx.globalAlpha = alpha;
         if (it.halfL) {
           cx.save(); cx.translate(it.halfL.x, it.halfL.y); cx.rotate(it.halfL.rot);
-          cx.fillStyle = 'rgba(255,255,255,0.1)';
+          cx.fillStyle = 'rgba(255,255,255,0.7)';
           cx.beginPath(); cx.arc(0, 0, it.size * 0.9, 0, Math.PI * 2); cx.fill();
           cx.font = (it.size * 2) + 'px serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle';
           cx.fillText(it.emoji, -it.size * 0.3, 0);
@@ -764,7 +773,7 @@
         }
         if (it.halfR) {
           cx.save(); cx.translate(it.halfR.x, it.halfR.y); cx.rotate(it.halfR.rot);
-          cx.fillStyle = 'rgba(255,255,255,0.1)';
+          cx.fillStyle = 'rgba(255,255,255,0.7)';
           cx.beginPath(); cx.arc(0, 0, it.size * 0.9, 0, Math.PI * 2); cx.fill();
           cx.font = (it.size * 2) + 'px serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle';
           cx.fillText(it.emoji, it.size * 0.3, 0);
@@ -773,8 +782,8 @@
         cx.globalAlpha = 1;
       } else {
         cx.save(); cx.translate(it.x, it.y); cx.rotate(it.rot);
-        // Light backing for emoji visibility
-        cx.fillStyle = 'rgba(255,255,255,0.12)';
+        // Opaque white backing so emoji render bright
+        cx.fillStyle = 'rgba(255,255,255,0.85)';
         cx.beginPath(); cx.arc(0, 0, it.size * 1.1, 0, Math.PI * 2); cx.fill();
         if (it.isBomb) { cx.shadowColor = '#ff5252'; cx.shadowBlur = 10; }
         else if (it.isChili) { cx.shadowColor = '#ff9800'; cx.shadowBlur = 8; }
@@ -844,6 +853,19 @@
     cx.font = 'bold ' + (2.8*U) + 'px Courier New';
     cx.fillText(Math.ceil(timer) + 's', W/2, pad + 3*U);
     cx.shadowBlur = 0;
+
+    // ── Exit button top-right ──
+    var exitBtnW = 8 * U, exitBtnH = 3.5 * U;
+    var exitBtnX = W - pad - exitBtnW, exitBtnY = pad + 5 * U;
+    cx.fillStyle = 'rgba(255,255,255,0.08)';
+    cx.strokeStyle = 'rgba(255,255,255,0.25)';
+    cx.lineWidth = 1;
+    roundRect(cx, exitBtnX, exitBtnY, exitBtnW, exitBtnH, 4);
+    cx.fill(); cx.stroke();
+    cx.fillStyle = 'rgba(255,255,255,0.5)';
+    cx.textAlign = 'center';
+    cx.font = (1.3 * U) + 'px Courier New';
+    cx.fillText(T.exitGame, exitBtnX + exitBtnW / 2, exitBtnY + exitBtnH * 0.65);
   }
 
   // ── Draw: Game Over ──────────────────────────────────────
