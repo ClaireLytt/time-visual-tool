@@ -25,12 +25,12 @@ function YouTubeDashboard() {
   const { history, addToHistory, removeFromHistory, clearHistory } = useYouTubeHistory()
   const {
     recordLookup, toggleBookmark, saveSentence, removeSentence,
-    savedSentences,
+    sentences,
   } = useWordHistory()
 
   const isSentenceSaved = useCallback(
-    (text: string) => savedSentences.some(s => s.text === text),
-    [savedSentences],
+    (text: string) => sentences.some(s => s.text === text),
+    [sentences],
   )
 
   const loadVideo = useCallback(async (inputUrl: string) => {
