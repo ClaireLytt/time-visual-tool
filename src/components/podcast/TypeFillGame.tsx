@@ -198,13 +198,60 @@ export default function TypeFillGame({
     }
   }, [feedback, gaps, currentIndex, inputValue, attemptsLeft, moveToNext])
 
-  // Handle Enter key
+  // Skip current word (counts as wrong)
+  const skipWord = useCallback(() => {
+    if (feedback) return
+    const currentGap = gaps[currentIndex]
+    if (!currentGap) return
+
+    setFeedback({ correct: false, definition: '', correctWord: currentGap.word })
+    setAnswers(prev => [...prev, {
+      gap: currentGap,
+      userAnswer: '',
+      correct: false,
+      definition: '',
+      attemptsUsed: MAX_RETRIES,
+    }])
+
+    lookupWord(currentGap.word).then(result => {
+      const def = result?.definitions?.join('; ') ?? ''
+      setFeedback(prev => prev ? { ...prev, definition: def } : prev)
+      setAnswers(prev => {
+        const copy = [...prev]
+        const last = copy[copy.length - 1]
+        if (last && last.gap.word === currentGap.word) copy[copy.length - 1] = { ...last, definition: def }
+        return copy
+      })
+    })
+
+    feedbackTimer.current = setTimeout(moveToNext, 2500)
+  }, [feedback, gaps, currentIndex, moveToNext])
+
+  // Tab = flash answer for 0.2s; Enter = submit or skip
   const onKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault()
-      handleSubmit()
+      if (inputValue.trim()) {
+        handleSubmit()
+      } else {
+        skipWord()
+      }
+    } else if (e.key === 'Tab') {
+      e.preventDefault()
+      const word = gaps[currentIndex]?.word
+      if (!word || feedback) return
+      // Flash the full word for 200ms then clear
+      setInputValue(word)
+      if (inputRef.current) inputRef.current.readOnly = true
+      setTimeout(() => {
+        setInputValue('')
+        if (inputRef.current) {
+          inputRef.current.readOnly = false
+          inputRef.current.focus()
+        }
+      }, 200)
     }
-  }, [handleSubmit])
+  }, [handleSubmit, skipWord, inputValue, gaps, currentIndex, feedback])
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -541,6 +588,11 @@ export default function TypeFillGame({
             {t('game.attemptsLeft')}: {attemptsLeft}
           </span>
         </div>
+      )}
+      {!feedback && phase === 'playing' && (
+        <p className="text-[11px] text-gray-400 text-center">
+          Tab = {t('game.peek')} · Enter = {inputValue.trim() ? t('confirm.ok') : t('game.skip')}
+        </p>
       )}
     </div>
   )

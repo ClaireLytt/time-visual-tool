@@ -727,6 +727,8 @@
     "retry": "Retry",
     "playAgain": "Play Again",
     "replay": "Replay sentence",
+    "peek": "Peek",
+    "skip": "Skip",
     "addWrongWords": "Add wrong words to vocab",
     "difficulty": "Difficulty",
     "easy": "Easy",
