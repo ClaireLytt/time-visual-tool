@@ -67,10 +67,10 @@ export default function TypeFillGame({
     setAttemptsLeft(MAX_RETRIES)
     setPhase('playing')
 
-    // Play from beginning — continuous until first gap
+    // Seek audio to first gap
     const audio = audioRef.current
     if (audio) {
-      audio.currentTime = 0
+      audio.currentTime = Math.max(0, generated[0].startTime - 1)
       audio.play().catch(() => {})
     }
   }, [segments, difficulty, audioRef])
@@ -127,9 +127,10 @@ export default function TypeFillGame({
 
     setCurrentIndex(nextIndex)
 
-    // Resume playback from where we paused — continuous flow
+    // Seek audio to next gap
     const audio = audioRef.current
     if (audio) {
+      audio.currentTime = Math.max(0, gaps[nextIndex].startTime - 1)
       audio.play().catch(() => {})
     }
   }, [currentIndex, gaps, audioRef])
@@ -154,7 +155,8 @@ export default function TypeFillGame({
         definition: '',
         attemptsUsed: MAX_RETRIES - attemptsLeft,
       }])
-      // Wait for user to press Enter to continue
+
+      feedbackTimer.current = setTimeout(moveToNext, 1000)
     } else {
       const newAttemptsLeft = attemptsLeft - 1
 
@@ -191,10 +193,10 @@ export default function TypeFillGame({
           })
         })
 
-        // Wait for user to press Enter to continue
+        feedbackTimer.current = setTimeout(moveToNext, 2500)
       }
     }
-  }, [feedback, gaps, currentIndex, inputValue, attemptsLeft])
+  }, [feedback, gaps, currentIndex, inputValue, attemptsLeft, moveToNext])
 
   // Skip current word (counts as wrong)
   const skipWord = useCallback(() => {
@@ -225,15 +227,11 @@ export default function TypeFillGame({
     feedbackTimer.current = setTimeout(moveToNext, 2500)
   }, [feedback, gaps, currentIndex, moveToNext])
 
-  // Tab = flash answer for 0.2s; Enter = submit / skip / continue
+  // Tab = flash answer for 0.2s; Enter = submit or skip
   const onKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault()
-      if (feedback) {
-        // Feedback is showing — Enter to continue to next gap
-        if (feedbackTimer.current) clearTimeout(feedbackTimer.current)
-        moveToNext()
-      } else if (inputValue.trim()) {
+      if (inputValue.trim()) {
         handleSubmit()
       } else {
         skipWord()
@@ -242,6 +240,7 @@ export default function TypeFillGame({
       e.preventDefault()
       const word = gaps[currentIndex]?.word
       if (!word || feedback) return
+      // Flash the full word for 200ms then clear
       setInputValue(word)
       if (inputRef.current) inputRef.current.readOnly = true
       setTimeout(() => {
@@ -252,21 +251,7 @@ export default function TypeFillGame({
         }
       }, 200)
     }
-  }, [handleSubmit, skipWord, moveToNext, inputValue, gaps, currentIndex, feedback])
-
-  // Listen for Enter key globally when feedback is showing (input is disabled)
-  useEffect(() => {
-    if (!feedback || phase !== 'playing') return
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        e.preventDefault()
-        if (feedbackTimer.current) clearTimeout(feedbackTimer.current)
-        moveToNext()
-      }
-    }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
-  }, [feedback, phase, moveToNext])
+  }, [handleSubmit, skipWord, inputValue, gaps, currentIndex, feedback])
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -604,11 +589,9 @@ export default function TypeFillGame({
           </span>
         </div>
       )}
-      {phase === 'playing' && (
+      {!feedback && phase === 'playing' && (
         <p className="text-[11px] text-gray-400 text-center">
-          {feedback
-            ? `Enter = ${t('game.continue')}`
-            : `Tab = ${t('game.peek')} · Enter = ${inputValue.trim() ? t('confirm.ok') : t('game.skip')}`}
+          Tab = {t('game.peek')} · Enter = {inputValue.trim() ? t('confirm.ok') : t('game.skip')}
         </p>
       )}
     </div>
