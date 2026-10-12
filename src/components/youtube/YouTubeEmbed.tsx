@@ -61,6 +61,8 @@ function YouTubeEmbed({ videoId, onTimeUpdate, onReady, onStateChange }: YouTube
       containerRef.current.appendChild(target)
 
       playerRef.current = new YT.Player(target.id, {
+        width: '100%',
+        height: '100%',
         videoId,
         playerVars: {
           autoplay: 0,
