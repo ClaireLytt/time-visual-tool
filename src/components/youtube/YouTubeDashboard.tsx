@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
 import YouTubePlayer from './YouTubePlayer'
@@ -25,13 +25,10 @@ function YouTubeDashboard() {
   const { history, addToHistory, removeFromHistory, clearHistory } = useYouTubeHistory()
   const {
     recordLookup, toggleBookmark, saveSentence, removeSentence,
-    sentences,
+    removeWord, sentences,
   } = useWordHistory()
 
-  const isSentenceSaved = useCallback(
-    (text: string) => sentences.some(s => s.text === text),
-    [sentences],
-  )
+  const savedSentenceTexts = useMemo(() => new Set(sentences.map(s => s.text)), [sentences])
 
   const loadVideo = useCallback(async (inputUrl: string) => {
     setError('')
@@ -93,10 +90,10 @@ function YouTubeDashboard() {
           segments={view.segments}
           onRecordLookup={(word) => recordLookup(word, view.videoId, view.info.title)}
           onAddToVocab={toggleBookmark}
-          onRemoveFromVocab={toggleBookmark}
+          onRemoveFromVocab={removeWord}
           onSaveSentence={saveSentence}
           onRemoveSentence={removeSentence}
-          isSentenceSaved={isSentenceSaved}
+          savedSentences={savedSentenceTexts}
         />
       </div>
     )

@@ -773,6 +773,9 @@
     "back": "Back",
     "showTranslation": "Translate",
     "hideTranslation": "Hide Translation",
-    "translating": "Translating..."
+    "translating": "Translating...",
+    "segments": "lines",
+    "saveSentence": "Save sentence",
+    "unsaveSentence": "Remove saved sentence"
   }
 }

@@ -17,7 +17,7 @@ interface YouTubePlayerProps {
   onRemoveFromVocab?: (word: string) => void
   onSaveSentence?: (text: string, title: string, timestamp: number) => void
   onRemoveSentence?: (text: string, title: string) => void
-  isSentenceSaved?: (text: string) => boolean
+  savedSentences?: Set<string>
 }
 
 interface SelectedWord {
@@ -32,7 +32,7 @@ const ACCENT = MODE_ACCENT.youtube
 function YouTubePlayer({
   info, segments,
   onRecordLookup, onAddToVocab, onRemoveFromVocab,
-  onSaveSentence, onRemoveSentence, isSentenceSaved,
+  onSaveSentence, onRemoveSentence, savedSentences,
 }: YouTubePlayerProps) {
   const { t } = useTranslation()
   const [currentTime, setCurrentTime] = useState(0)
@@ -46,6 +46,7 @@ function YouTubePlayer({
   const userScrolling = useRef(false)
   const scrollTimer = useRef<ReturnType<typeof setTimeout>>()
 
+  const isPopoverOpen = selectedWord != null
   const activeIndex = useMemo(() => findActiveIndex(segments, currentTime), [segments, currentTime])
 
   // Auto-scroll to active line
@@ -54,6 +55,14 @@ function YouTubePlayer({
       activeRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
     }
   }, [activeIndex])
+
+  // Escape key to close popover
+  useEffect(() => {
+    if (!isPopoverOpen) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelectedWord(null) }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [isPopoverOpen])
 
   // Detect user scrolling
   const handleWheel = useCallback(() => {
@@ -70,27 +79,27 @@ function YouTubePlayer({
     }
   }, [])
 
-  // Word click handler
-  const handleWordClick = useCallback((
-    e: React.MouseEvent<HTMLSpanElement> | React.TouchEvent<HTMLSpanElement>,
-    word: string,
-    sentence: string,
-    segStart: number,
-  ) => {
-    e.stopPropagation()
-    const el = e.currentTarget
-    setSelectedWord({ word, rect: el.getBoundingClientRect(), sentence, segStart })
+  // Word click handler — cleans punctuation, same pattern as podcast EpisodePlayer
+  const openWord = useCallback((el: HTMLElement, token: string, sentence: string, segStart: number) => {
+    const clean = token.replace(/^[^a-zA-Z']+|[^a-zA-Z']+$/g, '')
+    if (!clean) return
+    setSelectedWord({ word: clean, rect: el.getBoundingClientRect(), sentence, segStart })
   }, [])
+
+  const closePopover = useCallback(() => setSelectedWord(null), [])
 
   // Translate all segments
   const handleTranslate = useCallback(async () => {
     if (translating) return
+    if (showTranslation && Object.keys(translations).length > 0) {
+      setShowTranslation(false)
+      return
+    }
     setShowTranslation(true)
     if (Object.keys(translations).length > 0) return
 
     setTranslating(true)
     const trans: Record<number, string> = {}
-    // Translate in batches of 10
     for (let i = 0; i < segments.length; i += 10) {
       const batch = segments.slice(i, i + 10)
       const results = await Promise.all(batch.map(s => translateText(s.text).catch(() => '...')))
@@ -98,7 +107,7 @@ function YouTubePlayer({
       setTranslations({ ...trans })
     }
     setTranslating(false)
-  }, [segments, translations, translating])
+  }, [segments, translations, translating, showTranslation])
 
   return (
     <div className="space-y-3">
@@ -120,33 +129,25 @@ function YouTubePlayer({
       <div className="flex items-center gap-2">
         <button
           onClick={handleTranslate}
-          className="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
-          style={{
-            backgroundColor: showTranslation ? `${ACCENT}20` : undefined,
-            color: showTranslation ? ACCENT : undefined,
-          }}
+          className="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors bg-gray-100 dark:bg-gray-700/50 hover:bg-gray-200 dark:hover:bg-gray-600/50"
+          style={showTranslation ? { backgroundColor: `${ACCENT}20`, color: ACCENT } : undefined}
         >
           {translating ? t('youtube.translating') : showTranslation ? t('youtube.hideTranslation') : t('youtube.showTranslation')}
         </button>
-        {showTranslation && !translating && (
-          <button
-            onClick={() => setShowTranslation(false)}
-            className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-          >
-            {t('youtube.hideTranslation')}
-          </button>
-        )}
+        <span className="text-xs text-gray-400">{segments.length} {t('youtube.segments')}</span>
       </div>
 
-      {/* Transcript */}
+      {/* Transcript — scrollable subtitle list */}
       <div
         ref={scrollRef}
         onWheel={handleWheel}
-        className="max-h-[50vh] overflow-y-auto rounded-xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm"
+        className="max-h-[50vh] overflow-y-auto rounded-xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50"
       >
         {segments.map((seg, i) => {
           const isActive = i === activeIndex
-          const saved = isSentenceSaved?.(seg.text)
+          const isSaved = savedSentences?.has(seg.text) ?? false
+          const words = seg.text.split(/\s+/)
+
           return (
             <div
               key={i}
@@ -163,19 +164,21 @@ function YouTubePlayer({
                 {formatClock(seg.start)}
               </span>
 
-              {/* Text content */}
+              {/* Text content — each word is clickable for dictionary lookup */}
               <div className="flex-1 min-w-0">
                 <p className={`text-sm leading-relaxed ${isActive ? 'text-gray-900 dark:text-gray-100' : 'text-gray-600 dark:text-gray-400'}`}>
-                  {seg.text.split(/(\s+)/).map((token, j) => {
-                    if (/^\s+$/.test(token)) return token
+                  {words.map((token, wi) => {
+                    // Only make tokens with letters clickable
+                    if (!/[a-zA-Z]/.test(token)) return <span key={wi}>{token}{' '}</span>
                     return (
                       <span
-                        key={j}
-                        onClick={(e) => handleWordClick(e, token, seg.text, seg.start)}
-                        onTouchEnd={(e) => handleWordClick(e as any, token, seg.text, seg.start)}
-                        className="cursor-pointer hover:bg-mode-youtube/20 hover:rounded px-[1px] transition-colors"
+                        key={wi}
+                        onClick={(e) => { e.stopPropagation(); openWord(e.currentTarget, token, seg.text, seg.start) }}
+                        onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); openWord(e.currentTarget, token, seg.text, seg.start) }}
+                        className="hover:bg-mode-youtube/20 active:bg-mode-youtube/30 rounded px-0.5 cursor-pointer transition-colors"
+                        style={{ touchAction: 'manipulation' }}
                       >
-                        {token}
+                        {token}{' '}
                       </span>
                     )
                   })}
@@ -185,19 +188,23 @@ function YouTubePlayer({
                 )}
               </div>
 
-              {/* Bookmark button */}
+              {/* Bookmark / save sentence button */}
               <button
                 onClick={(e) => {
                   e.stopPropagation()
-                  if (saved) onRemoveSentence?.(seg.text, info.title)
+                  if (isSaved) onRemoveSentence?.(seg.text, info.title)
                   else onSaveSentence?.(seg.text, info.title, seg.start)
                 }}
-                className={`shrink-0 p-1 transition-opacity ${saved ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
-                aria-label={saved ? 'Remove bookmark' : 'Bookmark sentence'}
+                className={`mt-1 shrink-0 transition-all ${
+                  isSaved
+                    ? 'text-yellow-500 dark:text-yellow-400 opacity-100'
+                    : 'text-gray-300 dark:text-gray-600 opacity-0 group-hover:opacity-100 hover:text-yellow-500 dark:hover:text-yellow-400'
+                }`}
+                title={isSaved ? t('youtube.unsaveSentence') : t('youtube.saveSentence')}
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24"
-                  fill={saved ? ACCENT : 'none'}
-                  stroke={saved ? ACCENT : 'currentColor'}
+                  fill={isSaved ? 'currentColor' : 'none'}
+                  stroke="currentColor"
                   strokeWidth={1.5}
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
@@ -208,17 +215,17 @@ function YouTubePlayer({
         })}
       </div>
 
-      {/* WordPopover portal */}
+      {/* WordPopover — portal to document.body (escapes overflow container) */}
       {selectedWord && createPortal(
         <WordPopover
           word={selectedWord.word}
           anchorRect={selectedWord.rect}
-          onClose={() => setSelectedWord(null)}
+          onClose={closePopover}
           onLookup={onRecordLookup}
           onAddToVocab={onAddToVocab}
           onRemoveFromVocab={onRemoveFromVocab}
           onSaveSentence={() => onSaveSentence?.(selectedWord.sentence, info.title, selectedWord.segStart)}
-          isSentenceSaved={isSentenceSaved?.(selectedWord.sentence)}
+          isSentenceSaved={savedSentences?.has(selectedWord.sentence) ?? false}
           sentenceContext={selectedWord.sentence}
           accentColor={ACCENT}
         />,

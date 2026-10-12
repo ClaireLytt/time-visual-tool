@@ -773,6 +773,9 @@
     "back": "返回",
     "showTranslation": "翻译",
     "hideTranslation": "隐藏翻译",
-    "translating": "翻译中..."
+    "translating": "翻译中...",
+    "segments": "句",
+    "saveSentence": "收藏句子",
+    "unsaveSentence": "取消收藏"
   }
 }
