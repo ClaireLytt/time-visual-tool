@@ -121,8 +121,11 @@
 
   function resize() {
     var dpr = window.devicePixelRatio || 1;
-    W = window.innerWidth;
-    H = window.innerHeight;
+    var nw = window.innerWidth;
+    var nh = window.innerHeight;
+    if (nw === W && nh === H) return;
+    W = nw;
+    H = nh;
     cv.width = W * dpr;
     cv.height = H * dpr;
     cx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -204,9 +207,9 @@
   var state = S.MENU;
   var diff = 1; // 0=easy, 1=normal, 2=hard
   var score, lives, combo, maxCombo, goodCaught, badCaught, missed;
-  var timer, spawnTimer, foods, particles, floatTexts, achBanners;
+  var timer, spawnTimer, foods = [], particles = [], floatTexts = [], achBanners = [];
   var plateX, plateTargetX;
-  var shakeX, shakeY, shakeDur;
+  var shakeX = 0, shakeY = 0, shakeDur = 0;
   var countdownVal, countdownTime;
 
   // ── Stats persistence ────────────────────────────────────
