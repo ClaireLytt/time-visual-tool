@@ -15,6 +15,8 @@ import EatingProportionChart from './EatingProportionChart'
 import EatingDailyChart from './EatingDailyChart'
 import MealTemplates from './MealTemplates'
 import FoodCatcherOverlay from './FoodCatcherOverlay'
+import SliceDiceOverlay from './SliceDiceOverlay'
+import MealBuilderOverlay from './MealBuilderOverlay'
 import { exportEatingToFile, readEatingImportFile } from '../../utils/eatingTransfer'
 import { LATE_NIGHT_CATEGORY_NAME } from '../../constants/eating'
 import type { EatingEntry, EatingStorageData, EatingViewMode } from '../../types/eating'
@@ -26,7 +28,7 @@ function EatingDashboard() {
   const [selectedDate, setSelectedDate] = useState(() => format(new Date(), 'yyyy-MM-dd'))
   const [viewMode, setViewMode] = useState<EatingViewMode>('day')
   const [editingEntry, setEditingEntry] = useState<EatingEntry | null>(null)
-  const [showGame, setShowGame] = useState(false)
+  const [showGame, setShowGame] = useState<'catcher' | 'slice' | 'meal' | null>(null)
   const {
     entries, categories, data,
     addEntry, deleteEntry, updateEntry,
@@ -115,20 +117,23 @@ function EatingDashboard() {
           }
         />
 
-        {/* Game entry button */}
-        <button
-          onClick={() => setShowGame(true)}
-          className="panel p-3 mb-4 w-full text-left flex items-center gap-3 group hover:border-mode-eating/30 transition-colors"
-        >
-          <span className="text-2xl shrink-0" role="img" aria-hidden="true">🍽️</span>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">{t('game.foodCatcher')}</h3>
-            <p className="text-xs text-calm-muted dark:text-gray-400">{t('game.foodCatcherDesc')}</p>
-          </div>
-          <span className="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full bg-mode-eating/10 text-mode-eating group-hover:bg-mode-eating/20 transition-colors">
-            {t('game.start')} ▶
-          </span>
-        </button>
+        {/* Game entry buttons */}
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-1 scrollbar-hide">
+          {([
+            { key: 'catcher' as const, emoji: '🍽️', label: 'game.foodCatcher' },
+            { key: 'slice' as const, emoji: '🔪', label: 'game.sliceDice' },
+            { key: 'meal' as const, emoji: '🥗', label: 'game.mealBuilder' },
+          ]).map(g => (
+            <button
+              key={g.key}
+              onClick={() => setShowGame(g.key)}
+              className="panel p-2.5 flex-1 min-w-0 flex flex-col items-center gap-1 group hover:border-mode-eating/30 transition-colors"
+            >
+              <span className="text-xl" role="img" aria-hidden="true">{g.emoji}</span>
+              <span className="text-[11px] font-medium text-gray-700 dark:text-gray-200 text-center leading-tight">{t(g.label)}</span>
+            </button>
+          ))}
+        </div>
 
         <DatePicker selectedDate={selectedDate} onDateChange={handleDateChange} viewMode={viewMode} />
         <EatingSummaryCard
@@ -230,7 +235,9 @@ function EatingDashboard() {
           </div>
         )}
       </div>
-      <FoodCatcherOverlay open={showGame} onClose={() => setShowGame(false)} />
+      <FoodCatcherOverlay open={showGame === 'catcher'} onClose={() => setShowGame(null)} />
+      <SliceDiceOverlay open={showGame === 'slice'} onClose={() => setShowGame(null)} />
+      <MealBuilderOverlay open={showGame === 'meal'} onClose={() => setShowGame(null)} />
     </CategoryProvider>
   )
 }
