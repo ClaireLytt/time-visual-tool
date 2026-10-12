@@ -9,6 +9,7 @@ export interface SportEntry {
   content: string
   duration: number
   calories: number
+  distance?: number
   note: string
   createdAt: string
 }
@@ -27,12 +28,22 @@ export interface SportReflection {
   updatedAt: string
 }
 
+export interface SportQuickTemplate {
+  id: string
+  emoji: string
+  label: string
+  content: string
+  duration: number
+  sportType: string
+}
+
 export interface SportStorageData {
   version: 1
   entries: SportEntry[]
   categories: SportCategory[]
   reflections: SportReflection[]
   weeklyGoal?: number
+  quickTemplates?: SportQuickTemplate[]
 }
 
 export interface SportCategoryBreakdown {

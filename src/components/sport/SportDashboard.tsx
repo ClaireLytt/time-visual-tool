@@ -21,6 +21,7 @@ import NeonHoopsOverlay from './NeonHoopsOverlay'
 import { getPeriodKey, periodKeyToAnchorDate } from '../../utils/diaryPeriod'
 import AnimatedCollapse from '../common/AnimatedCollapse'
 import { exportSportToFile, readSportImportFile } from '../../utils/sportTransfer'
+import SportStreaks from './SportStreaks'
 import type { SportEntry, SportReflection, SportStorageData, SportViewMode } from '../../types/sport'
 
 const SPORT_MODES: readonly SportViewMode[] = ['day', 'week', 'month', 'year']
@@ -33,6 +34,7 @@ function SportDashboard() {
   const [showSettings, setShowSettings] = useState(false)
   const [templateFill, setTemplateFill] = useState<{ content: string; duration: number; sportType: string } | null>(null)
   const [showGame, setShowGame] = useState(false)
+  const [filterType, setFilterType] = useState<string>('')
   const {
     entries, categories, reflections, data,
     addEntry, deleteEntry, updateEntry,
@@ -41,9 +43,13 @@ function SportDashboard() {
     importData,
     getEntriesForDate, getSummaryForPeriod,
     weeklyGoal, setWeeklyGoal,
+    quickTemplates, addQuickTemplate, deleteQuickTemplate,
   } = useSportEntries()
 
-  const dayEntries = useMemo(() => getEntriesForDate(selectedDate), [getEntriesForDate, selectedDate])
+  const dayEntries = useMemo(() => {
+    const all = getEntriesForDate(selectedDate)
+    return filterType ? all.filter(e => e.sportType === filterType) : all
+  }, [getEntriesForDate, selectedDate, filterType])
 
   // Personal best: track the ID of the entry that first achieved the best duration per sport type
   const bestEntryIds = useMemo(() => {
@@ -63,7 +69,7 @@ function SportDashboard() {
 
   const isDaily = viewMode === 'day'
   const categoryEntries = useMemo(() => entries.map(e => ({ category: e.sportType })), [entries])
-  const reflectionPeriodType = viewMode as 'week' | 'month' | 'year'
+  const reflectionPeriodType: 'week' | 'month' | 'year' = isDaily ? 'week' : viewMode
   const periodKey = useMemo(
     () => !isDaily ? getPeriodKey(selectedDate, viewMode) : '',
     [selectedDate, viewMode, isDaily]
@@ -89,6 +95,12 @@ function SportDashboard() {
   }, [])
 
   const handleCancelEdit = useCallback(() => {
+    setEditingEntry(null)
+  }, [])
+
+  const handleChartDateClick = useCallback((date: string) => {
+    setSelectedDate(date)
+    setViewMode('day')
     setEditingEntry(null)
   }, [])
 
@@ -154,7 +166,29 @@ function SportDashboard() {
         </AnimatedCollapse>
 
         <DatePicker selectedDate={selectedDate} onDateChange={handleDateChange} viewMode={viewMode} />
+
+        {/* Sport type filter */}
+        <div className="flex items-center gap-2 mb-4 flex-wrap">
+          <button
+            onClick={() => setFilterType('')}
+            className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${!filterType ? 'bg-mode-sport text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+          >
+            {t('sport.filterAll')}
+          </button>
+          {categories.map(cat => (
+            <button
+              key={cat.name}
+              onClick={() => setFilterType(filterType === cat.name ? '' : cat.name)}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${filterType === cat.name ? 'text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+              style={filterType === cat.name ? { backgroundColor: cat.color } : undefined}
+            >
+              {t('category.names.' + cat.name, cat.name)}
+            </button>
+          ))}
+        </div>
+
         <SportWeeklyGoal entries={entries} selectedDate={selectedDate} weeklyGoal={weeklyGoal} onWeeklyGoalChange={setWeeklyGoal} />
+        <SportStreaks entries={entries} selectedDate={selectedDate} />
         <SportSummaryCard
           totalDuration={periodSummary.totalDuration}
           totalCalories={periodSummary.totalCalories}
@@ -167,6 +201,7 @@ function SportDashboard() {
             <SportDailyChart
               dailyBreakdown={periodSummary.dailyBreakdown}
               title={viewMode === 'year' ? t('sport.chartMonthly') : undefined}
+              onDateClick={viewMode !== 'year' ? handleChartDateClick : undefined}
             />
           </div>
         )}
@@ -174,7 +209,13 @@ function SportDashboard() {
         {isDaily && (
           <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6">
             <div>
-              <SportQuickTemplates onSelect={tpl => setTemplateFill({ content: tpl.content, duration: tpl.duration, sportType: tpl.sportType })} />
+              <SportQuickTemplates
+                templates={quickTemplates}
+                categories={categories}
+                onSelect={tpl => setTemplateFill({ content: tpl.content, duration: tpl.duration, sportType: tpl.sportType })}
+                onAdd={addQuickTemplate}
+                onDelete={deleteQuickTemplate}
+              />
               <SportEntryForm
                 selectedDate={selectedDate}
                 categories={categories}

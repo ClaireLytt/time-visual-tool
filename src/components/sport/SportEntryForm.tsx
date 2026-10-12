@@ -26,6 +26,7 @@ function SportEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdat
   const [content, setContent] = useState('')
   const [durationInput, setDurationInput] = useState('')
   const [calorieInput, setCalorieInput] = useState('')
+  const [distanceInput, setDistanceInput] = useState('')
   const [sportType, setSportType] = useState('')
   const [note, setNote] = useState('')
   const [error, setError] = useState('')
@@ -39,6 +40,7 @@ function SportEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdat
       setContent(editingEntry.content)
       setDurationInput(editingEntry.duration ? String(editingEntry.duration) : '')
       setCalorieInput(editingEntry.calories ? String(editingEntry.calories) : '')
+      setDistanceInput(editingEntry.distance ? String(editingEntry.distance) : '')
       setSportType(editingEntry.sportType)
       setNote(editingEntry.note)
       setError('')
@@ -46,6 +48,7 @@ function SportEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdat
       setContent('')
       setDurationInput('')
       setCalorieInput('')
+      setDistanceInput('')
       setSportType('')
       setNote('')
       setError('')
@@ -98,11 +101,22 @@ function SportEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdat
       calories = parsed
     }
 
+    let distance: number | undefined
+    if (distanceInput.trim()) {
+      const n = Number(distanceInput.trim())
+      if (!Number.isFinite(n) || n < 0 || n > 1000) {
+        setError(t('sport.errorDistance'))
+        return
+      }
+      distance = Math.round(n * 100) / 100
+    }
+
     if (isEditing && onUpdate) {
       onUpdate(editingEntry.id, {
         content: content.trim(),
         duration,
         calories,
+        distance,
         sportType: effectiveSportType,
         note: note.trim(),
       })
@@ -113,12 +127,14 @@ function SportEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdat
         content: content.trim(),
         duration,
         calories,
+        distance,
         sportType: effectiveSportType,
         note: note.trim(),
       })
       setContent('')
       setDurationInput('')
       setCalorieInput('')
+      setDistanceInput('')
       setNote('')
       setError('')
     }
@@ -143,9 +159,13 @@ function SportEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpdat
           <DurationPresets onSelect={v => setDurationInput(String(v))} selected={durationInput ? parseInt(durationInput, 10) : undefined} />
         </div>
 
-        {/* 热量输入 + 运动类型 — 同行 */}
-        <div className="grid grid-cols-2 gap-3">
+        {/* 热量 + 距离 + 运动类型 — 同行 */}
+        <div className="grid grid-cols-3 gap-3">
           <input type="text" value={calorieInput} onChange={e => setCalorieInput(e.target.value)} placeholder={t('sport.caloriePlaceholder')} aria-label={t('sport.calorieLabel')} className="input-base" inputMode="decimal" />
+          <div className="relative">
+            <input type="text" value={distanceInput} onChange={e => setDistanceInput(e.target.value)} placeholder={t('sport.distancePlaceholder')} aria-label={t('sport.distanceLabel')} className="input-base w-full pr-8" inputMode="decimal" />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-gray-500 pointer-events-none">km</span>
+          </div>
           <select value={effectiveSportType} onChange={e => setSportType(e.target.value)} aria-label={t('sport.sportTypeLabel')} className="input-base">
             {categories.map(cat => (
               <option key={cat.name} value={cat.name}>{t('category.names.' + cat.name, cat.name)}</option>

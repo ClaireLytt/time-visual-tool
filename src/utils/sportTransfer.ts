@@ -13,6 +13,7 @@ export function isValidSportEntry(e: unknown): e is SportEntry {
     typeof obj.content === 'string' &&
     typeof obj.duration === 'number' && Number.isFinite(obj.duration) && obj.duration >= 0 && obj.duration <= 1440 &&
     typeof obj.calories === 'number' && Number.isFinite(obj.calories) && obj.calories >= 0 && obj.calories <= 100000 &&
+    (obj.distance === undefined || (typeof obj.distance === 'number' && Number.isFinite(obj.distance) && obj.distance >= 0 && obj.distance <= 1000)) &&
     typeof obj.note === 'string' &&
     typeof obj.createdAt === 'string' && obj.createdAt !== ''
   )
@@ -62,7 +63,10 @@ export function validateSportData(raw: unknown): SportStorageData | null {
     ? obj.reflections.filter(isValidSportReflection)
     : []
 
-  return { version: 1, entries, categories, reflections }
+  const weeklyGoal = typeof obj.weeklyGoal === 'number' && obj.weeklyGoal >= 1 && obj.weeklyGoal <= 14
+    ? obj.weeklyGoal : undefined
+
+  return { version: 1, entries, categories, reflections, weeklyGoal }
 }
 
 export function exportSportToFile(data: SportStorageData) {

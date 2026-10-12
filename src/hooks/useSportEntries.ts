@@ -3,7 +3,7 @@ import { useFirestore } from './useFirestore'
 import { DEFAULT_SPORT_CATEGORY_LIST } from '../constants/sport'
 import { computeSportPeriodSummary } from '../utils/sportSummary'
 import { validateSportData } from '../utils/sportTransfer'
-import type { SportEntry, SportCategory, SportReflection, SportStorageData, SportPeriodSummary, SportViewMode } from '../types/sport'
+import type { SportEntry, SportCategory, SportReflection, SportQuickTemplate, SportStorageData, SportPeriodSummary, SportViewMode } from '../types/sport'
 
 const INITIAL_DATA: SportStorageData = {
   version: 1,
@@ -147,6 +147,22 @@ export function useSportEntries() {
     }
   }, [setData])
 
+  const quickTemplates = data.quickTemplates ?? []
+
+  const addQuickTemplate = useCallback((tpl: Omit<SportQuickTemplate, 'id'>) => {
+    setData(prev => ({
+      ...prev,
+      quickTemplates: [...(prev.quickTemplates ?? []), { ...tpl, id: crypto.randomUUID() }],
+    }))
+  }, [setData])
+
+  const deleteQuickTemplate = useCallback((id: string) => {
+    setData(prev => ({
+      ...prev,
+      quickTemplates: (prev.quickTemplates ?? []).filter(t => t.id !== id),
+    }))
+  }, [setData])
+
   const getEntriesForDate = useCallback((date: string) => {
     return entries.filter(e => e.date === date)
   }, [entries])
@@ -158,6 +174,7 @@ export function useSportEntries() {
   return {
     entries, categories, reflections, data, loading,
     weeklyGoal, setWeeklyGoal,
+    quickTemplates, addQuickTemplate, deleteQuickTemplate,
     addEntry, deleteEntry, updateEntry,
     addCategory, updateCategory, deleteCategory, reorderCategories,
     getReflection, upsertReflection, deleteReflection,

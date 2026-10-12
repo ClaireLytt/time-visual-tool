@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { startOfWeek, endOfWeek, format, parseISO } from 'date-fns'
+import { formatDuration } from '../../utils/time'
 import type { SportEntry } from '../../types/sport'
 
 interface SportWeeklyGoalProps {
@@ -14,13 +15,18 @@ export default function SportWeeklyGoal({ entries, selectedDate, weeklyGoal, onW
   const { t } = useTranslation()
   const [editing, setEditing] = useState(false)
 
-  const weekCount = useMemo(() => {
+  const { weekCount, weekDuration, weekCalories } = useMemo(() => {
     const anchor = parseISO(selectedDate)
     const weekStart = startOfWeek(anchor, { weekStartsOn: 1 })
     const weekEnd = endOfWeek(anchor, { weekStartsOn: 1 })
     const startStr = format(weekStart, 'yyyy-MM-dd')
     const endStr = format(weekEnd, 'yyyy-MM-dd')
-    return entries.filter(e => e.date >= startStr && e.date <= endStr).length
+    const weekEntries = entries.filter(e => e.date >= startStr && e.date <= endStr)
+    return {
+      weekCount: weekEntries.length,
+      weekDuration: weekEntries.reduce((sum, e) => sum + e.duration, 0),
+      weekCalories: Math.round(weekEntries.reduce((sum, e) => sum + e.calories, 0)),
+    }
   }, [entries, selectedDate])
 
   const progress = Math.min(weekCount / weeklyGoal, 1)
@@ -28,6 +34,7 @@ export default function SportWeeklyGoal({ entries, selectedDate, weeklyGoal, onW
 
   return (
     <div className="panel p-4 mb-4">
+      {/* Session count goal */}
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs font-semibold tracking-wide uppercase text-calm-muted dark:text-gray-400">
           {t('sport.weeklyGoal')}
@@ -73,13 +80,19 @@ export default function SportWeeklyGoal({ entries, selectedDate, weeklyGoal, onW
           )}
         </div>
       </div>
-      <div className="w-full h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+      <div className="w-full h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-3">
         <div
           className={`h-full rounded-full transition-all duration-500 ${
             isComplete ? 'bg-green-500' : 'bg-mode-sport'
           }`}
           style={{ width: `${progress * 100}%` }}
         />
+      </div>
+
+      {/* Weekly stats summary */}
+      <div className="flex gap-4 text-xs text-gray-500 dark:text-gray-400">
+        <span>⏱ {formatDuration(weekDuration)}</span>
+        {weekCalories > 0 && <span>🔥 {weekCalories.toLocaleString()} {t('sport.calorieUnit')}</span>}
       </div>
     </div>
   )
