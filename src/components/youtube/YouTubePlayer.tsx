@@ -1,9 +1,12 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { createPortal } from 'react-dom'
-import YouTubeEmbed, { type YouTubeEmbedHandle } from './YouTubeEmbed'
+import YouTubeEmbed, { type YouTubeEmbedHandle, type AudioAdapter } from './YouTubeEmbed'
 import WordPopover from '../podcast/WordPopover'
 import EpisodeWordList from '../podcast/EpisodeWordList'
+import GapFillGame from '../podcast/GapFillGame'
+import TypeFillGame from '../podcast/TypeFillGame'
+import TypingPractice from '../podcast/TypingPractice'
 import { findActiveIndex, formatClock } from '../../utils/transcript'
 import { translateText } from '../../api/translate'
 import { MODE_ACCENT } from '../../constants/modes'
@@ -45,11 +48,18 @@ function YouTubePlayer({
   const [showVideo, setShowVideo] = useState(true)
   const [showTranscript, setShowTranscript] = useState(true)
   const [showWordList, setShowWordList] = useState(false)
+  const [gameMode, setGameMode] = useState<'none' | 'gapfill' | 'typefill' | 'typing'>('none')
   const embedRef = useRef<YouTubeEmbedHandle>(null)
+  const fakeAudioRef = useRef<AudioAdapter | null>(null)
   const activeRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const userScrolling = useRef(false)
   const scrollTimer = useRef<ReturnType<typeof setTimeout>>()
+
+  // Keep audio adapter ref in sync
+  useEffect(() => {
+    fakeAudioRef.current = embedRef.current?.getAudioAdapter() ?? null
+  })
 
   const isPopoverOpen = selectedWord != null
   const activeIndex = useMemo(() => findActiveIndex(segments, currentTime), [segments, currentTime])
@@ -155,8 +165,56 @@ function YouTubePlayer({
         >
           📚 {t('youtube.wordList')}
         </button>
+        {/* Game mode buttons */}
+        <button
+          onClick={() => setGameMode(m => m === 'gapfill' ? 'none' : 'gapfill')}
+          className="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors bg-gray-100 dark:bg-gray-700/50 hover:bg-gray-200 dark:hover:bg-gray-600/50"
+          style={gameMode === 'gapfill' ? { backgroundColor: `${ACCENT}20`, color: ACCENT } : undefined}
+        >
+          🎯 {t('youtube.gapFill')}
+        </button>
+        <button
+          onClick={() => setGameMode(m => m === 'typefill' ? 'none' : 'typefill')}
+          className="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors bg-gray-100 dark:bg-gray-700/50 hover:bg-gray-200 dark:hover:bg-gray-600/50"
+          style={gameMode === 'typefill' ? { backgroundColor: `${ACCENT}20`, color: ACCENT } : undefined}
+        >
+          ⌨️ {t('youtube.typeFill')}
+        </button>
+        <button
+          onClick={() => setGameMode(m => m === 'typing' ? 'none' : 'typing')}
+          className="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors bg-gray-100 dark:bg-gray-700/50 hover:bg-gray-200 dark:hover:bg-gray-600/50"
+          style={gameMode === 'typing' ? { backgroundColor: `${ACCENT}20`, color: ACCENT } : undefined}
+        >
+          ✍️ {t('youtube.typingPractice')}
+        </button>
         <span className="text-xs text-gray-400">{segments.length} {t('youtube.segments')}</span>
       </div>
+
+      {/* Game modes */}
+      {gameMode === 'gapfill' && segments.length > 0 && (
+        <GapFillGame
+          segments={segments}
+          audioRef={fakeAudioRef as React.RefObject<HTMLAudioElement>}
+          onExit={() => setGameMode('none')}
+          onAddToVocab={onRecordLookup}
+        />
+      )}
+      {gameMode === 'typefill' && segments.length > 0 && (
+        <TypeFillGame
+          segments={segments}
+          audioRef={fakeAudioRef as React.RefObject<HTMLAudioElement>}
+          onExit={() => setGameMode('none')}
+          onAddToVocab={onRecordLookup}
+        />
+      )}
+      {gameMode === 'typing' && segments.length > 0 && (
+        <TypingPractice
+          segments={segments}
+          audioRef={fakeAudioRef as React.RefObject<HTMLAudioElement>}
+          onExit={() => setGameMode('none')}
+          onAddToVocab={onRecordLookup}
+        />
+      )}
 
       {/* Per-video word list */}
       {showWordList && (

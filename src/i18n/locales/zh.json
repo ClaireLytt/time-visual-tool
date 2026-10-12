@@ -789,6 +789,9 @@
     "create": "创建",
     "folderEmpty": "该收藏夹暂无视频",
     "videoCount": "个视频",
-    "removeFromFolder": "移出收藏夹"
+    "removeFromFolder": "移出收藏夹",
+    "gapFill": "选词填空",
+    "typeFill": "打字填空",
+    "typingPractice": "听写练习"
   }
 }

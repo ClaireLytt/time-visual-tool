@@ -2,6 +2,17 @@ import { useEffect, useRef, useCallback, useImperativeHandle, forwardRef } from 
 
 export interface YouTubeEmbedHandle {
   seekTo: (seconds: number) => void
+  /** Minimal HTMLAudioElement-like interface for game components */
+  getAudioAdapter: () => AudioAdapter | null
+}
+
+/** Subset of HTMLAudioElement used by GapFillGame/TypeFillGame/TypingPractice */
+export interface AudioAdapter {
+  get currentTime(): number
+  set currentTime(v: number)
+  get paused(): boolean
+  play(): Promise<void>
+  pause(): void
 }
 
 interface YouTubeEmbedProps {
@@ -46,6 +57,17 @@ const YouTubeEmbed = forwardRef<YouTubeEmbedHandle, YouTubeEmbedProps>(
 
     useImperativeHandle(ref, () => ({
       seekTo: (seconds: number) => playerRef.current?.seekTo(seconds, true),
+      getAudioAdapter: (): AudioAdapter | null => {
+        const player = playerRef.current
+        if (!player) return null
+        return {
+          get currentTime() { return player.getCurrentTime() },
+          set currentTime(v: number) { player.seekTo(v, true) },
+          get paused() { return player.getPlayerState() !== 1 },
+          play() { player.playVideo(); return Promise.resolve() },
+          pause() { player.pauseVideo() },
+        }
+      },
     }), [])
 
     const startPolling = useCallback(() => {
