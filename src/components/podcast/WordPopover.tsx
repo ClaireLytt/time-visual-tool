@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
-import { lookupWord, playPronunciation, type DictResult } from '../../api/dictionary'
+import { lookupWord, playPronunciation, playCantonese, type DictResult } from '../../api/dictionary'
 
 interface WordPopoverProps {
   word: string
@@ -164,6 +164,18 @@ export default memo(function WordPopover({
               <svg className="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8.5v7a4.49 4.49 0 0 0 2.5-3.5z" /></svg>
               <span>{t('podcast.dictUsPron')}{data.phonetics.us.text && <span className="font-mono ml-1">{data.phonetics.us.text}</span>}</span>
             </button>
+            {data.definitions.length > 0 && (
+              <button
+                onClick={() => {
+                  const zhText = data.definitions.map(d => d.replace(/^[a-z]+\.\s*/i, '')).join('，')
+                  playCantonese(zhText)
+                }}
+                className="flex items-center gap-1 hover:text-mode-podcast transition-colors"
+              >
+                <svg className="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8.5v7a4.49 4.49 0 0 0 2.5-3.5z" /></svg>
+                <span>{t('podcast.dictCantonesePron')}</span>
+              </button>
+            )}
           </div>
         )}
 

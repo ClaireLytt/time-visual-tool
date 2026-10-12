@@ -157,3 +157,20 @@ export function playPronunciation(audioUrl: string, word?: string): void {
     // Audio playback is best-effort
   }
 }
+
+/**
+ * Play Cantonese pronunciation of Chinese text via browser SpeechSynthesis.
+ * Falls back gracefully if the browser has no Cantonese voice.
+ */
+export function playCantonese(text: string): void {
+  if (!text || !window.speechSynthesis) return
+  const utterance = new SpeechSynthesisUtterance(text)
+  utterance.lang = 'zh-HK'
+  utterance.rate = 0.9
+  // Try to find a Cantonese / zh-HK voice
+  const voices = window.speechSynthesis.getVoices()
+  const cantoneseVoice = voices.find(v => v.lang === 'zh-HK' || v.lang === 'zh-Hant-HK' || v.lang.startsWith('yue'))
+  if (cantoneseVoice) utterance.voice = cantoneseVoice
+  window.speechSynthesis.cancel()
+  window.speechSynthesis.speak(utterance)
+}
