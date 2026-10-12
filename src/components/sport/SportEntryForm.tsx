@@ -28,9 +28,13 @@ interface SportEntryFormProps {
   onCancelEdit?: () => void
   templateFill?: SportFormFill | null
   onTemplateFillConsumed?: () => void
+  /** When set by the filter tag, pre-select this sport type */
+  filterSportType?: string
+  /** When true, skip the outer panel wrapper (parent provides it) */
+  inline?: boolean
 }
 
-function SportEntryForm({ selectedDate, categories, allEntries, onAdd, editingEntry, onUpdate, onCancelEdit, templateFill, onTemplateFillConsumed }: SportEntryFormProps) {
+function SportEntryForm({ selectedDate, categories, allEntries, onAdd, editingEntry, onUpdate, onCancelEdit, templateFill, onTemplateFillConsumed, filterSportType, inline }: SportEntryFormProps) {
   const { t } = useTranslation()
   const [content, setContent] = useState('')
   const [durationInput, setDurationInput] = useState('')
@@ -74,6 +78,15 @@ function SportEntryForm({ selectedDate, categories, allEntries, onAdd, editingEn
       setSportType(templateFill.sportType)
       setError('')
       onTemplateFillConsumed?.()
+    }
+  }
+
+  // Sync sport type from filter tag selection
+  const [prevFilterType, setPrevFilterType] = useState(filterSportType)
+  if (prevFilterType !== filterSportType) {
+    setPrevFilterType(filterSportType)
+    if (filterSportType && !isEditing) {
+      setSportType(filterSportType)
     }
   }
 
@@ -185,10 +198,12 @@ function SportEntryForm({ selectedDate, categories, allEntries, onAdd, editingEn
   }
 
   return (
-    <form onSubmit={handleSubmit} className="panel p-4 mb-4">
-      <h3 className="text-xs font-semibold tracking-wide uppercase text-calm-muted dark:text-gray-200 mb-3">
-        {isEditing ? t('sport.editTitle') : t('sport.addTitle')}
-      </h3>
+    <form onSubmit={handleSubmit} className={inline ? '' : 'panel p-4 mb-4'}>
+      {!inline && (
+        <h3 className="text-xs font-semibold tracking-wide uppercase text-calm-muted dark:text-gray-200 mb-3">
+          {isEditing ? t('sport.editTitle') : t('sport.addTitle')}
+        </h3>
+      )}
 
       {/* Frequent sports quick-fill */}
       {!isEditing && frequentSports.length > 0 && (

@@ -73,14 +73,14 @@ export default function SportStreaks({ entries, selectedDate }: SportStreaksProp
   ]
 
   return (
-    <div className="flex flex-wrap gap-3 mb-4">
+    <div className="grid grid-cols-3 gap-3 mb-4">
       {stats.map(stat => (
-        <div key={stat.label} className="panel p-3 text-center flex-1 min-w-[100px]">
-          <p className="text-lg mb-0.5">{stat.emoji}</p>
-          <p className="text-xl font-bold tabular-nums text-gray-800 dark:text-gray-100">
-            {stat.value} {t('sport.dayUnit')}
+        <div key={stat.label} className="panel p-3 text-center">
+          <p className="text-sm mb-0.5">{stat.emoji}</p>
+          <p className="text-lg font-bold tabular-nums text-gray-800 dark:text-gray-100">
+            {stat.value} <span className="text-xs font-normal text-gray-400">{t('sport.dayUnit')}</span>
           </p>
-          <p className="text-xs tracking-wide text-gray-500 dark:text-gray-400 mt-0.5">{stat.label}</p>
+          <p className="text-[10px] tracking-wide uppercase text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">{stat.label}</p>
         </div>
       ))}
     </div>
