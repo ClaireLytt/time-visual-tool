@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { createPortal } from 'react-dom'
-import YouTubeEmbed from './YouTubeEmbed'
+import YouTubeEmbed, { type YouTubeEmbedHandle } from './YouTubeEmbed'
 import WordPopover from '../podcast/WordPopover'
 import EpisodeWordList from '../podcast/EpisodeWordList'
 import { findActiveIndex, formatClock } from '../../utils/transcript'
@@ -45,7 +45,7 @@ function YouTubePlayer({
   const [showVideo, setShowVideo] = useState(true)
   const [showTranscript, setShowTranscript] = useState(true)
   const [showWordList, setShowWordList] = useState(false)
-  const embedRef = useRef<HTMLDivElement>(null)
+  const embedRef = useRef<YouTubeEmbedHandle>(null)
   const activeRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const userScrolling = useRef(false)
@@ -74,10 +74,7 @@ function YouTubePlayer({
   }, [])
 
   const seekTo = useCallback((seconds: number) => {
-    const el = embedRef.current
-    if (el && (el as any).__seekTo) {
-      ;(el as any).__seekTo(seconds)
-    }
+    embedRef.current?.seekTo(seconds)
   }, [])
 
   const openWord = useCallback((el: HTMLElement, token: string, sentence: string, segStart: number) => {
@@ -116,7 +113,7 @@ function YouTubePlayer({
       </div>
 
       {/* YouTube embed — collapsible */}
-      <div ref={embedRef}>
+      <div>
         <button
           onClick={() => setShowVideo(v => !v)}
           className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 mb-1.5 transition-colors"
@@ -128,6 +125,7 @@ function YouTubePlayer({
         </button>
         {showVideo && (
           <YouTubeEmbed
+            ref={embedRef}
             videoId={info.videoId}
             onTimeUpdate={setCurrentTime}
           />

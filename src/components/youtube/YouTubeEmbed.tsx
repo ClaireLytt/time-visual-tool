@@ -1,4 +1,8 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useImperativeHandle, forwardRef } from 'react'
+
+export interface YouTubeEmbedHandle {
+  seekTo: (seconds: number) => void
+}
 
 interface YouTubeEmbedProps {
   videoId: string
@@ -31,92 +35,84 @@ function loadIframeAPI(): Promise<void> {
   })
 }
 
-function YouTubeEmbed({ videoId, onTimeUpdate, onReady, onStateChange }: YouTubeEmbedProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const playerRef = useRef<YT.Player | null>(null)
-  const rafRef = useRef<number>(0)
-  const isPlayingRef = useRef(false)
+const YouTubeEmbed = forwardRef<YouTubeEmbedHandle, YouTubeEmbedProps>(
+  function YouTubeEmbed({ videoId, onTimeUpdate, onReady, onStateChange }, ref) {
+    const containerRef = useRef<HTMLDivElement>(null)
+    const playerRef = useRef<YT.Player | null>(null)
+    const rafRef = useRef<number>(0)
+    const isPlayingRef = useRef(false)
+    const onTimeUpdateRef = useRef(onTimeUpdate)
+    onTimeUpdateRef.current = onTimeUpdate
 
-  const onTimeUpdateRef = useRef(onTimeUpdate)
-  onTimeUpdateRef.current = onTimeUpdate
+    useImperativeHandle(ref, () => ({
+      seekTo: (seconds: number) => playerRef.current?.seekTo(seconds, true),
+    }), [])
 
-  const tick = useCallback(() => {
-    if (playerRef.current && isPlayingRef.current) {
-      onTimeUpdateRef.current(playerRef.current.getCurrentTime())
-    }
-    rafRef.current = requestAnimationFrame(tick)
-  }, [])
+    const startPolling = useCallback(() => {
+      const poll = () => {
+        if (playerRef.current && isPlayingRef.current) {
+          onTimeUpdateRef.current(playerRef.current.getCurrentTime())
+        }
+        rafRef.current = requestAnimationFrame(poll)
+      }
+      rafRef.current = requestAnimationFrame(poll)
+    }, [])
 
-  useEffect(() => {
-    let destroyed = false
+    useEffect(() => {
+      let destroyed = false
 
-    const init = async () => {
-      await loadIframeAPI()
-      if (destroyed || !containerRef.current) return
+      const init = async () => {
+        await loadIframeAPI()
+        if (destroyed || !containerRef.current) return
 
-      // Create a target div inside the container
-      const target = document.createElement('div')
-      target.id = `yt-player-${videoId}-${Date.now()}`
-      containerRef.current.innerHTML = ''
-      containerRef.current.appendChild(target)
+        const target = document.createElement('div')
+        target.id = `yt-player-${videoId}-${Date.now()}`
+        containerRef.current.innerHTML = ''
+        containerRef.current.appendChild(target)
 
-      playerRef.current = new YT.Player(target.id, {
-        width: '100%',
-        height: '100%',
-        videoId,
-        playerVars: {
-          autoplay: 0,
-          modestbranding: 1,
-          rel: 0,
-          cc_load_policy: 0,
-          iv_load_policy: 3,
-        },
-        events: {
-          onReady: () => {
-            if (!destroyed) onReady?.()
+        playerRef.current = new YT.Player(target.id, {
+          width: '100%',
+          height: '100%',
+          videoId,
+          playerVars: {
+            autoplay: 0,
+            modestbranding: 1,
+            rel: 0,
+            cc_load_policy: 0,
+            iv_load_policy: 3,
           },
-          onStateChange: (e) => {
-            if (destroyed) return
-            isPlayingRef.current = e.data === 1 // PLAYING
-            onStateChange?.(e.data)
+          events: {
+            onReady: () => { if (!destroyed) onReady?.() },
+            onStateChange: (e) => {
+              if (destroyed) return
+              isPlayingRef.current = e.data === 1
+              onStateChange?.(e.data)
+            },
           },
-        },
-      })
+        })
 
-      // Start polling loop
-      rafRef.current = requestAnimationFrame(tick)
-    }
+        startPolling()
+      }
 
-    init()
+      init()
 
-    return () => {
-      destroyed = true
-      cancelAnimationFrame(rafRef.current)
-      try { playerRef.current?.destroy() } catch { /* already destroyed */ }
-      playerRef.current = null
-    }
-  }, [videoId, tick, onReady, onStateChange])
+      return () => {
+        destroyed = true
+        cancelAnimationFrame(rafRef.current)
+        try { playerRef.current?.destroy() } catch { /* already destroyed */ }
+        playerRef.current = null
+      }
+    }, [videoId, startPolling, onReady, onStateChange])
 
-  /** Seek video to a specific time in seconds */
-  const seekTo = useCallback((seconds: number) => {
-    playerRef.current?.seekTo(seconds, true)
-  }, [])
-
-  // Expose seekTo via a data attribute that parent can read
-  useEffect(() => {
-    const el = containerRef.current
-    if (el) (el as any).__seekTo = seekTo
-  }, [seekTo])
-
-  return (
-    <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
-      <div
-        ref={containerRef}
-        className="absolute inset-0 rounded-lg overflow-hidden bg-black"
-      />
-    </div>
-  )
-}
+    return (
+      <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
+        <div
+          ref={containerRef}
+          className="absolute inset-0 rounded-lg overflow-hidden bg-black"
+        />
+      </div>
+    )
+  },
+)
 
 export default YouTubeEmbed
-export type { YouTubeEmbedProps }
