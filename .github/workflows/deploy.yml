@@ -25,8 +25,11 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
+      - run: npx tsc -b
       - run: npm test
       - run: npm run build
+      - name: Verify dist output
+        run: test -f dist/index.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

@@ -1,4 +1,4 @@
-<title>霓虹篮球 NEON HOOPS</title>
+<title>NEON HOOPS</title>
 <style>
   /* === Single dark theme — neon arcade, one visual world === */
   :root {
@@ -41,6 +41,72 @@
 // ============================================================
 (function () {
   'use strict';
+
+  // ── i18n ─────────────────────────────────────────────────
+  const LANG = new URLSearchParams(location.search).get('lang') || 'zh';
+  const I18N = {
+    zh: {
+      subtitle: '霓  虹  篮  球',
+      aimHint: '← 反向拖拽瞄准 · 松手投篮 →',
+      aimHintDesktop: 'P/Esc 暂停  ·  R 重开',
+      clickStart: '[ 点击开始 ]',
+      clickStartDesktop: '[ CLICK / ENTER ]',
+      selectDiff: '选 择 难 度',
+      easy: '简单', normal: '普通', hard: '困难',
+      easyDesc: '大篮筐 · 90秒 · 完整轨迹',
+      normalDesc: '标准篮筐 · 60秒 · 渐弱轨迹',
+      hardDesc: '小篮筐 · 45秒 · 极短轨迹',
+      clickSelect: '点击选择',
+      clickSelectDesktop: '点击选择 或按 1 / 2 / 3',
+      progressRecord: 'PROGRESS RECORD｜进度记录',
+      plays: '游玩', playsUnit: '局',
+      hits: '命中', hitsUnit: '次',
+      avg: '平均', avgUnit: '分',
+      highScore: '最高', highScoreUnit: '分',
+      recentScore: '最近得分',
+      noRecord: '暂无记录',
+      pauseHint: 'P / Esc 继续  ·  R 重开',
+      baskets: '进球', swishes: '空心球',
+      maxCombo: '最高连击', highRecord: '最高纪录',
+      clickReplay: '[ 点击再来 ]',
+      clickReplayDesktop: '[ CLICK / R / ENTER ]',
+      achieveUnlock: '成就解锁',
+      firstSwish: '首次空心球', combo5: '连击 x5',
+      score30: '单局30分', score50: '单局50分',
+      baskets10: '单局10球', allSwish: '全空心球',
+    },
+    en: {
+      subtitle: 'N E O N   H O O P S',
+      aimHint: '← Drag to aim · Release to shoot →',
+      aimHintDesktop: 'P/Esc Pause  ·  R Restart',
+      clickStart: '[ TAP TO START ]',
+      clickStartDesktop: '[ CLICK / ENTER ]',
+      selectDiff: 'SELECT DIFFICULTY',
+      easy: 'Easy', normal: 'Normal', hard: 'Hard',
+      easyDesc: 'Large hoop · 90s · Full trajectory',
+      normalDesc: 'Standard hoop · 60s · Fading trajectory',
+      hardDesc: 'Small hoop · 45s · Minimal trajectory',
+      clickSelect: 'Tap to select',
+      clickSelectDesktop: 'Tap to select or press 1 / 2 / 3',
+      progressRecord: 'PROGRESS RECORD',
+      plays: 'Played', playsUnit: '',
+      hits: 'Hits', hitsUnit: '',
+      avg: 'Avg', avgUnit: 'pts',
+      highScore: 'Best', highScoreUnit: 'pts',
+      recentScore: 'Recent',
+      noRecord: 'No records yet',
+      pauseHint: 'P / Esc Resume  ·  R Restart',
+      baskets: 'Baskets', swishes: 'Swishes',
+      maxCombo: 'Max Combo', highRecord: 'High Score',
+      clickReplay: '[ TAP TO REPLAY ]',
+      clickReplayDesktop: '[ CLICK / R / ENTER ]',
+      achieveUnlock: 'Achievement',
+      firstSwish: 'First Swish', combo5: 'Combo x5',
+      score30: '30 Points', score50: '50 Points',
+      baskets10: '10 Baskets', allSwish: 'All Swish',
+    },
+  };
+  const T = I18N[LANG] || I18N.zh;
 
   // ── Canvas Setup ─────────────────────────────────────────
   const cvs = document.getElementById('c');
@@ -97,12 +163,12 @@
 
   // ── 成就系统 ────────────────────────────────────────────
   const ACHIEVEMENTS = [
-    { id: 'first_swish',  icon: '💎', label: '首次空心球',   check: (s) => s.swishes >= 1 },
-    { id: 'combo5',       icon: '🔥', label: '连击 x5',     check: (s) => s.maxCombo >= 5 },
-    { id: 'score30',      icon: '🏆', label: '单局30分',    check: (s) => s.score >= 30 },
-    { id: 'score50',      icon: '👑', label: '单局50分',    check: (s) => s.score >= 50 },
-    { id: 'baskets10',    icon: '🎯', label: '单局10球',    check: (s) => s.baskets >= 10 },
-    { id: 'all_swish',    icon: '✨', label: '全空心球',    check: (s) => s.baskets >= 3 && s.swishes === s.baskets },
+    { id: 'first_swish',  icon: '💎', label: T.firstSwish, check: (s) => s.swishes >= 1 },
+    { id: 'combo5',       icon: '🔥', label: T.combo5,     check: (s) => s.maxCombo >= 5 },
+    { id: 'score30',      icon: '🏆', label: T.score30,    check: (s) => s.score >= 30 },
+    { id: 'score50',      icon: '👑', label: T.score50,    check: (s) => s.score >= 50 },
+    { id: 'baskets10',    icon: '🎯', label: T.baskets10,  check: (s) => s.baskets >= 10 },
+    { id: 'all_swish',    icon: '✨', label: T.allSwish,   check: (s) => s.baskets >= 3 && s.swishes === s.baskets },
   ];
   let earnedAchievements = [];  // achievements earned THIS game
   let achieveQueue = [];        // pending display queue
@@ -150,9 +216,9 @@
 
   // ── 难度预设 (简单 / 普通 / 困难) ───────────────────────
   const DIFFS = [
-    { // 0 = 简单
-      key: 'easy', label: '简单', labelEn: 'EASY', color: CYAN,
-      desc: '大篮筐 · 90秒 · 完整轨迹',
+    { // 0 = Easy
+      key: 'easy', label: T.easy, color: CYAN,
+      desc: T.easyDesc,
       time: 90, gravity: 0.11, launchK: 0.15, maxVMult: 2.4,
       hoopW: 5.8,            // 篮筐宽度 (×U)
       ballX: 0.60,           // 球 X 位置 (占屏宽比)
@@ -161,18 +227,18 @@
       moveAfter: 8,          // 几个球后篮筐开始移动
       obsAfter: 5,           // 内部 difficulty 达到几后出障碍 (=baskets/5)
     },
-    { // 1 = 普通
-      key: 'normal', label: '普通', labelEn: 'NORMAL', color: GOLD,
-      desc: '标准篮筐 · 60秒 · 渐弱轨迹',
+    { // 1 = Normal
+      key: 'normal', label: T.normal, color: GOLD,
+      desc: T.normalDesc,
       time: 60, gravity: 0.15, launchK: 0.15, maxVMult: 2.2,
       hoopW: 4.4,
       ballX: 0.72, hoopX: 0.25,
       trajDots: [30, 20, 12],
       moveAfter: 5, obsAfter: 3,
     },
-    { // 2 = 困难
-      key: 'hard', label: '困难', labelEn: 'HARD', color: PINK,
-      desc: '小篮筐 · 45秒 · 极短轨迹',
+    { // 2 = Hard
+      key: 'hard', label: T.hard, color: PINK,
+      desc: T.hardDesc,
       time: 45, gravity: 0.20, launchK: 0.14, maxVMult: 2.0,
       hoopW: 3.4,
       ballX: 0.78, hoopX: 0.18,
@@ -946,7 +1012,7 @@
     glow(CYAN, 6);
     ctx.fillStyle = 'rgba(0,255,240,0.55)';
     ctx.font = `${U * 0.8}px 'Courier New',monospace`;
-    ctx.fillText('霓  虹  篮  球', cx, H * 0.28 + U * 5);
+    ctx.fillText(T.subtitle, cx, H * 0.28 + U * 5);
 
     // Decorative bouncing ball
     noGlow();
@@ -963,8 +1029,8 @@
     ctx.fillStyle = 'rgba(255,255,255,0.45)';
     ctx.font = `${U * 0.6}px 'Courier New',monospace`;
     const touch = 'ontouchstart' in window;
-    ctx.fillText(touch ? '← 反向拖拽瞄准 · 松手投篮 →' : '← Drag to aim · Release to shoot →', cx, H * 0.64);
-    if (!touch) ctx.fillText('P/Esc 暂停  ·  R 重开', cx, H * 0.64 + U * 1.3);
+    ctx.fillText(touch ? T.aimHint : T.aimHintDesktop, cx, H * 0.64);
+    if (!touch) ctx.fillText(T.aimHintDesktop, cx, H * 0.64 + U * 1.3);
 
     // Start CTA (pulsing)
     const pulse = 0.45 + Math.sin(Date.now() / 380) * 0.45;
@@ -972,7 +1038,7 @@
     ctx.fillStyle = GOLD;
     glow(GOLD, 12);
     ctx.font = `bold ${U * 0.95}px 'Courier New',monospace`;
-    ctx.fillText(touch ? '[ 点击开始 ]' : '[ CLICK / ENTER ]', cx, H * 0.79);
+    ctx.fillText(touch ? T.clickStart : T.clickStartDesktop, cx, H * 0.79);
 
     // High score
     // Per-difficulty high scores
@@ -981,7 +1047,7 @@
       ctx.globalAlpha = 0.55;
       noGlow();
       ctx.font = `${U * 0.5}px 'Courier New',monospace`;
-      const labels = ['简单', '普通', '困难'];
+      const labels = [T.easy, T.normal, T.hard];
       const bestStr = labels.map((l, i) => l + ' ' + highScores[i]).join('  ·  ');
       ctx.fillStyle = GOLD;
       ctx.fillText(bestStr, cx, H * 0.89);
@@ -1003,11 +1069,7 @@
     glow(CYAN, 20);
     ctx.fillStyle = CYAN;
     ctx.font = `bold ${U * (portrait ? 1.1 : 1.6)}px 'Courier New',monospace`;
-    ctx.fillText('SELECT DIFFICULTY', cx, portrait ? H * 0.08 : H * 0.14);
-    noGlow();
-    ctx.fillStyle = 'rgba(0,255,240,0.5)';
-    ctx.font = `${U * (portrait ? 0.55 : 0.7)}px 'Courier New',monospace`;
-    ctx.fillText('选 择 难 度', cx, (portrait ? H * 0.08 : H * 0.14) + U * 1.5);
+    ctx.fillText(T.selectDiff, cx, portrait ? H * 0.08 : H * 0.14);
     const btnW = portrait ? Math.min(U * 10, (W - U * 4) / 3) : Math.min(U * 14, W * 0.28);
     const btnH = portrait ? U * 6.5 : U * 8;
     const gap = portrait ? U * 0.8 : U * 1.5;
@@ -1048,15 +1110,10 @@
       ctx.font = `bold ${U * 1.6 * s}px 'Courier New',monospace`;
       ctx.fillText('' + (i + 1), bx + btnW / 2, btnY + U * 1.8 * s + U * 0.3);
 
-      // Chinese label
+      // Difficulty label
       ctx.font = `bold ${U * 1.1 * s}px 'Courier New',monospace`;
       ctx.fillText(d.label, bx + btnW / 2, btnY + U * 3.2 * s + U * 0.3);
-
-      // English label
       noGlow();
-      ctx.fillStyle = `rgba(255,255,255,0.35)`;
-      ctx.font = `${U * 0.55 * s}px 'Courier New',monospace`;
-      ctx.fillText(d.labelEn, bx + btnW / 2, btnY + U * 4.2 * s + U * 0.3);
 
       // Description
       ctx.fillStyle = `rgba(255,255,255,0.3)`;
@@ -1081,7 +1138,7 @@
       glow(CYAN, 8);
       ctx.fillStyle = CYAN;
       ctx.font = `bold ${U * 0.65}px 'Courier New',monospace`;
-      ctx.fillText('PROGRESS RECORD｜进度记录', cx, prY);
+      ctx.fillText(T.progressRecord, cx, prY);
       noGlow();
 
       // ── Global stats row ──
@@ -1094,9 +1151,9 @@
       ctx.fillStyle = 'rgba(255,255,255,0.55)';
       ctx.font = `${U * 0.5}px 'Courier New',monospace`;
       const gsItems = [
-        `游玩 ${totalPlays} 局`,
-        `命中 ${totalHits} 次`,
-        `平均 ${avgScore} 分`,
+        `${T.plays} ${totalPlays} ${T.playsUnit}`.trim(),
+        `${T.hits} ${totalHits} ${T.hitsUnit}`.trim(),
+        `${T.avg} ${avgScore} ${T.avgUnit}`.trim(),
       ];
       const gsSpan = totalW / 3;
       for (let i = 0; i < 3; i++) {
@@ -1144,11 +1201,11 @@
         // Best score
         ctx.fillStyle = 'rgba(255,255,255,0.7)';
         ctx.font = `${U * 0.45}px 'Courier New',monospace`;
-        ctx.fillText(`最高 ${highScores[i]} 分`, scCx, scY + U * 2.1);
+        ctx.fillText(`${T.highScore} ${highScores[i]} ${T.highScoreUnit}`.trim(), scCx, scY + U * 2.1);
 
         // Plays count
         ctx.fillStyle = 'rgba(255,255,255,0.5)';
-        ctx.fillText(`游玩 ${stats.plays[i]} 局`, scCx, scY + U * 2.9);
+        ctx.fillText(`${T.plays} ${stats.plays[i]} ${T.playsUnit}`.trim(), scCx, scY + U * 2.9);
 
         // Mini neon line chart — last 5 scores
         if (rec.length >= 2) {
@@ -1183,11 +1240,11 @@
         } else if (rec.length === 1) {
           ctx.fillStyle = 'rgba(255,255,255,0.35)';
           ctx.font = `${U * 0.4}px 'Courier New',monospace`;
-          ctx.fillText(`最近得分 ${rec[0]}`, scCx, scY + U * 5);
+          ctx.fillText(`${T.recentScore} ${rec[0]}`, scCx, scY + U * 5);
         } else {
           ctx.fillStyle = 'rgba(255,255,255,0.2)';
           ctx.font = `${U * 0.4}px 'Courier New',monospace`;
-          ctx.fillText('暂无记录', scCx, scY + U * 5);
+          ctx.fillText(T.noRecord, scCx, scY + U * 5);
         }
       }
     }
@@ -1196,7 +1253,7 @@
     ctx.fillStyle = 'rgba(255,255,255,0.3)';
     ctx.font = `${U * 0.5}px 'Courier New',monospace`;
     const touch = 'ontouchstart' in window;
-    ctx.fillText(touch ? '点击选择' : '点击选择 或按 1 / 2 / 3', cx, H * 0.95);
+    ctx.fillText(touch ? T.clickSelect : T.clickSelectDesktop, cx, H * 0.95);
 
     ctx.restore();
   }
@@ -1214,7 +1271,7 @@
     noGlow();
     ctx.fillStyle = 'rgba(255,255,255,0.5)';
     ctx.font = `${U * 0.65}px 'Courier New',monospace`;
-    ctx.fillText('P / Esc 继续  ·  R 重开', W / 2, H / 2 + U * 1.8);
+    ctx.fillText(T.pauseHint, W / 2, H / 2 + U * 1.8);
     ctx.restore();
   }
 
@@ -1257,16 +1314,16 @@
     y += U * 3.2;
     ctx.font = `${U * 0.72}px 'Courier New',monospace`;
     const rows = [
-      ['进球',     '' + baskets],
-      ['空心球',   '' + swishes],
-      ['最高连击', 'x' + maxCombo],
-      ['最高纪录', '' + highScores[gameDiff]],
+      [T.baskets,    '' + baskets,              false],
+      [T.swishes,    '' + swishes,              false],
+      [T.maxCombo,   'x' + maxCombo,            false],
+      [T.highRecord, '' + highScores[gameDiff],  true],
     ];
-    for (const [label, val] of rows) {
+    for (const [label, val, isHighRecord] of rows) {
       ctx.fillStyle = 'rgba(255,255,255,0.4)';
       ctx.textAlign = 'right';
       ctx.fillText(label, cx - U * 0.6, y);
-      ctx.fillStyle = (label === '最高纪录' && score >= highScores[gameDiff] && score > 0) ? GOLD : CYAN;
+      ctx.fillStyle = (isHighRecord && score >= highScores[gameDiff] && score > 0) ? GOLD : CYAN;
       ctx.textAlign = 'left';
       ctx.fillText(val, cx + U * 0.6, y);
       y += U * 1.5;
@@ -1289,7 +1346,7 @@
     ctx.textAlign = 'center';
     ctx.font = `bold ${U * 0.8}px 'Courier New',monospace`;
     const touch = 'ontouchstart' in window;
-    ctx.fillText(touch ? '[ 点击再来 ]' : '[ CLICK / R / ENTER ]', cx, H * 0.91);
+    ctx.fillText(touch ? T.clickReplay : T.clickReplayDesktop, cx, H * 0.91);
     ctx.restore();
   }
 
@@ -1456,7 +1513,7 @@
     ctx.fillStyle = GOLD;
     glow(GOLD, 6);
     ctx.font = `bold ${U * 0.65}px 'Courier New',monospace`;
-    ctx.fillText('成就解锁  ' + a.label, W / 2 + U * 0.5, by + bh * 0.58);
+    ctx.fillText(T.achieveUnlock + '  ' + a.label, W / 2 + U * 0.5, by + bh * 0.58);
     noGlow();
 
     ctx.restore();

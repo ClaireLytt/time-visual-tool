@@ -7,9 +7,10 @@ import { formatDuration } from '../../utils/time'
 interface SportDailyChartProps {
   dailyBreakdown: SportDailyDataPoint[]
   title?: string
+  onDateClick?: (date: string) => void
 }
 
-function SportDailyChart({ dailyBreakdown, title }: SportDailyChartProps) {
+function SportDailyChart({ dailyBreakdown, title, onDateClick }: SportDailyChartProps) {
   const { t } = useTranslation()
   const { isDark } = useTheme()
   const hasData = dailyBreakdown.some(d => d.duration > 0)
@@ -65,6 +66,8 @@ function SportDailyChart({ dailyBreakdown, title }: SportDailyChartProps) {
             fill={barColor}
             radius={[4, 4, 0, 0]}
             maxBarSize={24}
+            cursor={onDateClick ? 'pointer' : undefined}
+            onClick={onDateClick ? (data: SportDailyDataPoint) => { if (data.date) onDateClick(data.date) } : undefined}
           />
         </BarChart>
       </ResponsiveContainer>

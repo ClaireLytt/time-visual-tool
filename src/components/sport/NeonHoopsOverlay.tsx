@@ -9,7 +9,7 @@ interface NeonHoopsOverlayProps {
 }
 
 export default function NeonHoopsOverlay({ open, onClose }: NeonHoopsOverlayProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
   // Lock body scroll while overlay is open; focus iframe so keyboard goes to game
@@ -36,7 +36,8 @@ export default function NeonHoopsOverlay({ open, onClose }: NeonHoopsOverlayProp
     window.history.back()
   }, [])
 
-  const gameSrc = `${import.meta.env.BASE_URL}games/neon-hoops.html`
+  const lang = i18n.language.startsWith('zh') ? 'zh' : 'en'
+  const gameSrc = `${import.meta.env.BASE_URL}games/neon-hoops.html?lang=${lang}`
 
   return (
     <AnimatePresence>
