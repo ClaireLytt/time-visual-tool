@@ -413,8 +413,8 @@
 
   function isExitBtnClick(mx, my) {
     var pad = 2 * U;
-    var exitBtnW = 8 * U, exitBtnH = 3.5 * U;
-    var exitBtnX = W - pad - exitBtnW, exitBtnY = pad + 5 * U;
+    var exitBtnW = 10 * U, exitBtnH = 3 * U;
+    var exitBtnX = W / 2 - exitBtnW / 2, exitBtnY = pad + 5 * U;
     return mx >= exitBtnX && mx <= exitBtnX + exitBtnW && my >= exitBtnY && my <= exitBtnY + exitBtnH;
   }
 
@@ -854,9 +854,9 @@
     cx.fillText(Math.ceil(timer) + 's', W/2, pad + 3*U);
     cx.shadowBlur = 0;
 
-    // ── Exit button top-right ──
-    var exitBtnW = 8 * U, exitBtnH = 3.5 * U;
-    var exitBtnX = W - pad - exitBtnW, exitBtnY = pad + 5 * U;
+    // ── Exit button below timer (center) ──
+    var exitBtnW = 10 * U, exitBtnH = 3 * U;
+    var exitBtnX = W / 2 - exitBtnW / 2, exitBtnY = pad + 5 * U;
     cx.fillStyle = 'rgba(255,255,255,0.08)';
     cx.strokeStyle = 'rgba(255,255,255,0.25)';
     cx.lineWidth = 1;
