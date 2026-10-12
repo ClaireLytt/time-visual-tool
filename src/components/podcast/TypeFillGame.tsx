@@ -100,7 +100,8 @@ export default function TypeFillGame({
 
     let rafId: number
     const check = () => {
-      if (audio.currentTime >= currentGap.startTime + 0.5 && !audio.paused) {
+      const pauseAt = currentGap.endTime ?? currentGap.startTime + 5
+      if (audio.currentTime >= pauseAt && !audio.paused) {
         audio.pause()
         inputRef.current?.focus()
       }

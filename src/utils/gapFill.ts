@@ -9,6 +9,7 @@ export interface GapWord {
   word: string            // the actual word (cleaned)
   sentence: string        // full segment text
   startTime: number       // segment start time for audio
+  endTime: number         // segment end time for audio
 }
 
 export interface GapOptions {
@@ -168,6 +169,7 @@ export async function generateGaps(segments: Segment[], options: GapOptions): Pr
         word: cleaned,
         sentence: seg.text,
         startTime: seg.start,
+        endTime: seg.end,
         score,
       })
     }
@@ -212,6 +214,7 @@ export async function generateGaps(segments: Segment[], options: GapOptions): Pr
       word: c.word,
       sentence: c.sentence,
       startTime: c.startTime,
+      endTime: c.endTime,
     })
     usedSegments.add(c.segmentIndex)
   }
