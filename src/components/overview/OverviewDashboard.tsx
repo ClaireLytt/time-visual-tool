@@ -14,6 +14,7 @@ import { useWorkEntries } from '../../hooks/useWorkEntries'
 import StreakRow from './StreakRow'
 import WeeklySparklines from './WeeklySparklines'
 import { useEpisodeStats } from '../../hooks/useEpisodeStats'
+import { useIeltsSessions } from '../ielts/hooks'
 import { exportAllData } from '../../utils/exportAllData'
 import { MODE_ACCENT } from '../../constants/modes'
 import { SCENE_COMPONENTS } from './PixelScenes'
@@ -68,6 +69,7 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
   const study = useStudyEntries()
   const work = useWorkEntries()
   const episodeStats = useEpisodeStats()
+  const ielts = useIeltsSessions()
 
   // Today's aggregations
   const timeToday = useMemo(() => time.getEntriesForDate(today), [time.getEntriesForDate, today])
@@ -97,6 +99,9 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
 
   const workToday = useMemo(() => work.getEntriesForDate(today), [work.getEntriesForDate, today])
   const workMinutes = useMemo(() => workToday.reduce((s, e) => s + e.duration, 0), [workToday])
+
+  const ieltsToday = useMemo(() => ielts.getEntriesForDate(today), [ielts.getEntriesForDate, today])
+  const ieltsMinutes = useMemo(() => ieltsToday.reduce((s, e) => s + e.minutes, 0), [ieltsToday])
 
   const podcastStarred = useMemo(() => Object.values(episodeStats.stats).filter(e => e.starred).length, [episodeStats.stats])
   const podcastWords = useMemo(() => Object.values(episodeStats.stats).reduce((s, e) => s + e.wordCount, 0), [episodeStats.stats])
@@ -200,6 +205,16 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
             {podcastWords > 0 && <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">📝{podcastWords}</span>}
             {podcastStarred === 0 && podcastWords === 0 && <span className="text-xs text-gray-400">{t('podcastApp.subtitle')}</span>}
           </div>
+        </Card>
+
+        <Card mode="ielts" scene="📝 EXAM HALL" onClick={() => onNavigate('ielts')}>
+          {ieltsToday.length > 0
+            ? <>
+                <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{fmtDuration(ieltsMinutes)}</span>
+                <span className="text-[10px] text-gray-400">{ieltsToday.length} {t('ielts.sessions')}</span>
+              </>
+            : <span className="text-xs text-gray-400">{t('ieltsApp.subtitle')}</span>
+          }
         </Card>
       </div>
 

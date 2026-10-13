@@ -106,7 +106,7 @@ export function useFirestore<T>(
 
       setError(null)
       const docRef = doc(db, 'users', uid, collectionName, 'data')
-      setDoc(docRef, newValue as Record<string, unknown>).catch(() => {
+      setDoc(docRef, newValue as Record<string, unknown>, { merge: true }).catch(() => {
         setError('save_failed')
       })
     },

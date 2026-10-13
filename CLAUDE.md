@@ -50,6 +50,21 @@ Project target is **ES2020**. Do NOT use ES2022+ features:
 ### Unused Variables
 - `tsconfig` has `noUnusedLocals` and `noUnusedParameters` enabled. Any declared-but-unused variable is a build error. Remove it or use it.
 
+### ConfirmDialog Props
+- The shared `ConfirmDialog` component uses `confirmVariant`, NOT `variant`. Always check the actual prop name before using it:
+  - ❌ `<ConfirmDialog variant="danger" />`
+  - ✅ `<ConfirmDialog confirmVariant="danger" />`
+
+### Removing Props from Types
+- When deleting a prop from an interface/type, **also remove it from every call site**. Search all usages with grep before committing.
+
+### String vs Number in Charts
+- Firestore/form values are often `string`. Chart libraries (Recharts) expect `number`. Always convert with `Number()` or `parseFloat()` before passing to chart data.
+
+### Windows Shell: gh CLI Body Argument
+- `gh pr edit --body @- <<'EOF'` (Bash heredoc) does **NOT** work in Git Bash on Windows — `@-` becomes literal text.
+- ✅ Use PowerShell with `$body = @"..."@` variable, then `gh pr edit --body $body`.
+
 ### Pre-Push Verification
 **ALWAYS** run `npm run predeploy-check` (or at minimum `npx tsc -b`) before pushing. IDE type-checking may miss errors that the strict CLI build catches.
 

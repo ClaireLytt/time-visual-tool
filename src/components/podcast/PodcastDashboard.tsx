@@ -101,7 +101,7 @@ export default function PodcastDashboard() {
   }, [])
   const { words, sentences, recordLookup, saveSentence, removeSentence, removeWord, getEpisodeGroups } = useWordHistory()
   const savedSentenceTexts = useMemo(() => new Set(sentences.map(s => s.text)), [sentences])
-  const { stats: episodeStats, toggleStar, toggleToLearn, recordWord, recordPlay } = useEpisodeStats()
+  const { stats: episodeStats, toggleStar, recordWord, recordPlay } = useEpisodeStats()
   const { favorites, isFavorite, toggleFavorite } = useFavoritePodcasts()
 
   const openFeed = useCallback((source: FeedSource) => {
@@ -217,7 +217,6 @@ export default function PodcastDashboard() {
           onSelect={episode => setView({ kind: 'player', source: view.source, episode })}
           episodeStats={episodeStats}
           onToggleStar={toggleStar}
-          onToggleToLearn={toggleToLearn}
         />
       )}
 

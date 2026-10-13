@@ -131,9 +131,7 @@ export default function PodcastCharts({ onOpen, isFavorite, onToggleFavorite }: 
     abortRef.current?.abort()
     const ctrl = new AbortController()
     abortRef.current = ctrl
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoading(true)
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLoading(true) // eslint-disable-line react-hooks/set-state-in-effect -- sync pre-fetch state
     setError(null)
 
     fetchCharts(activeTab, ctrl.signal, country || undefined, genreId || undefined)

@@ -375,7 +375,6 @@ export default function EpisodePlayer({ episode, onBack, onWordLookup, onSaveSen
       setTranslationVersion(v => v + 1)
       // If all segments are already cached, mark as started (show translations)
       const allCached = segments.every(s => cached.has(s.text))
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (allCached) setTranslationStarted(true)
     }
   }, [segments, episode.id])
