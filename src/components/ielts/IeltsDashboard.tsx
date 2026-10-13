@@ -11,6 +11,8 @@ import HomeView from './HomeView'
 import KnowledgeView from './KnowledgeView'
 import WeeklyView from './WeeklyView'
 import VocabView from './VocabView'
+import { useIeltsShortcuts, ShortcutHelpOverlay } from './KeyboardShortcuts'
+import OfflineBanner from './OfflineBanner'
 import type { IeltsView } from './types'
 
 const TABS: { kind: IeltsView['kind']; label: string; icon: string }[] = [
@@ -26,6 +28,7 @@ const TABS: { kind: IeltsView['kind']; label: string; icon: string }[] = [
 function IeltsDashboard() {
   const [searchParams, setSearchParams] = useSearchParams()
   const view = useMemo(() => paramsToView(searchParams), [searchParams])
+  const { showHelp, setShowHelp } = useIeltsShortcuts()
 
   const setView = useCallback((v: IeltsView) => {
     setSearchParams(viewToParams(v), { replace: true })
@@ -33,25 +36,28 @@ function IeltsDashboard() {
 
   return (
     <div id="main-content" className="space-y-4">
+      <OfflineBanner />
+      <ShortcutHelpOverlay open={showHelp} onClose={() => setShowHelp(false)} />
       {/* ── Segmented nav (shadcn segmented-control style) ── */}
-      <nav className="inline-flex bg-gray-100/80 dark:bg-gray-800/60 p-1 rounded-lg gap-0.5">
+      <nav className="flex overflow-x-auto scrollbar-none bg-white/80 dark:bg-gray-800/60 backdrop-blur-sm p-1.5 rounded-full gap-1
+        shadow-[0_1px_2px_rgba(0,0,0,0.04),0_1px_3px_rgba(0,0,0,0.03)] border border-gray-100 dark:border-gray-700/50">
         {TABS.map(tab => {
           const active = view.kind === tab.kind
           return (
             <button
               key={tab.kind}
               onClick={() => setView({ kind: tab.kind } as IeltsView)}
-              className="relative px-5 h-10 rounded-md text-base font-medium transition-colors select-none no-press z-10"
+              className="relative px-4 h-9 rounded-full text-sm font-medium transition-all duration-150 select-none no-press z-10 shrink-0"
             >
               {active && (
                 <motion.div
                   layoutId="ielts-nav"
-                  className="absolute inset-0 bg-white dark:bg-gray-700 rounded-md shadow-sm"
+                  className="absolute inset-0 bg-[#c0392b]/10 dark:bg-[#c0392b]/20 rounded-full"
                   transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                 />
               )}
               <span className={`relative flex items-center gap-1.5 ${
-                active ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400'
+                active ? 'text-[#c0392b] font-semibold' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200'
               }`}>
                 <span className="text-xs">{tab.icon}</span>
                 {tab.label}

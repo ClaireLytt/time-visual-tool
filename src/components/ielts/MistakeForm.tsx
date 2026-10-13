@@ -92,7 +92,7 @@ export default function MistakeForm({ sessionId, subject, date, onAdd, onClose }
               key={tagName}
               type="button"
               onClick={() => setTag(tag === tagName ? '' : tagName)}
-              className={`h-9 px-4 rounded-lg text-sm font-medium transition-all select-none no-press active:scale-[0.97] ${
+              className={`h-9 px-4 rounded-lg text-sm font-medium transition-all duration-150 select-none no-press active:scale-[0.97] ${
                 tag === tagName
                   ? 'bg-[#c0392b] text-white shadow-sm'
                   : 'bg-gray-100 dark:bg-gray-700/50 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'

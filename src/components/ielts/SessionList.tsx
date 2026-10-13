@@ -15,6 +15,7 @@ interface SessionListProps {
   date: string
   onDeleteSession: (id: string) => void
   onAddMistake: (mistake: IeltsMistake) => void
+  onEditSession?: (id: string, patch: Partial<IeltsSession>) => void
   showDate?: boolean
   selectedIds?: Set<string>
   onToggleSelect?: (id: string) => void
@@ -23,7 +24,7 @@ interface SessionListProps {
 }
 
 export default function SessionList({
-  sessions, mistakes, date, onDeleteSession, onAddMistake,
+  sessions, mistakes, date, onDeleteSession, onAddMistake, onEditSession,
   showDate, selectedIds, onToggleSelect, onToggleSelectAll, onScrollToForm,
 }: SessionListProps) {
   const { t } = useTranslation()
@@ -94,6 +95,7 @@ export default function SessionList({
           date={date}
           onDelete={() => onDeleteSession(session.id)}
           onAddMistake={onAddMistake}
+          onEdit={onEditSession}
           showDate={showDate}
           selected={selectedIds?.has(session.id) ?? false}
           onToggleSelect={onToggleSelect ? () => onToggleSelect(session.id) : undefined}
@@ -104,13 +106,14 @@ export default function SessionList({
 }
 
 const SessionRow = memo(function SessionRow({
-  session, mistakes, date, onDelete, onAddMistake, showDate, selected, onToggleSelect,
+  session, mistakes, date, onDelete, onAddMistake, onEdit, showDate, selected, onToggleSelect,
 }: {
   session: IeltsSession
   mistakes: IeltsMistake[]
   date: string
   onDelete: () => void
   onAddMistake: (m: IeltsMistake) => void
+  onEdit?: (id: string, patch: Partial<IeltsSession>) => void
   showDate?: boolean
   selected: boolean
   onToggleSelect?: () => void
@@ -119,6 +122,10 @@ const SessionRow = memo(function SessionRow({
   const [expanded, setExpanded] = useState(false)
   const [showMistakeForm, setShowMistakeForm] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [editScore, setEditScore] = useState(session.score)
+  const [editMinutes, setEditMinutes] = useState(String(session.minutes))
+  const [editNote, setEditNote] = useState(session.note)
   const color = SUBJECT_COLORS[session.subject as IeltsSubject] ?? '#888'
 
   return (
@@ -197,6 +204,19 @@ const SessionRow = memo(function SessionRow({
               {expanded ? '▲' : `错题(${mistakes.length})`}
             </button>
           )}
+          {onEdit && (
+            <button onClick={() => {
+              if (!editing) { setEditScore(session.score); setEditMinutes(String(session.minutes)); setEditNote(session.note) }
+              setEditing(!editing)
+            }}
+              className="h-8 w-8 inline-flex items-center justify-center rounded
+                text-gray-300 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700/40
+                transition-colors select-none no-press">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+            </button>
+          )}
           <button onClick={() => setConfirmDelete(true)}
             className="h-8 w-8 inline-flex items-center justify-center rounded
               text-gray-300 hover:text-[#c0392b] hover:bg-gray-100 dark:hover:bg-gray-700/40
@@ -207,6 +227,49 @@ const SessionRow = memo(function SessionRow({
           </button>
         </div>
       </div>
+
+      {/* Inline edit form */}
+      <AnimatedCollapse open={editing}>
+        <div className="px-3 pb-3 pt-2 border-t border-gray-100 dark:border-gray-700/40 space-y-2">
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <label className="text-xs text-gray-400 mb-0.5 block">分数</label>
+              <input value={editScore} onChange={e => setEditScore(e.target.value)}
+                placeholder="如 32/40" className="input-base w-full rounded-lg text-sm h-9" />
+            </div>
+            <div className="w-20">
+              <label className="text-xs text-gray-400 mb-0.5 block">用时</label>
+              <input type="number" value={editMinutes} onChange={e => setEditMinutes(e.target.value)}
+                className="input-base w-full rounded-lg text-sm h-9 text-center" />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs text-gray-400 mb-0.5 block">备注</label>
+            <input value={editNote} onChange={e => setEditNote(e.target.value)}
+              className="input-base w-full rounded-lg text-sm h-9" />
+          </div>
+          <div className="flex justify-end gap-2">
+            <button onClick={() => setEditing(false)}
+              className="h-8 px-3 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-100
+                dark:hover:bg-gray-700/40 transition-colors select-none">
+              取消
+            </button>
+            <button onClick={() => {
+              onEdit?.(session.id, {
+                score: editScore.trim(),
+                minutes: Number(editMinutes) || session.minutes,
+                note: editNote.trim(),
+              })
+              setEditing(false)
+            }}
+              className="h-8 px-4 rounded-lg text-xs font-semibold text-white
+                hover:brightness-110 transition-colors select-none"
+              style={{ backgroundColor: ACCENT }}>
+              保存
+            </button>
+          </div>
+        </div>
+      </AnimatedCollapse>
 
       {/* Expanded mistakes */}
       <AnimatedCollapse open={expanded && mistakes.length > 0}>

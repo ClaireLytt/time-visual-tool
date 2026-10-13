@@ -286,6 +286,24 @@ export default function ImportView({ onNavigate }: { onNavigate?: (tab: string) 
           <button onClick={() => setShowTagTable(!showTagTable)} className={`${btnGhost} h-9 px-3 text-sm`}>
             {showTagTable ? '▲ 收起标签表' : '🏷 查看标签表'}
           </button>
+          <button onClick={() => {
+            const data = {
+              version: 1,
+              sessions: sessions.entries,
+              mistakes: mistakes.entries,
+              items: items.entries,
+              reviews: reviews.entries,
+              reflections: reflections.entries,
+            }
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url; a.download = `ielts-backup-${format(new Date(), 'yyyy-MM-dd')}.json`
+            a.click(); URL.revokeObjectURL(url)
+            toast.success('已导出全部数据')
+          }} className={`${btnGhost} h-9 px-3 text-sm`}>
+            💾 导出全部数据
+          </button>
           <button onClick={() => setShowExample(!showExample)} className={`${btnGhost} h-9 px-3 text-sm`}>
             {showExample ? '▲ 收起示例' : '📄 查看示例JSON'}
           </button>

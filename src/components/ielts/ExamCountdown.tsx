@@ -36,20 +36,20 @@ export default function ExamCountdown() {
 
   if (editing) {
     return (
-      <div className="panel p-2.5 text-center">
+      <div className="panel p-3 flex flex-col items-center justify-center min-h-[88px]">
         <input
           type="date"
           value={examDate}
           onChange={e => handleSave(e.target.value)}
           autoFocus
-          className="input-base w-full text-xs"
+          className="input-base w-full text-sm text-center"
         />
       </div>
     )
   }
 
   return (
-    <div className="panel p-2.5 text-center">
+    <div className="panel p-3 flex flex-col items-center justify-center min-h-[88px]">
       <span className="text-base">🎯</span>
       {daysLeft !== null ? (
         isExpired ? (
@@ -66,14 +66,15 @@ export default function ExamCountdown() {
             <p className="text-xs text-gray-400 mt-0.5 leading-tight">考试日</p>
           </>
         ) : (
-          <button onClick={() => setEditing(true)} className="w-full no-press">
-            <p className="text-lg font-bold tabular-nums mt-0.5" style={{ color }}>{daysLeft}</p>
+          <button onClick={() => setEditing(true)} className="w-full no-press flex flex-col items-center">
+            <p className="text-2xl font-bold tabular-nums mt-0.5" style={{ color }}>{daysLeft}</p>
             <p className="text-xs text-gray-400 mt-0.5 leading-tight">{t('ielts.daysLeft')}</p>
           </button>
         )
       ) : (
-        <button onClick={() => setEditing(true)} className="w-full no-press">
-          <p className="text-xs text-gray-400 mt-1 leading-tight">{t('ielts.setExamDate')}</p>
+        <button onClick={() => setEditing(true)}
+          className="w-full no-press flex flex-col items-center justify-center">
+          <p className="text-sm text-gray-400 mt-1 leading-tight">{t('ielts.setExamDate')}</p>
         </button>
       )}
     </div>

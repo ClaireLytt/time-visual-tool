@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { format, subDays } from 'date-fns'
 import { toast } from 'sonner'
 import ConfirmDialog from '../common/ConfirmDialog'
+import AnimatedCollapse from '../common/AnimatedCollapse'
 import { useIeltsMistakes, useIeltsItems, useIeltsSessions, useIeltsReviews, useIeltsVocab } from './hooks'
 import { DEFAULT_EF } from './sm2'
 import { IELTS_SUBJECTS, IELTS_TAGS, SUBJECT_COLORS } from './constants'
@@ -31,6 +32,7 @@ export default function KnowledgeView() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [confirmBatchDelete, setConfirmBatchDelete] = useState(false)
   const [detailItem, setDetailItem] = useState<{ mistake?: IeltsMistake; item?: IeltsItem; review?: IeltsReview } | null>(null)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
 
   const mistakesHook = useIeltsMistakes()
   const itemsHook = useIeltsItems()
@@ -142,8 +144,37 @@ export default function KnowledgeView() {
     return map
   }, [allItems, allMistakes, reviewMap])
 
+  // Stats for top bar
+  const statsThisWeek = useMemo(() => {
+    const weekAgo = format(subDays(new Date(), 6), 'yyyy-MM-dd')
+    return allMistakes.filter(m => m.date >= weekAgo).length
+  }, [allMistakes])
+  const statsDue = useMemo(() => {
+    const today = format(new Date(), 'yyyy-MM-dd')
+    return reviewsHook.entries.filter(r => r.nextReviewDate <= today).length
+  }, [reviewsHook.entries])
+  const statsMastered = useMemo(() => {
+    return reviewsHook.entries.filter(r => r.reviewCount >= 4).length
+  }, [reviewsHook.entries])
+
   return (
     <div className="space-y-3">
+      {/* Stats bar */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="panel p-3 text-center">
+          <p className="text-sm text-gray-400 mb-0.5">📝 本周新增</p>
+          <p className="text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">{statsThisWeek}</p>
+        </div>
+        <div className="panel p-3 text-center">
+          <p className="text-sm text-gray-400 mb-0.5">🔄 待复习</p>
+          <p className={`text-2xl font-bold tabular-nums ${statsDue > 0 ? 'text-[#c0392b]' : 'text-gray-900 dark:text-gray-100'}`}>{statsDue}</p>
+        </div>
+        <div className="panel p-3 text-center">
+          <p className="text-sm text-gray-400 mb-0.5">✅ 已掌握</p>
+          <p className="text-2xl font-bold tabular-nums text-green-600 dark:text-green-400">{statsMastered}</p>
+        </div>
+      </div>
+
       {/* Search */}
       <div className="relative">
         <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
@@ -159,7 +190,7 @@ export default function KnowledgeView() {
         {/* Type filter */}
         {(['all', 'mistake', 'expression'] as ItemType[]).map(tp => (
           <button key={tp} onClick={() => setItemType(tp)}
-            className={`h-10 px-4 rounded-lg text-sm font-medium transition-all select-none no-press active:scale-[0.97] ${
+            className={`h-10 px-4 rounded-full text-sm font-medium transition-all duration-150 select-none no-press active:scale-[0.97] ${
               itemType === tp
                 ? 'bg-gray-700 dark:bg-gray-200 text-white dark:text-gray-800 shadow-sm'
                 : 'bg-gray-100 dark:bg-gray-700/50 text-gray-400 hover:text-gray-600'
@@ -177,7 +208,7 @@ export default function KnowledgeView() {
         </button>
         {IELTS_SUBJECTS.map(s => (
           <button key={s} onClick={() => { setSubject(s); setTag('') }}
-            className={`h-10 px-4 rounded-lg text-sm font-medium transition-all select-none no-press active:scale-[0.97] ${
+            className={`h-10 px-4 rounded-full text-sm font-medium transition-all duration-150 select-none no-press active:scale-[0.97] ${
               subject === s ? 'text-white shadow-sm' : 'bg-gray-100 dark:bg-gray-700/50 text-gray-400'
             }`}
             style={subject === s ? { backgroundColor: SUBJECT_COLORS[s] } : undefined}>
@@ -191,7 +222,7 @@ export default function KnowledgeView() {
         <div className="flex gap-1">
           {DATE_RANGES.map(r => (
             <button key={r.key} onClick={() => setDateRange(r.key)}
-              className={`h-8 px-2.5 rounded-lg text-xs font-medium transition-all select-none no-press ${
+              className={`h-8 px-3 rounded-full text-xs font-medium transition-all duration-150 select-none no-press ${
                 dateRange === r.key
                   ? 'bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold'
                   : 'bg-gray-50 dark:bg-gray-800/40 text-gray-400 hover:text-gray-600'
@@ -234,7 +265,7 @@ export default function KnowledgeView() {
               取消
             </button>
             <button onClick={() => setConfirmBatchDelete(true)}
-              className="text-xs font-medium text-white px-3 py-1 rounded-lg hover:brightness-110 transition-colors select-none"
+              className="text-xs font-medium text-white px-3 py-1 rounded-full hover:brightness-110 transition-colors select-none"
               style={{ backgroundColor: ACCENT }}>
               批量删除
             </button>
@@ -250,49 +281,60 @@ export default function KnowledgeView() {
             const source = sessionSource.get(m.sessionId) ?? ''
             const color = subj ? SUBJECT_COLORS[subj] : '#c0392b'
             const mastery = masteryMap.get(m.id) ?? null
+            const isExpanded = expandedId === m.id
             return (
-              <div key={m.id}
-                className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-gray-50/60 dark:hover:bg-gray-700/20
+              <div key={m.id}>
+                <div className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-gray-50/60 dark:hover:bg-gray-700/20
                   transition-colors cursor-pointer"
-                onClick={() => setDetailItem({ mistake: m })}>
-                {/* Checkbox */}
-                <input type="checkbox" checked={selectedIds.has(m.id)}
-                  onChange={() => toggleSelect(m.id)}
-                  onClick={e => e.stopPropagation()}
-                  className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600
-                    text-[#c0392b] focus:ring-[#c0392b]/30 cursor-pointer shrink-0" />
+                  onClick={() => setExpandedId(isExpanded ? null : m.id)}>
+                  {/* Checkbox */}
+                  <input type="checkbox" checked={selectedIds.has(m.id)}
+                    onChange={() => toggleSelect(m.id)}
+                    onClick={e => e.stopPropagation()}
+                    className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600
+                      text-[#c0392b] focus:ring-[#c0392b]/30 cursor-pointer shrink-0" />
 
-                {/* Tag badge */}
-                <span className="px-1.5 py-px rounded text-xs font-bold text-white leading-tight shrink-0"
-                  style={{ backgroundColor: color }}>
-                  {m.tag}
-                </span>
+                  {/* Tag badge */}
+                  <span className="px-1.5 py-px rounded text-xs font-bold text-white leading-tight shrink-0"
+                    style={{ backgroundColor: color }}>
+                    {m.tag}
+                  </span>
 
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm text-gray-800 dark:text-gray-200 truncate">
-                    {m.questionNo && <span className="text-gray-400 mr-1">{m.questionNo}</span>}
-                    {m.myAnswer && m.correctAnswer ? (
-                      <><span className="line-through text-gray-400">{m.myAnswer}</span> → <span className="font-medium">{m.correctAnswer}</span></>
-                    ) : m.correctAnswer ? <span className="font-medium">{m.correctAnswer}</span> : (
-                      <span className="text-gray-400 italic">暂无答案</span>
-                    )}
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-gray-800 dark:text-gray-200 truncate">
+                      {m.questionNo && <span className="text-gray-400 mr-1">{m.questionNo}</span>}
+                      {m.myAnswer && m.correctAnswer ? (
+                        <><span className="line-through text-gray-400">{m.myAnswer}</span> → <span className="font-medium">{m.correctAnswer}</span></>
+                      ) : m.correctAnswer ? <span className="font-medium">{m.correctAnswer}</span> : (
+                        <span className="text-sm text-gray-400">暂无答案</span>
+                      )}
+                    </div>
+                    {source && <p className="text-xs text-gray-400 truncate mt-0.5">📎 {source}</p>}
                   </div>
-                  {source && <p className="text-xs text-gray-400 truncate mt-0.5">📎 {source}</p>}
+
+                  {/* Mastery + date + expand icon */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {mastery === 'due' && (
+                      <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-600
+                        dark:bg-amber-900/20 dark:text-amber-400">待复习</span>
+                    )}
+                    {mastery === 'mastered' && (
+                      <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-green-50 text-green-600
+                        dark:bg-green-900/20 dark:text-green-400">已掌握</span>
+                    )}
+                    <span className="text-xs text-gray-400 tabular-nums">{m.date.slice(5)}</span>
+                    <span className="text-xs text-gray-400">{isExpanded ? '▲' : '▼'}</span>
+                  </div>
                 </div>
 
-                {/* Mastery + date */}
-                <div className="flex items-center gap-2 shrink-0">
-                  {mastery === 'due' && (
-                    <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-600
-                      dark:bg-amber-900/20 dark:text-amber-400">待复习</span>
-                  )}
-                  {mastery === 'mastered' && (
-                    <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-green-50 text-green-600
-                      dark:bg-green-900/20 dark:text-green-400">已掌握</span>
-                  )}
-                  <span className="text-xs text-gray-400 tabular-nums">{m.date.slice(5)}</span>
-                </div>
+                {/* Inline edit form */}
+                <AnimatedCollapse open={isExpanded}>
+                  <MistakeEditPanel mistake={m} onUpdate={(patch) => {
+                    mistakesHook.updateEntry(m.id, patch)
+                    toast.success('已更新')
+                  }} />
+                </AnimatedCollapse>
               </div>
             )
           })}
@@ -476,7 +518,7 @@ function DetailModal({ mistake, item, sessionSource, sessionSubject, reviewMap, 
                     setVocabAdded(true)
                   }}
                   disabled={vocabAdded}
-                  className={`w-full h-10 rounded-lg text-sm font-medium transition-colors select-none no-press ${
+                  className={`w-full h-10 rounded-full text-sm font-medium transition-colors select-none no-press ${
                     vocabAdded
                       ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
                       : 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30'
@@ -511,5 +553,62 @@ function DetailModal({ mistake, item, sessionSource, sessionSubject, reviewMap, 
         )}
       </div>
     </>
+  )
+}
+
+/* ── Inline mistake edit panel ── */
+
+function MistakeEditPanel({ mistake, onUpdate }: {
+  mistake: IeltsMistake
+  onUpdate: (patch: Partial<IeltsMistake>) => void
+}) {
+  const [questionNo, setQuestionNo] = useState(mistake.questionNo)
+  const [myAnswer, setMyAnswer] = useState(mistake.myAnswer)
+  const [correctAnswer, setCorrectAnswer] = useState(mistake.correctAnswer)
+  const [explanation, setExplanation] = useState(mistake.explanation)
+
+  const hasChanges = questionNo !== mistake.questionNo || myAnswer !== mistake.myAnswer
+    || correctAnswer !== mistake.correctAnswer || explanation !== mistake.explanation
+
+  return (
+    <div className="px-4 pb-3 pt-2 border-t border-gray-100 dark:border-gray-700/40 space-y-2 ml-6">
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="text-xs text-gray-400 mb-0.5 block">题号</label>
+          <input value={questionNo} onChange={e => setQuestionNo(e.target.value)}
+            placeholder="如 Q23" className="input-base w-full rounded-xl text-sm h-9" />
+        </div>
+        <div>
+          <label className="text-xs text-gray-400 mb-0.5 block">我的答案</label>
+          <input value={myAnswer} onChange={e => setMyAnswer(e.target.value)}
+            placeholder="我写的答案" className="input-base w-full rounded-xl text-sm h-9" />
+        </div>
+      </div>
+      <div>
+        <label className="text-xs text-gray-400 mb-0.5 block">正确答案</label>
+        <input value={correctAnswer} onChange={e => setCorrectAnswer(e.target.value)}
+          placeholder="正确答案" className="input-base w-full rounded-xl text-sm h-9" />
+      </div>
+      <div>
+        <label className="text-xs text-gray-400 mb-0.5 block">错因分析</label>
+        <textarea value={explanation} onChange={e => setExplanation(e.target.value)}
+          placeholder="为什么错了..."
+          rows={2} className="input-base w-full rounded-xl text-sm resize-none" style={{ minHeight: 48 }} />
+      </div>
+      {hasChanges && (
+        <div className="flex justify-end">
+          <button onClick={() => onUpdate({
+            questionNo: questionNo.trim(),
+            myAnswer: myAnswer.trim(),
+            correctAnswer: correctAnswer.trim(),
+            explanation: explanation.trim(),
+          })}
+            className="h-8 px-4 rounded-full text-xs font-semibold text-white hover:brightness-110 transition-colors select-none"
+            style={{ backgroundColor: ACCENT }}>
+            保存修改
+          </button>
+        </div>
+      )}
+    </div>
   )
 }

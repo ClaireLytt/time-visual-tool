@@ -132,12 +132,15 @@ export default function RecordView() {
   }, [filteredSessions])
 
   const handleBatchDelete = useCallback(() => {
-    // Delete sessions and their associated mistakes
-    for (const id of selectedIds) {
-      const orphanedMistakes = mistakes.entries.filter(m => m.sessionId === id)
-      for (const m of orphanedMistakes) mistakes.deleteEntry(m.id)
-      sessions.deleteEntry(id)
-    }
+    // Atomic delete — filter out selected sessions and their mistakes in one setData call
+    sessions.setData(prev => ({
+      ...prev,
+      entries: prev.entries.filter(e => !selectedIds.has(e.id)),
+    }))
+    mistakes.setData(prev => ({
+      ...prev,
+      entries: prev.entries.filter(m => !selectedIds.has(m.sessionId)),
+    }))
     toast.success(`已删除 ${selectedIds.size} 条记录`)
     setSelectedIds(new Set())
     setConfirmBatchDelete(false)
@@ -185,7 +188,7 @@ export default function RecordView() {
 
         {isDayNav && selectedDate !== today && (
           <button onClick={() => { setSelectedDate(today); setQuickRange('day') }}
-            className="ml-1 px-2.5 py-1 text-xs font-medium rounded-lg
+            className="ml-1 px-3 py-1 text-xs font-medium rounded-full
               bg-[#c0392b]/8 text-[#c0392b] hover:bg-[#c0392b]/15 transition-colors select-none">
             今天
           </button>
@@ -196,7 +199,7 @@ export default function RecordView() {
         {/* Quick range dropdown */}
         <div className="relative">
           <button onClick={() => setRangeOpen(!rangeOpen)}
-            className={`h-9 px-4 rounded-lg text-sm font-medium flex items-center gap-1
+            className={`h-9 px-4 rounded-full text-sm font-medium flex items-center gap-1
               transition-colors select-none no-press ${
               quickRange !== 'day'
                 ? 'bg-[#c0392b]/10 text-[#c0392b]'
@@ -240,19 +243,23 @@ export default function RecordView() {
 
       {/* Stats summary */}
       <div className="flex gap-3">
-        <div className="panel p-3 flex-1 text-center">
-          <p className="text-sm text-gray-400 mb-0.5">⏱ {t('ielts.totalMinutes')}</p>
-          <p className="text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">{fmtDuration(totalMinutes)}</p>
+        <div className="panel p-3 flex-1 flex flex-col items-center gap-1">
+          <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#c0392b]/8 text-base">⏱</span>
+          <p className="text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100" style={{ letterSpacing: '-0.02em' }}>{fmtDuration(totalMinutes)}</p>
+          <p className="text-xs text-gray-400">{t('ielts.totalMinutes')}</p>
         </div>
-        <div className="panel p-3 flex-1 text-center">
-          <p className="text-sm text-gray-400 mb-0.5">📝 {t('ielts.sessions')}</p>
-          <p className="text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">{viewSessions.length}</p>
+        <div className="panel p-3 flex-1 flex flex-col items-center gap-1">
+          <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#c0392b]/8 text-base">📝</span>
+          <p className="text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100" style={{ letterSpacing: '-0.02em' }}>{viewSessions.length}</p>
+          <p className="text-xs text-gray-400">{t('ielts.sessions')}</p>
         </div>
-        <div className="panel p-3 flex-1 text-center">
-          <p className="text-sm text-gray-400 mb-0.5">❌ 错题</p>
-          <p className={`text-2xl font-bold tabular-nums ${viewMistakes.length > 0 ? 'text-[#c0392b]' : 'text-gray-900 dark:text-gray-100'}`}>
+        <div className="panel p-3 flex-1 flex flex-col items-center gap-1">
+          <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#c0392b]/8 text-base">❌</span>
+          <p className={`text-2xl font-bold tabular-nums ${viewMistakes.length > 0 ? 'text-[#c0392b]' : 'text-gray-900 dark:text-gray-100'}`}
+            style={{ letterSpacing: '-0.02em' }}>
             {viewMistakes.length}
           </p>
+          <p className="text-xs text-gray-400">错题</p>
         </div>
       </div>
 
@@ -285,6 +292,7 @@ export default function RecordView() {
             </svg>
             <input value={search} onChange={e => setSearch(e.target.value)}
               placeholder="搜索题库或备注..."
+              data-shortcut="search"
               className="input-base w-full rounded-lg text-base h-11 pl-10" />
           </div>
         </div>
@@ -318,7 +326,7 @@ export default function RecordView() {
 
         {/* Batch action bar */}
         {selectedIds.size > 0 && (
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#c0392b]/5 border border-[#c0392b]/15">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-[#c0392b]/5 border border-[#c0392b]/15">
             <span className="text-xs font-medium text-[#c0392b]">已选 {selectedIds.size} 项</span>
             <div className="flex-1" />
             <button onClick={() => setSelectedIds(new Set())}
@@ -326,8 +334,24 @@ export default function RecordView() {
                 hover:bg-gray-100 dark:hover:bg-gray-700/40 transition-colors select-none">
               取消选择
             </button>
+            <button onClick={() => {
+              const selected = filteredSessions.filter(s => selectedIds.has(s.id))
+              const selectedMistakes = mistakes.entries.filter(m => selectedIds.has(m.sessionId))
+              const data = { version: 1, sessions: selected, mistakes: selectedMistakes }
+              const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement('a')
+              a.href = url; a.download = `ielts-export-${effectiveDate}.json`
+              a.click(); URL.revokeObjectURL(url)
+              toast.success(`已导出 ${selected.length} 条记录`)
+            }}
+              className="text-xs font-medium text-gray-600 dark:text-gray-300 px-3 py-1.5 rounded-full
+                bg-gray-100 dark:bg-gray-700/50 hover:bg-gray-200 dark:hover:bg-gray-600
+                transition-colors select-none">
+              导出JSON
+            </button>
             <button onClick={() => setConfirmBatchDelete(true)}
-              className="text-xs font-medium text-white px-3 py-1.5 rounded-lg
+              className="text-xs font-medium text-white px-3 py-1.5 rounded-full
                 hover:brightness-110 transition-colors select-none"
               style={{ backgroundColor: ACCENT }}>
               批量删除
@@ -336,42 +360,21 @@ export default function RecordView() {
         )}
       </div>
 
-      {/* Seed demo data (dev only) */}
-      {import.meta.env.DEV && viewSessions.length === 0 && !isRangeMode && (
-        <button type="button"
-          onClick={() => {
-            const now = new Date().toISOString()
-            const demo: Array<{ session: Parameters<typeof sessions.addEntry>[0]; mistakeTags: string[] }> = [
-              { session: { id: crypto.randomUUID(), date: effectiveDate, subject: 'listening', source: '剑雅 21 Test2', categoryId: 'builtin-cambridge', detail: '21 Test2', score: '32/40', minutes: 30, note: '选择题容易漏听定位词，语速跟上了但反应慢', createdAt: new Date(Date.now() - 3 * 3600_000).toISOString() }, mistakeTags: ['没听到', '跟丢了'] },
-              { session: { id: crypto.randomUUID(), date: effectiveDate, subject: 'reading', source: '剑雅 21 Test2', categoryId: 'builtin-cambridge', detail: '21 Test2', score: '34/40', minutes: 40, note: '判断题NG和FALSE容易混淆，需要多复盘', createdAt: new Date(Date.now() - 2 * 3600_000).toISOString() }, mistakeTags: ['同义替换'] },
-              { session: { id: crypto.randomUUID(), date: effectiveDate, subject: 'writing', source: '剑雅 21 Task2', categoryId: 'builtin-cambridge', detail: '21 Task2', score: '', minutes: 40, note: '大作文逻辑框架可以，词汇多样性不足', createdAt: new Date(Date.now() - 1 * 3600_000).toISOString() }, mistakeTags: [] },
-              { session: { id: crypto.randomUUID(), date: effectiveDate, subject: 'speaking', source: '剑雅 21 Part2', categoryId: 'builtin-cambridge', detail: '21 Part2', score: '', minutes: 20, note: '卡顿较多，素材熟练程度不够', createdAt: now }, mistakeTags: [] },
-            ]
-            for (const { session, mistakeTags } of demo) {
-              sessions.addEntry(session)
-              for (const tag of mistakeTags) {
-                mistakes.addEntry({ id: crypto.randomUUID(), sessionId: session.id, questionNo: '', questionType: '', myAnswer: '', correctAnswer: '', tag, explanation: '', date: effectiveDate, createdAt: session.createdAt })
-              }
-            }
-          }}
-          className="w-full py-3 rounded-2xl text-sm font-medium text-[#c0392b]/70 bg-[#c0392b]/5
-            hover:bg-[#c0392b]/10 transition-colors border border-dashed border-[#c0392b]/20">
-          🧪 填充测试数据（4条练习记录）
-        </button>
-      )}
-
       {/* Session list */}
       <SessionList
         sessions={filteredSessions}
         mistakes={filteredMistakes}
         date={effectiveDate}
         onDeleteSession={(id) => {
-          // Also delete associated mistakes to avoid orphans
-          const orphaned = mistakes.entries.filter(m => m.sessionId === id)
-          for (const m of orphaned) mistakes.deleteEntry(m.id)
+          // Atomic delete — session + its mistakes in one call each
           sessions.deleteEntry(id)
+          mistakes.setData(prev => ({
+            ...prev,
+            entries: prev.entries.filter(m => m.sessionId !== id),
+          }))
         }}
         onAddMistake={mistakes.addEntry}
+        onEditSession={(id, patch) => { sessions.updateEntry(id, patch); toast.success('已更新') }}
         showDate={isRangeMode}
         selectedIds={selectedIds}
         onToggleSelect={toggleSelect}

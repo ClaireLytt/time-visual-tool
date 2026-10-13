@@ -60,8 +60,8 @@ export default memo(function ReviewCard({ item, review, onRate }: ReviewCardProp
             <button
               key={quality}
               onClick={() => onRate(quality)}
-              className="flex flex-col items-center gap-0.5 py-2 px-1 rounded-lg text-xs font-medium
-                transition-all select-none no-press active:scale-[0.95] hover:brightness-110"
+              className="flex flex-col items-center gap-0.5 py-2 px-1 rounded-2xl text-xs font-medium
+                transition-all duration-150 select-none no-press active:scale-[0.95] hover:brightness-110"
               style={{ backgroundColor: `${color}12`, color }}
             >
               <span className="flex items-center gap-1">{icon} {t(labelKey)}</span>

@@ -100,6 +100,7 @@ export default function SessionForm({
   const handleSubjectChange = (s: IeltsSubject) => {
     setSubject(s)
     setSelectedTags([])
+    setScore('') // Clear score when switching subject (different scales)
   }
 
   // Mock mode — render separate form
@@ -133,7 +134,7 @@ export default function SessionForm({
               key={s}
               type="button"
               onClick={() => handleSubjectChange(s)}
-              className={`h-11 px-5 rounded-lg text-sm font-semibold transition-all select-none no-press active:scale-[0.97] ${
+              className={`h-11 px-5 rounded-lg text-sm font-semibold transition-all duration-150 select-none no-press active:scale-[0.97] ${
                 active
                   ? 'text-white shadow-sm'
                   : 'bg-gray-100 dark:bg-gray-700/50 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
@@ -162,12 +163,27 @@ export default function SessionForm({
       {/* ③ Score + Duration — with clear labels */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="text-xs text-gray-400 mb-1 block">{t('ielts.score')}（选填）</label>
+          <label className="text-xs text-gray-400 mb-1 block">
+            {t('ielts.score')}（选填）
+            {(subject === 'listening' || subject === 'reading') && <span className="text-gray-400 ml-1">0-40</span>}
+            {(subject === 'writing' || subject === 'speaking') && <span className="text-gray-400 ml-1">1-9</span>}
+          </label>
           <input
             value={score}
-            onChange={e => setScore(e.target.value)}
-            placeholder={t('ielts.scorePlaceholder')}
-            className="input-base rounded-lg text-sm h-11 w-full"
+            onChange={e => {
+              const v = e.target.value
+              // Allow empty or valid input patterns
+              if (!v) { setScore(''); return }
+              if (subject === 'listening' || subject === 'reading') {
+                // Allow "X/40" pattern or plain numbers
+                if (/^\d{0,2}(\/\d{0,2})?$/.test(v)) setScore(v)
+              } else {
+                // Writing/speaking: allow 1-9 or decimal like 6.5
+                if (/^\d?\.?\d?$/.test(v)) setScore(v)
+              }
+            }}
+            placeholder={(subject === 'listening' || subject === 'reading') ? '如 32/40' : '如 6.5'}
+            className="input-base rounded-xl text-sm h-11 w-full"
           />
         </div>
         <div>
@@ -187,7 +203,7 @@ export default function SessionForm({
                 key={m}
                 type="button"
                 onClick={() => setMinutes(String(m))}
-                className={`flex-1 h-11 rounded-lg text-sm font-medium transition-all select-none no-press active:scale-[0.97] ${
+                className={`flex-1 h-11 rounded-lg text-sm font-medium transition-all duration-150 select-none no-press active:scale-[0.97] ${
                   Number(minutes) === m
                     ? 'bg-white dark:bg-gray-700 text-[#c0392b] shadow-sm font-semibold border border-gray-200 dark:border-gray-600'
                     : 'bg-gray-100 dark:bg-gray-700/50 text-gray-400 hover:text-gray-600'
@@ -211,7 +227,7 @@ export default function SessionForm({
                 key={tag}
                 type="button"
                 onClick={() => toggleTag(tag)}
-                className={`h-9 px-4 rounded-lg text-sm font-medium transition-all select-none no-press active:scale-[0.97] ${
+                className={`h-9 px-4 rounded-lg text-sm font-medium transition-all duration-150 select-none no-press active:scale-[0.97] ${
                   active
                     ? 'text-white shadow-sm'
                     : 'bg-gray-100 dark:bg-gray-700/50 text-gray-500 hover:text-gray-700'

@@ -1,47 +1,50 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { subDays, format, startOfWeek, eachDayOfInterval } from 'date-fns'
-import { ACCENT } from './styles'
+import { zhCN } from 'date-fns/locale'
+import { useIsDark } from './styles'
 import type { IeltsSession } from './types'
 
-interface Props { sessions: IeltsSession[] }
+interface Props {
+  sessions: IeltsSession[]
+  onDateClick?: (date: string) => void
+}
 
 const WEEKS = 12
-const CELL = 14
-const GAP = 2
+const CELL = 13
+const GAP = 3
 
-/** 4-level color scale based on minutes */
 function getColor(minutes: number, isDark: boolean): string {
-  if (minutes === 0) return isDark ? '#1f2937' : '#f3f4f6'
-  if (minutes < 30) return isDark ? 'rgba(192,57,43,0.2)' : 'rgba(192,57,43,0.12)'
-  if (minutes < 60) return isDark ? 'rgba(192,57,43,0.4)' : 'rgba(192,57,43,0.25)'
-  if (minutes < 120) return isDark ? 'rgba(192,57,43,0.6)' : 'rgba(192,57,43,0.45)'
-  return isDark ? 'rgba(192,57,43,0.85)' : 'rgba(192,57,43,0.7)'
+  if (minutes === 0) return isDark ? '#1f2937' : '#f3f0eb'
+  if (minutes < 30) return isDark ? 'rgba(192,57,43,0.2)' : '#fce4ec'
+  if (minutes < 60) return isDark ? 'rgba(192,57,43,0.4)' : '#e8a5ad'
+  if (minutes < 120) return isDark ? 'rgba(192,57,43,0.6)' : '#d06b75'
+  return isDark ? 'rgba(192,57,43,0.85)' : '#b83a48'
 }
 
 const DAY_LABELS = ['一', '', '三', '', '五', '', '']
 
-export default function StudyHeatmap({ sessions }: Props) {
-  const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
+export default function StudyHeatmap({ sessions, onDateClick }: Props) {
+  const isDark = useIsDark()
+  const [tooltip, setTooltip] = useState<{ x: number; y: number; text: string } | null>(null)
 
-  const { grid, maxMinutes } = useMemo(() => {
-    // Build date → minutes map
+  const { grid, sessionCountByDate } = useMemo(() => {
     const minutesByDate = new Map<string, number>()
+    const countByDate = new Map<string, number>()
     for (const s of sessions) {
       minutesByDate.set(s.date, (minutesByDate.get(s.date) ?? 0) + s.minutes)
+      countByDate.set(s.date, (countByDate.get(s.date) ?? 0) + 1)
     }
 
     const today = new Date()
     const start = startOfWeek(subDays(today, (WEEKS - 1) * 7), { weekStartsOn: 1 })
     const days = eachDayOfInterval({ start, end: today })
 
-    // Build grid: array of weeks, each week is array of days
     const weeks: { date: string; minutes: number }[][] = []
     let currentWeek: { date: string; minutes: number }[] = []
-    let maxMin = 0
 
     for (const day of days) {
       const dateStr = format(day, 'yyyy-MM-dd')
-      const dayOfWeek = (day.getDay() + 6) % 7 // 0=Mon ... 6=Sun
+      const dayOfWeek = (day.getDay() + 6) % 7
 
       if (dayOfWeek === 0 && currentWeek.length > 0) {
         weeks.push(currentWeek)
@@ -49,15 +52,29 @@ export default function StudyHeatmap({ sessions }: Props) {
       }
 
       const mins = minutesByDate.get(dateStr) ?? 0
-      if (mins > maxMin) maxMin = mins
       currentWeek.push({ date: dateStr, minutes: mins })
     }
     if (currentWeek.length > 0) weeks.push(currentWeek)
 
-    return { grid: weeks, maxMinutes: maxMin }
+    return { grid: weeks, sessionCountByDate: countByDate }
   }, [sessions])
 
   const totalWidth = grid.length * (CELL + GAP)
+
+  const handleHover = (e: React.MouseEvent, day: { date: string; minutes: number }) => {
+    if (day.minutes === 0 && !sessionCountByDate.get(day.date)) {
+      setTooltip(null)
+      return
+    }
+    const rect = (e.target as HTMLElement).getBoundingClientRect()
+    const count = sessionCountByDate.get(day.date) ?? 0
+    const dateLabel = format(new Date(day.date + 'T12:00:00'), 'M月d日 EEEE', { locale: zhCN })
+    setTooltip({
+      x: rect.left + rect.width / 2,
+      y: rect.top - 8,
+      text: `${dateLabel} · ${day.minutes}min · ${count}场`,
+    })
+  }
 
   return (
     <div className="panel p-4">
@@ -73,25 +90,31 @@ export default function StudyHeatmap({ sessions }: Props) {
         </div>
         {/* Grid */}
         <div className="overflow-x-auto flex-1">
-          <div className="flex gap-[2px]" style={{ width: totalWidth }}>
+          <div className="flex gap-[3px]" style={{ width: totalWidth }}>
             {grid.map((week, wi) => (
-              <div key={wi} className="flex flex-col gap-[2px]">
-                {/* Pad first week if it doesn't start on Monday */}
+              <div key={wi} className="flex flex-col gap-[3px]">
                 {wi === 0 && week.length < 7 && Array.from({ length: 7 - week.length }).map((_, i) => (
                   <div key={`pad-${i}`} style={{ width: CELL, height: CELL }} />
                 ))}
-                {week.map(day => (
-                  <div
-                    key={day.date}
-                    title={`${day.date}: ${day.minutes}min`}
-                    className="rounded-[3px]"
-                    style={{
-                      width: CELL,
-                      height: CELL,
-                      backgroundColor: getColor(day.minutes, isDark),
-                    }}
-                  />
-                ))}
+                {week.map(day => {
+                  const isToday = day.date === format(new Date(), 'yyyy-MM-dd')
+                  return (
+                    <div
+                      key={day.date}
+                      className={`rounded-[4px] transition-all duration-150 ${
+                        onDateClick && day.minutes > 0 ? 'cursor-pointer hover:scale-[1.15]' : ''
+                      } ${isToday ? 'ring-2 ring-white ring-offset-1' : ''}`}
+                      style={{
+                        width: CELL,
+                        height: CELL,
+                        backgroundColor: getColor(day.minutes, isDark),
+                      }}
+                      onClick={() => onDateClick?.(day.date)}
+                      onMouseEnter={(e) => handleHover(e, day)}
+                      onMouseLeave={() => setTooltip(null)}
+                    />
+                  )
+                })}
               </div>
             ))}
           </div>
@@ -109,6 +132,17 @@ export default function StudyHeatmap({ sessions }: Props) {
         ))}
         <span className="text-xs text-gray-400">多</span>
       </div>
+
+      {/* Tooltip */}
+      {tooltip && (
+        <div className="fixed z-50 pointer-events-none px-3 py-2 rounded-xl text-xs font-medium
+          bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200
+          shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-gray-100 dark:border-gray-700
+          -translate-x-1/2 -translate-y-full whitespace-nowrap"
+          style={{ left: tooltip.x, top: tooltip.y }}>
+          {tooltip.text}
+        </div>
+      )}
     </div>
   )
 }

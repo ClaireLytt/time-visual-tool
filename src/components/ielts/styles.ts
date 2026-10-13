@@ -1,53 +1,55 @@
-/* ─── IELTS Module — Shared Design Tokens ───
+/* ─── IELTS Module — Design System Tokens ───
  *
- * Inspired by shadcn/ui button variants + Radix segmented control.
- * Adapted for a warm, restrained learning-tool aesthetic.
+ * Color scale:
+ *   primary  → #c0392b (500), hover #a02d20 (600), active #7d2118 (700), disabled #f0b8b0 (200)
+ *   surfaces → page #fdf2f5, card #f5f2e9, hover #f5ede0, modal #ffffff
+ *   text     → primary #1f2937, secondary #6b7280, tertiary #9ca3af
  *
  * Size scale (touch-friendly):
- *   xs   → h-7  (28px)  — chips, badges
- *   sm   → h-9  (36px)  — secondary actions, presets
+ *   sm   → h-9  (36px)  — secondary actions, chips
  *   md   → h-10 (40px)  — default controls, inputs
- *   lg   → h-11 (44px)  — primary actions, subject toggle
+ *   lg   → h-11 (44px)  — primary actions
  *
- * Radius: rounded-lg (8px) throughout
- * Font:   text-sm (14px) default, text-xs (12px) secondary
- * Gap:    gap-2 (8px) between siblings, space-y-3 (12px) between sections
+ * Radius: buttons/chips 999px (capsule), input 12px, card 16px
+ * Transition: 150ms hover, 200ms expand, var(--ease-standard)
  */
 
-/** Primary accent (coral, muted) */
+/** Primary accent */
 export const ACCENT = '#c0392b'
+export const ACCENT_HOVER = '#a02d20'
 export const ACCENT_LIGHT = 'rgba(192, 57, 43, 0.08)'
 export const ACCENT_LIGHT_DARK = 'rgba(192, 57, 43, 0.18)'
 
-/* ── Button class builders ── */
+/* ── Button builders ── */
 
-/** Primary (solid) — main actions: submit, confirm */
+/** Primary (solid capsule) — main CTA */
 export const btnPrimary = (disabled?: boolean) =>
-  `inline-flex items-center justify-center gap-2 rounded-lg text-sm font-semibold text-white
-   transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
-   active:scale-[0.97] select-none no-press
-   ${disabled ? 'opacity-35 pointer-events-none' : 'hover:brightness-110'}`
+  `inline-flex items-center justify-center gap-2 rounded-full text-sm font-semibold text-white
+   transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c0392b]/30 focus-visible:ring-offset-2
+   active:scale-[0.98] select-none no-press
+   ${disabled ? 'opacity-35 pointer-events-none' : 'hover:brightness-[0.92]'}`
 
-/** Secondary (muted bg) — less prominent actions */
+/** Secondary (white capsule with border) */
 export const btnSecondary =
-  `inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium
-   bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300
-   hover:bg-gray-200 dark:hover:bg-gray-600
-   transition-colors active:scale-[0.97] select-none no-press`
+  `inline-flex items-center justify-center gap-2 rounded-full text-sm font-medium
+   bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700
+   text-gray-700 dark:text-gray-300
+   hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300
+   transition-all duration-150 active:scale-[0.98] select-none no-press`
 
-/** Ghost — minimal, for toolbars and inline actions */
+/** Ghost — minimal, for toolbars */
 export const btnGhost =
-  `inline-flex items-center justify-center gap-1.5 rounded-lg text-sm font-medium
-   text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700/40 hover:text-gray-700 dark:hover:text-gray-300
-   transition-colors active:scale-[0.97] select-none no-press`
+  `inline-flex items-center justify-center gap-1.5 rounded-full text-sm font-medium
+   text-gray-500 hover:bg-[#f5ede0] dark:hover:bg-gray-700/40 hover:text-gray-700 dark:hover:text-gray-300
+   transition-all duration-150 active:scale-[0.98] select-none no-press`
 
-/** Toggle item (for segmented controls / chip selectors) */
+/** Toggle (segmented control / filter chips) */
 export function btnToggle(active: boolean) {
-  return `inline-flex items-center justify-center rounded-lg text-sm font-medium
-    transition-all select-none no-press active:scale-[0.97]
+  return `inline-flex items-center justify-center rounded-full text-sm font-medium
+    transition-all duration-150 select-none no-press active:scale-[0.97]
     ${active
       ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
-      : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+      : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-[#f5ede0] dark:hover:bg-gray-700/30'
     }`
 }
 
@@ -55,7 +57,6 @@ export function btnToggle(active: boolean) {
 
 import { useSyncExternalStore } from 'react'
 
-/** Reactive dark-mode detection — re-renders when theme toggles */
 export function useIsDark() {
   return useSyncExternalStore(
     cb => {
@@ -70,7 +71,7 @@ export function useIsDark() {
 /* ── Input base ── */
 
 export const inputClass =
-  'input-base w-full rounded-lg text-base h-11'
+  'input-base w-full rounded-xl text-sm h-11'
 
 export const textareaClass =
-  'input-base w-full rounded-lg text-sm resize-none'
+  'input-base w-full rounded-xl text-sm resize-none'

@@ -24,6 +24,8 @@ export default function VocabView() {
   const [search, setSearch] = useState('')
   const [listFilter, setListFilter] = useState<string>('all')
   const [reviewing, setReviewing] = useState(false)
+  // Snapshot of due words when review starts — prevents parent from killing the session
+  const [reviewSnapshot, setReviewSnapshot] = useState<IeltsVocabWord[]>([])
   const formRef = useRef<HTMLDivElement>(null)
 
   const today = format(new Date(), 'yyyy-MM-dd')
@@ -78,8 +80,8 @@ export default function VocabView() {
     })
   }, [vocab])
 
-  if (reviewing && dueWords.length > 0) {
-    return <VocabReviewSession words={dueWords} onRate={handleRate} onExit={() => setReviewing(false)} />
+  if (reviewing && reviewSnapshot.length > 0) {
+    return <VocabReviewSession words={reviewSnapshot} onRate={handleRate} onExit={() => setReviewing(false)} />
   }
 
   return (
@@ -104,7 +106,7 @@ export default function VocabView() {
 
       {/* Start review button */}
       {stats.due > 0 && (
-        <button onClick={() => setReviewing(true)}
+        <button onClick={() => { setReviewSnapshot([...dueWords]); setReviewing(true) }}
           className={`${btnPrimary(false)} w-full h-12`} style={{ backgroundColor: ACCENT }}>
           📖 {t('ielts.vocabStartReview')}（{stats.due} {t('ielts.vocabWords')}）
         </button>
@@ -116,6 +118,31 @@ export default function VocabView() {
           <VocabAddForm onAdd={handleAdd} />
         </CollapsibleForm>
       </div>
+
+      {/* Import preset academic words */}
+      {stats.total === 0 && (
+        <button onClick={() => {
+          import('./presetVocab').then(({ PRESET_ACADEMIC_WORDS }) => {
+            const today = format(new Date(), 'yyyy-MM-dd')
+            const now = new Date().toISOString()
+            const words = PRESET_ACADEMIC_WORDS.map(w => ({
+              id: crypto.randomUUID(),
+              word: w.word, meaning: w.meaning,
+              phonetic: w.phonetic, example: w.example,
+              source: 'AWL 学术词汇表', listType: 'academic' as const,
+              easeFactor: DEFAULT_EF, interval: 0, repetitions: 0,
+              nextReview: today, createdAt: now,
+            }))
+            vocab.setData(prev => ({ ...prev, entries: [...prev.entries, ...words] }))
+            toast.success(`已导入 ${words.length} 个学术高频词`)
+          })
+        }}
+          className="w-full h-11 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300
+            bg-white/60 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700
+            hover:bg-white hover:text-gray-800 transition-all duration-150 select-none no-press">
+          📚 一键导入 100 个雅思学术高频词
+        </button>
+      )}
 
       {/* Search */}
       <div className="relative">

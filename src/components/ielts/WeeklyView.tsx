@@ -8,7 +8,8 @@ import { toast } from 'sonner'
 import { useIeltsSessions, useIeltsMistakes } from './hooks'
 import { IELTS_SUBJECTS, SUBJECT_COLORS } from './constants'
 import { ACCENT, useIsDark, btnPrimary, btnSecondary, btnGhost } from './styles'
-import type { IeltsSubject } from './types'
+import { parseScore } from './utils'
+import type { IeltsSubject, IeltsSession, IeltsMistake } from './types'
 
 type QuickRange = 'this' | 'last' | '4w' | 'custom'
 const RANGES: { key: QuickRange; label: string }[] = [
@@ -175,6 +176,28 @@ export default function WeeklyView() {
 
   const fmtDuration = (m: number) => m < 60 ? `${m}min` : `${(m / 60).toFixed(1)}h`
   const activeRangeLabel = RANGES.find(r => r.key === quickRange)?.label ?? '本周'
+  const reportRef = useRef<HTMLDivElement>(null)
+
+  const handleExportPDF = useCallback(async () => {
+    if (!reportRef.current) return
+    toast.loading('正在生成 PDF...')
+    try {
+      const { default: html2canvas } = await import('html2canvas-pro')
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 2, backgroundColor: '#fdf2f5', useCORS: true,
+      })
+      // Convert to PDF-like download (as PNG, A4 ratio)
+      const link = document.createElement('a')
+      link.download = `ielts-weekly-${rangeLabel.replace(/\s/g, '')}.png`
+      link.href = canvas.toDataURL('image/png')
+      link.click()
+      toast.dismiss()
+      toast.success('周报已导出')
+    } catch {
+      toast.dismiss()
+      toast.error('导出失败，请重试')
+    }
+  }, [rangeLabel])
 
   return (
     <div className="space-y-3">
@@ -227,9 +250,18 @@ export default function WeeklyView() {
 
         <div className="flex-1" />
 
+        {/* Export PDF */}
+        {weekSessions.length > 0 && (
+          <button onClick={handleExportPDF}
+            className="h-8 px-3 rounded-full text-xs font-medium text-gray-500 hover:text-gray-700
+              hover:bg-gray-100 dark:hover:bg-gray-700/40 transition-colors select-none no-press mr-1">
+            📄 导出
+          </button>
+        )}
+
         <div className="relative">
           <button onClick={() => setRangeOpen(!rangeOpen)}
-            className={`h-9 px-4 rounded-lg text-sm font-medium flex items-center gap-1
+            className={`h-9 px-4 rounded-full text-sm font-medium flex items-center gap-1
               transition-colors select-none no-press ${
               quickRange !== 'this' ? 'bg-[#c0392b]/10 text-[#c0392b]' : 'bg-gray-100 dark:bg-gray-700/50 text-gray-500 hover:text-gray-700'
             }`}>
@@ -259,22 +291,24 @@ export default function WeeklyView() {
         </div>
       </div>
 
-      {/* Stats cards — delta colors: study time ↑=green ↓=red, mistakes ↑=red ↓=green */}
+      {/* Report content — wrapped for PDF export */}
+      <div ref={reportRef} className="space-y-3">
+      {/* Stats cards */}
       <div className="grid grid-cols-3 gap-3">
         <div className="panel p-3 text-center">
           <p className="text-sm text-gray-400 mb-0.5">⏱ 总学时</p>
           <p className="text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">{fmtDuration(totalMinutes)}</p>
-          <DeltaBadge value={deltaMinutes} />
+          <DeltaBadge value={deltaMinutes} unit="min" />
         </div>
         <div className="panel p-3 text-center">
           <p className="text-sm text-gray-400 mb-0.5">📝 练习次数</p>
           <p className="text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">{weekSessions.length}</p>
-          <DeltaBadge value={deltaSessions} />
+          <DeltaBadge value={deltaSessions} unit="次" />
         </div>
         <div className="panel p-3 text-center">
           <p className="text-sm text-gray-400 mb-0.5">❌ 错题数</p>
           <p className="text-2xl font-bold tabular-nums text-[#c0392b]">{weekMistakes.length}</p>
-          <DeltaBadge value={deltaMistakes} invertColor />
+          <DeltaBadge value={deltaMistakes} unit="题" invertColor />
         </div>
       </div>
 
@@ -304,7 +338,7 @@ export default function WeeklyView() {
             错因对比（{quickRange === '4w' ? '近4周 vs 前4周' : '本周 vs 上周'}）
           </p>
           {!hasPrevData && (
-            <p className="text-xs text-gray-400 mb-2 italic">
+            <p className="text-xs text-gray-400 mb-2">
               ℹ 暂无上周数据，仅显示本周错因分布
             </p>
           )}
@@ -335,39 +369,254 @@ export default function WeeklyView() {
         </div>
       )}
 
-      {/* AI prompt — two buttons */}
+      {/* Streak badge */}
+      {weekSessions.length > 0 && (() => {
+        // Calculate consecutive study days
+        const studyDates = new Set(allSessions.map(s => s.date))
+        let streak = 0
+        const d = new Date()
+        while (studyDates.has(format(d, 'yyyy-MM-dd'))) {
+          streak++
+          d.setDate(d.getDate() - 1)
+        }
+        // Also check if yesterday had data (user might not have practiced today yet)
+        if (streak === 0) {
+          const y = new Date()
+          y.setDate(y.getDate() - 1)
+          if (studyDates.has(format(y, 'yyyy-MM-dd'))) {
+            const d2 = new Date(y)
+            while (studyDates.has(format(d2, 'yyyy-MM-dd'))) {
+              streak++
+              d2.setDate(d2.getDate() - 1)
+            }
+          }
+        }
+        return streak > 0 ? (
+          <div className="panel p-3 flex items-center gap-3">
+            <span className="text-2xl">🔥</span>
+            <div>
+              <p className="text-base font-bold text-gray-900 dark:text-gray-100">连续打卡 {streak} 天</p>
+              <p className="text-xs text-gray-400">坚持就是胜利！</p>
+            </div>
+          </div>
+        ) : null
+      })()}
+
+      {/* AI Report */}
       {weekSessions.length > 0 && (
-        <div className="panel p-4 space-y-3">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">AI 周报</p>
-          <p className="text-sm text-gray-500">
-            复制数据粘贴到 ChatGPT / Claude / Kimi，一键生成周复盘报告
-          </p>
-          <div className="flex gap-2">
-            <button onClick={handleCopyJson}
-              className={`${copiedType === 'json' ? btnSecondary : btnPrimary()} h-11 px-5 flex-1`}
-              style={copiedType === 'json' ? undefined : { backgroundColor: ACCENT }}>
-              {copiedType === 'json' ? '✓ 已复制' : '📋 复制数据给AI (JSON)'}
-            </button>
-            <button onClick={handleCopyText}
+        <AIReportCard
+          weekSessions={weekSessions} prevSessions={prevSessions}
+          weekMistakes={weekMistakes} prevMistakes={prevMistakes}
+          tagComparison={tagComparison}
+          totalMinutes={totalMinutes} deltaMinutes={deltaMinutes}
+          rangeLabel={rangeLabel}
+        />
+      )}
+
+      </div>{/* end reportRef */}
+
+      {/* Copy buttons */}
+      {weekSessions.length > 0 && (
+        <div className="flex gap-2">
+          <button onClick={handleCopyJson}
+            className={`${copiedType === 'json' ? btnSecondary : btnPrimary()} h-11 px-5 flex-1`}
+            style={copiedType === 'json' ? undefined : { backgroundColor: ACCENT }}>
+            {copiedType === 'json' ? '✓ 已复制' : '📋 复制JSON数据'}
+          </button>
+          <button onClick={handleCopyText}
               className={`${copiedType === 'text' ? btnSecondary : btnGhost} h-11 px-5 flex-1
                 border border-gray-200 dark:border-gray-700`}>
               {copiedType === 'text' ? '✓ 已复制' : '📝 复制复盘文本'}
             </button>
-          </div>
         </div>
       )}
     </div>
   )
 }
 
-/** Delta arrow: study time ↑=green ↓=red; mistakes ↑=red ↓=green (invertColor) */
-function DeltaBadge({ value, invertColor }: { value: number; invertColor?: boolean }) {
+/** Delta arrow with correct units. invertColor: ↑=bad(red), ↓=good(green) */
+function DeltaBadge({ value, unit = 'min', invertColor }: { value: number; unit?: string; invertColor?: boolean }) {
   if (value === 0) return null
   const isUp = value > 0
   const isGood = invertColor ? !isUp : isUp
   return (
     <p className={`text-xs mt-0.5 font-medium ${isGood ? 'text-green-500' : 'text-[#c0392b]'}`}>
-      {isUp ? '↑' : '↓'} {Math.abs(value)}{invertColor ? '' : 'min'}
+      {isUp ? '↑' : '↓'} {Math.abs(value)}{unit}
     </p>
   )
 }
+
+/** AI-powered weekly report with local fallback */
+function AIReportCard({ weekSessions, prevSessions, weekMistakes, prevMistakes, tagComparison, totalMinutes, deltaMinutes, rangeLabel }: {
+  weekSessions: IeltsSession[]; prevSessions: IeltsSession[]
+  weekMistakes: IeltsMistake[]; prevMistakes: IeltsMistake[]
+  tagComparison: { tag: string; thisWeek: number; prevWeek: number }[]
+  totalMinutes: number; deltaMinutes: number; rangeLabel: string
+}) {
+  const { t } = useTranslation()
+  const [aiReport, setAiReport] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(false)
+
+  // Build local fallback report
+  const localReport = useMemo(() => {
+    const lines: string[] = []
+    const fmtD = (m: number) => m < 60 ? `${m}min` : `${(m / 60).toFixed(1)}h`
+
+    // 1. Study time
+    lines.push(`📊 本周学习 ${fmtD(totalMinutes)}${deltaMinutes !== 0
+      ? `（较上周 ${deltaMinutes > 0 ? '+' : ''}${deltaMinutes}min）` : ''}`)
+
+    // 2. TOP1 error
+    if (tagComparison.length > 0) {
+      const top = tagComparison[0]
+      const delta = top.thisWeek - top.prevWeek
+      lines.push(`🔥 TOP1 错因：${top.tag}（${top.thisWeek}次${
+        top.prevWeek > 0 ? `，${delta > 0 ? '↑' : '↓'}${Math.abs(delta)}` : ''}）`)
+    }
+
+    // 3. Score improvements
+    const improvements: string[] = []
+    const warnings: string[] = []
+    for (const s of IELTS_SUBJECTS) {
+      const thisS = weekSessions.filter(e => e.subject === s && e.score)
+      const prevS = prevSessions.filter(e => e.subject === s && e.score)
+      if (thisS.length > 0 && prevS.length > 0) {
+        const thisScores = thisS.map(e => parseScore(e.score)).filter((v): v is number => v !== null)
+        const prevScores = prevS.map(e => parseScore(e.score)).filter((v): v is number => v !== null)
+        if (thisScores.length > 0 && prevScores.length > 0) {
+          const thisAvg = thisScores.reduce((a, b) => a + b, 0) / thisScores.length
+          const prevAvg = prevScores.reduce((a, b) => a + b, 0) / prevScores.length
+          if (thisAvg > prevAvg) improvements.push(`${t(`ielts.${s}`)} ${prevAvg.toFixed(1)}→${thisAvg.toFixed(1)}`)
+        }
+      }
+      if (thisS.length === 0 && prevS.length > 0) warnings.push(t(`ielts.${s}`))
+      if (thisS.length === 0 && prevS.length === 0 && weekSessions.some(e => e.subject !== s)) {
+        warnings.push(t(`ielts.${s}`))
+      }
+    }
+    if (improvements.length > 0) lines.push(`✅ 进步：${improvements.join('、')}`)
+    if (warnings.length > 0) lines.push(`⚠️ ${warnings.join('、')}本周未练习`)
+
+    // 4. Suggestions based on top errors
+    lines.push('')
+    lines.push('📝 下周建议：')
+    if (tagComparison.length > 0) {
+      const topTags = tagComparison.slice(0, 3)
+      for (const tg of topTags) {
+        if (['没听到', '跟丢了', '同义替换', '拼写', '单复数时态'].includes(tg.tag)) {
+          lines.push(`· 针对「${tg.tag}」做 2 次听力精听专项`)
+        } else if (['TFNG混淆', '定位错', '时间不够', '生词'].includes(tg.tag)) {
+          lines.push(`· 针对「${tg.tag}」做 2 次阅读限时训练`)
+        } else if (['词汇', '语法', '连贯', '任务回应'].includes(tg.tag)) {
+          lines.push(`· 针对「${tg.tag}」做 1 次写作限时练习`)
+        } else if (['流利度', '发音'].includes(tg.tag)) {
+          lines.push(`· 针对「${tg.tag}」做 2 次口语跟读练习`)
+        } else {
+          lines.push(`· 重点复习「${tg.tag}」相关错题`)
+        }
+      }
+    }
+
+    return lines.join('\n')
+  }, [weekSessions, prevSessions, tagComparison, totalMinutes, deltaMinutes, t])
+
+  // Try LLM generation
+  const generateAI = useCallback(async () => {
+    // Check for API key in localStorage
+    let apiKey = ''
+    try { apiKey = localStorage.getItem('ielts-ai-api-key') ?? '' } catch { /* */ }
+
+    if (!apiKey) {
+      // No API key — use local fallback
+      setAiReport(null)
+      return
+    }
+
+    setLoading(true)
+    setError(false)
+
+    const prompt = `你是雅思备考助手。根据以下学习数据生成 200 字以内的周复盘报告。
+
+本周（${rangeLabel}）：
+${JSON.stringify(weekSessions.map(s => ({ date: s.date, subject: s.subject, source: s.source, score: s.score, minutes: s.minutes })), null, 2)}
+
+上周数据条数：${prevSessions.length}条，上周错题：${prevMistakes.length}条
+本周错题：${weekMistakes.length}条
+本周错因TOP3：${tagComparison.slice(0, 3).map(t => `${t.tag}×${t.thisWeek}`).join('、')}
+
+要求输出：
+1. 本周学时变化（具体增减多少 min）
+2. 错因 TOP1 分析
+3. 哪科进步了
+4. 哪科偷懒了
+5. 下周 3 条具体建议`
+
+    try {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 15_000)
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 500,
+          temperature: 0.7,
+        }),
+        signal: controller.signal,
+      })
+      clearTimeout(timeout)
+      if (!res.ok) throw new Error('API error')
+      const data = await res.json()
+      setAiReport(data.choices?.[0]?.message?.content ?? null)
+    } catch {
+      setError(true)
+      setAiReport(null)
+    } finally {
+      setLoading(false)
+    }
+  }, [weekSessions, prevSessions, weekMistakes, prevMistakes, tagComparison, rangeLabel])
+
+  const displayText = aiReport ?? localReport
+  const isAI = aiReport !== null
+
+  return (
+    <div className="panel p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+          {isAI ? '✨ AI 复盘' : '📊 本周复盘'}
+        </p>
+        <button onClick={generateAI} disabled={loading}
+          className="text-xs text-[#c0392b] font-medium hover:underline select-none disabled:opacity-50">
+          {loading ? '生成中...' : isAI ? '🔄 重新生成' : '✨ AI 生成'}
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="space-y-2 animate-pulse">
+          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full" />
+          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-5/6" />
+          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
+        </div>
+      ) : error ? (
+        <div className="text-sm text-[#c0392b]">
+          AI 复盘生成失败。
+          <button onClick={generateAI} className="ml-1 underline font-medium">点击重试</button>
+        </div>
+      ) : (
+        <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
+          {displayText}
+        </div>
+      )}
+
+      {!isAI && (
+        <p className="text-xs text-gray-400">
+          💡 在浏览器 Console 输入 <code className="text-xs bg-gray-100 dark:bg-gray-700 px-1 rounded">localStorage.setItem('ielts-ai-api-key', '你的key')</code> 可启用 AI 生成
+        </p>
+      )}
+    </div>
+  )
+}
+

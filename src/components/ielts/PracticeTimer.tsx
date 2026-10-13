@@ -135,7 +135,7 @@ export default memo(function PracticeTimer({ onStop }: PracticeTimerProps) {
           </button>
         )}
         <button onClick={stop}
-          className="inline-flex items-center justify-center h-9 px-3 rounded-lg text-sm font-medium
+          className="inline-flex items-center justify-center h-9 px-3 rounded-full text-sm font-medium
             text-white transition-colors select-none no-press active:scale-[0.97] hover:brightness-110"
           style={{ backgroundColor: ACCENT }}>
           {t('ielts.timerStop')}
