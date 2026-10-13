@@ -150,6 +150,25 @@ When adding a new module, add its `use*Entries()` call to the preload block in A
 11. `src/components/overview/OverviewDashboard.tsx` — add overview card
 12. `tailwind.config.js` — add `mode.{module}` color
 
+## CLI Issue Recording
+
+**EVERY time a CLI script run hits a problem** (ui-audit findings/crash, predeploy-check failure,
+dev-server issues, test failures, script bugs), record it in the `issue_recode/` folder:
+
+1. The file is `issue_recode/<issue-number>.md`, where `<issue-number>` is the GitHub issue
+   number of the task currently being worked on (e.g. the attached task's issue). If the file
+   doesn't exist yet, create it.
+2. Append a dated entry — date format is year-month-day (e.g. `2026-10-13`), one heading per day:
+
+   ```markdown
+   ## 2026-10-13
+   - ui-audit: anonymous auth rejected (400), could not reach /app — enabled Anonymous sign-in in Firebase console
+   - predeploy-check: TS2554 in OverviewDashboard (getEntry signature) — fixed call site
+   ```
+
+3. Write what went wrong AND how it was resolved (or that it's still open). Keep entries short.
+4. Do this at the moment the problem is found, not batched at the end.
+
 ## Git & Commit Rules
 
 ### Auto-Commit After Every Change
