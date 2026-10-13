@@ -246,7 +246,7 @@ async function main() {
     process.stdout.write(`  ${mode.padEnd(10)}`)
     try {
       if (mode !== 'landing') {
-        await page.evaluate((m) => localStorage.setItem('time-visual-mode', JSON.stringify(m)), mode)
+        await page.evaluate(([key, m]) => localStorage.setItem(key, JSON.stringify(m)), [MODE_KEY, mode])
         await page.goto(`${BASE_URL}#/app`, { waitUntil: 'domcontentloaded' })
         await page.reload({ waitUntil: 'networkidle' }).catch(() => {})
       } else {

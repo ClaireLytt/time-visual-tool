@@ -2,6 +2,9 @@ import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFirestore } from './useFirestore'
 import { DEFAULT_CATEGORIES, CATEGORY_COLORS } from '../constants/todo'
+import { todoOccursOn } from '../utils/todoRepeat'
+
+export { todoOccursOn }
 import type { TodoCategory, TodoItem, TodoStorageData } from '../types/todo'
 
 function validate(raw: unknown): TodoStorageData | null {
@@ -17,34 +20,6 @@ function validate(raw: unknown): TodoStorageData | null {
 
 const INITIAL: TodoStorageData = { version: 1, items: [], categories: [] }
 
-/** Whether a (possibly recurring) item occurs on the given date */
-export function todoOccursOn(item: TodoItem, date: string): boolean {
-  const repeat = item.repeat
-  if (!repeat || repeat.type === 'none') return item.date === date
-  if (date < item.date) return false
-  if (repeat.until && date > repeat.until) return false
-  if (item.skippedDates?.includes(date)) return false
-  switch (repeat.type) {
-    case 'daily':
-      return true
-    case 'weekly': {
-      const weekday = new Date(date + 'T00:00:00').getDay()
-      const weekdays = repeat.weekdays && repeat.weekdays.length > 0
-        ? repeat.weekdays
-        : [new Date(item.date + 'T00:00:00').getDay()]
-      return weekdays.includes(weekday)
-    }
-    case 'monthly':
-      return date.slice(8, 10) === item.date.slice(8, 10)
-    case 'custom': {
-      const interval = Math.max(1, Math.floor(repeat.interval ?? 1))
-      const start = new Date(item.date + 'T00:00:00').getTime()
-      const cur = new Date(date + 'T00:00:00').getTime()
-      const diffDays = Math.round((cur - start) / 86400000)
-      return diffDays % interval === 0
-    }
-  }
-}
 
 function isRecurring(item: TodoItem): boolean {
   return !!item.repeat && item.repeat.type !== 'none'
@@ -90,11 +65,13 @@ export function useTodoEntries() {
       ...prev,
       items: prev.items.map(t => {
         if (t.id !== id) return t
-        if (isRecurring(t) && date) {
+        if (isRecurring(t)) {
+          // recurring items are always toggled per-date; default to today
+          const target = date ?? new Date().toISOString().slice(0, 10)
           const dates = t.completedDates ?? []
-          const completedDates = dates.includes(date)
-            ? dates.filter(d => d !== date)
-            : [...dates, date]
+          const completedDates = dates.includes(target)
+            ? dates.filter(d => d !== target)
+            : [...dates, target]
           return { ...t, completedDates }
         }
         return { ...t, done: !t.done, completedAt: !t.done ? new Date().toISOString() : undefined }
@@ -139,6 +116,7 @@ export function useTodoEntries() {
   return {
     items: data.items,
     categories,
+    customCategories: data.categories ?? [],
     addCategory,
     deleteCategory,
     loading,

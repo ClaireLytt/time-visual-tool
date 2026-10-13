@@ -106,7 +106,12 @@ export function useFirestore<T>(
 
       setError(null)
       const docRef = doc(db, 'users', uid, collectionName, 'data')
-      setDoc(docRef, newValue as Record<string, unknown>, { merge: true }).catch(() => {
+      // Firestore rejects `undefined` field values; strip them (JSON drops
+      // undefined object properties) so optional-field updates can't fail the write.
+      // Write without merge: setData always receives the full document state, and
+      // a merge would resurrect fields the update intentionally removed.
+      const sanitized = JSON.parse(JSON.stringify(newValue)) as Record<string, unknown>
+      setDoc(docRef, sanitized).catch(() => {
         setError('save_failed')
       })
     },

@@ -286,7 +286,7 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
           timeData: time.data, financeData: finance.data, eatingData: eating.data,
           diaryData: diary.data, sportData: sport.data,
           habitData: { habits: habit.habits, checks: habit.checks },
-          todoData: { items: todo.items },
+          todoData: { items: todo.items, categories: todo.customCategories },
           studyData: { entries: study.entries },
           workData: { entries: work.entries },
         })}
