@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
 import { useTodoEntries } from '../../hooks/useTodoEntries'
@@ -15,12 +15,14 @@ export default function TodoDashboard() {
   const [filter, setFilter] = useState<Filter>('all')
   const { addItem, toggleItem, deleteItem, updateItem, getItemsForDate } = useTodoEntries()
 
+  const handleToggle = useCallback((id: string) => toggleItem(id, selectedDate), [toggleItem, selectedDate])
+
   const dayItems = useMemo(() => getItemsForDate(selectedDate), [getItemsForDate, selectedDate])
   const doneCount = useMemo(() => dayItems.filter(t => t.done).length, [dayItems])
 
 
   return (
-    <div id="main-content" className="space-y-4">
+    <div className="space-y-4">
       <DatePicker selectedDate={selectedDate} onDateChange={setSelectedDate} viewMode="day" />
 
       {/* Summary */}
@@ -66,7 +68,7 @@ export default function TodoDashboard() {
 
       {/* Task list */}
       <div className="panel p-4">
-        <TodoList items={dayItems} filter={filter} onToggle={toggleItem} onDelete={deleteItem} onUpdate={updateItem} />
+        <TodoList items={dayItems} filter={filter} onToggle={handleToggle} onDelete={deleteItem} onUpdate={updateItem} />
       </div>
     </div>
   )

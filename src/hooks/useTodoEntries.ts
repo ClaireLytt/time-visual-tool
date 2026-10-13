@@ -11,6 +11,37 @@ function validate(raw: unknown): TodoStorageData | null {
 
 const INITIAL: TodoStorageData = { version: 1, items: [] }
 
+/** Whether a (possibly recurring) item occurs on the given date */
+export function todoOccursOn(item: TodoItem, date: string): boolean {
+  const repeat = item.repeat
+  if (!repeat || repeat.type === 'none') return item.date === date
+  if (date < item.date) return false
+  switch (repeat.type) {
+    case 'daily':
+      return true
+    case 'weekly': {
+      const weekday = new Date(date + 'T00:00:00').getDay()
+      const weekdays = repeat.weekdays && repeat.weekdays.length > 0
+        ? repeat.weekdays
+        : [new Date(item.date + 'T00:00:00').getDay()]
+      return weekdays.includes(weekday)
+    }
+    case 'monthly':
+      return date.slice(8, 10) === item.date.slice(8, 10)
+    case 'custom': {
+      const interval = Math.max(1, Math.floor(repeat.interval ?? 1))
+      const start = new Date(item.date + 'T00:00:00').getTime()
+      const cur = new Date(date + 'T00:00:00').getTime()
+      const diffDays = Math.round((cur - start) / 86400000)
+      return diffDays % interval === 0
+    }
+  }
+}
+
+function isRecurring(item: TodoItem): boolean {
+  return !!item.repeat && item.repeat.type !== 'none'
+}
+
 export function useTodoEntries() {
   const { data, setData, loading } = useFirestore<TodoStorageData>('todoData', INITIAL, validate)
 
@@ -18,14 +49,24 @@ export function useTodoEntries() {
     setData(prev => ({ ...prev, items: [...prev.items, item] }))
   }, [setData])
 
-  const toggleItem = useCallback((id: string) => {
+  /**
+   * Toggle an item's completion. For recurring items `date` decides which
+   * occurrence is toggled; for one-off items it is ignored.
+   */
+  const toggleItem = useCallback((id: string, date?: string) => {
     setData(prev => ({
       ...prev,
-      items: prev.items.map(t =>
-        t.id === id
-          ? { ...t, done: !t.done, completedAt: !t.done ? new Date().toISOString() : undefined }
-          : t
-      ),
+      items: prev.items.map(t => {
+        if (t.id !== id) return t
+        if (isRecurring(t) && date) {
+          const dates = t.completedDates ?? []
+          const completedDates = dates.includes(date)
+            ? dates.filter(d => d !== date)
+            : [...dates, date]
+          return { ...t, completedDates }
+        }
+        return { ...t, done: !t.done, completedAt: !t.done ? new Date().toISOString() : undefined }
+      }),
     }))
   }, [setData])
 
@@ -40,8 +81,15 @@ export function useTodoEntries() {
     }))
   }, [setData])
 
+  /**
+   * Items visible on a date: one-off items on their date, plus every
+   * recurring item that occurs on it. A recurring item's `done` reflects
+   * that date's completion.
+   */
   const getItemsForDate = useCallback((date: string) => {
-    return data.items.filter(t => t.date === date)
+    return data.items
+      .filter(t => todoOccursOn(t, date))
+      .map(t => isRecurring(t) ? { ...t, done: (t.completedDates ?? []).includes(date) } : t)
   }, [data.items])
 
   return {

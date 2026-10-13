@@ -71,6 +71,11 @@ const TodoItem = memo(function TodoItem({ item, onToggle, onDelete, onUpdate }: 
           <span className={`text-sm ${item.done ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-100'}`}>
             {item.text}
           </span>
+          {item.repeat && item.repeat.type !== 'none' && (
+            <span className="ml-2 text-[10px] text-[#5b8def]" title={t(`todo.repeat.${item.repeat.type}`)}>
+              🔁 {t(`todo.repeat.${item.repeat.type}`)}
+            </span>
+          )}
           {item.dueDate && !item.done && (() => {
             const today = format(new Date(), 'yyyy-MM-dd')
             const isOverdue = item.dueDate < today

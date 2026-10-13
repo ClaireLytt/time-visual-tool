@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
 import { useAuth } from '../../contexts/AuthContext'
-import { HomeIcon, ClockIcon, WalletIcon, UtensilsIcon, BookIcon, DumbbellIcon, CheckSquareIcon, ListTodoIcon, StudyIcon, WorkIcon, PodcastIcon, YouTubeIcon, IeltsIcon } from '../icons'
+import { HomeIcon, ClockIcon, WalletIcon, UtensilsIcon, BookIcon, DumbbellIcon, CheckSquareIcon, StudyIcon, WorkIcon, PodcastIcon, YouTubeIcon, IeltsIcon } from '../icons'
 import { PAGE_CONTAINER_STYLE } from './Container'
 import { MODE_ACCENT } from '../../constants/modes'
 import ProfileDrawer from './ProfileDrawer'
@@ -21,7 +21,6 @@ const MODE_CONFIG: Record<AppMode, { icon: typeof ClockIcon; colorClass: string;
   diary:    { icon: BookIcon,        colorClass: 'text-mode-diary',   titleKey: 'diaryApp.title' },
   sport:    { icon: DumbbellIcon,    colorClass: 'text-mode-sport',   titleKey: 'sportApp.title' },
   habit:    { icon: CheckSquareIcon, colorClass: 'text-mode-habit',   titleKey: 'habitApp.title' },
-  todo:     { icon: ListTodoIcon,    colorClass: 'text-mode-todo',    titleKey: 'todoApp.title' },
   study:    { icon: StudyIcon,       colorClass: 'text-mode-study',   titleKey: 'studyApp.title' },
   work:     { icon: WorkIcon,        colorClass: 'text-mode-work',    titleKey: 'workApp.title' },
   podcast:  { icon: PodcastIcon,     colorClass: 'text-mode-podcast', titleKey: 'podcastApp.title' },

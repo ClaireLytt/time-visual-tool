@@ -46,7 +46,11 @@
     "deleteConfirmMessage": "确定要删除这篇记录吗?此操作无法撤销。",
     "listTitle": "历史记录 ({{count}})",
     "emptyTitle": "还没有记录",
-    "emptySubtitle": "写下你的第一篇吧"
+    "emptySubtitle": "写下你的第一篇吧",
+    "tabs": {
+      "diary": "日记",
+      "todo": "待办"
+    }
   },
   "overviewApp": {
     "title": "今日总览",
@@ -558,6 +562,26 @@
       "all": "全部",
       "active": "进行中",
       "completed": "已完成"
+    },
+    "repeat": {
+      "label": "重复",
+      "none": "不重复",
+      "daily": "每天",
+      "weekly": "每周",
+      "monthly": "每月",
+      "custom": "自定义",
+      "weekdaysLabel": "重复于",
+      "every": "每",
+      "days": "天重复一次"
+    },
+    "weekday": {
+      "0": "日",
+      "1": "一",
+      "2": "二",
+      "3": "三",
+      "4": "四",
+      "5": "五",
+      "6": "六"
     }
   },
   "studyApp": {

@@ -7,6 +7,7 @@ import ViewModeToggle from '../dashboard/ViewModeToggle'
 import DataTransfer from '../settings/DataTransfer'
 import DiaryEntryEditor, { type DiaryEntryFields } from './DiaryEntryEditor'
 import DiaryEntryList from './DiaryEntryList'
+import TodoDashboard from '../todo/TodoDashboard'
 import { getPeriodKey, periodKeyToAnchorDate } from '../../utils/diaryPeriod'
 import AnimatedCollapse from '../common/AnimatedCollapse'
 import { exportDiaryToFile, readDiaryImportFile } from '../../utils/diaryTransfer'
@@ -14,8 +15,11 @@ import type { DiaryEntry, DiaryPeriodType, DiaryStorageData } from '../../types/
 
 const DIARY_MODES: readonly DiaryPeriodType[] = ['day', 'week', 'month', 'year']
 
+type DiaryTab = 'diary' | 'todo'
+
 function DiaryDashboard() {
   const { t } = useTranslation()
+  const [tab, setTab] = useState<DiaryTab>('diary')
   const [selectedDate, setSelectedDate] = useState(() => format(new Date(), 'yyyy-MM-dd'))
   const [viewMode, setViewMode] = useState<DiaryPeriodType>('day')
   const [showSettings, setShowSettings] = useState(false)
@@ -35,6 +39,27 @@ function DiaryDashboard() {
 
   return (
     <div id="main-content">
+      {/* Diary / Todo tabs */}
+      <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg mb-4">
+        {(['diary', 'todo'] as DiaryTab[]).map(tb => (
+          <button
+            key={tb}
+            onClick={() => setTab(tb)}
+            className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-colors ${
+              tab === tb
+                ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
+                : 'text-gray-500 dark:text-gray-400'
+            }`}
+          >
+            {t(`diary.tabs.${tb}`)}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'todo' ? (
+        <TodoDashboard />
+      ) : (
+        <>
       <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
         <ViewModeToggle viewMode={viewMode} modes={DIARY_MODES} onViewModeChange={setViewMode} />
         <button
@@ -79,6 +104,8 @@ function DiaryDashboard() {
           onSelect={handleSelectEntry}
         />
       </div>
+        </>
+      )}
     </div>
   )
 }
