@@ -67,10 +67,10 @@ export default function TypeFillGame({
     setAttemptsLeft(MAX_RETRIES)
     setPhase('playing')
 
-    // Seek audio to first gap
+    // Play from beginning — continuous until first gap
     const audio = audioRef.current
     if (audio) {
-      audio.currentTime = Math.max(0, generated[0].startTime - 1)
+      audio.currentTime = 0
       audio.play().catch(() => {})
     }
   }, [segments, difficulty, audioRef])
@@ -100,7 +100,8 @@ export default function TypeFillGame({
 
     let rafId: number
     const check = () => {
-      if (audio.currentTime >= currentGap.startTime + 0.5 && !audio.paused) {
+      const pauseAt = currentGap.endTime ?? currentGap.startTime + 5
+      if (audio.currentTime >= pauseAt && !audio.paused) {
         audio.pause()
         inputRef.current?.focus()
       }
@@ -110,7 +111,7 @@ export default function TypeFillGame({
     return () => cancelAnimationFrame(rafId)
   }, [phase, gaps, currentIndex, audioRef])
 
-  // ─── Move to next gap ───
+  // ─── Move to next gap (no auto-play) ───
   const moveToNext = useCallback(() => {
     setFeedback(null)
     setInputValue('')
@@ -125,14 +126,34 @@ export default function TypeFillGame({
     }
 
     setCurrentIndex(nextIndex)
+    // Don't auto-play — user clicks ▶ to continue
+  }, [currentIndex, gaps, audioRef])
 
-    // Seek audio to next gap
+  // ─── Continue playback (user clicks ▶) ───
+  const continuePlayback = useCallback(() => {
+    // If feedback is still showing, advance first
+    if (feedback) {
+      moveToNext()
+    }
+    // Resume from where we paused
     const audio = audioRef.current
     if (audio) {
-      audio.currentTime = Math.max(0, gaps[nextIndex].startTime - 1)
       audio.play().catch(() => {})
     }
-  }, [currentIndex, gaps, audioRef])
+  }, [feedback, moveToNext, audioRef])
+
+  // ─── Jump to next gap (seek directly) ───
+  const jumpToNextGap = useCallback(() => {
+    if (feedback) moveToNext()
+    const idx = feedback ? Math.min(currentIndex + 1, gaps.length - 1) : currentIndex
+    const nextGap = gaps[idx]
+    if (!nextGap) return
+    const audio = audioRef.current
+    if (audio) {
+      audio.currentTime = Math.max(0, nextGap.startTime - 0.5)
+      audio.play().catch(() => {})
+    }
+  }, [feedback, moveToNext, currentIndex, gaps, audioRef])
 
   // ─── Handle submit ───
   const handleSubmit = useCallback(async () => {
@@ -155,7 +176,7 @@ export default function TypeFillGame({
         attemptsUsed: MAX_RETRIES - attemptsLeft,
       }])
 
-      feedbackTimer.current = setTimeout(moveToNext, 1000)
+      // Don't auto-advance — wait for user to click ▶
     } else {
       const newAttemptsLeft = attemptsLeft - 1
 
@@ -192,18 +213,81 @@ export default function TypeFillGame({
           })
         })
 
-        feedbackTimer.current = setTimeout(moveToNext, 2500)
+        // Don't auto-advance — wait for user to click ▶
       }
     }
-  }, [feedback, gaps, currentIndex, inputValue, attemptsLeft, moveToNext])
+  }, [feedback, gaps, currentIndex, inputValue, attemptsLeft])
 
-  // Handle Enter key
+  // Skip current word (counts as wrong)
+  const skipWord = useCallback(() => {
+    if (feedback) return
+    const currentGap = gaps[currentIndex]
+    if (!currentGap) return
+
+    setFeedback({ correct: false, definition: '', correctWord: currentGap.word })
+    setAnswers(prev => [...prev, {
+      gap: currentGap,
+      userAnswer: '',
+      correct: false,
+      definition: '',
+      attemptsUsed: MAX_RETRIES,
+    }])
+
+    lookupWord(currentGap.word).then(result => {
+      const def = result?.definitions?.join('; ') ?? ''
+      setFeedback(prev => prev ? { ...prev, definition: def } : prev)
+      setAnswers(prev => {
+        const copy = [...prev]
+        const last = copy[copy.length - 1]
+        if (last && last.gap.word === currentGap.word) copy[copy.length - 1] = { ...last, definition: def }
+        return copy
+      })
+    })
+
+    // Don't auto-advance — wait for user to click ▶
+  }, [feedback, gaps, currentIndex])
+
+  // Tab = flash answer for 0.2s; Enter = submit or skip
   const onKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault()
-      handleSubmit()
+      if (inputValue.trim()) {
+        handleSubmit()
+      } else {
+        skipWord()
+      }
+    } else if (e.key === 'Tab') {
+      e.preventDefault()
+      const word = gaps[currentIndex]?.word
+      if (!word || feedback) return
+      setInputValue(word)
+      if (inputRef.current) inputRef.current.readOnly = true
+      setTimeout(() => {
+        setInputValue('')
+        if (inputRef.current) {
+          inputRef.current.readOnly = false
+          inputRef.current.focus()
+        }
+      }, 200)
     }
-  }, [handleSubmit])
+  }, [handleSubmit, skipWord, inputValue, gaps, currentIndex, feedback])
+
+  // Global key listener for when input is disabled (feedback showing)
+  // Shift+Enter = continue playing; Enter = continue + skip next
+  useEffect(() => {
+    if (phase !== 'playing') return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && e.shiftKey) {
+        e.preventDefault()
+        continuePlayback()
+      } else if (e.key === 'Enter' && feedback && (feedback.correct || feedback.correctWord)) {
+        e.preventDefault()
+        continuePlayback()
+      }
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [phase, feedback, continuePlayback])
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -511,9 +595,62 @@ export default function TypeFillGame({
         </div>
       )}
 
-      {/* Submit button + attempts indicator */}
+      {/* Action buttons — shown after answering */}
+      {feedback && (feedback.correct || feedback.correctWord) && (
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              const audio = audioRef.current
+              const cg = gaps[currentIndex]
+              if (audio && cg) {
+                audio.currentTime = Math.max(0, cg.startTime - 0.5)
+                audio.play().catch(() => {})
+              }
+            }}
+            className="p-3 rounded-xl bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shrink-0"
+            title={t('game.replay')}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
+            </svg>
+          </button>
+          <button
+            onClick={continuePlayback}
+            className="flex-1 py-3 rounded-xl bg-mode-podcast text-white font-medium text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+            {t('game.continuePlaying')}
+          </button>
+          <button
+            onClick={jumpToNextGap}
+            className="p-3 rounded-xl bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shrink-0"
+            title={t('game.jumpToNext')}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 8.689c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 0 1 0 1.954l-7.108 4.061A1.125 1.125 0 0 1 3 16.811V8.69ZM12.75 8.689c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 0 1 0 1.954l-7.108 4.061a1.125 1.125 0 0 1-1.683-.977V8.69Z" />
+            </svg>
+          </button>
+        </div>
+      )}
+
+      {/* Submit button + replay + attempts indicator */}
       {!feedback && (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              const audio = audioRef.current
+              if (audio && currentGap) {
+                audio.currentTime = Math.max(0, currentGap.startTime - 0.5)
+                audio.play().catch(() => {})
+              }
+            }}
+            className="p-3 rounded-xl bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shrink-0"
+            title={t('game.replay')}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
+            </svg>
+          </button>
           <button
             onClick={handleSubmit}
             disabled={!inputValue.trim()}
@@ -525,6 +662,13 @@ export default function TypeFillGame({
             {t('game.attemptsLeft')}: {attemptsLeft}
           </span>
         </div>
+      )}
+      {phase === 'playing' && (
+        <p className="text-[11px] text-gray-400 text-center">
+          {feedback
+            ? `Enter / Shift+Enter = ${t('game.continuePlaying')}`
+            : `Tab = ${t('game.peek')} · Enter = ${inputValue.trim() ? t('confirm.ok') : t('game.skip')} · Shift+Enter = ${t('game.continuePlaying')}`}
+        </p>
       )}
     </div>
   )

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
 import { useAuth } from '../../contexts/AuthContext'
-import { HomeIcon, ClockIcon, WalletIcon, UtensilsIcon, BookIcon, DumbbellIcon, CheckSquareIcon, ListTodoIcon, StudyIcon, WorkIcon, PodcastIcon, IeltsIcon } from '../icons'
+import { HomeIcon, ClockIcon, WalletIcon, UtensilsIcon, BookIcon, DumbbellIcon, CheckSquareIcon, ListTodoIcon, StudyIcon, WorkIcon, PodcastIcon, YouTubeIcon, IeltsIcon } from '../icons'
 import { PAGE_CONTAINER_STYLE } from './Container'
 import { MODE_ACCENT } from '../../constants/modes'
 import ProfileDrawer from './ProfileDrawer'
@@ -25,6 +25,7 @@ const MODE_CONFIG: Record<AppMode, { icon: typeof ClockIcon; colorClass: string;
   study:    { icon: StudyIcon,       colorClass: 'text-mode-study',   titleKey: 'studyApp.title' },
   work:     { icon: WorkIcon,        colorClass: 'text-mode-work',    titleKey: 'workApp.title' },
   podcast:  { icon: PodcastIcon,     colorClass: 'text-mode-podcast', titleKey: 'podcastApp.title' },
+  youtube:  { icon: YouTubeIcon,    colorClass: 'text-mode-youtube', titleKey: 'youtubeApp.title' },
   ielts:    { icon: IeltsIcon,       colorClass: 'text-mode-ielts',   titleKey: 'ieltsApp.title' },
 }
 

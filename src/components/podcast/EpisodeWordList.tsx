@@ -8,6 +8,8 @@ export interface EpisodeWordListProps {
   episodeTitle: string
   onClose: () => void
   onRemoveWord?: (word: string) => void
+  /** Storage prefix — 'podcast' (default) or 'youtube' */
+  storagePrefix?: string
 }
 
 export default function EpisodeWordList({
@@ -15,9 +17,10 @@ export default function EpisodeWordList({
   episodeTitle,
   onClose,
   onRemoveWord,
+  storagePrefix,
 }: EpisodeWordListProps) {
   const { t } = useTranslation()
-  const { words, toggleBookmark, sentences } = useWordHistory()
+  const { words, toggleBookmark, sentences } = useWordHistory(storagePrefix)
   const episodeWords = words.filter(w => w.episodeId === episodeId)
 
   // Dictionary cache for definitions

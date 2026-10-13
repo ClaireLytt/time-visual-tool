@@ -268,6 +268,35 @@ export function BardHallScene({ className }: SceneProps) {
   )
 }
 
+/** 📺 Theater — cinema screen with play button, seats */
+export function TheaterScene({ className }: SceneProps) {
+  return (
+    <svg {...svgProps(className)}>
+      {/* Dark room */}
+      <rect x="0" y="0" width="64" height="40" fill="#1a1a2a" />
+      {/* Screen */}
+      <rect x="8" y="3" width="48" height="22" fill="#2a2a3a" rx="1" />
+      <rect x="10" y="5" width="44" height="18" fill="#333345" />
+      {/* Play button on screen */}
+      <polygon points="28,10 28,18 36,14" fill="#b33e3e" opacity="0.8" />
+      {/* Screen glow */}
+      <ellipse cx="32" cy="14" rx="20" ry="10" fill="#b33e3e" opacity="0.06" />
+      {/* Seats row 1 */}
+      {[12, 20, 28, 36, 44].map(x => (
+        <rect key={x} x={x} y="28" width="6" height="5" fill="#4a3a2a" rx="1" />
+      ))}
+      {/* Seats row 2 */}
+      {[8, 16, 24, 32, 40, 48].map(x => (
+        <rect key={x} x={x} y="34" width="6" height="5" fill="#3a2a1a" rx="1" />
+      ))}
+      {/* Popcorn */}
+      <rect x="52" y="30" width="4" height="5" fill="#e8a838" rx="1" />
+      <circle cx="53" cy="29" r="1.5" fill="#f4d98c" />
+      <circle cx="55" cy="29.5" r="1" fill="#f4d98c" />
+    </svg>
+  )
+}
+
 /** 📝 Exam Hall — desk, paper, pen, clock */
 export function ExamHallScene({ className }: SceneProps) {
   return (
@@ -312,5 +341,6 @@ export const SCENE_COMPONENTS: Record<string, React.FC<SceneProps>> = {
   study: AcademyScene,
   work: GuildHallScene,
   podcast: BardHallScene,
+  youtube: TheaterScene,
   ielts: ExamHallScene,
 }

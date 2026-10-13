@@ -26,14 +26,12 @@ export interface SavedSentence {
   savedAt: string   // ISO timestamp
 }
 
-const WORDS_KEY = 'podcast-word-history'
-const SENTENCES_KEY = 'podcast-saved-sentences'
 const MAX_WORDS = 3000
 const MAX_SENTENCES = 500
 
-export function useWordHistory() {
-  const [words, setWords] = useLocalStorage<WordRecord[]>(WORDS_KEY, [])
-  const [sentences, setSentences] = useLocalStorage<SavedSentence[]>(SENTENCES_KEY, [])
+export function useWordHistory(prefix = 'podcast') {
+  const [words, setWords] = useLocalStorage<WordRecord[]>(`${prefix}-word-history`, [])
+  const [sentences, setSentences] = useLocalStorage<SavedSentence[]>(`${prefix}-saved-sentences`, [])
 
   /** Record a word lookup. Increments count if already seen. */
   const recordLookup = useCallback((word: string, episodeId?: string, episodeTitle?: string) => {

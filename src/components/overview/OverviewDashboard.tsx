@@ -207,6 +207,10 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
           </div>
         </Card>
 
+        <Card mode="youtube" scene="📺 THEATER" onClick={() => onNavigate('youtube')}>
+          <span className="text-xs text-gray-400">{t('youtubeApp.subtitle')}</span>
+        </Card>
+
         <Card mode="ielts" scene="📝 EXAM HALL" onClick={() => onNavigate('ielts')}>
           {ieltsToday.length > 0
             ? <>
