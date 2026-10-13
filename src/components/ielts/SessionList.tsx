@@ -304,7 +304,7 @@ const SessionRow = memo(function SessionRow({
       <ConfirmDialog open={confirmDelete} title={t('ielts.deleteSession')}
         message={t('ielts.deleteSessionConfirm')}
         onConfirm={() => { onDelete(); setConfirmDelete(false) }}
-        onCancel={() => setConfirmDelete(false)} variant="danger" />
+        onCancel={() => setConfirmDelete(false)} confirmVariant="danger" />
     </div>
   )
 })

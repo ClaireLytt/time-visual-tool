@@ -16,7 +16,7 @@ export default function ScoreTrendChart({ sessions }: Props) {
 
   // Build data: group by date, each date has {date, listening, reading, writing, speaking}
   const data = useMemo(() => {
-    const byDate = new Map<string, Record<string, number | null>>()
+    const byDate = new Map<string, Record<string, string | number | null>>()
     // Sort sessions by date
     const sorted = [...sessions].sort((a, b) => a.date.localeCompare(b.date))
     for (const s of sorted) {

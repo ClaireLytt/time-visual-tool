@@ -389,7 +389,7 @@ export default function RecordView() {
         message={`确定删除选中的 ${selectedIds.size} 条练习记录？此操作不可撤销。`}
         onConfirm={handleBatchDelete}
         onCancel={() => setConfirmBatchDelete(false)}
-        variant="danger"
+        confirmVariant="danger"
       />
     </div>
   )

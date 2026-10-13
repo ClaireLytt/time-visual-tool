@@ -399,7 +399,7 @@ export default function KnowledgeView() {
       {/* Batch delete confirm */}
       <ConfirmDialog open={confirmBatchDelete} title="批量删除"
         message={`确定删除选中的 ${selectedIds.size} 条记录？`}
-        onConfirm={handleBatchDelete} onCancel={() => setConfirmBatchDelete(false)} variant="danger" />
+        onConfirm={handleBatchDelete} onCancel={() => setConfirmBatchDelete(false)} confirmVariant="danger" />
     </div>
   )
 }

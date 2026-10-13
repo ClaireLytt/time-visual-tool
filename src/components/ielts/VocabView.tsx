@@ -263,7 +263,7 @@ const WordRow = memo(function WordRow({ word, today, onDelete }: {
       <ConfirmDialog open={confirmDelete} title="删除词汇"
         message={`确定删除「${word.word}」？`}
         onConfirm={() => { onDelete(word.id); setConfirmDelete(false) }}
-        onCancel={() => setConfirmDelete(false)} variant="danger" />
+        onCancel={() => setConfirmDelete(false)} confirmVariant="danger" />
     </div>
   )
 })
