@@ -8,7 +8,6 @@ import DataTransfer from '../settings/DataTransfer'
 import DiaryEntryEditor, { type DiaryEntryFields } from './DiaryEntryEditor'
 import DiaryCalendar from './DiaryCalendar'
 import DiaryDayPopup from './DiaryDayPopup'
-import TodoDashboard from '../todo/TodoDashboard'
 import { useTodoEntries } from '../../hooks/useTodoEntries'
 import { getPeriodKey } from '../../utils/diaryPeriod'
 import AnimatedCollapse from '../common/AnimatedCollapse'
@@ -17,21 +16,8 @@ import type { DiaryPeriodType, DiaryStorageData } from '../../types/diary'
 
 const DIARY_MODES: readonly DiaryPeriodType[] = ['day', 'week', 'month', 'year']
 
-type DiaryTab = 'diary' | 'todo'
-
 function DiaryDashboard() {
   const { t } = useTranslation()
-  const [tab, setTab] = useState<DiaryTab>(() => {
-    // One-shot deep link (e.g. overview card → todo tab)
-    try {
-      const initial = sessionStorage.getItem('diary.initialTab')
-      if (initial === 'todo' || initial === 'diary') {
-        sessionStorage.removeItem('diary.initialTab')
-        return initial
-      }
-    } catch { /* ignore */ }
-    return 'diary'
-  })
   const [selectedDate, setSelectedDate] = useState(() => format(new Date(), 'yyyy-MM-dd'))
   const [viewMode, setViewMode] = useState<DiaryPeriodType>('day')
   const [showSettings, setShowSettings] = useState(false)
@@ -86,28 +72,8 @@ function DiaryDashboard() {
 
 
   return (
-    <div id="main-content" className={tab === 'diary' ? 'diary-scope' : undefined}>
-      {/* Diary / Todo tabs */}
-      <div className="brutal-track flex gap-1 p-1 mb-4">
-        {(['diary', 'todo'] as DiaryTab[]).map(tb => (
-          <button
-            key={tb}
-            onClick={() => setTab(tb)}
-            className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-colors ${
-              tab === tb
-                ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
-                : 'text-gray-500 dark:text-gray-400'
-            }`}
-          >
-            {t(`diary.tabs.${tb}`)}
-          </button>
-        ))}
-      </div>
-
-      {tab === 'todo' ? (
-        <TodoDashboard />
-      ) : (
-        <div>
+    <div id="main-content" className="diary-scope">
+      <div>
       <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
         <ViewModeToggle viewMode={viewMode} modes={DIARY_MODES} onViewModeChange={setViewMode} />
         <button
@@ -161,8 +127,7 @@ function DiaryDashboard() {
         onEdit={handleEditDay}
         onClose={() => setPopupDate(null)}
       />
-        </div>
-      )}
+      </div>
     </div>
   )
 }

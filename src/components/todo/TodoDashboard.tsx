@@ -6,6 +6,7 @@ import { TODO_ACCENT } from '../../constants/todo'
 import DatePicker from '../dashboard/DatePicker'
 import TodoForm from './TodoForm'
 import CollapsibleForm from '../common/CollapsibleForm'
+import ConfirmDialog from '../common/ConfirmDialog'
 import TodoList from './TodoList'
 
 type Filter = 'all' | 'active' | 'completed'
@@ -15,12 +16,28 @@ export default function TodoDashboard() {
   const [selectedDate, setSelectedDate] = useState(() => format(new Date(), 'yyyy-MM-dd'))
   const [filter, setFilter] = useState<Filter>('all')
   const [showStats, setShowStats] = useState(false)
-  const { items, addItem, toggleItem, skipOccurrence, deleteItem, updateItem, getItemsForDate } = useTodoEntries()
+  const { items, categories, addCategory, deleteCategory, addItem, toggleItem, skipOccurrence, deleteItem, updateItem, getItemsForDate } = useTodoEntries()
+  const [categoryFilter, setCategoryFilter] = useState<string>('all')
+  const [addingCategory, setAddingCategory] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
+  const [confirmDeleteCat, setConfirmDeleteCat] = useState<string | null>(null)
+
+  const handleAddCategory = () => {
+    const name = newCategoryName.trim()
+    if (!name) return
+    addCategory(name)
+    setNewCategoryName('')
+    setAddingCategory(false)
+  }
 
   const handleToggle = useCallback((id: string) => toggleItem(id, selectedDate), [toggleItem, selectedDate])
   const handleSkip = useCallback((id: string) => skipOccurrence(id, selectedDate), [skipOccurrence, selectedDate])
 
-  const dayItems = useMemo(() => getItemsForDate(selectedDate), [getItemsForDate, selectedDate])
+  const allDayItems = useMemo(() => getItemsForDate(selectedDate), [getItemsForDate, selectedDate])
+  const dayItems = useMemo(
+    () => categoryFilter === 'all' ? allDayItems : allDayItems.filter(t => t.categoryId === categoryFilter),
+    [allDayItems, categoryFilter]
+  )
   const doneCount = useMemo(() => dayItems.filter(t => t.done).length, [dayItems])
 
   // Overdue one-off tasks (only surfaced when viewing today)
@@ -43,8 +60,88 @@ export default function TodoDashboard() {
 
 
   return (
-    <div className="space-y-4">
+    <div id="main-content" className="space-y-4">
       <DatePicker selectedDate={selectedDate} onDateChange={setSelectedDate} viewMode="day" />
+
+      {/* Category chips */}
+      <div className="flex gap-1.5 flex-wrap items-center">
+        <button
+          onClick={() => setCategoryFilter('all')}
+          className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+            categoryFilter === 'all' ? 'bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+          }`}
+        >
+          {t('todo.categoryAll')}
+        </button>
+        {categories.map(c => {
+          const isDefault = ['life', 'work', 'study'].includes(c.id)
+          const active = categoryFilter === c.id
+          return (
+            <span key={c.id} className="inline-flex items-stretch">
+              <button
+                onClick={() => setCategoryFilter(active ? 'all' : c.id)}
+                className={`px-3 py-1.5 text-xs font-semibold transition-colors ${isDefault || !active ? 'rounded-lg' : 'rounded-l-lg'} ${
+                  active ? 'text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                }`}
+                style={active ? { backgroundColor: c.color } : undefined}
+              >
+                {c.name}
+              </button>
+              {!isDefault && active && (
+                <button
+                  onClick={() => setConfirmDeleteCat(c.id)}
+                  className="px-2 rounded-r-lg text-white/80 hover:text-white text-xs"
+                  style={{ backgroundColor: c.color }}
+                  aria-label={t('todo.deleteCategoryTitle')}
+                >
+                  ✕
+                </button>
+              )}
+            </span>
+          )
+        })}
+        {addingCategory ? (
+          <span className="inline-flex items-center gap-1.5">
+            <input
+              autoFocus
+              value={newCategoryName}
+              onChange={e => setNewCategoryName(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') handleAddCategory(); if (e.key === 'Escape') setAddingCategory(false) }}
+              placeholder={t('todo.categoryNamePlaceholder')}
+              maxLength={12}
+              className="input-base w-28 text-xs py-1.5 px-2"
+            />
+            <button onClick={handleAddCategory} className="px-2.5 py-1.5 text-xs rounded-lg text-white" style={{ backgroundColor: TODO_ACCENT }}>
+              {t('todo.addButton')}
+            </button>
+            <button onClick={() => { setAddingCategory(false); setNewCategoryName('') }} className="px-1.5 py-1.5 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+              {t('confirm.cancel')}
+            </button>
+          </span>
+        ) : (
+          <button
+            onClick={() => setAddingCategory(true)}
+            className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-dashed border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:border-gray-400 transition-colors"
+          >
+            + {t('todo.addCategory')}
+          </button>
+        )}
+      </div>
+
+      <ConfirmDialog
+        open={confirmDeleteCat !== null}
+        title={t('todo.deleteCategoryTitle')}
+        message={t('todo.deleteCategoryMessage')}
+        confirmVariant="danger"
+        onConfirm={() => {
+          if (confirmDeleteCat) {
+            deleteCategory(confirmDeleteCat)
+            if (categoryFilter === confirmDeleteCat) setCategoryFilter('all')
+          }
+          setConfirmDeleteCat(null)
+        }}
+        onCancel={() => setConfirmDeleteCat(null)}
+      />
 
       {/* Summary */}
       <div className="panel p-4">
@@ -115,7 +212,12 @@ export default function TodoDashboard() {
 
       {/* Add form */}
       <CollapsibleForm accentColor={TODO_ACCENT} addLabel={t('todo.addButton')}>
-        <TodoForm selectedDate={selectedDate} onAdd={addItem} />
+        <TodoForm
+          selectedDate={selectedDate}
+          onAdd={addItem}
+          categories={categories}
+          defaultCategoryId={categoryFilter !== 'all' ? categoryFilter : 'life'}
+        />
       </CollapsibleForm>
 
       {/* Filter tabs */}
@@ -137,7 +239,7 @@ export default function TodoDashboard() {
 
       {/* Task list */}
       <div className="panel p-4">
-        <TodoList items={dayItems} filter={filter} onToggle={handleToggle} onDelete={deleteItem} onUpdate={updateItem} onSkipOccurrence={handleSkip} />
+        <TodoList items={dayItems} filter={filter} categories={categories} onToggle={handleToggle} onDelete={deleteItem} onUpdate={updateItem} onSkipOccurrence={handleSkip} />
       </div>
     </div>
   )

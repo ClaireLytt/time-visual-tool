@@ -24,13 +24,23 @@ export interface TodoItem {
   createdAt: string
   notes?: string
   repeat?: TodoRepeat
+  /** category id — a default ('life'/'work'/'study') or a custom one */
+  categoryId?: string
   /** for recurring items: dates (yyyy-MM-dd) on which the item was completed */
   completedDates?: string[]
   /** for recurring items: single occurrences the user deleted */
   skippedDates?: string[]
 }
 
+export interface TodoCategory {
+  id: string
+  name: string
+  color: string
+}
+
 export interface TodoStorageData {
   version: number
   items: TodoItem[]
+  /** user-defined categories (defaults live in constants, not storage) */
+  categories?: TodoCategory[]
 }

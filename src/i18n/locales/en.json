@@ -47,10 +47,6 @@
     "listTitle": "Past Entries ({{count}})",
     "emptyTitle": "No entries yet",
     "emptySubtitle": "Write your first one",
-    "tabs": {
-      "diary": "Diary",
-      "todo": "Todo"
-    },
     "todoSummaryLine": "Today's todos: {{done}}/{{total}} done",
     "insertTodoSummary": "Insert today's todos",
     "goalToTodo": "Send to todo",
@@ -151,7 +147,8 @@
     "toggleToFinance": "Switch to money tracking",
     "toggleToTime": "Switch to time tracking",
     "toggleToEating": "Switch to eating tracker",
-    "ielts": "IELTS"
+    "ielts": "IELTS",
+    "todo": "Todo"
   },
   "eating": {
     "addTitle": "Add eating entry",
@@ -530,7 +527,8 @@
     "subtitle": "Daily habit check-in"
   },
   "todoApp": {
-    "subtitle": "Manage your tasks"
+    "subtitle": "Manage your tasks",
+    "title": "TodoVisual"
   },
   "habit": {
     "addTitle": "Add Habit",
@@ -602,7 +600,18 @@
     "changePriority": "Change priority",
     "emptyHint": "Add a task above, or set up a daily/weekly recurring one",
     "moreActions": "More actions",
-    "overdueLabel": "overdue task(s)"
+    "overdueLabel": "overdue task(s)",
+    "category": {
+      "life": "Life",
+      "work": "Work",
+      "study": "Study"
+    },
+    "categoryAll": "All categories",
+    "categoryLabel": "Category",
+    "addCategory": "New category",
+    "categoryNamePlaceholder": "Category name",
+    "deleteCategoryTitle": "Delete category",
+    "deleteCategoryMessage": "Delete this category? Its tasks become uncategorized and are kept."
   },
   "studyApp": {
     "title": "StudyVisual",

@@ -1,15 +1,21 @@
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useFirestore } from './useFirestore'
-import type { TodoItem, TodoStorageData } from '../types/todo'
+import { DEFAULT_CATEGORIES, CATEGORY_COLORS } from '../constants/todo'
+import type { TodoCategory, TodoItem, TodoStorageData } from '../types/todo'
 
 function validate(raw: unknown): TodoStorageData | null {
   if (typeof raw !== 'object' || raw === null) return null
   const obj = raw as Record<string, unknown>
   if (!Array.isArray(obj.items)) return null
-  return { version: 1, items: obj.items as TodoItem[] }
+  return {
+    version: 1,
+    items: obj.items as TodoItem[],
+    categories: Array.isArray(obj.categories) ? obj.categories as TodoCategory[] : [],
+  }
 }
 
-const INITIAL: TodoStorageData = { version: 1, items: [] }
+const INITIAL: TodoStorageData = { version: 1, items: [], categories: [] }
 
 /** Whether a (possibly recurring) item occurs on the given date */
 export function todoOccursOn(item: TodoItem, date: string): boolean {
@@ -45,7 +51,31 @@ function isRecurring(item: TodoItem): boolean {
 }
 
 export function useTodoEntries() {
+  const { t } = useTranslation()
   const { data, setData, loading } = useFirestore<TodoStorageData>('todoData', INITIAL, validate)
+
+  // Built-in categories (localized names) + user-defined ones
+  const categories: TodoCategory[] = [
+    ...DEFAULT_CATEGORIES.map(c => ({ ...c, name: t(`todo.category.${c.id}`) })),
+    ...(data.categories ?? []),
+  ]
+
+  const addCategory = useCallback((name: string) => {
+    setData(prev => {
+      const custom = prev.categories ?? []
+      const color = CATEGORY_COLORS[custom.length % CATEGORY_COLORS.length]
+      return { ...prev, categories: [...custom, { id: crypto.randomUUID(), name, color }] }
+    })
+  }, [setData])
+
+  /** Delete a custom category; its items fall back to uncategorized */
+  const deleteCategory = useCallback((id: string) => {
+    setData(prev => ({
+      ...prev,
+      categories: (prev.categories ?? []).filter(c => c.id !== id),
+      items: prev.items.map(it => it.categoryId === id ? { ...it, categoryId: undefined } : it),
+    }))
+  }, [setData])
 
   const addItem = useCallback((item: TodoItem) => {
     setData(prev => ({ ...prev, items: [...prev.items, item] }))
@@ -108,6 +138,9 @@ export function useTodoEntries() {
 
   return {
     items: data.items,
+    categories,
+    addCategory,
+    deleteCategory,
     loading,
     addItem,
     toggleItem,

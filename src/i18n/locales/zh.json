@@ -47,10 +47,6 @@
     "listTitle": "历史记录 ({{count}})",
     "emptyTitle": "还没有记录",
     "emptySubtitle": "写下你的第一篇吧",
-    "tabs": {
-      "diary": "日记",
-      "todo": "待办"
-    },
     "todoSummaryLine": "今日待办：完成 {{done}}/{{total}}",
     "insertTodoSummary": "插入今日待办",
     "goalToTodo": "转为待办",
@@ -151,7 +147,8 @@
     "toggleToFinance": "切换到理财管理",
     "toggleToTime": "切换到时间管理",
     "toggleToEating": "切换到饮食管理",
-    "ielts": "雅思"
+    "ielts": "雅思",
+    "todo": "待办"
   },
   "eating": {
     "addTitle": "添加饮食记录",
@@ -530,7 +527,8 @@
     "subtitle": "每日习惯打卡"
   },
   "todoApp": {
-    "subtitle": "管理你的任务"
+    "subtitle": "管理你的任务",
+    "title": "TodoVisual"
   },
   "habit": {
     "addTitle": "添加习惯",
@@ -602,7 +600,18 @@
     "changePriority": "修改优先级",
     "emptyHint": "点上方 ➕ 添加任务，或设置每日/每周重复任务",
     "moreActions": "更多操作",
-    "overdueLabel": "个逾期任务"
+    "overdueLabel": "个逾期任务",
+    "category": {
+      "life": "生活",
+      "work": "工作",
+      "study": "学习"
+    },
+    "categoryAll": "全部分类",
+    "categoryLabel": "分类",
+    "addCategory": "新建分类",
+    "categoryNamePlaceholder": "分类名称",
+    "deleteCategoryTitle": "删除分类",
+    "deleteCategoryMessage": "确定删除这个分类？该分类下的任务会变为未分类，不会被删除。"
   },
   "studyApp": {
     "title": "StudyVisual",

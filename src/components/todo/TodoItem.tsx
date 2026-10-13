@@ -4,10 +4,11 @@ import { format } from 'date-fns'
 import { PRIORITY_COLORS, TODO_ACCENT } from '../../constants/todo'
 import ConfirmDialog from '../common/ConfirmDialog'
 import RepeatEditor from './RepeatEditor'
-import type { TodoItem as TodoItemType, TodoPriority, TodoRepeat } from '../../types/todo'
+import type { TodoCategory, TodoItem as TodoItemType, TodoPriority, TodoRepeat } from '../../types/todo'
 
 interface TodoItemProps {
   item: TodoItemType
+  category?: TodoCategory
   onToggle: (id: string) => void
   onDelete: (id: string) => void
   onUpdate?: (id: string, updates: Partial<TodoItemType>) => void
@@ -23,7 +24,7 @@ const PRIORITIES: TodoPriority[] = ['high', 'medium', 'low']
 /** Shared shell for the expandable sub-panels (priority, delete, repeat, notes) */
 const SUB_PANEL_CLASS = 'mt-2 ml-8 p-3 rounded-lg bg-gray-50 dark:bg-gray-800 space-y-2'
 
-const TodoItem = memo(function TodoItem({ item, onToggle, onDelete, onUpdate, onSkipOccurrence }: TodoItemProps) {
+const TodoItem = memo(function TodoItem({ item, category, onToggle, onDelete, onUpdate, onSkipOccurrence }: TodoItemProps) {
   const { t } = useTranslation()
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [showActions, setShowActions] = useState(false)
@@ -126,6 +127,14 @@ const TodoItem = memo(function TodoItem({ item, onToggle, onDelete, onUpdate, on
           {isRecurring && item.repeat && (
             <span className="ml-2 text-[10px]" style={{ color: TODO_ACCENT }} title={t(`todo.repeat.${item.repeat.type}`)}>
               🔁 {t(`todo.repeat.${item.repeat.type}`)}{item.repeat.until ? ` → ${item.repeat.until}` : ''}
+            </span>
+          )}
+          {category && (
+            <span
+              className="ml-2 text-[10px] font-medium px-1.5 py-0.5 rounded"
+              style={{ backgroundColor: category.color + '1a', color: category.color }}
+            >
+              {category.name}
             </span>
           )}
           {item.notes && <span className="ml-1.5 text-[10px] text-gray-400" title={t('todo.notes')}>📝</span>}

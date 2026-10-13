@@ -12,6 +12,7 @@ import EatingDashboard from '../eating/EatingDashboard'
 import DiaryDashboard from '../diary/DiaryDashboard'
 import SportDashboard from '../sport/SportDashboard'
 import HabitDashboard from '../habit/HabitDashboard'
+import TodoDashboard from '../todo/TodoDashboard'
 import StudyDashboard from '../study/StudyDashboard'
 import WorkDashboard from '../work/WorkDashboard'
 import PodcastDashboard from '../podcast/PodcastDashboard'
@@ -39,6 +40,7 @@ const MODE_COLORS: Record<AppMode, { light: string; dark: string }> = {
   diary:    { light: '#e9ddee', dark: '#211428' },
   sport:    { light: '#d4eef0', dark: '#142028' },
   habit:    { light: '#f0e6d0', dark: '#28201a' },
+  todo:     { light: '#dce4f4', dark: '#141c2a' },
   study:    { light: '#dce4f4', dark: '#141c2a' },
   work:     { light: '#f4e6d0', dark: '#281e14' },
   podcast:  { light: '#f2dde6', dark: '#28141e' },
@@ -89,6 +91,7 @@ function AppShell() {
       case 'diary': return <DiaryDashboard />
       case 'sport': return <SportDashboard />
       case 'habit': return <HabitDashboard />
+      case 'todo': return <TodoDashboard />
       case 'study': return <StudyDashboard />
       case 'work': return <WorkDashboard />
       case 'podcast': return <PodcastDashboard />
