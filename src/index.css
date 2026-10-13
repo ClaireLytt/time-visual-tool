@@ -61,6 +61,22 @@ body {
   @apply outline-2 outline-offset-2 outline-px-gold;
 }
 
+/* ── Touch-target expansion ──
+   On touch devices, grow every small button/link's hit area to 44x44px
+   via an invisible pseudo-element, without changing the visual size.
+   For an element already >=44px the inset computes positive and min()
+   clamps it to 0 (no change). */
+@media (pointer: coarse) {
+  button, a, [role="button"], label:has(> input[type="checkbox"]) {
+    position: relative;
+  }
+  button::after, a::after, [role="button"]::after {
+    content: '';
+    position: absolute;
+    inset: min(0px, calc((100% - 44px) / 2));
+  }
+}
+
 /* Tactile press feedback — soft push-down */
 button:active, a:active, [role="button"]:active {
   transform: translateY(1px) scale(0.98);

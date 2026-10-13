@@ -332,7 +332,7 @@ function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpda
         <button
           type="button"
           onClick={() => setShowMacros(s => !s)}
-          className="text-xs font-medium text-mode-eating hover:opacity-80 transition-colors flex items-center gap-1"
+          className="py-2 -my-1 text-xs font-medium text-mode-eating hover:opacity-80 transition-colors flex items-center gap-1"
           aria-expanded={showMacros}
         >
           <span>{t('eating.macroToggle')}</span>
@@ -387,7 +387,7 @@ function EatingEntryForm({ selectedDate, categories, onAdd, editingEntry, onUpda
         <button
           type="button"
           onClick={() => setShowFoodSearch(s => !s)}
-          className="text-xs font-medium text-mode-eating hover:opacity-80 transition-colors flex items-center gap-1"
+          className="py-2 -my-1 text-xs font-medium text-mode-eating hover:opacity-80 transition-colors flex items-center gap-1"
           aria-expanded={showFoodSearch}
         >
           <span>{t('eating.foodSearch')}</span>

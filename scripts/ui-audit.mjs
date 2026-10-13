@@ -79,22 +79,39 @@ function pageChecks({ minTap }) {
     return `${tag}${id}${cls}${text ? ` "${text}"` : ''}`
   }
 
-  // 1. touch targets
+  // 1. touch targets — functional hit test: an element passes if a tap
+  // anywhere in a 44px square centered on it still reaches the element
+  // (covers padding, ::after hit-area expansion, and larger parents).
+  const scrollX0 = window.scrollX, scrollY0 = window.scrollY
   for (const el of document.querySelectorAll('button, a, [role="button"], input[type="checkbox"], input[type="radio"], select, summary')) {
     if (!visible(el)) continue
     // sr-only / skip links are visually hidden on purpose
     if (el.classList.contains('sr-only') || el.getBoundingClientRect().width <= 2) continue
-    // skip elements inside a larger interactive parent (padding counts toward the parent)
-    const r = el.getBoundingClientRect()
-    if (r.width < minTap || r.height < minTap) {
-      const p = el.parentElement?.closest('button, a, [role="button"], label')
-      if (p) {
-        const pr = p.getBoundingClientRect()
-        if (pr.width >= minTap && pr.height >= minTap) continue
+    let r = el.getBoundingClientRect()
+    if (r.width >= minTap && r.height >= minTap) continue
+    // bring it into the viewport so elementFromPoint works
+    el.scrollIntoView({ block: 'center', behavior: 'instant' })
+    r = el.getBoundingClientRect()
+    const cx = Math.min(Math.max(r.left + r.width / 2, minTap / 2), window.innerWidth - minTap / 2)
+    const cy = Math.min(Math.max(r.top + r.height / 2, minTap / 2), window.innerHeight - minTap / 2)
+    const probe = (x, y) => {
+      const t = document.elementFromPoint(x, y)
+      return {
+        ok: !!t && (t === el || el.contains(t) || t.contains(el)),
+        // a miss that lands on another control is tolerable for packed
+        // groups (WCAG 2.5.8 spacing exception) as long as el >= 24px
+        interactive: !!t && !!t.closest('button, a, [role="button"], label'),
       }
-      out.smallTargets.push(`${describe(el)} — ${Math.round(r.width)}x${Math.round(r.height)}px`)
+    }
+    const half = minTap / 2 - 1
+    const probes = [probe(cx, cy - half), probe(cx, cy + half), probe(cx - half, cy), probe(cx + half, cy)]
+    const allOk = probes.every(p => p.ok)
+    const groupException = r.width >= 24 && r.height >= 24 && probes.every(p => p.ok || p.interactive)
+    if (!allOk && !groupException) {
+      out.smallTargets.push(`${describe(el)} — ${Math.round(r.width)}x${Math.round(r.height)}px effective <${minTap}px`)
     }
   }
+  window.scrollTo(scrollX0, scrollY0)
 
   // 2. horizontal overflow
   const docEl = document.documentElement

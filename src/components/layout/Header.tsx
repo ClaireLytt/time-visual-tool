@@ -31,15 +31,24 @@ const MODE_CONFIG: Record<AppMode, { icon: typeof ClockIcon; colorClass: string;
 function AvatarButton({ size = 32, onClick }: { size?: number; onClick: () => void }) {
   const { user } = useAuth()
   const initial = user?.email?.charAt(0).toUpperCase() ?? '?'
+  // Visual circle stays `size`px; the button provides a >=44px hit area
+  // without shifting layout (negative margins absorb the extra padding).
+  const HIT = 44
+  const pad = Math.max(0, (HIT - size) / 2)
   return (
     <motion.button
       onClick={onClick}
       whileTap={{ scale: 0.92 }}
-      className="rounded-full bg-[#8B9DAB] flex items-center justify-center text-white font-bold shrink-0 shadow-sm"
-      style={{ width: size, height: size, fontSize: size * 0.4 }}
+      className="flex items-center justify-center shrink-0"
+      style={{ width: HIT, height: HIT, margin: -pad }}
       aria-label="Profile"
     >
-      {initial}
+      <span
+        className="rounded-full bg-[#8B9DAB] flex items-center justify-center text-white font-bold shadow-sm"
+        style={{ width: size, height: size, fontSize: size * 0.4 }}
+      >
+        {initial}
+      </span>
     </motion.button>
   )
 }
@@ -77,7 +86,7 @@ function Header({ mode, onBack }: HeaderProps) {
               <motion.button
                 onClick={onBack}
                 whileTap={{ scale: 0.88 }}
-                className="p-2 -ml-2 rounded-xl text-gray-500 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                className="p-3 -ml-3 -my-2 rounded-xl text-gray-500 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                 aria-label={t('overview.title')}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
