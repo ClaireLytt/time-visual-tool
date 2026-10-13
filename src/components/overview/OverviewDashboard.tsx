@@ -25,9 +25,10 @@ interface OverviewDashboardProps {
 }
 
 /* ── Reusable card shell with pixel scene ── */
-function Card({ mode, scene, children, onClick }: {
+function Card({ mode, scene, subtitle, children, onClick }: {
   mode: AppMode
   scene: string
+  subtitle?: string
   children: React.ReactNode
   onClick?: () => void
 }) {
@@ -48,6 +49,7 @@ function Card({ mode, scene, children, onClick }: {
       <div className="px-2 py-1.5 flex flex-col gap-0.5">
         <span className="font-pixel text-[8px] leading-none" style={{ color }}>{scene}</span>
         {children}
+        {subtitle && <span className="text-[10px] text-gray-400 leading-tight">{subtitle}</span>}
       </div>
     </Tag>
   )
@@ -151,6 +153,7 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
               <span className="text-3xl font-bold tabular-nums tracking-display text-gray-900 dark:text-gray-100">
                 {fmtDuration(timeMinutes)}
               </span>
+              <span className="text-[10px] text-gray-400">{t('app.subtitle')}</span>
               {time.dailyHoursGoal && (
                 <span className="text-sm text-gray-400 tabular-nums">/ {time.dailyHoursGoal}h</span>
               )}
@@ -164,7 +167,7 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
 
       {/* ── 2×3 Grid: Finance, Eating, Sport, Diary, Study, Work ── */}
       <div className="grid grid-cols-3 gap-2">
-        <Card mode="finance" scene="💰 TREASURE" onClick={() => onNavigate('finance')}>
+        <Card mode="finance" scene="💰 TREASURE" subtitle={t('financeApp.subtitle')} onClick={() => onNavigate('finance')}>
           <div className="flex items-center gap-1 flex-wrap">
             {financeIncome > 0 && <span className="text-sm font-bold text-px-green tabular-nums">+¥{financeIncome.toLocaleString()}</span>}
             {financeExpense > 0 && <span className="text-sm font-bold text-px-red tabular-nums">−¥{financeExpense.toLocaleString()}</span>}
@@ -172,34 +175,34 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
           </div>
         </Card>
 
-        <Card mode="eating" scene="🍺 TAVERN" onClick={() => onNavigate('eating')}>
+        <Card mode="eating" scene="🍺 TAVERN" subtitle={t('eatingApp.subtitle')} onClick={() => onNavigate('eating')}>
           <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{eatingCalories.toLocaleString()} <span className="text-[10px] font-normal text-gray-400">kcal</span></span>
         </Card>
 
-        <Card mode="sport" scene="⚔️ ARENA" onClick={() => onNavigate('sport')}>
+        <Card mode="sport" scene="⚔️ ARENA" subtitle={t('sportApp.subtitle')} onClick={() => onNavigate('sport')}>
           {sportToday.length > 0
             ? <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{fmtDuration(sportDuration)}</span>
             : <span className="text-xs text-gray-400">{t('overview.restDay')}</span>
           }
         </Card>
 
-        <Card mode="diary" scene="📜 LIBRARY" onClick={() => onNavigate('diary')}>
+        <Card mode="diary" scene="📜 LIBRARY" subtitle={t('diaryApp.subtitle')} onClick={() => onNavigate('diary')}>
           <span className={`text-sm font-semibold ${hasDiary ? 'text-px-purple' : 'text-gray-400'}`}>
             {hasDiary ? '✓ ' + t('overview.written') : t('overview.notYet')}
           </span>
         </Card>
 
-        <Card mode="study" scene="🎓 ACADEMY" onClick={() => onNavigate('study')}>
+        <Card mode="study" scene="🎓 ACADEMY" subtitle={t('studyApp.subtitle')} onClick={() => onNavigate('study')}>
           <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{fmtDuration(studyMinutes)}</span>
           <span className="text-[10px] text-gray-400">{studyToday.length} {t('study.entryCount')}</span>
         </Card>
 
-        <Card mode="work" scene="🏢 GUILD HALL" onClick={() => onNavigate('work')}>
+        <Card mode="work" scene="🏢 GUILD HALL" subtitle={t('workApp.subtitle')} onClick={() => onNavigate('work')}>
           <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{fmtDuration(workMinutes)}</span>
           <span className="text-[10px] text-gray-400">{workToday.length} {t('work.entryCount')}</span>
         </Card>
 
-        <Card mode="podcast" scene="🎧 BARD HALL" onClick={() => onNavigate('podcast')}>
+        <Card mode="podcast" scene="🎧 BARD HALL" subtitle={t('podcastApp.subtitle')} onClick={() => onNavigate('podcast')}>
           <div className="flex items-center gap-1">
             {podcastStarred > 0 && <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">⭐{podcastStarred}</span>}
             {podcastWords > 0 && <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">📝{podcastWords}</span>}
@@ -207,23 +210,23 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
           </div>
         </Card>
 
-        <Card mode="youtube" scene="📺 THEATER" onClick={() => onNavigate('youtube')}>
-          <span className="text-xs text-gray-400">{t('youtubeApp.subtitle')}</span>
+        <Card mode="youtube" scene="📺 THEATER" subtitle={t('youtubeApp.subtitle')} onClick={() => onNavigate('youtube')}>
+          <span className="text-sm text-transparent">—</span>
         </Card>
 
-        <Card mode="ielts" scene="📝 EXAM HALL" onClick={() => onNavigate('ielts')}>
+        <Card mode="ielts" scene="📝 EXAM HALL" subtitle={t('ieltsApp.subtitle')} onClick={() => onNavigate('ielts')}>
           {ieltsToday.length > 0
             ? <>
                 <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{fmtDuration(ieltsMinutes)}</span>
                 <span className="text-[10px] text-gray-400">{ieltsToday.length} {t('ielts.sessions')}</span>
               </>
-            : <span className="text-xs text-gray-400">{t('ieltsApp.subtitle')}</span>
+            : <span className="text-sm text-transparent">—</span>
           }
         </Card>
       </div>
 
       {/* ── Habit: inline check-in ── */}
-      <Card mode="habit" scene="🏰 CASTLE">
+      <Card mode="habit" scene="🏰 CASTLE" subtitle={t('habitApp.subtitle')}>
         <div className="flex items-center justify-between">
           <span className="text-lg font-bold tabular-nums text-gray-900 dark:text-gray-100">{habitCheckedCount}/{habit.habits.length}</span>
           <button onClick={() => onNavigate('habit')} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 no-press">→</button>
@@ -246,7 +249,7 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
       </Card>
 
       {/* ── Todo: inline quick-add ── */}
-      <Card mode="todo" scene="📋 QUEST LOG">
+      <Card mode="todo" scene="📋 QUEST LOG" subtitle={t('todoApp.subtitle')}>
         <div className="flex items-center justify-between">
           <span className="text-lg font-bold tabular-nums text-gray-900 dark:text-gray-100">{todoDoneCount}/{todoToday.length}</span>
           <button onClick={() => onNavigate('todo')} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 no-press">→</button>
