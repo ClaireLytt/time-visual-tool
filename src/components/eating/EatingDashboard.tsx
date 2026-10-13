@@ -14,6 +14,7 @@ import EatingEntryList from './EatingEntryList'
 import EatingProportionChart from './EatingProportionChart'
 import EatingDailyChart from './EatingDailyChart'
 import MealTemplates from './MealTemplates'
+import GameOverlay from '../common/GameOverlay'
 import { exportEatingToFile, readEatingImportFile } from '../../utils/eatingTransfer'
 import { LATE_NIGHT_CATEGORY_NAME } from '../../constants/eating'
 import type { EatingEntry, EatingStorageData, EatingViewMode } from '../../types/eating'
@@ -25,6 +26,7 @@ function EatingDashboard() {
   const [selectedDate, setSelectedDate] = useState(() => format(new Date(), 'yyyy-MM-dd'))
   const [viewMode, setViewMode] = useState<EatingViewMode>('day')
   const [editingEntry, setEditingEntry] = useState<EatingEntry | null>(null)
+  const [showGame, setShowGame] = useState<'catcher' | 'slice' | 'meal' | null>(null)
   const {
     entries, categories, data,
     addEntry, deleteEntry, updateEntry,
@@ -112,6 +114,24 @@ function EatingDashboard() {
             </>
           }
         />
+
+        {/* Game entry buttons */}
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-1 scrollbar-hide">
+          {([
+            { key: 'catcher' as const, emoji: '🍽️', label: 'game.foodCatcher' },
+            { key: 'slice' as const, emoji: '🔪', label: 'game.sliceDice' },
+            { key: 'meal' as const, emoji: '🥗', label: 'game.mealBuilder' },
+          ]).map(g => (
+            <button
+              key={g.key}
+              onClick={() => setShowGame(g.key)}
+              className="panel p-2.5 flex-1 min-w-0 flex flex-col items-center gap-1 group hover:border-mode-eating/30 transition-colors"
+            >
+              <span className="text-xl" role="img" aria-hidden="true">{g.emoji}</span>
+              <span className="text-[11px] font-medium text-gray-700 dark:text-gray-200 text-center leading-tight">{t(g.label)}</span>
+            </button>
+          ))}
+        </div>
 
         <DatePicker selectedDate={selectedDate} onDateChange={handleDateChange} viewMode={viewMode} />
         <EatingSummaryCard
@@ -213,6 +233,9 @@ function EatingDashboard() {
           </div>
         )}
       </div>
+      <GameOverlay open={showGame === 'catcher'} onClose={() => setShowGame(null)} gamePath="games/food-catcher.html" titleKey="game.foodCatcher" />
+      <GameOverlay open={showGame === 'slice'} onClose={() => setShowGame(null)} gamePath="games/slice-dice.html" titleKey="game.sliceDice" />
+      <GameOverlay open={showGame === 'meal'} onClose={() => setShowGame(null)} gamePath="games/meal-builder.html" titleKey="game.mealBuilder" />
     </CategoryProvider>
   )
 }

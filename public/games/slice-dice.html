@@ -1,0 +1,968 @@
+<title>SLICE & DICE</title>
+<style>
+  :root {
+    --bg: #1e1220;
+    --orange: #ff6b35;
+    --green: #00e676;
+    --gold: #ffd700;
+    --red: #ff5252;
+    --white: #f0e8f0;
+    --dim: #1a1520;
+    color-scheme: dark;
+  }
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--white);
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    font-family: 'Courier New', monospace;
+  }
+  canvas {
+    display: block;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+</style>
+
+<canvas id="c"></canvas>
+
+<script>
+// ============================================================
+//  切切乐 SLICE & DICE
+//  Canvas 水果忍者风格游戏 — 滑动切割食材
+//  60fps · 自适应竖屏横屏 · 触屏 + 鼠标
+// ============================================================
+(function () {
+  'use strict';
+
+  // ── i18n ─────────────────────────────────────────────────
+  var LANG = new URLSearchParams(location.search).get('lang') || 'zh';
+  var I18N = {
+    zh: {
+      subtitle: '切  切  乐',
+      hint: '滑动手指切割食材！',
+      hintDesktop: 'P/Esc 暂停  ·  R 重开',
+      clickStart: '[ 点击开始 ]',
+      clickStartDesktop: '[ CLICK / ENTER ]',
+      selectDiff: '选 择 难 度',
+      easy: '简单', normal: '普通', hard: '困难',
+      easyDesc: '慢速 · 90秒 · 少炸弹',
+      normalDesc: '中速 · 60秒 · 适中',
+      hardDesc: '快速 · 45秒 · 多炸弹',
+      clickSelect: '点击选择',
+      clickSelectDesktop: '点击选择 或按 1 / 2 / 3',
+      progressRecord: 'PROGRESS RECORD｜进度记录',
+      plays: '游玩', playsUnit: '局',
+      slices: '切割', slicesUnit: '次',
+      avg: '平均', avgUnit: '分',
+      highScore: '最高', highScoreUnit: '分',
+      recentScore: '最近得分',
+      noRecord: '暂无记录',
+      pauseHint: 'P / Esc 继续  ·  R 重开',
+      sliced: '切割数', missed: '漏掉数',
+      bombsHit: '炸弹', maxCombo: '最高连击',
+      highRecord: '最高纪录',
+      clickReplay: '[ 点击再来 ]',
+      clickReplayDesktop: '[ CLICK / R / ENTER ]',
+      achieveUnlock: '成就解锁',
+      combo5: '连击 x5', score50: '单局50分',
+      score100: '单局100分', slices20: '单局切20个',
+      noBombs: '零炸弹通关', firstSlice: '首次切割',
+      lives: '生命',
+      gameOver: '游戏结束',
+      exitGame: '退出游戏',
+    },
+    en: {
+      subtitle: 'S L I C E  &  D I C E',
+      hint: 'Swipe to slice the food!',
+      hintDesktop: 'P/Esc Pause  ·  R Restart',
+      clickStart: '[ Tap to Start ]',
+      clickStartDesktop: '[ CLICK / ENTER ]',
+      selectDiff: 'SELECT DIFFICULTY',
+      easy: 'Easy', normal: 'Normal', hard: 'Hard',
+      easyDesc: 'Slow · 90s · Few bombs',
+      normalDesc: 'Medium · 60s · Moderate',
+      hardDesc: 'Fast · 45s · Many bombs',
+      clickSelect: 'Tap to select',
+      clickSelectDesktop: 'Click or press 1 / 2 / 3',
+      progressRecord: 'PROGRESS RECORD',
+      plays: 'Plays', playsUnit: '',
+      slices: 'Slices', slicesUnit: '',
+      avg: 'Average', avgUnit: 'pts',
+      highScore: 'Best', highScoreUnit: 'pts',
+      recentScore: 'Recent Scores',
+      noRecord: 'No records yet',
+      pauseHint: 'P / Esc Resume  ·  R Restart',
+      sliced: 'Sliced', missed: 'Missed',
+      bombsHit: 'Bombs', maxCombo: 'Max Combo',
+      highRecord: 'High Score',
+      clickReplay: '[ Tap to Replay ]',
+      clickReplayDesktop: '[ CLICK / R / ENTER ]',
+      achieveUnlock: 'Achievement Unlocked',
+      combo5: 'Combo x5', score50: '50 Points',
+      score100: '100 Points', slices20: '20 Slices',
+      noBombs: 'No Bombs', firstSlice: 'First Slice',
+      lives: 'Lives',
+      gameOver: 'GAME OVER',
+      exitGame: 'Exit Game',
+    }
+  };
+  var T = I18N[LANG] || I18N.zh;
+
+  // ── Canvas setup ─────────────────────────────────────────
+  var cv = document.getElementById('c');
+  var cx = cv.getContext('2d');
+  var W = 0, H = 0, U = 1;
+
+  function resize() {
+    var dpr = window.devicePixelRatio || 1;
+    var nw = window.innerWidth;
+    var nh = window.innerHeight;
+    if (nw === W && nh === H) return;
+    W = nw; H = nh;
+    cv.width = W * dpr;
+    cv.height = H * dpr;
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    U = Math.min(W, H) / 100;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  var isDesktop = !('ontouchstart' in window) && window.innerWidth > 768;
+
+  // ── Audio ────────────────────────────────────────────────
+  var audioCtx;
+  function ensureAudio() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  }
+  function playTone(freq, dur, type, vol) {
+    if (!audioCtx) return;
+    var o = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+    o.type = type || 'sine';
+    o.frequency.value = freq;
+    g.gain.value = vol || 0.15;
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + dur);
+  }
+  function sndSlice()   { playTone(600, 0.08, 'sawtooth', 0.12); playTone(900, 0.06, 'sine', 0.1); }
+  function sndBomb()    { playTone(80, 0.4, 'sawtooth', 0.25); playTone(60, 0.5, 'square', 0.15); }
+  function sndChili()   { playTone(400, 0.15, 'square', 0.12); playTone(200, 0.2, 'sawtooth', 0.1); }
+  function sndMiss()    { playTone(250, 0.12, 'triangle', 0.08); }
+  function sndAchieve() { playTone(660, 0.1, 'sine', 0.2); setTimeout(function(){ playTone(880, 0.1, 'sine', 0.2); }, 100); setTimeout(function(){ playTone(1100, 0.15, 'sine', 0.2); }, 200); }
+  function sndGold()    { playTone(1200, 0.12, 'sine', 0.2); setTimeout(function(){ playTone(1500, 0.1, 'sine', 0.15); }, 80); }
+
+  // ── Food definitions ─────────────────────────────────────
+  var GOOD_FOODS = [
+    { emoji: '🍎', pts: 1 }, { emoji: '🍊', pts: 1 }, { emoji: '🥝', pts: 2 },
+    { emoji: '🍓', pts: 2 }, { emoji: '🍇', pts: 2 }, { emoji: '🍉', pts: 3 },
+    { emoji: '🥕', pts: 1 }, { emoji: '🥦', pts: 2 }, { emoji: '🍌', pts: 1 },
+    { emoji: '🍑', pts: 2 },
+  ];
+
+  // ── Difficulty presets ───────────────────────────────────
+  var DIFFS = [
+    { time: 90, launchInterval: 2.5, launchCount: 1, bombChance: 0.06, chiliChance: 0.03, gravity: 0.22, launchSpeed: 0.7 },
+    { time: 60, launchInterval: 1.6, launchCount: 2, bombChance: 0.12, chiliChance: 0.05, gravity: 0.18, launchSpeed: 0.85 },
+    { time: 45, launchInterval: 1.0, launchCount: 3, bombChance: 0.18, chiliChance: 0.07, gravity: 0.15, launchSpeed: 1.0 },
+  ];
+
+  // ── Achievements ─────────────────────────────────────────
+  var ACHIEVEMENTS = [
+    { id: 'firstSlice', icon: '🔪', label: function(){ return T.firstSlice; }, check: function(s){ return s.totalSliced >= 1; } },
+    { id: 'combo5',     icon: '🔥', label: function(){ return T.combo5; },     check: function(s){ return s.maxCombo >= 5; } },
+    { id: 'score50',    icon: '🏅', label: function(){ return T.score50; },    check: function(s){ return s.score >= 50; } },
+    { id: 'score100',   icon: '🏆', label: function(){ return T.score100; },   check: function(s){ return s.score >= 100; } },
+    { id: 'slices20',   icon: '🎯', label: function(){ return T.slices20; },   check: function(s){ return s.totalSliced >= 20; } },
+    { id: 'noBombs',    icon: '🛡️', label: function(){ return T.noBombs; },    check: function(s){ return s.bombsHit === 0 && s.totalSliced >= 5; } },
+  ];
+
+  // ── Game state ───────────────────────────────────────────
+  var S = { MENU: 0, DIFF: 1, COUNTDOWN: 2, PLAY: 3, PAUSE: 4, OVER: 5 };
+  var state = S.MENU;
+  var diff = 1;
+  var score = 0, lives = 0, combo = 0, maxCombo = 0, totalSliced = 0, totalMissed = 0, bombsHit = 0;
+  var timer = 0, launchTimer = 0;
+  var items = [], particles = [], floatTexts = [], achBanners = [], slashTrail = [];
+  var shakeX = 0, shakeY = 0, shakeDur = 0;
+  var countdownVal = 3, countdownTime = 0;
+  var swiping = false;
+
+  // ── Stats persistence ────────────────────────────────────
+  function loadStats()  { try { return JSON.parse(localStorage.getItem('sd_stats')) || {}; } catch(e) { return {}; } }
+  function saveStats(s) { try { localStorage.setItem('sd_stats', JSON.stringify(s)); } catch(e) {} }
+  function loadAch()    { try { return JSON.parse(localStorage.getItem('sd_ach')) || {}; } catch(e) { return {}; } }
+  function saveAch(a)   { try { localStorage.setItem('sd_ach', JSON.stringify(a)); } catch(e) {} }
+
+  function getStats(d) {
+    var s = loadStats();
+    return s[d] || { plays: 0, totalScore: 0, totalSlices: 0, high: 0, recent: [] };
+  }
+  function recordGame(d, sc, sl) {
+    var s = loadStats();
+    var ds = s[d] || { plays: 0, totalScore: 0, totalSlices: 0, high: 0, recent: [] };
+    ds.plays++; ds.totalScore += sc; ds.totalSlices += sl;
+    if (sc > ds.high) ds.high = sc;
+    ds.recent.unshift(sc);
+    if (ds.recent.length > 5) ds.recent = ds.recent.slice(0, 5);
+    s[d] = ds; saveStats(s);
+  }
+
+  // ── Effects ──────────────────────────────────────────────
+  function spawnParticles(x, y, color, count) {
+    for (var i = 0; i < count; i++) {
+      var a = Math.random() * Math.PI * 2;
+      var sp = 1 + Math.random() * 4;
+      particles.push({ x: x, y: y, vx: Math.cos(a)*sp*U, vy: Math.sin(a)*sp*U - 2*U, life: 1, decay: 0.02+Math.random()*0.02, size: (1+Math.random()*2)*U, color: color });
+    }
+  }
+  function addFloatText(x, y, text, color) {
+    floatTexts.push({ x: x, y: y, text: text, color: color, life: 1, decay: 0.018 });
+  }
+  function addShake(intensity) {
+    shakeDur = 10;
+    shakeX = (Math.random()-0.5) * intensity * U;
+    shakeY = (Math.random()-0.5) * intensity * U;
+  }
+
+  // ── Game init ────────────────────────────────────────────
+  function initGame() {
+    var d = DIFFS[diff];
+    score = 0; lives = 3; combo = 0; maxCombo = 0;
+    totalSliced = 0; totalMissed = 0; bombsHit = 0;
+    timer = d.time; launchTimer = 0;
+    items = []; particles = []; floatTexts = []; achBanners = []; slashTrail = [];
+    shakeX = 0; shakeY = 0; shakeDur = 0;
+  }
+  function startCountdown() {
+    initGame();
+    state = S.COUNTDOWN;
+    countdownVal = 3; countdownTime = 0;
+  }
+
+  // ── Launch items ─────────────────────────────────────────
+  function launchWave() {
+    var d = DIFFS[diff];
+    var elapsed = d.time - timer;
+    var progressMul = 1 + elapsed / d.time * 0.4;
+    var count = Math.min(Math.floor(d.launchCount + (progressMul - 1) * 2), 5);
+
+    for (var i = 0; i < count; i++) {
+      var r = Math.random();
+      var item;
+      if (r < d.bombChance) {
+        item = { emoji: '💣', pts: 0, isBomb: true };
+      } else if (r < d.bombChance + d.chiliChance) {
+        item = { emoji: '🌶️', pts: 0, isChili: true };
+      } else {
+        var fi = Math.floor(Math.random() * GOOD_FOODS.length);
+        item = { emoji: GOOD_FOODS[fi].emoji, pts: GOOD_FOODS[fi].pts };
+      }
+
+      var margin = W * 0.15;
+      item.x = margin + Math.random() * (W - 2 * margin);
+      item.y = H + 4 * U;
+      item.size = (3.5 + Math.random()) * U;
+      // Launch upward with arc
+      var angle = -Math.PI/2 + (Math.random() - 0.5) * 0.6;
+      var speed = (6 + Math.random() * 3) * U * d.launchSpeed;
+      item.vx = Math.cos(angle) * speed * 0.4;
+      item.vy = Math.sin(angle) * speed;
+      item.rot = 0;
+      item.rotSpeed = (Math.random() - 0.5) * 0.15;
+      item.sliced = false;
+      item.sliceTime = 0;
+      // Halves for sliced animation
+      item.halfL = null; item.halfR = null;
+      items.push(item);
+    }
+  }
+
+  // ── Slash collision ──────────────────────────────────────
+  function checkSlash(x1, y1, x2, y2) {
+    if (state !== S.PLAY) return;
+    for (var i = items.length - 1; i >= 0; i--) {
+      var it = items[i];
+      if (it.sliced) continue;
+      var dx = it.x - (x1 + x2) / 2;
+      var dy = it.y - (y1 + y2) / 2;
+      var dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < it.size * 2.5) {
+        sliceItem(it, i);
+      }
+    }
+  }
+
+  function sliceItem(it, idx) {
+    it.sliced = true;
+    it.sliceTime = 0;
+    // Create halves that fly apart
+    it.halfL = { x: it.x, y: it.y, vx: -2*U + it.vx*0.3, vy: it.vy*0.5 - U, rot: it.rot };
+    it.halfR = { x: it.x, y: it.y, vx:  2*U + it.vx*0.3, vy: it.vy*0.5 - U, rot: it.rot };
+
+    if (it.isBomb) {
+      bombsHit++;
+      lives--;
+      combo = 0;
+      spawnParticles(it.x, it.y, '#ff5252', 20);
+      addFloatText(it.x, it.y, '💥 -1', '#ff5252');
+      addShake(6);
+      sndBomb();
+      if (lives <= 0) { endGame(); }
+    } else if (it.isChili) {
+      combo = 0;
+      spawnParticles(it.x, it.y, '#ff9800', 12);
+      addFloatText(it.x, it.y, '🌶️ COMBO LOST', '#ff9800');
+      addShake(3);
+      sndChili();
+    } else {
+      totalSliced++;
+      combo++;
+      if (combo > maxCombo) maxCombo = combo;
+      var mul = combo >= 5 ? 3 : combo >= 3 ? 2 : 1;
+      var pts = it.pts * mul;
+      score += pts;
+      var txt = '+' + pts;
+      if (mul > 1) txt += ' x' + mul;
+      var color = pts >= 5 ? '#ffd700' : '#00e676';
+      spawnParticles(it.x, it.y, color, 8);
+      addFloatText(it.x, it.y, txt, color);
+      sndSlice();
+      if (pts >= 5) sndGold();
+    }
+  }
+
+  // ── Input handling ───────────────────────────────────────
+  var lastTouchX = 0, lastTouchY = 0;
+
+  cv.addEventListener('touchstart', function(e) {
+    e.preventDefault(); ensureAudio();
+    var t = e.changedTouches[0];
+    if (state === S.MENU || state === S.OVER || state === S.DIFF) { handleClick(t.clientX, t.clientY); return; }
+    if (state === S.PAUSE) { handlePauseClick(t.clientX, t.clientY); return; }
+    if (isExitBtnClick(t.clientX, t.clientY)) { window.parent.postMessage({ type: 'game-exit' }, '*'); return; }
+    swiping = true;
+    lastTouchX = t.clientX; lastTouchY = t.clientY;
+    slashTrail.push({ x: t.clientX, y: t.clientY, life: 1 });
+  }, { passive: false });
+
+  cv.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+    if (!swiping || state !== S.PLAY) return;
+    var t = e.changedTouches[0];
+    checkSlash(lastTouchX, lastTouchY, t.clientX, t.clientY);
+    slashTrail.push({ x: t.clientX, y: t.clientY, life: 1 });
+    if (slashTrail.length > 30) slashTrail.shift();
+    lastTouchX = t.clientX; lastTouchY = t.clientY;
+  }, { passive: false });
+
+  cv.addEventListener('touchend', function(e) {
+    swiping = false;
+  });
+
+  // Mouse
+  var mouseDown = false;
+  cv.addEventListener('mousedown', function(e) {
+    ensureAudio();
+    if (state === S.MENU || state === S.OVER || state === S.DIFF) { handleClick(e.clientX, e.clientY); return; }
+    if (state === S.PAUSE) { handlePauseClick(e.clientX, e.clientY); return; }
+    if (isExitBtnClick(e.clientX, e.clientY)) { window.parent.postMessage({ type: 'game-exit' }, '*'); return; }
+    mouseDown = true;
+    lastTouchX = e.clientX; lastTouchY = e.clientY;
+    slashTrail.push({ x: e.clientX, y: e.clientY, life: 1 });
+  });
+  cv.addEventListener('mousemove', function(e) {
+    if (!mouseDown || state !== S.PLAY) return;
+    checkSlash(lastTouchX, lastTouchY, e.clientX, e.clientY);
+    slashTrail.push({ x: e.clientX, y: e.clientY, life: 1 });
+    if (slashTrail.length > 30) slashTrail.shift();
+    lastTouchX = e.clientX; lastTouchY = e.clientY;
+  });
+  cv.addEventListener('mouseup', function() { mouseDown = false; });
+
+  // Keyboard
+  window.addEventListener('keydown', function(e) {
+    ensureAudio();
+    if (state === S.MENU) {
+      if (e.key === 'Enter' || e.key === ' ') { state = S.DIFF; e.preventDefault(); }
+    } else if (state === S.DIFF) {
+      if (e.key === '1') { diff = 0; startCountdown(); }
+      else if (e.key === '2') { diff = 1; startCountdown(); }
+      else if (e.key === '3') { diff = 2; startCountdown(); }
+    } else if (state === S.PLAY) {
+      if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') { state = S.PAUSE; e.preventDefault(); }
+      if (e.key === 'r' || e.key === 'R') { startCountdown(); }
+    } else if (state === S.PAUSE) {
+      if (e.key === 'q' || e.key === 'Q') { window.parent.postMessage({ type: 'game-exit' }, '*'); return; }
+      if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') { state = S.PLAY; e.preventDefault(); }
+      if (e.key === 'r' || e.key === 'R') { startCountdown(); }
+    } else if (state === S.OVER) {
+      if (e.key === 'q' || e.key === 'Q') { window.parent.postMessage({ type: 'game-exit' }, '*'); return; }
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'r' || e.key === 'R') { state = S.DIFF; e.preventDefault(); }
+    }
+  });
+
+  function isExitBtnClick(mx, my) {
+    var pad = 2 * U;
+    var exitBtnW = 10 * U, exitBtnH = 3 * U;
+    var exitBtnX = W / 2 - exitBtnW / 2, exitBtnY = pad + 5 * U;
+    return mx >= exitBtnX && mx <= exitBtnX + exitBtnW && my >= exitBtnY && my <= exitBtnY + exitBtnH;
+  }
+
+  function handlePauseClick(mx, my) {
+    var exitW = 36 * U, exitH = 5 * U;
+    var exitX = W/2 - exitW/2, exitY = H/2 + 9*U;
+    if (mx >= exitX && mx <= exitX + exitW && my >= exitY && my <= exitY + exitH) {
+      window.parent.postMessage({ type: 'game-exit' }, '*');
+      return;
+    }
+    state = S.PLAY;
+  }
+
+  function handleClick(mx, my) {
+    if (state === S.MENU) {
+      state = S.DIFF;
+    } else if (state === S.DIFF) {
+      var btnW = Math.min(W * 0.7, 280);
+      var btnH = 54;
+      var gap = 16;
+      var totalH = 3 * btnH + 2 * gap;
+      var startY = H / 2 - totalH / 2 + 20;
+      for (var i = 0; i < 3; i++) {
+        var by = startY + i * (btnH + gap);
+        var bx = W / 2 - btnW / 2;
+        if (mx >= bx && mx <= bx + btnW && my >= by && my <= by + btnH) {
+          diff = i; startCountdown(); return;
+        }
+      }
+    } else if (state === S.OVER) {
+      var exitW = 36 * U, exitH = 5 * U;
+      var exitX = W/2 - exitW/2, exitY = H * 0.90;
+      if (mx >= exitX && mx <= exitX + exitW && my >= exitY && my <= exitY + exitH) {
+        window.parent.postMessage({ type: 'game-exit' }, '*');
+        return;
+      }
+      state = S.DIFF;
+    }
+  }
+
+  // ── End game ─────────────────────────────────────────────
+  function endGame() {
+    state = S.OVER;
+    var ach = loadAch();
+    var gs = { score: score, maxCombo: maxCombo, totalSliced: totalSliced, bombsHit: bombsHit };
+    for (var i = 0; i < ACHIEVEMENTS.length; i++) {
+      var a = ACHIEVEMENTS[i];
+      if (!ach[a.id] && a.check(gs)) {
+        ach[a.id] = true;
+        achBanners.push({ icon: a.icon, label: a.label(), time: 0 });
+        sndAchieve();
+      }
+    }
+    saveAch(ach);
+    recordGame(diff, score, totalSliced);
+  }
+
+  // ── Main loop ────────────────────────────────────────────
+  var lastTime = 0;
+  function loop(now) {
+    requestAnimationFrame(loop);
+    var dt = lastTime ? (now - lastTime) / 1000 : 1/60;
+    lastTime = now;
+    if (dt > 0.1) dt = 1/60;
+    resize();
+    update(dt);
+    draw();
+  }
+
+  // ── Update ───────────────────────────────────────────────
+  function update(dt) {
+    // Particles
+    for (var pi = particles.length - 1; pi >= 0; pi--) {
+      var p = particles[pi];
+      p.x += p.vx * dt * 60; p.y += p.vy * dt * 60;
+      p.vy += 0.15 * U * dt * 60;
+      p.life -= p.decay * dt * 60;
+      if (p.life <= 0) particles.splice(pi, 1);
+    }
+    // Float texts
+    for (var fi = floatTexts.length - 1; fi >= 0; fi--) {
+      var ft = floatTexts[fi];
+      ft.y -= 1.2 * U * dt * 60; ft.life -= ft.decay * dt * 60;
+      if (ft.life <= 0) floatTexts.splice(fi, 1);
+    }
+    // Ach banners
+    for (var ai = achBanners.length - 1; ai >= 0; ai--) {
+      achBanners[ai].time += dt;
+      if (achBanners[ai].time > 3) achBanners.splice(ai, 1);
+    }
+    // Slash trail fade
+    for (var si = slashTrail.length - 1; si >= 0; si--) {
+      slashTrail[si].life -= 0.06 * dt * 60;
+      if (slashTrail[si].life <= 0) slashTrail.splice(si, 1);
+    }
+    // Shake
+    if (shakeDur > 0) { shakeDur--; shakeX *= 0.8; shakeY *= 0.8; }
+    else { shakeX = 0; shakeY = 0; }
+
+    if (state === S.COUNTDOWN) {
+      countdownTime += dt;
+      if (countdownTime >= 1) { countdownTime = 0; countdownVal--; if (countdownVal <= 0) state = S.PLAY; }
+      return;
+    }
+    if (state !== S.PLAY) return;
+
+    // Timer
+    timer -= dt;
+    if (timer <= 0) { timer = 0; endGame(); return; }
+
+    // Launch waves
+    launchTimer -= dt;
+    if (launchTimer <= 0) {
+      launchWave();
+      var d = DIFFS[diff];
+      var elapsed = d.time - timer;
+      var rateMul = 1 - elapsed / d.time * 0.2;
+      launchTimer = d.launchInterval * rateMul * (0.8 + Math.random() * 0.4);
+    }
+
+    // Update items
+    var grav = DIFFS[diff].gravity;
+    for (var i = items.length - 1; i >= 0; i--) {
+      var it = items[i];
+      if (it.sliced) {
+        it.sliceTime += dt;
+        // Animate halves
+        if (it.halfL) {
+          it.halfL.x += it.halfL.vx * dt * 60;
+          it.halfL.y += it.halfL.vy * dt * 60;
+          it.halfL.vy += grav * U * dt * 60;
+          it.halfL.rot -= 0.05 * dt * 60;
+        }
+        if (it.halfR) {
+          it.halfR.x += it.halfR.vx * dt * 60;
+          it.halfR.y += it.halfR.vy * dt * 60;
+          it.halfR.vy += grav * U * dt * 60;
+          it.halfR.rot += 0.05 * dt * 60;
+        }
+        if (it.sliceTime > 2) items.splice(i, 1);
+        continue;
+      }
+
+      it.x += it.vx * dt * 60;
+      it.y += it.vy * dt * 60;
+      it.vy += grav * U * dt * 60;
+      it.rot += it.rotSpeed * dt * 60;
+
+      // Fell off the bottom without being sliced
+      if (it.y > H + 6 * U && it.vy > 0) {
+        items.splice(i, 1);
+        if (!it.isBomb && !it.isChili) {
+          totalMissed++;
+          combo = 0;
+          sndMiss();
+          // Every 3 misses = lose a life
+          if (totalMissed % 3 === 0) {
+            lives--;
+            addFloatText(W/2, H * 0.4, '-1 ❤️', '#ff5252');
+            addShake(3);
+            if (lives <= 0) { endGame(); return; }
+          }
+        }
+      }
+    }
+  }
+
+  // ── Draw ─────────────────────────────────────────────────
+  function draw() {
+    cx.save();
+    cx.translate(shakeX, shakeY);
+
+    // BG
+    cx.fillStyle = '#1e1220';
+    cx.fillRect(-10, -10, W + 20, H + 20);
+
+    // Subtle radial gradient in center
+    var grad = cx.createRadialGradient(W/2, H/2, 0, W/2, H/2, H * 0.7);
+    grad.addColorStop(0, 'rgba(255, 107, 53, 0.03)');
+    grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    cx.fillStyle = grad;
+    cx.fillRect(0, 0, W, H);
+
+    if (state === S.MENU) drawMenu();
+    else if (state === S.DIFF) drawDiffSelect();
+    else if (state === S.COUNTDOWN) drawCountdown();
+    else if (state === S.PLAY || state === S.PAUSE) drawGame();
+    else if (state === S.OVER) drawGameOver();
+
+    // Particles
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+      cx.globalAlpha = p.life;
+      cx.fillStyle = p.color;
+      cx.beginPath(); cx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2); cx.fill();
+    }
+    cx.globalAlpha = 1;
+
+    // Float texts
+    for (var j = 0; j < floatTexts.length; j++) {
+      var ft = floatTexts[j];
+      cx.globalAlpha = ft.life;
+      cx.fillStyle = ft.color;
+      cx.font = 'bold ' + (2.5*U) + 'px Courier New';
+      cx.textAlign = 'center';
+      cx.shadowColor = ft.color; cx.shadowBlur = 8;
+      cx.fillText(ft.text, ft.x, ft.y);
+      cx.shadowBlur = 0;
+    }
+    cx.globalAlpha = 1;
+
+    // Achievement banners
+    for (var k = 0; k < achBanners.length; k++) drawAchBanner(achBanners[k], k);
+
+    cx.restore();
+  }
+
+  // ── Draw: Slash trail ────────────────────────────────────
+  function drawSlashTrail() {
+    if (slashTrail.length < 2) return;
+    for (var i = 1; i < slashTrail.length; i++) {
+      var a = slashTrail[i - 1], b = slashTrail[i];
+      var alpha = Math.min(a.life, b.life);
+      if (alpha <= 0) continue;
+      cx.globalAlpha = alpha * 0.8;
+      cx.strokeStyle = '#ff6b35';
+      cx.shadowColor = '#ff6b35';
+      cx.shadowBlur = 12;
+      cx.lineWidth = (2 + alpha * 3) * U * 0.4;
+      cx.lineCap = 'round';
+      cx.beginPath();
+      cx.moveTo(a.x, a.y);
+      cx.lineTo(b.x, b.y);
+      cx.stroke();
+      cx.shadowBlur = 0;
+    }
+    cx.globalAlpha = 1;
+  }
+
+  // ── Draw: Menu ───────────────────────────────────────────
+  function drawMenu() {
+    cx.textAlign = 'center';
+    cx.fillStyle = '#ff6b35';
+    cx.shadowColor = '#ff6b35'; cx.shadowBlur = 20;
+    cx.font = 'bold ' + (6*U) + 'px Courier New';
+    cx.fillText('🔪', W/2, H * 0.26);
+    cx.font = 'bold ' + (4.5*U) + 'px Courier New';
+    cx.fillText('SLICE & DICE', W/2, H * 0.26 + 7*U);
+    cx.shadowBlur = 0;
+
+    cx.fillStyle = 'rgba(255, 107, 53, 0.5)';
+    cx.font = (2*U) + 'px Courier New';
+    cx.fillText(T.subtitle, W/2, H * 0.26 + 11*U);
+
+    cx.fillStyle = 'rgba(255,255,255,0.4)';
+    cx.font = (1.8*U) + 'px Courier New';
+    cx.fillText(T.hint, W/2, H * 0.55);
+    if (isDesktop) cx.fillText(T.hintDesktop, W/2, H * 0.55 + 3*U);
+
+    // Stats
+    var st = getStats(1);
+    if (st.plays > 0) {
+      var sy = H * 0.65;
+      cx.fillStyle = 'rgba(255, 107, 53, 0.3)';
+      cx.font = (1.5*U) + 'px Courier New';
+      cx.fillText(T.progressRecord, W/2, sy);
+      cx.fillStyle = 'rgba(255,255,255,0.5)';
+      cx.font = (1.6*U) + 'px Courier New';
+      var avg = st.plays > 0 ? Math.round(st.totalScore / st.plays) : 0;
+      cx.fillText(T.plays + ' ' + st.plays + T.playsUnit + '   ' + T.highScore + ' ' + st.high + T.highScoreUnit + '   ' + T.avg + ' ' + avg + T.avgUnit, W/2, sy + 3*U);
+    }
+
+    var pulse = 0.5 + Math.sin(Date.now()/500) * 0.3;
+    cx.globalAlpha = pulse;
+    cx.fillStyle = '#ff6b35';
+    cx.font = 'bold ' + (2.2*U) + 'px Courier New';
+    cx.fillText(isDesktop ? T.clickStartDesktop : T.clickStart, W/2, H * 0.85);
+    cx.globalAlpha = 1;
+  }
+
+  // ── Draw: Difficulty ─────────────────────────────────────
+  function drawDiffSelect() {
+    cx.textAlign = 'center';
+    cx.fillStyle = '#ff6b35';
+    cx.shadowColor = '#ff6b35'; cx.shadowBlur = 12;
+    cx.font = 'bold ' + (3.5*U) + 'px Courier New';
+    cx.fillText(T.selectDiff, W/2, H * 0.2);
+    cx.shadowBlur = 0;
+
+    var labels = [T.easy, T.normal, T.hard];
+    var descs = [T.easyDesc, T.normalDesc, T.hardDesc];
+    var colors = ['#00e676', '#ff9800', '#ff5252'];
+    var btnW = Math.min(W * 0.7, 280), btnH = 54, gap = 16;
+    var totalH = 3 * btnH + 2 * gap;
+    var startY = H/2 - totalH/2 + 20;
+
+    for (var i = 0; i < 3; i++) {
+      var by = startY + i * (btnH + gap);
+      var bx = W/2 - btnW/2;
+      cx.fillStyle = 'rgba(255,255,255,0.05)';
+      cx.strokeStyle = colors[i]; cx.lineWidth = 1.5;
+      roundRect(cx, bx, by, btnW, btnH, 10); cx.fill(); cx.stroke();
+
+      cx.fillStyle = colors[i];
+      cx.font = 'bold ' + (2.2*U) + 'px Courier New';
+      cx.fillText(labels[i], W/2, by + btnH * 0.42);
+
+      cx.fillStyle = 'rgba(255,255,255,0.4)';
+      cx.font = (1.4*U) + 'px Courier New';
+      cx.fillText(descs[i], W/2, by + btnH * 0.75);
+
+      var ds = getStats(i);
+      if (ds.plays > 0) {
+        cx.fillStyle = 'rgba(255,255,255,0.25)';
+        cx.font = (1.2*U) + 'px Courier New';
+        cx.fillText(T.highScore + ': ' + ds.high, W/2, by + btnH + 1.5*U);
+      }
+    }
+
+    cx.fillStyle = 'rgba(255,255,255,0.3)';
+    cx.font = (1.5*U) + 'px Courier New';
+    cx.fillText(isDesktop ? T.clickSelectDesktop : T.clickSelect, W/2, H * 0.9);
+  }
+
+  // ── Draw: Countdown ──────────────────────────────────────
+  function drawCountdown() {
+    var scale = 1 + (1 - countdownTime) * 0.5;
+    cx.textAlign = 'center';
+    cx.fillStyle = '#ff6b35';
+    cx.shadowColor = '#ff6b35'; cx.shadowBlur = 30;
+    cx.globalAlpha = 1 - countdownTime * 0.3;
+    cx.font = 'bold ' + (12*U*scale) + 'px Courier New';
+    cx.fillText(countdownVal > 0 ? countdownVal : 'GO!', W/2, H/2 + 4*U);
+    cx.shadowBlur = 0; cx.globalAlpha = 1;
+  }
+
+  // ── Draw: Game ───────────────────────────────────────────
+  function drawGame() {
+    // Draw slash trail
+    drawSlashTrail();
+
+    // Draw items
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i];
+      if (it.sliced) {
+        // Draw halves fading
+        var alpha = Math.max(0, 1 - it.sliceTime * 0.8);
+        cx.globalAlpha = alpha;
+        if (it.halfL) {
+          cx.save(); cx.translate(it.halfL.x, it.halfL.y); cx.rotate(it.halfL.rot);
+          cx.fillStyle = 'rgba(255,255,255,0.7)';
+          cx.beginPath(); cx.arc(0, 0, it.size * 0.9, 0, Math.PI * 2); cx.fill();
+          cx.font = (it.size * 2) + 'px serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle';
+          cx.fillText(it.emoji, -it.size * 0.3, 0);
+          cx.restore();
+        }
+        if (it.halfR) {
+          cx.save(); cx.translate(it.halfR.x, it.halfR.y); cx.rotate(it.halfR.rot);
+          cx.fillStyle = 'rgba(255,255,255,0.7)';
+          cx.beginPath(); cx.arc(0, 0, it.size * 0.9, 0, Math.PI * 2); cx.fill();
+          cx.font = (it.size * 2) + 'px serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle';
+          cx.fillText(it.emoji, it.size * 0.3, 0);
+          cx.restore();
+        }
+        cx.globalAlpha = 1;
+      } else {
+        cx.save(); cx.translate(it.x, it.y); cx.rotate(it.rot);
+        // Opaque white backing so emoji render bright
+        cx.fillStyle = 'rgba(255,255,255,0.85)';
+        cx.beginPath(); cx.arc(0, 0, it.size * 1.1, 0, Math.PI * 2); cx.fill();
+        if (it.isBomb) { cx.shadowColor = '#ff5252'; cx.shadowBlur = 10; }
+        else if (it.isChili) { cx.shadowColor = '#ff9800'; cx.shadowBlur = 8; }
+        cx.font = (it.size * 2) + 'px serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle';
+        cx.fillText(it.emoji, 0, 0);
+        cx.shadowBlur = 0;
+        cx.restore();
+      }
+    }
+
+    // HUD
+    drawHUD();
+
+    // Pause
+    if (state === S.PAUSE) {
+      cx.fillStyle = 'rgba(0,0,0,0.6)'; cx.fillRect(0, 0, W, H);
+      cx.textAlign = 'center';
+      cx.fillStyle = '#ff6b35'; cx.shadowColor = '#ff6b35'; cx.shadowBlur = 15;
+      cx.font = 'bold ' + (5*U) + 'px Courier New';
+      cx.fillText('PAUSED', W/2, H/2);
+      cx.shadowBlur = 0;
+      cx.fillStyle = 'rgba(255,255,255,0.4)';
+      cx.font = (1.8*U) + 'px Courier New';
+      cx.fillText(T.pauseHint, W/2, H/2 + 5*U);
+      // Exit button
+      cx.fillStyle = 'rgba(255,255,255,0.08)';
+      cx.strokeStyle = 'rgba(255,255,255,0.2)';
+      cx.lineWidth = 1;
+      var exitW = 36 * U, exitH = 5 * U;
+      roundRect(cx, W/2 - exitW/2, H/2 + 9*U, exitW, exitH, 6);
+      cx.fill(); cx.stroke();
+      cx.fillStyle = 'rgba(255,255,255,0.6)';
+      cx.font = (1.8*U) + 'px Courier New';
+      cx.fillText(T.exitGame, W/2, H/2 + 12*U);
+    }
+  }
+
+  function drawHUD() {
+    var pad = 2 * U;
+    // Score
+    cx.textAlign = 'left';
+    cx.fillStyle = '#ff6b35'; cx.shadowColor = '#ff6b35'; cx.shadowBlur = 8;
+    cx.font = 'bold ' + (3*U) + 'px Courier New';
+    cx.fillText(score + '', pad, pad + 3*U);
+    cx.shadowBlur = 0;
+
+    // Combo
+    if (combo >= 2) {
+      cx.fillStyle = '#ffd700';
+      cx.font = 'bold ' + (2*U) + 'px Courier New';
+      var mul = combo >= 5 ? 3 : combo >= 3 ? 2 : 1;
+      cx.fillText('x' + mul + ' COMBO', pad, pad + 6*U);
+    }
+
+    // Lives
+    cx.textAlign = 'right';
+    var heartStr = '';
+    for (var li = 0; li < 3; li++) heartStr += li < lives ? '❤️' : '🖤';
+    cx.font = (2.5*U) + 'px serif';
+    cx.fillText(heartStr, W - pad, pad + 3*U);
+
+    // Timer
+    cx.textAlign = 'center';
+    var timerColor = timer <= 10 ? '#ff5252' : '#ffffff';
+    cx.fillStyle = timerColor;
+    if (timer <= 10) { cx.shadowColor = '#ff5252'; cx.shadowBlur = 10; }
+    cx.font = 'bold ' + (2.8*U) + 'px Courier New';
+    cx.fillText(Math.ceil(timer) + 's', W/2, pad + 3*U);
+    cx.shadowBlur = 0;
+
+    // ── Exit button below timer (center) ──
+    var exitBtnW = 10 * U, exitBtnH = 3 * U;
+    var exitBtnX = W / 2 - exitBtnW / 2, exitBtnY = pad + 5 * U;
+    cx.fillStyle = 'rgba(255,255,255,0.08)';
+    cx.strokeStyle = 'rgba(255,255,255,0.25)';
+    cx.lineWidth = 1;
+    roundRect(cx, exitBtnX, exitBtnY, exitBtnW, exitBtnH, 4);
+    cx.fill(); cx.stroke();
+    cx.fillStyle = 'rgba(255,255,255,0.5)';
+    cx.textAlign = 'center';
+    cx.font = (1.3 * U) + 'px Courier New';
+    cx.fillText(T.exitGame, exitBtnX + exitBtnW / 2, exitBtnY + exitBtnH * 0.65);
+  }
+
+  // ── Draw: Game Over ──────────────────────────────────────
+  function drawGameOver() {
+    cx.fillStyle = 'rgba(30, 18, 32, 0.85)'; cx.fillRect(0, 0, W, H);
+    cx.textAlign = 'center';
+
+    cx.fillStyle = '#ff5252'; cx.shadowColor = '#ff5252'; cx.shadowBlur = 20;
+    cx.font = 'bold ' + (5*U) + 'px Courier New';
+    cx.fillText(T.gameOver, W/2, H * 0.18);
+    cx.shadowBlur = 0;
+
+    cx.fillStyle = '#ff6b35'; cx.shadowColor = '#ff6b35'; cx.shadowBlur = 15;
+    cx.font = 'bold ' + (8*U) + 'px Courier New';
+    cx.fillText(score, W/2, H * 0.32);
+    cx.shadowBlur = 0;
+
+    var grade = score >= 80 ? 'S' : score >= 50 ? 'A' : score >= 30 ? 'B' : score >= 15 ? 'C' : 'D';
+    var gc = { S: '#ffd700', A: '#00e676', B: '#ff9800', C: '#ffffff', D: '#ff5252' };
+    cx.fillStyle = gc[grade]; cx.shadowColor = gc[grade]; cx.shadowBlur = 20;
+    cx.font = 'bold ' + (6*U) + 'px Courier New';
+    cx.fillText(grade, W/2, H * 0.43);
+    cx.shadowBlur = 0;
+
+    cx.fillStyle = 'rgba(255,255,255,0.6)';
+    cx.font = (1.8*U) + 'px Courier New';
+    var sy = H * 0.53, lh = 3.5 * U;
+    cx.fillText(T.sliced + ': ' + totalSliced, W/2, sy);
+    cx.fillText(T.missed + ': ' + totalMissed, W/2, sy + lh);
+    cx.fillText(T.bombsHit + ': ' + bombsHit, W/2, sy + lh * 2);
+    cx.fillText(T.maxCombo + ': ' + maxCombo, W/2, sy + lh * 3);
+
+    var ds = getStats(diff);
+    cx.fillStyle = '#ffd700';
+    cx.font = 'bold ' + (2*U) + 'px Courier New';
+    cx.fillText(T.highRecord + ': ' + ds.high, W/2, sy + lh * 4.5);
+
+    if (ds.recent && ds.recent.length > 0) {
+      cx.fillStyle = 'rgba(255,255,255,0.3)';
+      cx.font = (1.4*U) + 'px Courier New';
+      cx.fillText(T.recentScore + ': ' + ds.recent.join(' · '), W/2, sy + lh * 5.5);
+    }
+
+    var pulse = 0.5 + Math.sin(Date.now()/500) * 0.3;
+    cx.globalAlpha = pulse;
+    cx.fillStyle = '#ff6b35';
+    cx.font = 'bold ' + (2.2*U) + 'px Courier New';
+    cx.fillText(isDesktop ? T.clickReplayDesktop : T.clickReplay, W/2, H * 0.84);
+    cx.globalAlpha = 1;
+
+    // Exit button
+    cx.fillStyle = 'rgba(255,255,255,0.08)';
+    cx.strokeStyle = 'rgba(255,255,255,0.2)';
+    cx.lineWidth = 1;
+    var exitW = 36 * U, exitH = 5 * U;
+    roundRect(cx, W/2 - exitW/2, H * 0.90, exitW, exitH, 6);
+    cx.fill(); cx.stroke();
+    cx.fillStyle = 'rgba(255,255,255,0.6)';
+    cx.font = (1.8*U) + 'px Courier New';
+    cx.fillText(T.exitGame, W/2, H * 0.90 + 3*U);
+  }
+
+  // ── Draw: Achievement banner ─────────────────────────────
+  function drawAchBanner(ab, idx) {
+    var t = ab.time;
+    var alpha = t < 0.3 ? t/0.3 : t > 2.5 ? 1-(t-2.5)/0.5 : 1;
+    if (alpha <= 0) return;
+    var by = H * 0.15 + idx * 6 * U;
+    var slideX = t < 0.3 ? (1-t/0.3)*20*U : 0;
+    cx.save();
+    cx.globalAlpha = alpha; cx.translate(slideX, 0);
+    cx.fillStyle = 'rgba(0,0,0,0.7)'; cx.strokeStyle = '#ffd700'; cx.lineWidth = 1.5;
+    var bw = Math.min(W*0.8, 300);
+    roundRect(cx, W/2-bw/2, by, bw, 5*U, 8); cx.fill(); cx.stroke();
+    cx.textAlign = 'center';
+    cx.fillStyle = '#ffd700';
+    cx.font = (1.3*U)+'px Courier New';
+    cx.fillText(T.achieveUnlock, W/2, by+1.8*U);
+    cx.font = 'bold '+(1.8*U)+'px Courier New';
+    cx.fillText(ab.icon+' '+ab.label, W/2, by+3.8*U);
+    cx.restore();
+  }
+
+  // ── Utility ──────────────────────────────────────────────
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x+r, y); ctx.lineTo(x+w-r, y);
+    ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+    ctx.lineTo(x+w, y+h-r);
+    ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+    ctx.lineTo(x+r, y+h);
+    ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+    ctx.lineTo(x, y+r);
+    ctx.quadraticCurveTo(x, y, x+r, y);
+    ctx.closePath();
+  }
+
+  requestAnimationFrame(loop);
+})();
+</script>

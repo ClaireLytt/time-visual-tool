@@ -3,12 +3,14 @@ import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'motion/react'
 import { XIcon } from '../icons'
 
-interface NeonHoopsOverlayProps {
+interface GameOverlayProps {
   open: boolean
   onClose: () => void
+  gamePath: string
+  titleKey: string
 }
 
-export default function NeonHoopsOverlay({ open, onClose }: NeonHoopsOverlayProps) {
+export default function GameOverlay({ open, onClose, gamePath, titleKey }: GameOverlayProps) {
   const { t, i18n } = useTranslation()
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
@@ -21,23 +23,36 @@ export default function NeonHoopsOverlay({ open, onClose }: NeonHoopsOverlayProp
     return () => { document.body.style.overflow = prev; clearTimeout(timer) }
   }, [open])
 
+  // Listen for game-exit postMessage from iframe
+  useEffect(() => {
+    if (!open) return
+    const onMsg = (e: MessageEvent) => {
+      if (e.data && e.data.type === 'game-exit') window.history.back()
+    }
+    window.addEventListener('message', onMsg)
+    return () => window.removeEventListener('message', onMsg)
+  }, [open])
+
   // Push browser history so that back button closes the game instead of leaving the page
   useEffect(() => {
     if (!open) return
-    window.history.pushState({ neonHoops: true }, '', '#game')
+    let popped = false
+    window.history.pushState({ game: true }, '', '#game')
 
-    const onPopState = () => onClose()
+    const onPopState = () => { popped = true; onClose() }
     window.addEventListener('popstate', onPopState)
-    return () => window.removeEventListener('popstate', onPopState)
+    return () => {
+      window.removeEventListener('popstate', onPopState)
+      if (!popped && window.location.hash === '#game') window.history.back()
+    }
   }, [open, onClose])
 
-  // Close via history.back() so popstate fires and history stays clean
   const handleClose = useCallback(() => {
     window.history.back()
   }, [])
 
   const lang = i18n.language.startsWith('zh') ? 'zh' : 'en'
-  const gameSrc = `${import.meta.env.BASE_URL}games/neon-hoops.html?lang=${lang}`
+  const gameSrc = `${import.meta.env.BASE_URL}${gamePath}?lang=${lang}`
 
   return (
     <AnimatePresence>
@@ -47,12 +62,11 @@ export default function NeonHoopsOverlay({ open, onClose }: NeonHoopsOverlayProp
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+          transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] as [number, number, number, number] }}
           role="dialog"
           aria-modal="true"
-          aria-label={t('game.neonHoops')}
+          aria-label={t(titleKey)}
         >
-          {/* Close button — floats above the game */}
           <button
             onClick={handleClose}
             className="fixed top-4 right-4 z-[60] bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm rounded-full p-2 transition-colors"
@@ -61,19 +75,18 @@ export default function NeonHoopsOverlay({ open, onClose }: NeonHoopsOverlayProp
             <XIcon className="w-5 h-5" />
           </button>
 
-          {/* Game iframe — full viewport */}
           <motion.div
             className="w-full h-full"
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.96 }}
-            transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
+            transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] as [number, number, number, number] }}
           >
             <iframe
               ref={iframeRef}
               src={gameSrc}
               className="w-full h-full border-none"
-              title={t('game.neonHoops')}
+              title={t(titleKey)}
               allow="autoplay"
             />
           </motion.div>

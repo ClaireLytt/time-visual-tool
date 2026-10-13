@@ -1,0 +1,1137 @@
+<title>FOOD CATCHER</title>
+<style>
+  :root {
+    --bg: #152818;
+    --green: #00e676;
+    --gold: #ffd700;
+    --red: #ff5252;
+    --orange: #ff9800;
+    --white: #e8f0e8;
+    --dim: #1a2a1a;
+    color-scheme: dark;
+  }
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--white);
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    font-family: 'Courier New', monospace;
+  }
+  canvas {
+    display: block;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+</style>
+
+<canvas id="c"></canvas>
+
+<script>
+// ============================================================
+//  食物接盘 FOOD CATCHER
+//  Canvas 接食物游戏 — 左右滑动接盘，接住健康食物得分
+//  60fps · 自适应竖屏横屏 · 触屏 + 鼠标 + 键盘
+// ============================================================
+(function () {
+  'use strict';
+
+  // ── i18n ─────────────────────────────────────────────────
+  var LANG = new URLSearchParams(location.search).get('lang') || 'zh';
+  var I18N = {
+    zh: {
+      subtitle: '食  物  接  盘',
+      hint: '← 滑动/方向键移动餐盘 →',
+      hintDesktop: 'P/Esc 暂停  ·  R 重开',
+      clickStart: '[ 点击开始 ]',
+      clickStartDesktop: '[ CLICK / ENTER ]',
+      selectDiff: '选 择 难 度',
+      easy: '简单', normal: '普通', hard: '困难',
+      easyDesc: '大餐盘 · 90秒 · 慢速',
+      normalDesc: '标准餐盘 · 60秒 · 中速',
+      hardDesc: '小餐盘 · 45秒 · 快速',
+      clickSelect: '点击选择',
+      clickSelectDesktop: '点击选择 或按 1 / 2 / 3',
+      progressRecord: 'PROGRESS RECORD｜进度记录',
+      plays: '游玩', playsUnit: '局',
+      catches: '接住', catchesUnit: '次',
+      avg: '平均', avgUnit: '分',
+      highScore: '最高', highScoreUnit: '分',
+      recentScore: '最近得分',
+      noRecord: '暂无记录',
+      pauseHint: 'P / Esc 继续  ·  R 重开',
+      goodFood: '健康食物', badFood: '垃圾食品',
+      maxCombo: '最高连击', highRecord: '最高纪录',
+      clickReplay: '[ 点击再来 ]',
+      clickReplayDesktop: '[ CLICK / R / ENTER ]',
+      achieveUnlock: '成就解锁',
+      streak10: '连续接住10个', score50: '单局50分',
+      score100: '单局100分', noJunk: '零垃圾通关',
+      catches30: '单局接30个', perfectRound: '完美一局',
+      lives: '生命',
+      timeUp: '时间到！',
+      gameOver: '游戏结束',
+      exitGame: '退出游戏',
+    },
+    en: {
+      subtitle: 'F O O D   C A T C H E R',
+      hint: '← Slide / Arrow keys to move plate →',
+      hintDesktop: 'P/Esc Pause  ·  R Restart',
+      clickStart: '[ Tap to Start ]',
+      clickStartDesktop: '[ CLICK / ENTER ]',
+      selectDiff: 'SELECT DIFFICULTY',
+      easy: 'Easy', normal: 'Normal', hard: 'Hard',
+      easyDesc: 'Big plate · 90s · Slow',
+      normalDesc: 'Normal plate · 60s · Medium',
+      hardDesc: 'Small plate · 45s · Fast',
+      clickSelect: 'Tap to select',
+      clickSelectDesktop: 'Click or press 1 / 2 / 3',
+      progressRecord: 'PROGRESS RECORD',
+      plays: 'Plays', playsUnit: '',
+      catches: 'Catches', catchesUnit: '',
+      avg: 'Average', avgUnit: 'pts',
+      highScore: 'Best', highScoreUnit: 'pts',
+      recentScore: 'Recent Scores',
+      noRecord: 'No records yet',
+      pauseHint: 'P / Esc Resume  ·  R Restart',
+      goodFood: 'Good food', badFood: 'Junk food',
+      maxCombo: 'Max Combo', highRecord: 'High Score',
+      clickReplay: '[ Tap to Replay ]',
+      clickReplayDesktop: '[ CLICK / R / ENTER ]',
+      achieveUnlock: 'Achievement Unlocked',
+      streak10: '10-catch streak', score50: '50 Points',
+      score100: '100 Points', noJunk: 'Zero Junk',
+      catches30: '30 Catches', perfectRound: 'Perfect Round',
+      lives: 'Lives',
+      timeUp: "Time's up!",
+      gameOver: 'GAME OVER',
+      exitGame: 'Exit Game',
+    }
+  };
+  var T = I18N[LANG] || I18N.zh;
+
+  // ── Canvas setup ─────────────────────────────────────────
+  var cv = document.getElementById('c');
+  var cx = cv.getContext('2d');
+  var W, H, U; // width, height, unit (1% of min dimension)
+
+  function resize() {
+    var dpr = window.devicePixelRatio || 1;
+    var nw = window.innerWidth;
+    var nh = window.innerHeight;
+    if (nw === W && nh === H) return;
+    W = nw;
+    H = nh;
+    cv.width = W * dpr;
+    cv.height = H * dpr;
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    U = Math.min(W, H) / 100;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // ── Detect desktop ───────────────────────────────────────
+  var isDesktop = !('ontouchstart' in window) && window.innerWidth > 768;
+
+  // ── Audio (Web Audio API) ────────────────────────────────
+  var audioCtx;
+  function ensureAudio() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  function playTone(freq, dur, type, vol) {
+    if (!audioCtx) return;
+    var o = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+    o.type = type || 'sine';
+    o.frequency.value = freq;
+    g.gain.value = vol || 0.15;
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + dur);
+  }
+
+  function sndCatch()   { playTone(880, 0.12, 'sine', 0.2); setTimeout(function(){ playTone(1100, 0.1, 'sine', 0.15); }, 60); }
+  function sndGold()    { playTone(1200, 0.15, 'sine', 0.25); setTimeout(function(){ playTone(1500, 0.12, 'sine', 0.2); }, 80); setTimeout(function(){ playTone(1800, 0.1, 'sine', 0.15); }, 160); }
+  function sndBad()     { playTone(200, 0.3, 'sawtooth', 0.15); }
+  function sndMiss()    { playTone(300, 0.15, 'triangle', 0.1); }
+  function sndAchieve() { playTone(660, 0.1, 'sine', 0.2); setTimeout(function(){ playTone(880, 0.1, 'sine', 0.2); }, 100); setTimeout(function(){ playTone(1100, 0.15, 'sine', 0.2); }, 200); }
+
+  // ── Food definitions ─────────────────────────────────────
+  var GOOD_FOODS = [
+    { emoji: '🥦', pts: 2, name: 'broccoli' },
+    { emoji: '🍎', pts: 1, name: 'apple' },
+    { emoji: '🥕', pts: 1, name: 'carrot' },
+    { emoji: '🍇', pts: 2, name: 'grape' },
+    { emoji: '🥑', pts: 2, name: 'avocado' },
+    { emoji: '🍊', pts: 1, name: 'orange' },
+    { emoji: '🥬', pts: 1, name: 'lettuce' },
+    { emoji: '🍓', pts: 2, name: 'strawberry' },
+    { emoji: '🍌', pts: 1, name: 'banana' },
+    { emoji: '🥝', pts: 2, name: 'kiwi' },
+  ];
+  var BAD_FOODS = [
+    { emoji: '🍔', pts: -1, name: 'burger' },
+    { emoji: '🍟', pts: -1, name: 'fries' },
+    { emoji: '🍩', pts: -1, name: 'donut' },
+    { emoji: '🧁', pts: -1, name: 'cupcake' },
+    { emoji: '🌭', pts: -1, name: 'hotdog' },
+    { emoji: '🍕', pts: -1, name: 'pizza' },
+  ];
+  var GOLD_FOOD = { emoji: '⭐', pts: 5, name: 'star', isGold: true };
+
+  // ── Difficulty presets ───────────────────────────────────
+  var DIFFS = [
+    { time: 90, plateW: 18, baseSpeed: 1.2, spawnRate: 1.2, badChance: 0.15 },  // easy
+    { time: 60, plateW: 14, baseSpeed: 1.8, spawnRate: 1.0, badChance: 0.22 },  // normal
+    { time: 45, plateW: 10, baseSpeed: 2.5, spawnRate: 0.7, badChance: 0.30 },  // hard
+  ];
+
+  // ── Achievements ─────────────────────────────────────────
+  var ACHIEVEMENTS = [
+    { id: 'streak10',     icon: '🔥', label: function(){ return T.streak10; },     check: function(s){ return s.maxCombo >= 10; } },
+    { id: 'score50',      icon: '🏅', label: function(){ return T.score50; },      check: function(s){ return s.score >= 50; } },
+    { id: 'score100',     icon: '🏆', label: function(){ return T.score100; },     check: function(s){ return s.score >= 100; } },
+    { id: 'noJunk',       icon: '🛡️', label: function(){ return T.noJunk; },       check: function(s){ return s.badCaught === 0 && s.goodCaught >= 5; } },
+    { id: 'catches30',    icon: '🎯', label: function(){ return T.catches30; },    check: function(s){ return s.goodCaught >= 30; } },
+    { id: 'perfectRound', icon: '💎', label: function(){ return T.perfectRound; }, check: function(s){ return s.badCaught === 0 && s.missed === 0 && s.goodCaught >= 10; } },
+  ];
+
+  // ── Game state ───────────────────────────────────────────
+  var S = { MENU: 0, DIFF: 1, COUNTDOWN: 2, PLAY: 3, PAUSE: 4, OVER: 5 };
+  var state = S.MENU;
+  var diff = 1; // 0=easy, 1=normal, 2=hard
+  var score, lives, combo, maxCombo, goodCaught, badCaught, missed;
+  var timer, spawnTimer, foods = [], particles = [], floatTexts = [], achBanners = [];
+  var plateX, plateTargetX;
+  var shakeX = 0, shakeY = 0, shakeDur = 0;
+  var countdownVal, countdownTime;
+
+  // ── Stats persistence ────────────────────────────────────
+  var STATS_KEY = 'fc_stats';
+  var ACH_KEY = 'fc_ach';
+
+  function loadStats() {
+    try { return JSON.parse(localStorage.getItem(STATS_KEY)) || {}; } catch(e) { return {}; }
+  }
+  function saveStats(ds) {
+    try { localStorage.setItem(STATS_KEY, JSON.stringify(ds)); } catch(e) {}
+  }
+  function loadAch() {
+    try { return JSON.parse(localStorage.getItem(ACH_KEY)) || {}; } catch(e) { return {}; }
+  }
+  function saveAch(a) {
+    try { localStorage.setItem(ACH_KEY, JSON.stringify(a)); } catch(e) {}
+  }
+
+  function getStats(d) {
+    var s = loadStats();
+    return s[d] || { plays: 0, totalScore: 0, totalCatches: 0, high: 0, recent: [] };
+  }
+
+  function recordGame(d, sc, catches) {
+    var s = loadStats();
+    var ds = s[d] || { plays: 0, totalScore: 0, totalCatches: 0, high: 0, recent: [] };
+    ds.plays++;
+    ds.totalScore += sc;
+    ds.totalCatches += catches;
+    if (sc > ds.high) ds.high = sc;
+    ds.recent.unshift(sc);
+    if (ds.recent.length > 5) ds.recent = ds.recent.slice(0, 5);
+    s[d] = ds;
+    saveStats(s);
+  }
+
+  // ── Particles / effects ──────────────────────────────────
+  function spawnParticles(x, y, color, count) {
+    for (var i = 0; i < count; i++) {
+      var angle = Math.random() * Math.PI * 2;
+      var speed = 1 + Math.random() * 3;
+      particles.push({
+        x: x, y: y,
+        vx: Math.cos(angle) * speed * U,
+        vy: Math.sin(angle) * speed * U - 2 * U,
+        life: 1,
+        decay: 0.02 + Math.random() * 0.02,
+        size: (1 + Math.random() * 2) * U,
+        color: color
+      });
+    }
+  }
+
+  function addFloatText(x, y, text, color) {
+    floatTexts.push({ x: x, y: y, text: text, color: color, life: 1, decay: 0.015 });
+  }
+
+  function addShake(intensity) {
+    shakeDur = 8;
+    shakeX = (Math.random() - 0.5) * intensity * U;
+    shakeY = (Math.random() - 0.5) * intensity * U;
+  }
+
+  // ── Game init ────────────────────────────────────────────
+  function initGame() {
+    var d = DIFFS[diff];
+    score = 0;
+    lives = 3;
+    combo = 0;
+    maxCombo = 0;
+    goodCaught = 0;
+    badCaught = 0;
+    missed = 0;
+    timer = d.time;
+    spawnTimer = 0;
+    foods = [];
+    particles = [];
+    floatTexts = [];
+    achBanners = [];
+    plateX = W / 2;
+    plateTargetX = W / 2;
+    shakeX = 0; shakeY = 0; shakeDur = 0;
+  }
+
+  function startCountdown() {
+    initGame();
+    state = S.COUNTDOWN;
+    countdownVal = 3;
+    countdownTime = 0;
+  }
+
+  // ── Spawn food ───────────────────────────────────────────
+  function spawnFood() {
+    var d = DIFFS[diff];
+    var isGold = Math.random() < 0.03; // 3% chance
+    var isBad = !isGold && Math.random() < d.badChance;
+    var food;
+    if (isGold) {
+      food = Object.assign({}, GOLD_FOOD);
+    } else if (isBad) {
+      var bi = Math.floor(Math.random() * BAD_FOODS.length);
+      food = Object.assign({}, BAD_FOODS[bi]);
+      food.isBad = true;
+    } else {
+      var gi = Math.floor(Math.random() * GOOD_FOODS.length);
+      food = Object.assign({}, GOOD_FOODS[gi]);
+    }
+
+    var size = (3 + Math.random()) * U;
+    var margin = 4 * U;
+    food.x = margin + Math.random() * (W - 2 * margin);
+    food.y = -size;
+    food.size = size;
+    // Speed increases over time
+    var elapsed = DIFFS[diff].time - timer;
+    var speedMul = 1 + elapsed / DIFFS[diff].time * 0.8;
+    food.vy = d.baseSpeed * U * (0.8 + Math.random() * 0.4) * speedMul;
+    food.vx = (Math.random() - 0.5) * 0.5 * U; // slight horizontal drift
+    food.rot = 0;
+    food.rotSpeed = (Math.random() - 0.5) * 0.1;
+    foods.push(food);
+  }
+
+  // ── Input handling ───────────────────────────────────────
+  var touchId = null;
+  var touchStartX = 0;
+  var touchPlateStartX = 0;
+  var keysDown = {};
+
+  cv.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    ensureAudio();
+    var t = e.changedTouches[0];
+    if (state === S.MENU || state === S.OVER) {
+      handleClick(t.clientX, t.clientY);
+      return;
+    }
+    if (state === S.DIFF) {
+      handleClick(t.clientX, t.clientY);
+      return;
+    }
+    if (state === S.PAUSE) {
+      var exitW = 36 * U, exitH = 5 * U;
+      var exitX = W / 2 - exitW / 2, exitY = H / 2 + 9 * U;
+      if (t.clientX >= exitX && t.clientX <= exitX + exitW && t.clientY >= exitY && t.clientY <= exitY + exitH) {
+        window.parent.postMessage({ type: 'game-exit' }, '*');
+        return;
+      }
+      state = S.PLAY;
+      return;
+    }
+    if (state === S.PLAY && isExitBtnClick(t.clientX, t.clientY)) {
+      window.parent.postMessage({ type: 'game-exit' }, '*'); return;
+    }
+    if (touchId === null) {
+      touchId = t.identifier;
+      touchStartX = t.clientX;
+      touchPlateStartX = plateX;
+    }
+  }, { passive: false });
+
+  cv.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+    for (var i = 0; i < e.changedTouches.length; i++) {
+      var t = e.changedTouches[i];
+      if (t.identifier === touchId && state === S.PLAY) {
+        plateTargetX = touchPlateStartX + (t.clientX - touchStartX);
+      }
+    }
+  }, { passive: false });
+
+  cv.addEventListener('touchend', function(e) {
+    for (var i = 0; i < e.changedTouches.length; i++) {
+      if (e.changedTouches[i].identifier === touchId) touchId = null;
+    }
+  });
+
+  // Mouse
+  var mouseDown = false;
+  var mouseStartX = 0;
+  var mousePlateStartX = 0;
+
+  cv.addEventListener('mousedown', function(e) {
+    ensureAudio();
+    if (state === S.MENU || state === S.OVER || state === S.DIFF) {
+      handleClick(e.clientX, e.clientY);
+      return;
+    }
+    if (state === S.PAUSE) {
+      var exitW = 36 * U, exitH = 5 * U;
+      var exitX = W / 2 - exitW / 2, exitY = H / 2 + 9 * U;
+      if (e.clientX >= exitX && e.clientX <= exitX + exitW && e.clientY >= exitY && e.clientY <= exitY + exitH) {
+        window.parent.postMessage({ type: 'game-exit' }, '*');
+        return;
+      }
+      state = S.PLAY;
+      return;
+    }
+    if (state === S.PLAY && isExitBtnClick(e.clientX, e.clientY)) {
+      window.parent.postMessage({ type: 'game-exit' }, '*'); return;
+    }
+    mouseDown = true;
+    mouseStartX = e.clientX;
+    mousePlateStartX = plateX;
+  });
+
+  cv.addEventListener('mousemove', function(e) {
+    if (mouseDown && state === S.PLAY) {
+      plateTargetX = mousePlateStartX + (e.clientX - mouseStartX);
+    }
+  });
+
+  cv.addEventListener('mouseup', function() { mouseDown = false; });
+
+  // Keyboard
+  window.addEventListener('keydown', function(e) {
+    ensureAudio();
+    keysDown[e.key] = true;
+    if (state === S.MENU) {
+      if (e.key === 'Enter' || e.key === ' ') { state = S.DIFF; e.preventDefault(); }
+    } else if (state === S.DIFF) {
+      if (e.key === '1') { diff = 0; startCountdown(); }
+      else if (e.key === '2') { diff = 1; startCountdown(); }
+      else if (e.key === '3') { diff = 2; startCountdown(); }
+    } else if (state === S.PLAY) {
+      if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') { state = S.PAUSE; e.preventDefault(); }
+      if (e.key === 'r' || e.key === 'R') { startCountdown(); }
+    } else if (state === S.PAUSE) {
+      if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') { state = S.PLAY; e.preventDefault(); }
+      if (e.key === 'r' || e.key === 'R') { startCountdown(); }
+      if (e.key === 'q' || e.key === 'Q') { window.parent.postMessage({ type: 'game-exit' }, '*'); }
+    } else if (state === S.OVER) {
+      if (e.key === 'q' || e.key === 'Q') { window.parent.postMessage({ type: 'game-exit' }, '*'); }
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'r' || e.key === 'R') { state = S.DIFF; e.preventDefault(); }
+    }
+  });
+
+  window.addEventListener('keyup', function(e) { keysDown[e.key] = false; });
+
+  function isExitBtnClick(mx, my) {
+    var pad = 2 * U;
+    var exitBtnW = 10 * U, exitBtnH = 3 * U;
+    var exitBtnX = W / 2 - exitBtnW / 2, exitBtnY = pad + 5 * U;
+    return mx >= exitBtnX && mx <= exitBtnX + exitBtnW && my >= exitBtnY && my <= exitBtnY + exitBtnH;
+  }
+
+  function handleClick(mx, my) {
+    if (state === S.MENU) {
+      state = S.DIFF;
+    } else if (state === S.DIFF) {
+      // Check which difficulty button was clicked
+      var btnW = Math.min(W * 0.7, 280);
+      var btnH = 54;
+      var gap = 16;
+      var totalH = 3 * btnH + 2 * gap;
+      var startY = H / 2 - totalH / 2 + 20;
+      for (var i = 0; i < 3; i++) {
+        var by = startY + i * (btnH + gap);
+        var bx = W / 2 - btnW / 2;
+        if (mx >= bx && mx <= bx + btnW && my >= by && my <= by + btnH) {
+          diff = i;
+          startCountdown();
+          return;
+        }
+      }
+    } else if (state === S.OVER) {
+      // Check exit button
+      var exitW = 36 * U, exitH = 5 * U;
+      var exitX = W / 2 - exitW / 2, exitY = H * 0.90;
+      if (mx >= exitX && mx <= exitX + exitW && my >= exitY && my <= exitY + exitH) {
+        window.parent.postMessage({ type: 'game-exit' }, '*');
+        return;
+      }
+      state = S.DIFF;
+    }
+  }
+
+  // ── Main loop ────────────────────────────────────────────
+  var lastTime = 0;
+  var dt60 = 1 / 60;
+
+  function loop(now) {
+    requestAnimationFrame(loop);
+    var dtReal = lastTime ? (now - lastTime) / 1000 : dt60;
+    lastTime = now;
+    if (dtReal > 0.1) dtReal = dt60; // clamp
+
+    resize();
+    update(dtReal);
+    draw();
+  }
+
+  // ── Update ───────────────────────────────────────────────
+  function update(dt) {
+    // Update particles always
+    for (var pi = particles.length - 1; pi >= 0; pi--) {
+      var p = particles[pi];
+      p.x += p.vx * dt * 60;
+      p.y += p.vy * dt * 60;
+      p.vy += 0.15 * U * dt * 60;
+      p.life -= p.decay * dt * 60;
+      if (p.life <= 0) particles.splice(pi, 1);
+    }
+
+    // Update float texts
+    for (var fi = floatTexts.length - 1; fi >= 0; fi--) {
+      var ft = floatTexts[fi];
+      ft.y -= 1.2 * U * dt * 60;
+      ft.life -= ft.decay * dt * 60;
+      if (ft.life <= 0) floatTexts.splice(fi, 1);
+    }
+
+    // Update achievement banners
+    for (var ai = achBanners.length - 1; ai >= 0; ai--) {
+      var ab = achBanners[ai];
+      ab.time += dt;
+      if (ab.time > 3) achBanners.splice(ai, 1);
+    }
+
+    // Shake decay
+    if (shakeDur > 0) {
+      shakeDur--;
+      shakeX *= 0.85;
+      shakeY *= 0.85;
+    } else {
+      shakeX = 0; shakeY = 0;
+    }
+
+    if (state === S.COUNTDOWN) {
+      countdownTime += dt;
+      if (countdownTime >= 1) {
+        countdownTime = 0;
+        countdownVal--;
+        if (countdownVal <= 0) {
+          state = S.PLAY;
+        }
+      }
+      return;
+    }
+
+    if (state !== S.PLAY) return;
+
+    // Keyboard plate movement
+    var moveSpeed = 8 * U;
+    if (keysDown['ArrowLeft'] || keysDown['a'] || keysDown['A']) {
+      plateTargetX -= moveSpeed * dt * 60;
+    }
+    if (keysDown['ArrowRight'] || keysDown['d'] || keysDown['D']) {
+      plateTargetX += moveSpeed * dt * 60;
+    }
+
+    // Clamp plate
+    var d = DIFFS[diff];
+    var pw = d.plateW * U;
+    plateTargetX = Math.max(pw / 2, Math.min(W - pw / 2, plateTargetX));
+    // Smooth follow
+    plateX += (plateTargetX - plateX) * 0.25;
+
+    // Timer
+    timer -= dt;
+    if (timer <= 0) {
+      timer = 0;
+      endGame();
+      return;
+    }
+
+    // Spawn food
+    spawnTimer -= dt;
+    if (spawnTimer <= 0) {
+      spawnFood();
+      // Speed up spawn rate over time
+      var elapsed = d.time - timer;
+      var rateMul = 1 - elapsed / d.time * 0.3;
+      spawnTimer = d.spawnRate * rateMul * (0.7 + Math.random() * 0.6);
+    }
+
+    // Update foods
+    var plateY = H - 12 * U;
+    var plateH = 3 * U;
+
+    for (var i = foods.length - 1; i >= 0; i--) {
+      var f = foods[i];
+      f.x += f.vx * dt * 60;
+      f.y += f.vy * dt * 60;
+      f.rot += f.rotSpeed * dt * 60;
+
+      // Bounce off walls
+      if (f.x < f.size) { f.x = f.size; f.vx = Math.abs(f.vx); }
+      if (f.x > W - f.size) { f.x = W - f.size; f.vx = -Math.abs(f.vx); }
+
+      // Check if caught by plate
+      if (f.y + f.size >= plateY - plateH / 2 && f.y - f.size <= plateY + plateH / 2) {
+        if (f.x >= plateX - pw / 2 - f.size * 0.5 && f.x <= plateX + pw / 2 + f.size * 0.5) {
+          // Caught!
+          foods.splice(i, 1);
+          if (f.isBad) {
+            // Junk food
+            badCaught++;
+            lives--;
+            combo = 0;
+            score += f.pts;
+            if (score < 0) score = 0;
+            addFloatText(f.x, f.y, f.pts + '', '#ff5252');
+            spawnParticles(f.x, f.y, '#ff5252', 8);
+            addShake(4);
+            sndBad();
+            if (lives <= 0) { endGame(); return; }
+          } else if (f.isGold) {
+            // Gold star
+            combo++;
+            if (combo > maxCombo) maxCombo = combo;
+            goodCaught++;
+            var bonusPts = f.pts;
+            score += bonusPts;
+            addFloatText(f.x, f.y, '+' + bonusPts + ' ⭐', '#ffd700');
+            spawnParticles(f.x, f.y, '#ffd700', 15);
+            addShake(3);
+            sndGold();
+          } else {
+            // Good food
+            combo++;
+            if (combo > maxCombo) maxCombo = combo;
+            goodCaught++;
+            var comboMul = combo >= 5 ? 3 : combo >= 3 ? 2 : 1;
+            var gainPts = f.pts * comboMul;
+            score += gainPts;
+            var txt = '+' + gainPts;
+            if (comboMul > 1) txt += ' x' + comboMul;
+            addFloatText(f.x, f.y, txt, '#00e676');
+            spawnParticles(f.x, f.y, '#00e676', 6);
+            sndCatch();
+          }
+          continue;
+        }
+      }
+
+      // Fell off bottom
+      if (f.y > H + f.size * 2) {
+        foods.splice(i, 1);
+        if (!f.isBad) {
+          missed++;
+          combo = 0;
+          sndMiss();
+        }
+      }
+    }
+  }
+
+  function endGame() {
+    state = S.OVER;
+    // Check achievements
+    var ach = loadAch();
+    var gameStats = { score: score, maxCombo: maxCombo, goodCaught: goodCaught, badCaught: badCaught, missed: missed };
+    for (var i = 0; i < ACHIEVEMENTS.length; i++) {
+      var a = ACHIEVEMENTS[i];
+      if (!ach[a.id] && a.check(gameStats)) {
+        ach[a.id] = true;
+        achBanners.push({ icon: a.icon, label: a.label(), time: 0 });
+        sndAchieve();
+      }
+    }
+    saveAch(ach);
+    recordGame(diff, score, goodCaught);
+  }
+
+  // ── Draw ─────────────────────────────────────────────────
+  function draw() {
+    cx.save();
+    cx.translate(shakeX, shakeY);
+
+    // Background
+    cx.fillStyle = '#152818';
+    cx.fillRect(-10, -10, W + 20, H + 20);
+
+    // Subtle grid
+    cx.strokeStyle = 'rgba(0, 230, 118, 0.06)';
+    cx.lineWidth = 1;
+    var gridSize = 6 * U;
+    for (var gx = 0; gx < W; gx += gridSize) {
+      cx.beginPath(); cx.moveTo(gx, 0); cx.lineTo(gx, H); cx.stroke();
+    }
+    for (var gy = 0; gy < H; gy += gridSize) {
+      cx.beginPath(); cx.moveTo(0, gy); cx.lineTo(W, gy); cx.stroke();
+    }
+
+    if (state === S.MENU) { drawMenu(); }
+    else if (state === S.DIFF) { drawDiffSelect(); }
+    else if (state === S.COUNTDOWN) { drawCountdown(); }
+    else if (state === S.PLAY || state === S.PAUSE) { drawGame(); }
+    else if (state === S.OVER) { drawGameOver(); }
+
+    // Particles (always)
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+      cx.globalAlpha = p.life;
+      cx.fillStyle = p.color;
+      cx.beginPath();
+      cx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+      cx.fill();
+    }
+    cx.globalAlpha = 1;
+
+    // Float texts (always)
+    for (var j = 0; j < floatTexts.length; j++) {
+      var ft = floatTexts[j];
+      cx.globalAlpha = ft.life;
+      cx.fillStyle = ft.color;
+      cx.font = 'bold ' + (2.5 * U) + 'px Courier New';
+      cx.textAlign = 'center';
+      cx.shadowColor = ft.color;
+      cx.shadowBlur = 8;
+      cx.fillText(ft.text, ft.x, ft.y);
+      cx.shadowBlur = 0;
+    }
+    cx.globalAlpha = 1;
+
+    // Achievement banners
+    for (var k = 0; k < achBanners.length; k++) {
+      drawAchBanner(achBanners[k], k);
+    }
+
+    cx.restore();
+  }
+
+  // ── Draw: Menu ───────────────────────────────────────────
+  function drawMenu() {
+    // Title
+    cx.textAlign = 'center';
+    cx.fillStyle = '#00e676';
+    cx.shadowColor = '#00e676';
+    cx.shadowBlur = 20;
+    cx.font = 'bold ' + (6 * U) + 'px Courier New';
+    cx.fillText('🍽️', W / 2, H * 0.28);
+    cx.font = 'bold ' + (4.5 * U) + 'px Courier New';
+    cx.fillText('FOOD CATCHER', W / 2, H * 0.28 + 7 * U);
+    cx.shadowBlur = 0;
+
+    cx.fillStyle = 'rgba(0, 230, 118, 0.5)';
+    cx.font = (2 * U) + 'px Courier New';
+    cx.fillText(T.subtitle, W / 2, H * 0.28 + 11 * U);
+
+    // Hint
+    cx.fillStyle = 'rgba(255,255,255,0.4)';
+    cx.font = (1.8 * U) + 'px Courier New';
+    cx.fillText(T.hint, W / 2, H * 0.55);
+    if (isDesktop) {
+      cx.fillText(T.hintDesktop, W / 2, H * 0.55 + 3 * U);
+    }
+
+    // Stats summary
+    var st = getStats(1); // show normal mode stats
+    if (st.plays > 0) {
+      var sy = H * 0.65;
+      cx.fillStyle = 'rgba(0, 230, 118, 0.3)';
+      cx.font = (1.5 * U) + 'px Courier New';
+      cx.fillText(T.progressRecord, W / 2, sy);
+
+      cx.fillStyle = 'rgba(255,255,255,0.5)';
+      cx.font = (1.6 * U) + 'px Courier New';
+      var avg = st.plays > 0 ? Math.round(st.totalScore / st.plays) : 0;
+      cx.fillText(T.plays + ' ' + st.plays + T.playsUnit + '   ' +
+                  T.highScore + ' ' + st.high + T.highScoreUnit + '   ' +
+                  T.avg + ' ' + avg + T.avgUnit, W / 2, sy + 3 * U);
+    }
+
+    // Click to start
+    var pulse = 0.5 + Math.sin(Date.now() / 500) * 0.3;
+    cx.globalAlpha = pulse;
+    cx.fillStyle = '#00e676';
+    cx.font = 'bold ' + (2.2 * U) + 'px Courier New';
+    cx.fillText(isDesktop ? T.clickStartDesktop : T.clickStart, W / 2, H * 0.85);
+    cx.globalAlpha = 1;
+  }
+
+  // ── Draw: Difficulty select ──────────────────────────────
+  function drawDiffSelect() {
+    cx.textAlign = 'center';
+    cx.fillStyle = '#00e676';
+    cx.shadowColor = '#00e676';
+    cx.shadowBlur = 12;
+    cx.font = 'bold ' + (3.5 * U) + 'px Courier New';
+    cx.fillText(T.selectDiff, W / 2, H * 0.2);
+    cx.shadowBlur = 0;
+
+    var labels = [T.easy, T.normal, T.hard];
+    var descs = [T.easyDesc, T.normalDesc, T.hardDesc];
+    var colors = ['#00e676', '#ff9800', '#ff5252'];
+    var btnW = Math.min(W * 0.7, 280);
+    var btnH = 54;
+    var gap = 16;
+    var totalH = 3 * btnH + 2 * gap;
+    var startY = H / 2 - totalH / 2 + 20;
+
+    for (var i = 0; i < 3; i++) {
+      var by = startY + i * (btnH + gap);
+      var bx = W / 2 - btnW / 2;
+
+      cx.fillStyle = 'rgba(255,255,255,0.05)';
+      cx.strokeStyle = colors[i];
+      cx.lineWidth = 1.5;
+      roundRect(cx, bx, by, btnW, btnH, 10);
+      cx.fill();
+      cx.stroke();
+
+      cx.fillStyle = colors[i];
+      cx.font = 'bold ' + (2.2 * U) + 'px Courier New';
+      cx.fillText(labels[i], W / 2, by + btnH * 0.42);
+
+      cx.fillStyle = 'rgba(255,255,255,0.4)';
+      cx.font = (1.4 * U) + 'px Courier New';
+      cx.fillText(descs[i], W / 2, by + btnH * 0.75);
+
+      // Show stats for this difficulty
+      var ds = getStats(i);
+      if (ds.plays > 0) {
+        cx.fillStyle = 'rgba(255,255,255,0.25)';
+        cx.font = (1.2 * U) + 'px Courier New';
+        cx.fillText(T.highScore + ': ' + ds.high, W / 2, by + btnH + 1.5 * U);
+      }
+    }
+
+    cx.fillStyle = 'rgba(255,255,255,0.3)';
+    cx.font = (1.5 * U) + 'px Courier New';
+    cx.fillText(isDesktop ? T.clickSelectDesktop : T.clickSelect, W / 2, H * 0.9);
+  }
+
+  // ── Draw: Countdown ──────────────────────────────────────
+  function drawCountdown() {
+    var scale = 1 + (1 - countdownTime) * 0.5;
+    cx.textAlign = 'center';
+    cx.fillStyle = '#00e676';
+    cx.shadowColor = '#00e676';
+    cx.shadowBlur = 30;
+    cx.globalAlpha = 1 - countdownTime * 0.3;
+    cx.font = 'bold ' + (12 * U * scale) + 'px Courier New';
+    cx.fillText(countdownVal > 0 ? countdownVal : 'GO!', W / 2, H / 2 + 4 * U);
+    cx.shadowBlur = 0;
+    cx.globalAlpha = 1;
+
+    // Draw plate preview
+    drawPlate();
+  }
+
+  // ── Draw: Game ───────────────────────────────────────────
+  function drawGame() {
+    // Draw foods
+    for (var i = 0; i < foods.length; i++) {
+      var f = foods[i];
+      cx.save();
+      cx.translate(f.x, f.y);
+      cx.rotate(f.rot);
+
+      // Opaque white backing so emoji render bright
+      cx.fillStyle = 'rgba(255,255,255,0.85)';
+      cx.beginPath(); cx.arc(0, 0, f.size * 1.1, 0, Math.PI * 2); cx.fill();
+
+      // Glow for gold/bad
+      if (f.isGold) {
+        cx.shadowColor = '#ffd700';
+        cx.shadowBlur = 15;
+      } else if (f.isBad) {
+        cx.shadowColor = '#ff5252';
+        cx.shadowBlur = 8;
+      }
+
+      cx.font = (f.size * 2) + 'px serif';
+      cx.textAlign = 'center';
+      cx.textBaseline = 'middle';
+      cx.fillText(f.emoji, 0, 0);
+      cx.shadowBlur = 0;
+      cx.restore();
+    }
+
+    // Draw plate
+    drawPlate();
+
+    // HUD
+    drawHUD();
+
+    // Pause overlay
+    if (state === S.PAUSE) {
+      cx.fillStyle = 'rgba(0,0,0,0.6)';
+      cx.fillRect(0, 0, W, H);
+      cx.textAlign = 'center';
+      cx.fillStyle = '#00e676';
+      cx.shadowColor = '#00e676';
+      cx.shadowBlur = 15;
+      cx.font = 'bold ' + (5 * U) + 'px Courier New';
+      cx.fillText('PAUSED', W / 2, H / 2);
+      cx.shadowBlur = 0;
+      cx.fillStyle = 'rgba(255,255,255,0.4)';
+      cx.font = (1.8 * U) + 'px Courier New';
+      cx.fillText(T.pauseHint, W / 2, H / 2 + 5 * U);
+
+      // Exit button
+      cx.fillStyle = 'rgba(255,255,255,0.08)';
+      cx.strokeStyle = 'rgba(255,255,255,0.2)';
+      cx.lineWidth = 1;
+      var exitW = 36 * U, exitH = 5 * U;
+      roundRect(cx, W / 2 - exitW / 2, H / 2 + 9 * U, exitW, exitH, 6);
+      cx.fill(); cx.stroke();
+      cx.fillStyle = 'rgba(255,255,255,0.6)';
+      cx.font = (1.8 * U) + 'px Courier New';
+      cx.fillText(T.exitGame, W / 2, H / 2 + 12 * U);
+    }
+  }
+
+  function drawPlate() {
+    var d = DIFFS[diff];
+    var pw = d.plateW * U;
+    var plateY = H - 12 * U;
+    var plateH = 3 * U;
+
+    // Plate glow
+    cx.shadowColor = '#00e676';
+    cx.shadowBlur = 12;
+
+    // Plate body
+    var grad = cx.createLinearGradient(plateX - pw / 2, plateY - plateH, plateX + pw / 2, plateY + plateH);
+    grad.addColorStop(0, 'rgba(0, 230, 118, 0.6)');
+    grad.addColorStop(0.5, 'rgba(0, 230, 118, 0.9)');
+    grad.addColorStop(1, 'rgba(0, 230, 118, 0.6)');
+    cx.fillStyle = grad;
+
+    cx.beginPath();
+    // Plate shape — slightly curved top
+    cx.moveTo(plateX - pw / 2 + 2 * U, plateY + plateH / 2);
+    cx.lineTo(plateX - pw / 2, plateY - plateH / 2);
+    cx.quadraticCurveTo(plateX, plateY - plateH, plateX + pw / 2, plateY - plateH / 2);
+    cx.lineTo(plateX + pw / 2 - 2 * U, plateY + plateH / 2);
+    cx.closePath();
+    cx.fill();
+
+    cx.shadowBlur = 0;
+
+    // Plate edge highlight
+    cx.strokeStyle = 'rgba(0, 230, 118, 0.8)';
+    cx.lineWidth = 1.5;
+    cx.stroke();
+  }
+
+  function drawHUD() {
+    var pad = 2 * U;
+
+    // Score — top left
+    cx.textAlign = 'left';
+    cx.fillStyle = '#00e676';
+    cx.shadowColor = '#00e676';
+    cx.shadowBlur = 8;
+    cx.font = 'bold ' + (3 * U) + 'px Courier New';
+    cx.fillText(score + '', pad, pad + 3 * U);
+    cx.shadowBlur = 0;
+
+    // Combo — below score
+    if (combo >= 2) {
+      cx.fillStyle = '#ffd700';
+      cx.font = 'bold ' + (2 * U) + 'px Courier New';
+      cx.fillText('x' + (combo >= 5 ? 3 : combo >= 3 ? 2 : 1) + ' COMBO', pad, pad + 6 * U);
+    }
+
+    // Lives — top right
+    cx.textAlign = 'right';
+    var heartStr = '';
+    for (var li = 0; li < 3; li++) {
+      heartStr += li < lives ? '❤️' : '🖤';
+    }
+    cx.font = (2.5 * U) + 'px serif';
+    cx.fillText(heartStr, W - pad, pad + 3 * U);
+
+    // Timer — top center
+    cx.textAlign = 'center';
+    var timerColor = timer <= 10 ? '#ff5252' : '#ffffff';
+    cx.fillStyle = timerColor;
+    if (timer <= 10) {
+      cx.shadowColor = '#ff5252';
+      cx.shadowBlur = 10;
+    }
+    cx.font = 'bold ' + (2.8 * U) + 'px Courier New';
+    cx.fillText(Math.ceil(timer) + 's', W / 2, pad + 3 * U);
+    cx.shadowBlur = 0;
+
+    // ── Exit button below timer (center) ──
+    var exitBtnW = 10 * U, exitBtnH = 3 * U;
+    var exitBtnX = W / 2 - exitBtnW / 2, exitBtnY = pad + 5 * U;
+    cx.fillStyle = 'rgba(255,255,255,0.08)';
+    cx.strokeStyle = 'rgba(255,255,255,0.25)';
+    cx.lineWidth = 1;
+    roundRect(cx, exitBtnX, exitBtnY, exitBtnW, exitBtnH, 4);
+    cx.fill(); cx.stroke();
+    cx.fillStyle = 'rgba(255,255,255,0.5)';
+    cx.textAlign = 'center';
+    cx.font = (1.3 * U) + 'px Courier New';
+    cx.fillText(T.exitGame, exitBtnX + exitBtnW / 2, exitBtnY + exitBtnH * 0.65);
+  }
+
+  // ── Draw: Game Over ──────────────────────────────────────
+  function drawGameOver() {
+    cx.fillStyle = 'rgba(21, 40, 24, 0.85)';
+    cx.fillRect(0, 0, W, H);
+
+    cx.textAlign = 'center';
+
+    // Title
+    cx.fillStyle = '#ff5252';
+    cx.shadowColor = '#ff5252';
+    cx.shadowBlur = 20;
+    cx.font = 'bold ' + (5 * U) + 'px Courier New';
+    cx.fillText(T.gameOver, W / 2, H * 0.18);
+    cx.shadowBlur = 0;
+
+    // Score
+    cx.fillStyle = '#00e676';
+    cx.shadowColor = '#00e676';
+    cx.shadowBlur = 15;
+    cx.font = 'bold ' + (8 * U) + 'px Courier New';
+    cx.fillText(score, W / 2, H * 0.32);
+    cx.shadowBlur = 0;
+
+    // Grade
+    var grade = score >= 80 ? 'S' : score >= 50 ? 'A' : score >= 30 ? 'B' : score >= 15 ? 'C' : 'D';
+    var gradeColors = { S: '#ffd700', A: '#00e676', B: '#ff9800', C: '#ffffff', D: '#ff5252' };
+    cx.fillStyle = gradeColors[grade];
+    cx.shadowColor = gradeColors[grade];
+    cx.shadowBlur = 20;
+    cx.font = 'bold ' + (6 * U) + 'px Courier New';
+    cx.fillText(grade, W / 2, H * 0.43);
+    cx.shadowBlur = 0;
+
+    // Stats
+    cx.fillStyle = 'rgba(255,255,255,0.6)';
+    cx.font = (1.8 * U) + 'px Courier New';
+    var sy = H * 0.53;
+    var lineH = 3.5 * U;
+    cx.fillText(T.goodFood + ': ' + goodCaught, W / 2, sy);
+    cx.fillText(T.badFood + ': ' + badCaught, W / 2, sy + lineH);
+    cx.fillText(T.maxCombo + ': ' + maxCombo, W / 2, sy + lineH * 2);
+
+    // High score
+    var ds = getStats(diff);
+    cx.fillStyle = '#ffd700';
+    cx.font = 'bold ' + (2 * U) + 'px Courier New';
+    cx.fillText(T.highRecord + ': ' + ds.high, W / 2, sy + lineH * 3.5);
+
+    // Recent scores
+    if (ds.recent && ds.recent.length > 0) {
+      cx.fillStyle = 'rgba(255,255,255,0.3)';
+      cx.font = (1.4 * U) + 'px Courier New';
+      cx.fillText(T.recentScore + ': ' + ds.recent.join(' · '), W / 2, sy + lineH * 4.5);
+    }
+
+    // Replay
+    var pulse = 0.5 + Math.sin(Date.now() / 500) * 0.3;
+    cx.globalAlpha = pulse;
+    cx.fillStyle = '#00e676';
+    cx.font = 'bold ' + (2.2 * U) + 'px Courier New';
+    cx.fillText(isDesktop ? T.clickReplayDesktop : T.clickReplay, W / 2, H * 0.84);
+    cx.globalAlpha = 1;
+
+    // Exit button
+    cx.fillStyle = 'rgba(255,255,255,0.08)';
+    cx.strokeStyle = 'rgba(255,255,255,0.2)';
+    cx.lineWidth = 1;
+    var exitW = 36 * U, exitH = 5 * U;
+    roundRect(cx, W / 2 - exitW / 2, H * 0.90, exitW, exitH, 6);
+    cx.fill(); cx.stroke();
+    cx.fillStyle = 'rgba(255,255,255,0.6)';
+    cx.font = (1.8 * U) + 'px Courier New';
+    cx.fillText(T.exitGame, W / 2, H * 0.90 + 3 * U);
+  }
+
+  // ── Draw: Achievement banner ─────────────────────────────
+  function drawAchBanner(ab, idx) {
+    var t = ab.time;
+    var alpha = t < 0.3 ? t / 0.3 : t > 2.5 ? 1 - (t - 2.5) / 0.5 : 1;
+    if (alpha <= 0) return;
+
+    var by = H * 0.15 + idx * 6 * U;
+    var slideX = t < 0.3 ? (1 - t / 0.3) * 20 * U : 0;
+
+    cx.save();
+    cx.globalAlpha = alpha;
+    cx.translate(slideX, 0);
+
+    cx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    cx.strokeStyle = '#ffd700';
+    cx.lineWidth = 1.5;
+    var bw = Math.min(W * 0.8, 300);
+    roundRect(cx, W / 2 - bw / 2, by, bw, 5 * U, 8);
+    cx.fill();
+    cx.stroke();
+
+    cx.textAlign = 'center';
+    cx.fillStyle = '#ffd700';
+    cx.font = (1.3 * U) + 'px Courier New';
+    cx.fillText(T.achieveUnlock, W / 2, by + 1.8 * U);
+
+    cx.font = 'bold ' + (1.8 * U) + 'px Courier New';
+    cx.fillText(ab.icon + ' ' + ab.label, W / 2, by + 3.8 * U);
+
+    cx.restore();
+  }
+
+  // ── Utility: rounded rect ───────────────────────────────
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  // ── Start ────────────────────────────────────────────────
+  requestAnimationFrame(loop);
+
+})();
+</script>

@@ -29,6 +29,14 @@ The app's palette is **low-saturation gray-blue, soft haze blue (雾霾蓝), and
 - Accent tones: `#7B929F`, `#9AABB5`, `#A3B5BF` range
 - Avoid: `blue-400 to purple-500`, any `purple-*`, any `violet-*`, any saturated blue-purple gradient
 
+## Canvas Game Rules
+
+### Button Placement
+**NEVER** place interactive buttons at the browser viewport edge (e.g. `W - pad`, `0 + pad`). Buttons must be positioned **near related UI elements** — beside a panel, below a timer, inside a HUD cluster. Edge-positioned buttons are hard to tap on mobile and look disconnected from the game UI.
+
+### Emoji Rendering
+Canvas renders emoji as bitmaps that blend with the background. On dark backgrounds, emoji appear muddy/dark. **Always** draw an opaque white circle (`rgba(255,255,255, 0.85)`) behind each emoji before drawing it with `fillText`.
+
 ## Common TypeScript Pitfalls (avoid these)
 
 ### ES Target Compatibility

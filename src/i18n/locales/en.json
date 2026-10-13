@@ -764,6 +764,12 @@
     "attemptsLeft": "Attempts left",
     "neonHoops": "Neon Hoops",
     "neonHoopsDesc": "Basketball shooting game",
+    "foodCatcher": "Food Catcher",
+    "foodCatcherDesc": "Catch healthy food, dodge junk food!",
+    "sliceDice": "Slice & Dice",
+    "sliceDiceDesc": "Swipe to slice food, watch out for bombs!",
+    "mealBuilder": "Meal Builder",
+    "mealBuilderDesc": "Match the right nutrition in time!",
     "closeGame": "Close game"
   },
   "typing": {
