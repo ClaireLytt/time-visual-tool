@@ -10,6 +10,33 @@ TimeVisual — a React 18 + TypeScript + Tailwind + Vite productivity app with F
 - `npx tsc --noEmit` — type-check
 - `npx vite build` — production build
 - `npm test` — run vitest tests
+- `npm run ui-audit` — automated browser UI inspection (see "UI Audit Workflow")
+
+## UI Audit Workflow (REQUIRED after UI changes)
+
+After **any code change that affects the UI**, and **before committing/pushing**, run the
+ui-audit CLI against the modules you touched:
+
+1. Make sure the dev server is running (`npx vite --port 5173 --strictPort`, background).
+   If Tailwind/config colors were changed, restart it with `--force` to clear the cache.
+2. Run the audit scoped to the affected modules, e.g.:
+   ```bash
+   node scripts/ui-audit.mjs --modes diary,overview
+   ```
+   (`npm run ui-audit` audits all modules.) The tool opens a real browser, switches to each
+   module, exercises the page, and reports: console/page errors, failed requests, touch
+   targets < 40px, horizontal overflow, banned blue-violet colors (hue 235-265 saturated),
+   missing accessible names/alt, duplicate ids. Screenshots land in `ui-audit/` — read the
+   screenshot of each changed screen to visually verify the change actually works.
+3. **Fix every error-level finding automatically** (exit code 1 = errors present), re-run
+   the audit until it's clean. Warn-level findings on screens you touched should be fixed
+   too; pre-existing warnings elsewhere may be noted and left.
+4. Only then run `npm run predeploy-check`, commit, and push.
+
+Auth note: entering `/app` requires Firebase anonymous auth to be enabled, or
+`UI_AUDIT_EMAIL` / `UI_AUDIT_PASSWORD` env vars for form login. If neither is available the
+tool audits the landing page only — say so in the report to the user instead of skipping
+silently. The app uses **HashRouter** (`#/app`, `#/login`, `#/register`).
 
 ## Architecture
 
