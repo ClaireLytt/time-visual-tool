@@ -40,7 +40,8 @@ export default function TodoForm({ selectedDate, onAdd, categories, defaultCateg
       ...(dueDate ? { dueDate } : {}),
       ...(notes.trim() ? { notes: notes.trim() } : {}),
       ...(repeat ? { repeat, completedDates: [] } : {}),
-      categoryId,
+      // the selected category may have been deleted while the form was open
+      categoryId: categories.some(c => c.id === categoryId) ? categoryId : 'life',
       createdAt: new Date().toISOString(),
     })
     setText('')

@@ -95,6 +95,15 @@ export function useTodoEntries() {
     setData(prev => ({ ...prev, items: prev.items.filter(t => t.id !== id) }))
   }, [setData])
 
+  /** Apply the same updates to many items in a single write */
+  const updateItems = useCallback((ids: string[], updates: Partial<TodoItem>) => {
+    const idSet = new Set(ids)
+    setData(prev => ({
+      ...prev,
+      items: prev.items.map(t => idSet.has(t.id) ? { ...t, ...updates } : t),
+    }))
+  }, [setData])
+
   const updateItem = useCallback((id: string, updates: Partial<TodoItem>) => {
     setData(prev => ({
       ...prev,
@@ -125,6 +134,7 @@ export function useTodoEntries() {
     skipOccurrence,
     deleteItem,
     updateItem,
+    updateItems,
     getItemsForDate,
   }
 }

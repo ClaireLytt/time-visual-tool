@@ -26,7 +26,7 @@ export interface DiaryEntryUpsert {
 
 export function useDiaryEntries() {
   const { t } = useTranslation()
-  const { data, setData, loading } = useFirestore<DiaryStorageData>('diaryData', INITIAL_DATA, validateDiaryData)
+  const { data, setData, loading, error } = useFirestore<DiaryStorageData>('diaryData', INITIAL_DATA, validateDiaryData)
 
   const entries = data.entries
 
@@ -53,14 +53,45 @@ export function useDiaryEntries() {
     })
   }, [setData])
 
-  /** Delete a custom notebook; its entries move to the default notebook */
+  /**
+   * Delete a custom notebook; its entries move to the default notebook.
+   * When the default notebook already has an entry for the same period the
+   * contents are merged (appended), never silently dropped by dedupe.
+   */
   const deleteNotebook = useCallback((id: string) => {
     if (id === DEFAULT_NOTEBOOK_ID) return
-    setData(prev => ({
-      ...prev,
-      notebooks: (prev.notebooks ?? []).filter(n => n.id !== id),
-      entries: prev.entries.map(e => e.notebookId === id ? { ...e, notebookId: undefined } : e),
-    }))
+    setData(prev => {
+      const nbName = (prev.notebooks ?? []).find(n => n.id === id)?.name ?? ''
+      const defaults = new Map(
+        prev.entries
+          .filter(e => (e.notebookId ?? DEFAULT_NOTEBOOK_ID) === DEFAULT_NOTEBOOK_ID)
+          .map(e => [`${e.periodType}:${e.periodKey}`, e])
+      )
+      const out: DiaryEntry[] = []
+      for (const e of prev.entries) {
+        if (e.notebookId !== id) { out.push(e); continue }
+        const target = defaults.get(`${e.periodType}:${e.periodKey}`)
+        if (!target) { out.push({ ...e, notebookId: undefined }); continue }
+        // merge colliding entry into the existing default entry
+        const prefix = nbName ? `[${nbName}] ` : ''
+        const glue = (base: string, extra: string) =>
+          extra.trim() ? (base.trim() ? `${base}
+
+${prefix}${extra}` : `${prefix}${extra}`) : base
+        target.gratitude = glue(target.gratitude, e.gratitude)
+        target.feelings = glue(target.feelings, e.feelings)
+        target.motivation = glue(target.motivation, e.motivation)
+        target.custom = { ...e.custom, ...target.custom }
+        target.images = [...(target.images ?? []), ...(e.images ?? [])].slice(0, 8)
+        target.goals = [...target.goals, ...e.goals]
+        target.updatedAt = new Date().toISOString()
+      }
+      return {
+        ...prev,
+        notebooks: (prev.notebooks ?? []).filter(n => n.id !== id),
+        entries: out,
+      }
+    })
   }, [setData])
 
   /** Add a custom section (editor module) to a notebook's template */
@@ -157,7 +188,7 @@ export function useDiaryEntries() {
   }, [setData])
 
   return {
-    entries, data, loading,
+    entries, data, loading, error,
     notebooks, addNotebook, deleteNotebook, addSection, removeSection,
     getEntry, upsertEntry, deleteEntry,
     importData,

@@ -66,10 +66,23 @@ const TodoItem = memo(function TodoItem({ item, category, onToggle, onDelete, on
   }
 
   const handleRepeatSave = () => {
-    onUpdate?.(item.id, {
-      repeat: repeatDraft,
-      ...(repeatDraft && !isRecurring ? { completedDates: [] } : {}),
-    })
+    if (!repeatDraft && isRecurring) {
+      // recurring -> one-off: anchor to today and keep today's completion,
+      // otherwise the item resurfaces as an overdue task from its start date
+      const today = format(new Date(), 'yyyy-MM-dd')
+      onUpdate?.(item.id, {
+        repeat: undefined,
+        date: today,
+        done: (item.completedDates ?? []).includes(today),
+        completedDates: undefined,
+        skippedDates: undefined,
+      })
+    } else {
+      onUpdate?.(item.id, {
+        repeat: repeatDraft,
+        ...(repeatDraft && !isRecurring ? { completedDates: [] } : {}),
+      })
+    }
     setShowRepeatEdit(false)
   }
 

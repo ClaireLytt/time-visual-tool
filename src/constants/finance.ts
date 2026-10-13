@@ -11,7 +11,7 @@ export const DEFAULT_FINANCE_CATEGORY_LIST: FinanceCategory[] = [
   { name: '医疗', color: '#c47070', kind: 'expense' },
   { name: '教育', color: '#6b8db5', kind: 'expense' },
   { name: '通讯', color: '#6ba5a0', kind: 'expense' },
-  { name: '人情', color: '#a855f7', kind: 'expense' },
+  { name: '人情', color: '#b09cc4', kind: 'expense' },
   { name: '其他支出', color: '#a0a0a0', kind: 'expense' },
   { name: '工资', color: '#10b981', kind: 'income' },
   { name: '奖金', color: '#8bab6b', kind: 'income' },

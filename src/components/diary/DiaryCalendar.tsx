@@ -67,8 +67,8 @@ function DiaryCalendar({ selectedDate, entryDates, onPickDate }: DiaryCalendarPr
         ))}
       </div>
 
-      {/* day grid */}
-      <div className="space-y-0.5">
+      {/* day grid — opted out of the global tap-target expansion (tight cells) */}
+      <div className="no-hit-expand space-y-0.5">
         {weeks.rows.map((week, wi) => (
           <div key={wi} className="grid grid-cols-7">
             {week.map(d => {

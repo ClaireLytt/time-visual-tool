@@ -16,7 +16,7 @@ export default function TodoDashboard() {
   const [selectedDate, setSelectedDate] = useState(() => format(new Date(), 'yyyy-MM-dd'))
   const [filter, setFilter] = useState<Filter>('all')
   const [showStats, setShowStats] = useState(false)
-  const { items, categories, addCategory, deleteCategory, addItem, toggleItem, skipOccurrence, deleteItem, updateItem, getItemsForDate } = useTodoEntries()
+  const { items, categories, addCategory, deleteCategory, addItem, toggleItem, skipOccurrence, deleteItem, updateItem, updateItems, getItemsForDate } = useTodoEntries()
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
   const [addingCategory, setAddingCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
@@ -46,8 +46,8 @@ export default function TodoDashboard() {
     items.filter(t => (!t.repeat || t.repeat.type === 'none') && !t.done && t.date < today),
   [items, today])
   const moveOverdueToToday = useCallback(() => {
-    overdueItems.forEach(t => updateItem(t.id, { date: today }))
-  }, [overdueItems, updateItem, today])
+    updateItems(overdueItems.map(t => t.id), { date: today })
+  }, [overdueItems, updateItems, today])
 
   // Last-7-days completion stats
   const weekStats = useMemo(() => {

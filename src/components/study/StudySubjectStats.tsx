@@ -2,11 +2,11 @@ import { useMemo } from 'react'
 import type { StudyEntry } from '../../types/study'
 
 const SUBJECT_COLORS: Record<string, string> = {
-  '数学': '#e43b44',
+  '数学': '#c18383',
   '英语': '#7fa3bb',
   '编程': '#86a98d',
-  '阅读': '#a855f7',
-  '其他': '#f4b41a',
+  '阅读': '#b09cc4',
+  '其他': '#c9ab72',
 }
 
 interface StudySubjectStatsProps {

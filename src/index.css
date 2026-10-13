@@ -62,7 +62,12 @@ body {
 }
 
 *:focus-visible {
-  @apply outline-2 outline-offset-2 outline-px-gold;
+  /* darker muted gold: keeps the Morandi tone but stays >=3:1 on parchment */
+  @apply outline-2 outline-offset-2;
+  outline-color: #8f6f32;
+}
+:is(.dark) *:focus-visible {
+  outline-color: #c9ab72;
 }
 
 /* ── Touch-target expansion ──
@@ -78,6 +83,11 @@ body {
     content: '';
     position: absolute;
     inset: min(0px, calc((100% - 44px) / 2));
+  }
+  /* dense grids (calendars, tightly packed day cells) opt out: the expansion
+     would overlap neighbors and route edge taps to the wrong cell */
+  .no-hit-expand::after, .no-hit-expand button::after, .no-hit-expand a::after {
+    content: none;
   }
 }
 

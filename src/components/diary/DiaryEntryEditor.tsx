@@ -45,6 +45,7 @@ function DiaryEntryEditor({ notebook, periodType, periodKey, entry, onSave, onDe
   const [feelings, setFeelings] = useState(entry?.feelings ?? '')
   const [goals, setGoals] = useState<DiaryGoal[]>(entry?.goals ?? [])
   const [mood, setMood] = useState(entry?.mood ?? '')
+  const [motivation, setMotivation] = useState(entry?.motivation ?? '')
   const [custom, setCustom] = useState<Record<string, string>>(entry?.custom ?? {})
   const [images, setImages] = useState<string[]>(entry?.images ?? [])
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -60,6 +61,7 @@ function DiaryEntryEditor({ notebook, periodType, periodKey, entry, onSave, onDe
     setGratitude(entry?.gratitude ?? '')
     setFeelings(entry?.feelings ?? '')
     setMood(entry?.mood ?? '')
+    setMotivation(entry?.motivation ?? '')
     setGoals(entry?.goals ?? [])
     setCustom(entry?.custom ?? {})
     setImages(entry?.images ?? [])
@@ -77,6 +79,7 @@ function DiaryEntryEditor({ notebook, periodType, periodKey, entry, onSave, onDe
     gratitude !== (entry?.gratitude ?? '') ||
     feelings !== (entry?.feelings ?? '') ||
     mood !== (entry?.mood ?? '') ||
+    motivation !== (entry?.motivation ?? '') ||
     JSON.stringify(goals) !== JSON.stringify(entry?.goals ?? []) ||
     customDirty || imagesDirty
   const customHasText = Object.values(custom).some(v => v.trim() !== '')
@@ -186,6 +189,23 @@ function DiaryEntryEditor({ notebook, periodType, periodKey, entry, onSave, onDe
           />
         </div>
 
+        {/* Legacy motivation — shown only when a pre-existing entry still has it */}
+        {(entry?.motivation ?? '') !== '' && (
+          <div>
+            <label htmlFor="diary-motivation" className={LABEL_CLASS}>
+              {t('diary.motivationLabel')}
+            </label>
+            <textarea
+              id="diary-motivation"
+              rows={2}
+              maxLength={2000}
+              value={motivation}
+              onChange={e => setMotivation(e.target.value)}
+              className={TEXTAREA_CLASS}
+            />
+          </div>
+        )}
+
         {/* User-defined sections */}
         {notebook.sections.map(sec => (
           <div key={sec.id}>
@@ -293,7 +313,7 @@ function DiaryEntryEditor({ notebook, periodType, periodKey, entry, onSave, onDe
             onClick={() => onSave({
               gratitude: isDaily && showBuiltins ? gratitude : '',
               feelings,
-              motivation: entry?.motivation ?? '',
+              motivation,
               mood: isDaily ? mood : undefined,
               goals: isDaily ? [] : goals,
               custom,
@@ -333,6 +353,7 @@ function DiaryEntryEditor({ notebook, periodType, periodKey, entry, onSave, onDe
           setGratitude('')
           setFeelings('')
           setMood('')
+          setMotivation('')
           setGoals([])
           setCustom({})
           setImages([])

@@ -47,14 +47,14 @@ silently. The app uses **HashRouter** (`#/app`, `#/login`, `#/register`).
 
 ## Design / Color Rules
 
-### NO Purple or Blue-Purple
+### NO Blue-Purple (pure purple is allowed)
 
-**NEVER** use purple, blue-purple, bright blue-purple gradients, or purple-blue color schemes anywhere in the UI.
+**NEVER** use blue-purple/violet (hue ~235-265), bright blue-purple gradients, or purple-blue color schemes anywhere in the UI. **Pure purple (hue ~270-300) is allowed** when muted — the user approved it for the diary accent (e.g. `#b09cc4`).
 
-The app's palette is **low-saturation gray-blue, soft haze blue (雾霾蓝), and light gray-blue**:
+The overall palette is **Morandi / low-saturation**: muted warm grays, haze blue (雾霾蓝), gray-green, dusty tones:
 - Avatar backgrounds: solid `#8B9DAB` (muted gray-blue), not gradients
-- Accent tones: `#7B929F`, `#9AABB5`, `#A3B5BF` range
-- Avoid: `blue-400 to purple-500`, any `purple-*`, any `violet-*`, any saturated blue-purple gradient
+- Neutral accents: `#7B929F`, `#9AABB5`, `#A3B5BF` range; ink/borders `#a39b8d`
+- Avoid: `blue-400 to purple-500` style gradients, any saturated `violet-*`/`indigo-*` (hue 235-265 with saturation > ~45%), high-saturation colors in general
 
 ## Canvas Game Rules
 

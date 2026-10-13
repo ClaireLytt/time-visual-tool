@@ -112,7 +112,7 @@ function FinanceDashboard() {
         {monthlyBudget != null && monthlyBudget > 0 && (() => {
           const ratio = monthlySummary.expense / monthlyBudget
           const pct = ratio * 100
-          const barColor = pct > 90 ? '#e43b44' : pct > 60 ? '#c9ab77' : '#86a98d'
+          const barColor = pct > 90 ? '#c18383' : pct > 60 ? '#c9ab77' : '#86a98d'
           return (
             <div className="panel p-3 mb-4">
               <div className="flex justify-between items-baseline mb-1.5">
