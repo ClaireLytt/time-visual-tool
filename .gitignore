@@ -10,3 +10,4 @@ server/data/
 .agents/
 .claude/
 skills-lock.json
+ui-audit/
