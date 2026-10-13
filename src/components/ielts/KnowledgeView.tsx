@@ -66,14 +66,7 @@ export default function KnowledgeView() {
     [reviewsHook.entries],
   )
 
-  // Mistake → item mapping (for mastery status)
-  const mistakeItemMap = useMemo(() => {
-    const map = new Map<string, IeltsItem>()
-    for (const item of allItems) {
-      if (item.type === 'mistake') map.set(item.id, item)
-    }
-    return map
-  }, [allItems])
+
 
   // Filter mistakes
   const filteredMistakes = useMemo(() => {
@@ -386,7 +379,6 @@ export default function KnowledgeView() {
           item={detailItem.item}
           sessionSource={sessionSource}
           sessionSubject={sessionSubject}
-          reviewMap={reviewMap}
           onClose={() => setDetailItem(null)}
           onUpdateMistake={(id, patch) => { mistakesHook.updateEntry(id, patch); toast.success('已更新') }}
           onAddVocab={(word, meaning, source) => {
@@ -414,12 +406,11 @@ export default function KnowledgeView() {
 
 /* ─── Detail Modal ─── */
 
-function DetailModal({ mistake, item, sessionSource, sessionSubject, reviewMap, onClose, onUpdateMistake, onAddVocab }: {
+function DetailModal({ mistake, item, sessionSource, sessionSubject, onClose, onUpdateMistake, onAddVocab }: {
   mistake?: IeltsMistake
   item?: IeltsItem
   sessionSource: Map<string, string>
   sessionSubject: Map<string, string>
-  reviewMap: Map<string, IeltsReview>
   onClose: () => void
   onUpdateMistake: (id: string, patch: Partial<IeltsMistake>) => void
   onAddVocab?: (word: string, meaning: string, source: string) => void

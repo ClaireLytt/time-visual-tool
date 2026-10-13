@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
+
 import { toast } from 'sonner'
 import { IELTS_SUBJECTS, SUBJECT_COLORS } from './constants'
 import { ACCENT, btnPrimary, inputClass } from './styles'
@@ -12,7 +12,7 @@ interface Props {
 }
 
 export default function MockTestForm({ date, categories, onAdd }: Props) {
-  const { t } = useTranslation()
+
   const [source, setSource] = useState('')
   const [scores, setScores] = useState<Record<IeltsSubject, string>>({
     listening: '', reading: '', writing: '', speaking: '',

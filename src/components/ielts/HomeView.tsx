@@ -161,7 +161,7 @@ export default function HomeView() {
       {sessions.entries.length > 0 && (
         <StudyHeatmap
           sessions={sessions.entries}
-          onDateClick={(date) => setSearchParams({ iv: 'record' }, { replace: true })}
+          onDateClick={() => setSearchParams({ iv: 'record' }, { replace: true })}
         />
       )}
 
