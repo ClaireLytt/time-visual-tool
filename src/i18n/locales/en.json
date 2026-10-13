@@ -592,7 +592,8 @@
     "deleteSeries": "Delete whole series",
     "overdueCount": "{{count}} overdue task(s)",
     "moveToToday": "Move all to today",
-    "weekStats": "Last 7 days"
+    "weekStats": "Last 7 days",
+    "changePriority": "Change priority"
   },
   "studyApp": {
     "title": "StudyVisual",

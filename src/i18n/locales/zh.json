@@ -592,7 +592,8 @@
     "deleteSeries": "删除整个系列",
     "overdueCount": "有 {{count}} 个逾期任务",
     "moveToToday": "全部移到今天",
-    "weekStats": "近 7 天完成情况"
+    "weekStats": "近 7 天完成情况",
+    "changePriority": "修改优先级"
   },
   "studyApp": {
     "title": "StudyVisual",

@@ -28,6 +28,7 @@ const TodoItem = memo(function TodoItem({ item, onToggle, onDelete, onUpdate, on
   const [showDeleteChoice, setShowDeleteChoice] = useState(false)
   const [showNotes, setShowNotes] = useState(false)
   const [notesText, setNotesText] = useState(item.notes ?? '')
+  const [showPriorityEdit, setShowPriorityEdit] = useState(false)
   const [showRepeatEdit, setShowRepeatEdit] = useState(false)
   const [repeatDraft, setRepeatDraft] = useState<TodoRepeat | undefined>(item.repeat?.type !== 'none' ? item.repeat : undefined)
 
@@ -54,16 +55,19 @@ const TodoItem = memo(function TodoItem({ item, onToggle, onDelete, onUpdate, on
       style={{ borderLeft: BORDER_STYLES[item.priority], paddingLeft: '12px' }}
     >
       <div className="flex items-center gap-3">
-        {/* Priority badge */}
-        <span
-          className="text-[10px] font-semibold px-1.5 py-0.5 rounded shrink-0"
+        {/* Priority badge — click to change */}
+        <button
+          type="button"
+          onClick={() => onUpdate && setShowPriorityEdit(prev => !prev)}
+          title={t('todo.changePriority')}
+          className={`text-[10px] font-semibold px-1.5 py-0.5 rounded shrink-0 transition-transform ${onUpdate ? 'hover:scale-110 cursor-pointer' : 'cursor-default'}`}
           style={{
             backgroundColor: PRIORITY_COLORS[item.priority] + '20',
             color: PRIORITY_COLORS[item.priority],
           }}
         >
           {t(`todo.priority.${item.priority}`)}
-        </span>
+        </button>
 
         {/* Checkbox */}
         <button
@@ -155,6 +159,32 @@ const TodoItem = memo(function TodoItem({ item, onToggle, onDelete, onUpdate, on
           onCancel={() => setConfirmDelete(false)}
         />
       </div>
+
+      {/* Priority picker */}
+      {showPriorityEdit && onUpdate && (
+        <div className="mt-2 ml-8 flex gap-2 items-center">
+          {(['high', 'medium', 'low'] as TodoPriority[]).map(p => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => { onUpdate(item.id, { priority: p }); setShowPriorityEdit(false) }}
+              className={`px-2.5 py-1 text-xs font-medium rounded-lg transition-all ${
+                item.priority === p ? 'text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+              }`}
+              style={item.priority === p ? { backgroundColor: PRIORITY_COLORS[p] } : undefined}
+            >
+              {t(`todo.priority.${p}`)}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => setShowPriorityEdit(false)}
+            className="px-2 py-1 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+          >
+            {t('confirm.cancel')}
+          </button>
+        </div>
+      )}
 
       {/* Recurring delete: this occurrence or whole series */}
       {showDeleteChoice && (
