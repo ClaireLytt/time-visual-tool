@@ -1,6 +1,6 @@
 /* ─── IELTS — Session Recording Form ─── */
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { IELTS_SUBJECTS, IELTS_TAGS, SUBJECT_COLORS } from './constants'
@@ -32,28 +32,19 @@ export default function SessionForm({
   const [detail, setDetail] = useState('')
 
   // Sync categoryId when categories load async from Firestore
-  useEffect(() => {
-    if (!categoryId && categories.length > 0) {
-      setCategoryId(categories[0].id)
-    }
-  }, [categories, categoryId])
+  const resolvedCategoryId = categoryId || (categories.length > 0 ? categories[0].id : '')
   const [score, setScore] = useState('')
-  const [minutes, setMinutes] = useState('')
+  const [minutes, setMinutes] = useState(
+    defaultMinutes && defaultMinutes > 0 ? String(defaultMinutes) : ''
+  )
   const [note, setNote] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
 
-  // Auto-fill minutes from timer
-  useEffect(() => {
-    if (defaultMinutes && defaultMinutes > 0) {
-      setMinutes(String(defaultMinutes))
-    }
-  }, [defaultMinutes])
-
-  const selectedCat = categories.find(c => c.id === categoryId)
+  const selectedCat = categories.find(c => c.id === resolvedCategoryId)
   const source = selectedCat
     ? (detail.trim() ? `${selectedCat.name} ${detail.trim()}` : selectedCat.name)
     : detail.trim()
-  const canSubmit = categoryId && Number(minutes) > 0
+  const canSubmit = resolvedCategoryId && Number(minutes) > 0
   const subjectTags = IELTS_TAGS[subject]
   const subjectColor = SUBJECT_COLORS[subject]
 
@@ -67,7 +58,7 @@ export default function SessionForm({
       date,
       subject,
       source,
-      categoryId,
+      categoryId: resolvedCategoryId,
       detail: detail.trim(),
       score: score.trim(),
       minutes: Number(minutes) || 0,
@@ -151,7 +142,7 @@ export default function SessionForm({
       <SourceCategoryPicker
         categories={categories}
         subject={subject}
-        selectedId={categoryId}
+        selectedId={resolvedCategoryId}
         detail={detail}
         onSelect={setCategoryId}
         onDetailChange={setDetail}

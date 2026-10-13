@@ -141,8 +141,6 @@ export default function StatsView() {
 
   const hasScoreData = scoreRadarData.some(d => d.current > 0)
 
-  const topWeakness = tagData[0]
-
   const goToKnowledge = () => {
     setSearchParams({ iv: 'knowledge' }, { replace: true })
   }

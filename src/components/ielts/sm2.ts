@@ -34,9 +34,9 @@ const MAX_EF = 3.0
  * @returns updated SM-2 state + next review date
  */
 export function sm2(quality: Quality, reps: number, ef: number, interval: number): SM2Result {
-  let newEF = ef
   let newReps = reps
-  let newInterval = interval
+  let newEF: number
+  let newInterval: number
 
   if (quality < 3) {
     // Failed — reset repetitions, short interval, decrease EF

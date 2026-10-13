@@ -6,11 +6,11 @@ import { useFirestore } from '../../hooks/useFirestore'
 import { DEFAULT_SOURCE_CATEGORIES } from './constants'
 import type {
   IeltsSession, IeltsSessionsData, IeltsSourceCategory,
-  IeltsMistake, IeltsMistakesData,
-  IeltsItem, IeltsItemsData,
-  IeltsReview, IeltsReviewsData,
-  IeltsReflection, IeltsReflectionsData,
-  IeltsImportRecord, IeltsImportsData,
+  IeltsMistake,
+  IeltsItem,
+  IeltsReview,
+  IeltsReflection,
+  IeltsImportRecord,
   IeltsVocabWord,
 } from './types'
 

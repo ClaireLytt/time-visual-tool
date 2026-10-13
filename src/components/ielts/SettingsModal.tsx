@@ -1,6 +1,6 @@
 /* ─── IELTS — Settings Modal (exam date + target scores) ─── */
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { IELTS_SUBJECTS, SUBJECT_COLORS } from './constants'
 import { ACCENT, btnPrimary, btnGhost } from './styles'
 import type { IeltsSubject } from './types'
@@ -28,18 +28,18 @@ interface Props {
   onClose: () => void
 }
 
+function readExamDate(): string {
+  try { return localStorage.getItem(STORAGE_KEY_EXAM) ?? '' } catch { return '' }
+}
+
 export default function SettingsModal({ open, onClose }: Props) {
-  const [examDate, setExamDate] = useState('')
-  const [targets, setTargets] = useState<TargetScores>(getTargetScores())
-
-  useEffect(() => {
-    if (open) {
-      try { setExamDate(localStorage.getItem(STORAGE_KEY_EXAM) ?? '') } catch { /* */ }
-      setTargets(getTargetScores())
-    }
-  }, [open])
-
   if (!open) return null
+  return <SettingsModalInner onClose={onClose} />
+}
+
+function SettingsModalInner({ onClose }: { onClose: () => void }) {
+  const [examDate, setExamDate] = useState(readExamDate)
+  const [targets, setTargets] = useState<TargetScores>(getTargetScores)
 
   const handleSave = () => {
     try {
