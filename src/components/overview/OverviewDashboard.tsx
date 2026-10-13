@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { format, subDays } from 'date-fns'
 import { zhCN, enUS } from 'date-fns/locale'
@@ -116,14 +116,6 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
   const diaryDates = useMemo(() => diary.entries.filter(e => e.periodType === 'day').map(e => e.periodKey), [diary.entries])
   const sportDates = useMemo(() => sport.entries.map(e => e.date), [sport.entries])
 
-  // Quick todo
-  const [quickTodo, setQuickTodo] = useState('')
-  const handleQuickTodo = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!quickTodo.trim()) return
-    todo.addItem({ id: crypto.randomUUID(), text: quickTodo.trim(), done: false, priority: 'medium', date: today, createdAt: new Date().toISOString() })
-    setQuickTodo('')
-  }
 
   // Format helper
   const fmtDuration = (m: number) => m < 60 ? `${m}m` : `${(m / 60).toFixed(1)}h`
@@ -193,6 +185,13 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
           </span>
         </Card>
 
+        <Card mode="todo" scene="📋 QUEST LOG" subtitle={t('todoApp.subtitle')} onClick={() => onNavigate('todo')}>
+          <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">
+            {todoDoneCount}/{todoToday.length}
+            <span className="ml-1 text-[10px] font-normal text-gray-400">{t('todo.completed')}</span>
+          </span>
+        </Card>
+
         <Card mode="study" scene="🎓 ACADEMY" subtitle={t('studyApp.subtitle')} onClick={() => onNavigate('study')}>
           <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{fmtDuration(studyMinutes)}</span>
           <span className="text-[10px] text-gray-400">{studyToday.length} {t('study.entryCount')}</span>
@@ -247,17 +246,6 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
             )
           })}
         </div>
-      </Card>
-
-      {/* ── Todo: inline quick-add ── */}
-      <Card mode="todo" scene="📋 QUEST LOG" subtitle={t('todoApp.subtitle')}>
-        <div className="flex items-center justify-between">
-          <span className="text-lg font-bold tabular-nums text-gray-900 dark:text-gray-100">{todoDoneCount}/{todoToday.length}</span>
-          <button onClick={() => onNavigate('todo')} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 no-press">→</button>
-        </div>
-        <form className="flex gap-1.5 mt-0.5" onSubmit={handleQuickTodo}>
-          <input value={quickTodo} onChange={e => setQuickTodo(e.target.value)} placeholder="+" className="input-base flex-1 text-xs py-1" />
-        </form>
       </Card>
 
       {/* ── Streaks ── */}

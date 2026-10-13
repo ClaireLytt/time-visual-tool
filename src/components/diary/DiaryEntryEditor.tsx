@@ -178,7 +178,7 @@ function DiaryEntryEditor({ notebook, periodType, periodKey, entry, onSave, onDe
           </div>
           <textarea
             id="diary-feelings"
-            rows={isDaily ? 3 : 5}
+            rows={isDaily ? 7 : 8}
             maxLength={2000}
             value={feelings}
             onChange={e => setFeelings(e.target.value)}
