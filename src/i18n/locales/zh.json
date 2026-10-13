@@ -50,7 +50,10 @@
     "tabs": {
       "diary": "日记",
       "todo": "待办"
-    }
+    },
+    "todoSummaryLine": "今日待办：完成 {{done}}/{{total}}",
+    "insertTodoSummary": "插入今日待办",
+    "goalToTodo": "转为待办"
   },
   "overviewApp": {
     "title": "今日总览",
@@ -135,7 +138,6 @@
     "diary": "日记",
     "sport": "运动",
     "habit": "习惯",
-    "todo": "待办",
     "study": "学习",
     "work": "工作",
     "podcast": "播客",
@@ -521,7 +523,6 @@
     "subtitle": "每日习惯打卡"
   },
   "todoApp": {
-    "title": "TodoVisual",
     "subtitle": "管理你的任务"
   },
   "habit": {
@@ -572,7 +573,9 @@
       "custom": "自定义",
       "weekdaysLabel": "重复于",
       "every": "每",
-      "days": "天重复一次"
+      "days": "天重复一次",
+      "untilLabel": "重复截止",
+      "forever": "（留空则一直重复）"
     },
     "weekday": {
       "0": "日",
@@ -582,7 +585,14 @@
       "4": "四",
       "5": "五",
       "6": "六"
-    }
+    },
+    "editRepeat": "编辑重复规则",
+    "save": "保存",
+    "deleteOccurrence": "只删这一天",
+    "deleteSeries": "删除整个系列",
+    "overdueCount": "有 {{count}} 个逾期任务",
+    "moveToToday": "全部移到今天",
+    "weekStats": "近 7 天完成情况"
   },
   "studyApp": {
     "title": "StudyVisual",

@@ -16,6 +16,8 @@ export function todoOccursOn(item: TodoItem, date: string): boolean {
   const repeat = item.repeat
   if (!repeat || repeat.type === 'none') return item.date === date
   if (date < item.date) return false
+  if (repeat.until && date > repeat.until) return false
+  if (item.skippedDates?.includes(date)) return false
   switch (repeat.type) {
     case 'daily':
       return true
@@ -70,6 +72,18 @@ export function useTodoEntries() {
     }))
   }, [setData])
 
+  /** Remove a single occurrence of a recurring item */
+  const skipOccurrence = useCallback((id: string, date: string) => {
+    setData(prev => ({
+      ...prev,
+      items: prev.items.map(t =>
+        t.id === id
+          ? { ...t, skippedDates: [...(t.skippedDates ?? []), date] }
+          : t
+      ),
+    }))
+  }, [setData])
+
   const deleteItem = useCallback((id: string) => {
     setData(prev => ({ ...prev, items: prev.items.filter(t => t.id !== id) }))
   }, [setData])
@@ -97,6 +111,7 @@ export function useTodoEntries() {
     loading,
     addItem,
     toggleItem,
+    skipOccurrence,
     deleteItem,
     updateItem,
     getItemsForDate,

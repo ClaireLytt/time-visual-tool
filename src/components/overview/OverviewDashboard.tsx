@@ -252,7 +252,13 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
       <Card mode="diary" scene="📋 QUEST LOG" subtitle={t('todoApp.subtitle')}>
         <div className="flex items-center justify-between">
           <span className="text-lg font-bold tabular-nums text-gray-900 dark:text-gray-100">{todoDoneCount}/{todoToday.length}</span>
-          <button onClick={() => onNavigate('diary')} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 no-press">→</button>
+          <button
+            onClick={() => {
+              try { sessionStorage.setItem('diary.initialTab', 'todo') } catch { /* ignore */ }
+              onNavigate('diary')
+            }}
+            className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 no-press"
+          >→</button>
         </div>
         <form className="flex gap-1.5 mt-0.5" onSubmit={handleQuickTodo}>
           <input value={quickTodo} onChange={e => setQuickTodo(e.target.value)} placeholder="+" className="input-base flex-1 text-xs py-1" />

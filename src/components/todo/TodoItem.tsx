@@ -4,13 +4,16 @@ import { format } from 'date-fns'
 import { PRIORITY_COLORS } from '../../constants/todo'
 import { XIcon } from '../icons'
 import ConfirmDialog from '../common/ConfirmDialog'
-import type { TodoItem as TodoItemType, TodoPriority } from '../../types/todo'
+import RepeatEditor from './RepeatEditor'
+import type { TodoItem as TodoItemType, TodoPriority, TodoRepeat } from '../../types/todo'
 
 interface TodoItemProps {
   item: TodoItemType
   onToggle: (id: string) => void
   onDelete: (id: string) => void
   onUpdate?: (id: string, updates: Partial<TodoItemType>) => void
+  /** delete only the current occurrence of a recurring item */
+  onSkipOccurrence?: (id: string) => void
 }
 
 const BORDER_STYLES: Record<TodoPriority, string> = {
@@ -19,11 +22,24 @@ const BORDER_STYLES: Record<TodoPriority, string> = {
   low: '2px solid #d1d5db',
 }
 
-const TodoItem = memo(function TodoItem({ item, onToggle, onDelete, onUpdate }: TodoItemProps) {
+const TodoItem = memo(function TodoItem({ item, onToggle, onDelete, onUpdate, onSkipOccurrence }: TodoItemProps) {
   const { t } = useTranslation()
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [showDeleteChoice, setShowDeleteChoice] = useState(false)
   const [showNotes, setShowNotes] = useState(false)
   const [notesText, setNotesText] = useState(item.notes ?? '')
+  const [showRepeatEdit, setShowRepeatEdit] = useState(false)
+  const [repeatDraft, setRepeatDraft] = useState<TodoRepeat | undefined>(item.repeat?.type !== 'none' ? item.repeat : undefined)
+
+  const isRecurring = !!item.repeat && item.repeat.type !== 'none'
+
+  const handleRepeatSave = () => {
+    onUpdate?.(item.id, {
+      repeat: repeatDraft,
+      ...(repeatDraft && !isRecurring ? { completedDates: [] } : {}),
+    })
+    setShowRepeatEdit(false)
+  }
 
   const handleNotesBlur = () => {
     const trimmed = notesText.trim()
@@ -71,9 +87,9 @@ const TodoItem = memo(function TodoItem({ item, onToggle, onDelete, onUpdate }: 
           <span className={`text-sm ${item.done ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-100'}`}>
             {item.text}
           </span>
-          {item.repeat && item.repeat.type !== 'none' && (
+          {isRecurring && item.repeat && (
             <span className="ml-2 text-[10px] text-[#5b8def]" title={t(`todo.repeat.${item.repeat.type}`)}>
-              🔁 {t(`todo.repeat.${item.repeat.type}`)}
+              🔁 {t(`todo.repeat.${item.repeat.type}`)}{item.repeat.until ? ` → ${item.repeat.until}` : ''}
             </span>
           )}
           {item.dueDate && !item.done && (() => {
@@ -110,8 +126,25 @@ const TodoItem = memo(function TodoItem({ item, onToggle, onDelete, onUpdate }: 
           </button>
         )}
 
+        {/* Edit repeat rule */}
+        {onUpdate && (
+          <button
+            onClick={() => {
+              setRepeatDraft(item.repeat?.type !== 'none' ? item.repeat : undefined)
+              setShowRepeatEdit(prev => !prev)
+            }}
+            className="text-xs shrink-0 text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400"
+            title={t('todo.editRepeat')}
+          >
+            🔁
+          </button>
+        )}
+
         {/* Delete */}
-        <button onClick={() => setConfirmDelete(true)} className="btn-icon text-gray-400 hover:text-red-500">
+        <button
+          onClick={() => isRecurring ? setShowDeleteChoice(prev => !prev) : setConfirmDelete(true)}
+          className="btn-icon text-gray-400 hover:text-red-500"
+        >
           <XIcon className="w-4 h-4" />
         </button>
         <ConfirmDialog
@@ -122,6 +155,53 @@ const TodoItem = memo(function TodoItem({ item, onToggle, onDelete, onUpdate }: 
           onCancel={() => setConfirmDelete(false)}
         />
       </div>
+
+      {/* Recurring delete: this occurrence or whole series */}
+      {showDeleteChoice && (
+        <div className="mt-2 ml-8 flex gap-2 flex-wrap items-center text-xs">
+          {onSkipOccurrence && (
+            <button
+              onClick={() => { onSkipOccurrence(item.id); setShowDeleteChoice(false) }}
+              className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+            >
+              {t('todo.deleteOccurrence')}
+            </button>
+          )}
+          <button
+            onClick={() => { onDelete(item.id); setShowDeleteChoice(false) }}
+            className="px-2.5 py-1 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40"
+          >
+            {t('todo.deleteSeries')}
+          </button>
+          <button
+            onClick={() => setShowDeleteChoice(false)}
+            className="px-2.5 py-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+          >
+            {t('confirm.cancel')}
+          </button>
+        </div>
+      )}
+
+      {/* Repeat rule editor */}
+      {showRepeatEdit && (
+        <div className="mt-2 ml-8 p-2 rounded-lg bg-gray-50 dark:bg-gray-800 space-y-2">
+          <RepeatEditor value={repeatDraft} onChange={setRepeatDraft} />
+          <div className="flex gap-2">
+            <button
+              onClick={handleRepeatSave}
+              className="px-2.5 py-1 text-xs rounded-lg bg-[#5b8def] text-white"
+            >
+              {t('todo.save')}
+            </button>
+            <button
+              onClick={() => setShowRepeatEdit(false)}
+              className="px-2.5 py-1 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              {t('confirm.cancel')}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Collapsible notes */}
       {showNotes && (

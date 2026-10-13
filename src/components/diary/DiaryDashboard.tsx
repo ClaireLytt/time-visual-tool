@@ -8,6 +8,7 @@ import DataTransfer from '../settings/DataTransfer'
 import DiaryEntryEditor, { type DiaryEntryFields } from './DiaryEntryEditor'
 import DiaryEntryList from './DiaryEntryList'
 import TodoDashboard from '../todo/TodoDashboard'
+import { useTodoEntries } from '../../hooks/useTodoEntries'
 import { getPeriodKey, periodKeyToAnchorDate } from '../../utils/diaryPeriod'
 import AnimatedCollapse from '../common/AnimatedCollapse'
 import { exportDiaryToFile, readDiaryImportFile } from '../../utils/diaryTransfer'
@@ -19,11 +20,22 @@ type DiaryTab = 'diary' | 'todo'
 
 function DiaryDashboard() {
   const { t } = useTranslation()
-  const [tab, setTab] = useState<DiaryTab>('diary')
+  const [tab, setTab] = useState<DiaryTab>(() => {
+    // One-shot deep link (e.g. overview card → todo tab)
+    try {
+      const initial = sessionStorage.getItem('diary.initialTab')
+      if (initial === 'todo' || initial === 'diary') {
+        sessionStorage.removeItem('diary.initialTab')
+        return initial
+      }
+    } catch { /* ignore */ }
+    return 'diary'
+  })
   const [selectedDate, setSelectedDate] = useState(() => format(new Date(), 'yyyy-MM-dd'))
   const [viewMode, setViewMode] = useState<DiaryPeriodType>('day')
   const [showSettings, setShowSettings] = useState(false)
   const { entries, data, getEntry, upsertEntry, deleteEntry, importData } = useDiaryEntries()
+  const { addItem: addTodoItem, getItemsForDate: getTodosForDate } = useTodoEntries()
 
   const periodKey = useMemo(() => getPeriodKey(selectedDate, viewMode), [selectedDate, viewMode])
   const currentEntry = getEntry(viewMode, periodKey)
@@ -35,6 +47,31 @@ function DiaryDashboard() {
   const handleSelectEntry = useCallback((entry: DiaryEntry) => {
     setSelectedDate(periodKeyToAnchorDate(entry.periodType, entry.periodKey))
   }, [])
+
+  // Today's todo summary, insertable into the daily diary entry
+  const dayTodos = useMemo(
+    () => viewMode === 'day' ? getTodosForDate(selectedDate) : [],
+    [viewMode, getTodosForDate, selectedDate]
+  )
+  const todoSummary = useMemo(() => {
+    if (dayTodos.length === 0) return undefined
+    const done = dayTodos.filter(td => td.done)
+    const lines = [t('diary.todoSummaryLine', { done: done.length, total: dayTodos.length })]
+    done.forEach(td => lines.push(`✅ ${td.text}`))
+    return lines.join('\n')
+  }, [dayTodos, t])
+
+  // Convert a period goal into a todo item on the current anchor date
+  const handleGoalToTodo = useCallback((text: string) => {
+    addTodoItem({
+      id: crypto.randomUUID(),
+      text,
+      done: false,
+      priority: 'medium',
+      date: selectedDate,
+      createdAt: new Date().toISOString(),
+    })
+  }, [addTodoItem, selectedDate])
 
 
   return (
@@ -96,6 +133,8 @@ function DiaryDashboard() {
           entry={currentEntry}
           onSave={handleSave}
           onDelete={deleteEntry}
+          todoSummary={todoSummary}
+          onSendGoalToTodo={handleGoalToTodo}
         />
         <DiaryEntryList
           entries={entries}

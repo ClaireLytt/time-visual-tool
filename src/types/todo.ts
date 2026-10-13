@@ -8,6 +8,8 @@ export interface TodoRepeat {
   interval?: number
   /** weekly: days of week to repeat on, 0 (Sun) - 6 (Sat) */
   weekdays?: number[]
+  /** last date (yyyy-MM-dd) the repeat applies to; open-ended when absent */
+  until?: string
 }
 
 export interface TodoItem {
@@ -24,6 +26,8 @@ export interface TodoItem {
   repeat?: TodoRepeat
   /** for recurring items: dates (yyyy-MM-dd) on which the item was completed */
   completedDates?: string[]
+  /** for recurring items: single occurrences the user deleted */
+  skippedDates?: string[]
 }
 
 export interface TodoStorageData {

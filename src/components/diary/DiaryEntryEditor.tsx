@@ -20,13 +20,17 @@ interface DiaryEntryEditorProps {
   entry: DiaryEntry | undefined
   onSave: (fields: DiaryEntryFields) => void
   onDelete: (id: string) => void
+  /** pre-formatted summary of the day's todos, insertable into the entry */
+  todoSummary?: string
+  /** convert a goal into a todo item */
+  onSendGoalToTodo?: (text: string) => void
 }
 
 const TEXTAREA_CLASS = 'w-full px-3 py-2.5 border border-calm-border dark:border-gray-600 rounded-xl text-base sm:text-sm leading-relaxed bg-gray-50 dark:bg-gray-700/60 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-mode-diary focus:bg-white dark:focus:bg-gray-700 resize-none transition-colors'
 
 const LABEL_CLASS = 'block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1.5'
 
-function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete }: DiaryEntryEditorProps) {
+function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete, todoSummary, onSendGoalToTodo }: DiaryEntryEditorProps) {
   const { t, i18n } = useTranslation()
   const [gratitude, setGratitude] = useState(entry?.gratitude ?? '')
   const [feelings, setFeelings] = useState(entry?.feelings ?? '')
@@ -89,7 +93,7 @@ function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete }: Di
         {!isDaily && (
           <div>
             <span className={LABEL_CLASS}>{t(`diary.goalsLabel.${periodType}`)}</span>
-            <DiaryGoalList key={currentPeriod} goals={goals} onChange={setGoals} inputLabel={t(`diary.goalsLabel.${periodType}`)} />
+            <DiaryGoalList key={currentPeriod} goals={goals} onChange={setGoals} inputLabel={t(`diary.goalsLabel.${periodType}`)} onSendToTodo={onSendGoalToTodo} />
           </div>
         )}
 
@@ -110,9 +114,21 @@ function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete }: Di
         )}
 
         <div>
-          <label htmlFor="diary-feelings" className={LABEL_CLASS}>
-            {isDaily ? t('diary.feelingsLabel') : t('diary.summaryLabel')}
-          </label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label htmlFor="diary-feelings" className="text-sm font-medium text-gray-600 dark:text-gray-300">
+              {isDaily ? t('diary.feelingsLabel') : t('diary.summaryLabel')}
+            </label>
+            {isDaily && todoSummary && (
+              <button
+                type="button"
+                onClick={() => setFeelings(prev => prev.trim() ? `${prev}\n\n${todoSummary}` : todoSummary)}
+                className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                title={todoSummary}
+              >
+                📋 {t('diary.insertTodoSummary')}
+              </button>
+            )}
+          </div>
           <textarea
             id="diary-feelings"
             rows={isDaily ? 3 : 5}

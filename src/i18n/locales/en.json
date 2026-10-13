@@ -50,7 +50,10 @@
     "tabs": {
       "diary": "Diary",
       "todo": "Todo"
-    }
+    },
+    "todoSummaryLine": "Today's todos: {{done}}/{{total}} done",
+    "insertTodoSummary": "Insert today's todos",
+    "goalToTodo": "Send to todo"
   },
   "overviewApp": {
     "title": "Today",
@@ -135,7 +138,6 @@
     "diary": "Diary",
     "sport": "Sport",
     "habit": "Habit",
-    "todo": "Todo",
     "study": "Study",
     "work": "Work",
     "podcast": "Podcast",
@@ -521,7 +523,6 @@
     "subtitle": "Daily habit check-in"
   },
   "todoApp": {
-    "title": "TodoVisual",
     "subtitle": "Manage your tasks"
   },
   "habit": {
@@ -572,7 +573,9 @@
       "custom": "Custom",
       "weekdaysLabel": "Repeat on",
       "every": "Every",
-      "days": "day(s)"
+      "days": "day(s)",
+      "untilLabel": "Repeat until",
+      "forever": "(empty = forever)"
     },
     "weekday": {
       "0": "Su",
@@ -582,7 +585,14 @@
       "4": "Th",
       "5": "Fr",
       "6": "Sa"
-    }
+    },
+    "editRepeat": "Edit repeat rule",
+    "save": "Save",
+    "deleteOccurrence": "Delete this day only",
+    "deleteSeries": "Delete whole series",
+    "overdueCount": "{{count}} overdue task(s)",
+    "moveToToday": "Move all to today",
+    "weekStats": "Last 7 days"
   },
   "studyApp": {
     "title": "StudyVisual",

@@ -10,9 +10,10 @@ interface TodoListProps {
   onToggle: (id: string) => void
   onDelete: (id: string) => void
   onUpdate?: (id: string, updates: Partial<TodoItemType>) => void
+  onSkipOccurrence?: (id: string) => void
 }
 
-export default function TodoList({ items, filter, onToggle, onDelete, onUpdate }: TodoListProps) {
+export default function TodoList({ items, filter, onToggle, onDelete, onUpdate, onSkipOccurrence }: TodoListProps) {
   const { t } = useTranslation()
 
   const filtered = useMemo(() => {
@@ -40,7 +41,7 @@ export default function TodoList({ items, filter, onToggle, onDelete, onUpdate }
   return (
     <div className="divide-y divide-gray-100 dark:divide-gray-700/50">
       {filtered.map(item => (
-        <TodoItem key={item.id} item={item} onToggle={onToggle} onDelete={onDelete} onUpdate={onUpdate} />
+        <TodoItem key={item.id} item={item} onToggle={onToggle} onDelete={onDelete} onUpdate={onUpdate} onSkipOccurrence={onSkipOccurrence} />
       ))}
     </div>
   )
