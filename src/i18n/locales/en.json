@@ -53,7 +53,14 @@
     },
     "todoSummaryLine": "Today's todos: {{done}}/{{total}} done",
     "insertTodoSummary": "Insert today's todos",
-    "goalToTodo": "Send to todo"
+    "goalToTodo": "Send to todo",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "calendarHint": "Tap a date to view that day",
+    "close": "Close",
+    "noEntryForDay": "No entry for this day yet",
+    "editThisDay": "Edit this day",
+    "writeThisDay": "Write about this day"
   },
   "overviewApp": {
     "title": "Today",

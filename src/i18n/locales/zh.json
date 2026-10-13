@@ -53,7 +53,14 @@
     },
     "todoSummaryLine": "今日待办：完成 {{done}}/{{total}}",
     "insertTodoSummary": "插入今日待办",
-    "goalToTodo": "转为待办"
+    "goalToTodo": "转为待办",
+    "prevMonth": "上个月",
+    "nextMonth": "下个月",
+    "calendarHint": "点击日期查看当天日记",
+    "close": "关闭",
+    "noEntryForDay": "这一天还没有日记",
+    "editThisDay": "编辑这一天",
+    "writeThisDay": "写下这一天"
   },
   "overviewApp": {
     "title": "今日总览",

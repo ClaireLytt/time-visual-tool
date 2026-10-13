@@ -6,13 +6,14 @@ import DatePicker from '../dashboard/DatePicker'
 import ViewModeToggle from '../dashboard/ViewModeToggle'
 import DataTransfer from '../settings/DataTransfer'
 import DiaryEntryEditor, { type DiaryEntryFields } from './DiaryEntryEditor'
-import DiaryEntryList from './DiaryEntryList'
+import DiaryCalendar from './DiaryCalendar'
+import DiaryDayPopup from './DiaryDayPopup'
 import TodoDashboard from '../todo/TodoDashboard'
 import { useTodoEntries } from '../../hooks/useTodoEntries'
-import { getPeriodKey, periodKeyToAnchorDate } from '../../utils/diaryPeriod'
+import { getPeriodKey } from '../../utils/diaryPeriod'
 import AnimatedCollapse from '../common/AnimatedCollapse'
 import { exportDiaryToFile, readDiaryImportFile } from '../../utils/diaryTransfer'
-import type { DiaryEntry, DiaryPeriodType, DiaryStorageData } from '../../types/diary'
+import type { DiaryPeriodType, DiaryStorageData } from '../../types/diary'
 
 const DIARY_MODES: readonly DiaryPeriodType[] = ['day', 'week', 'month', 'year']
 
@@ -34,6 +35,7 @@ function DiaryDashboard() {
   const [selectedDate, setSelectedDate] = useState(() => format(new Date(), 'yyyy-MM-dd'))
   const [viewMode, setViewMode] = useState<DiaryPeriodType>('day')
   const [showSettings, setShowSettings] = useState(false)
+  const [popupDate, setPopupDate] = useState<string | null>(null)
   const { entries, data, getEntry, upsertEntry, deleteEntry, importData } = useDiaryEntries()
   const { addItem: addTodoItem, getItemsForDate: getTodosForDate } = useTodoEntries()
 
@@ -44,8 +46,17 @@ function DiaryDashboard() {
     upsertEntry(viewMode, periodKey, fields)
   }, [upsertEntry, viewMode, periodKey])
 
-  const handleSelectEntry = useCallback((entry: DiaryEntry) => {
-    setSelectedDate(periodKeyToAnchorDate(entry.periodType, entry.periodKey))
+  // dates (yyyy-MM-dd) that have a day entry — calendar dots
+  const entryDates = useMemo(
+    () => new Set(entries.filter(e => e.periodType === 'day').map(e => e.periodKey)),
+    [entries]
+  )
+  const popupEntry = popupDate ? getEntry('day', popupDate) : undefined
+
+  const handleEditDay = useCallback((date: string) => {
+    setViewMode('day')
+    setSelectedDate(date)
+    setPopupDate(null)
   }, [])
 
   // Today's todo summary, insertable into the daily diary entry
@@ -75,7 +86,7 @@ function DiaryDashboard() {
 
 
   return (
-    <div id="main-content">
+    <div id="main-content" className={tab === 'diary' ? 'diary-scope' : undefined}>
       {/* Diary / Todo tabs */}
       <div className="brutal-track flex gap-1 p-1 mb-4">
         {(['diary', 'todo'] as DiaryTab[]).map(tb => (
@@ -96,7 +107,7 @@ function DiaryDashboard() {
       {tab === 'todo' ? (
         <TodoDashboard />
       ) : (
-        <>
+        <div>
       <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
         <ViewModeToggle viewMode={viewMode} modes={DIARY_MODES} onViewModeChange={setViewMode} />
         <button
@@ -126,7 +137,8 @@ function DiaryDashboard() {
 
       <DatePicker selectedDate={selectedDate} onDateChange={setSelectedDate} viewMode={viewMode} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.3fr] gap-6">
+      {/* Editor is the main view; compact calendar on the side */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1.7fr_1fr] gap-6 items-start">
         <DiaryEntryEditor
           periodType={viewMode}
           periodKey={periodKey}
@@ -136,14 +148,20 @@ function DiaryDashboard() {
           todoSummary={todoSummary}
           onSendGoalToTodo={handleGoalToTodo}
         />
-        <DiaryEntryList
-          entries={entries}
-          periodType={viewMode}
-          activePeriodKey={periodKey}
-          onSelect={handleSelectEntry}
+        <DiaryCalendar
+          selectedDate={selectedDate}
+          entryDates={entryDates}
+          onPickDate={setPopupDate}
         />
       </div>
-        </>
+
+      <DiaryDayPopup
+        date={popupDate}
+        entry={popupEntry}
+        onEdit={handleEditDay}
+        onClose={() => setPopupDate(null)}
+      />
+        </div>
       )}
     </div>
   )

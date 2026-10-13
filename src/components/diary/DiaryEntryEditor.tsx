@@ -34,7 +34,6 @@ function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete, todo
   const { t, i18n } = useTranslation()
   const [gratitude, setGratitude] = useState(entry?.gratitude ?? '')
   const [feelings, setFeelings] = useState(entry?.feelings ?? '')
-  const [motivation, setMotivation] = useState(entry?.motivation ?? '')
   const [goals, setGoals] = useState<DiaryGoal[]>(entry?.goals ?? [])
   const [mood, setMood] = useState(entry?.mood ?? '')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -45,7 +44,6 @@ function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete, todo
     setPrevPeriod(currentPeriod)
     setGratitude(entry?.gratitude ?? '')
     setFeelings(entry?.feelings ?? '')
-    setMotivation(entry?.motivation ?? '')
     setMood(entry?.mood ?? '')
     setGoals(entry?.goals ?? [])
   }
@@ -55,11 +53,10 @@ function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete, todo
   const isDirty =
     gratitude !== (entry?.gratitude ?? '') ||
     feelings !== (entry?.feelings ?? '') ||
-    motivation !== (entry?.motivation ?? '') ||
     mood !== (entry?.mood ?? '') ||
     JSON.stringify(goals) !== JSON.stringify(entry?.goals ?? [])
   const isEmpty =
-    gratitude.trim() === '' && feelings.trim() === '' && motivation.trim() === '' && goals.length === 0
+    gratitude.trim() === '' && feelings.trim() === '' && goals.length === 0
   const canSave = isDirty && !isEmpty
 
   const savedAtLabel = entry
@@ -140,24 +137,8 @@ function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete, todo
         </div>
 
         {isDaily && (
-          <div>
-            <label htmlFor="diary-motivation" className={LABEL_CLASS}>
-              {t('diary.motivationLabel')}
-            </label>
-            <textarea
-              id="diary-motivation"
-              rows={2}
-              maxLength={2000}
-              value={motivation}
-              onChange={e => setMotivation(e.target.value)}
-              className={TEXTAREA_CLASS}
-            />
-          </div>
-        )}
-
-        {isDaily && (
           <p className="text-xs text-gray-400 dark:text-gray-500 text-right">
-            {(gratitude.length + feelings.length + motivation.length).toLocaleString()} 字
+            {(gratitude.length + feelings.length).toLocaleString()} 字
           </p>
         )}
 
@@ -166,7 +147,7 @@ function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete, todo
             onClick={() => onSave({
               gratitude: isDaily ? gratitude : '',
               feelings,
-              motivation: isDaily ? motivation : '',
+              motivation: entry?.motivation ?? '',
               mood: isDaily ? mood : undefined,
               goals: isDaily ? [] : goals,
             })}
@@ -203,7 +184,6 @@ function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete, todo
           setShowDeleteConfirm(false)
           setGratitude('')
           setFeelings('')
-          setMotivation('')
           setMood('')
           setGoals([])
         }}
