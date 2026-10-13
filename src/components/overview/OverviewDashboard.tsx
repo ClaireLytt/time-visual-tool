@@ -5,7 +5,7 @@ import { zhCN, enUS } from 'date-fns/locale'
 import { useTimeEntries } from '../../hooks/useTimeEntries'
 import { useFinanceEntries } from '../../hooks/useFinanceEntries'
 import { useEatingEntries } from '../../hooks/useEatingEntries'
-import { useDiaryEntries } from '../../hooks/useDiaryEntries'
+import { useDiaryEntries, DEFAULT_NOTEBOOK_ID } from '../../hooks/useDiaryEntries'
 import { useSportEntries } from '../../hooks/useSportEntries'
 import { useHabitEntries } from '../../hooks/useHabitEntries'
 import { useTodoEntries } from '../../hooks/useTodoEntries'
@@ -89,7 +89,7 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
   const sportToday = useMemo(() => sport.getEntriesForDate(today), [sport.getEntriesForDate, today])
   const sportDuration = useMemo(() => sportToday.reduce((s, e) => s + e.duration, 0), [sportToday])
 
-  const diaryToday = useMemo(() => diary.getEntry('day', today), [diary.getEntry, today])
+  const diaryToday = useMemo(() => diary.getEntry(DEFAULT_NOTEBOOK_ID, 'day', today), [diary.getEntry, today])
   const hasDiary = diaryToday != null && (diaryToday.gratitude || diaryToday.feelings || diaryToday.motivation)
 
   const habitCheckedCount = useMemo(() => habit.getCheckedCountForDate(today), [habit.getCheckedCountForDate, today])
