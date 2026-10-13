@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { format, subDays } from 'date-fns'
 import { useTodoEntries } from '../../hooks/useTodoEntries'
+import { TODO_ACCENT } from '../../constants/todo'
 import DatePicker from '../dashboard/DatePicker'
 import TodoForm from './TodoForm'
 import CollapsibleForm from '../common/CollapsibleForm'
@@ -13,6 +14,7 @@ export default function TodoDashboard() {
   const { t } = useTranslation()
   const [selectedDate, setSelectedDate] = useState(() => format(new Date(), 'yyyy-MM-dd'))
   const [filter, setFilter] = useState<Filter>('all')
+  const [showStats, setShowStats] = useState(false)
   const { items, addItem, toggleItem, skipOccurrence, deleteItem, updateItem, getItemsForDate } = useTodoEntries()
 
   const handleToggle = useCallback((id: string) => toggleItem(id, selectedDate), [toggleItem, selectedDate])
@@ -46,7 +48,7 @@ export default function TodoDashboard() {
 
       {/* Summary */}
       <div className="panel p-4">
-        <p className="font-pixel text-[8px] text-[#5b8def] mb-2">📋 QUEST LOG</p>
+        <p className="font-pixel text-[8px] mb-2" style={{ color: TODO_ACCENT }}>📋 QUEST LOG</p>
         <div className="flex items-baseline gap-2">
           <span className="text-3xl font-bold tabular-nums tracking-display text-gray-900 dark:text-gray-100">
             {doneCount}/{dayItems.length}
@@ -57,41 +59,57 @@ export default function TodoDashboard() {
           <div className="mt-2 h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-300"
-              style={{ width: `${(doneCount / dayItems.length) * 100}%`, backgroundColor: '#5b8def' }}
+              style={{ width: `${(doneCount / dayItems.length) * 100}%`, backgroundColor: TODO_ACCENT }}
             />
           </div>
         )}
-        {/* 7-day completion mini chart */}
-        <div className="mt-3 flex items-end gap-1.5" title={t('todo.weekStats')}>
-          {weekStats.map(s => (
-            <div key={s.date} className="flex-1 flex flex-col items-center gap-0.5">
-              <div className="w-full h-8 flex items-end rounded bg-gray-100 dark:bg-gray-700/50 overflow-hidden">
-                <div
-                  className="w-full transition-all duration-300"
-                  style={{
-                    height: s.total > 0 ? `${(s.done / s.total) * 100}%` : '0%',
-                    backgroundColor: '#5b8def',
-                    opacity: s.date === selectedDate ? 1 : 0.55,
-                  }}
-                />
-              </div>
-              <span className="text-[9px] text-gray-400 dark:text-gray-500 tabular-nums">
-                {s.total > 0 ? `${s.done}/${s.total}` : '·'}
-              </span>
-            </div>
-          ))}
-        </div>
+        {/* 7-day completion mini chart (collapsed by default) */}
+        <button
+          onClick={() => setShowStats(s => !s)}
+          className="mt-3 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors no-press"
+          aria-expanded={showStats}
+        >
+          {t('todo.weekStats')} {showStats ? '▴' : '▾'}
+        </button>
+        {showStats && (
+          <div className="mt-2 flex items-end gap-1.5">
+            {weekStats.map(s => {
+              const weekday = new Date(s.date + 'T00:00:00').getDay()
+              const isToday = s.date === today
+              return (
+                <div key={s.date} className="flex-1 flex flex-col items-center gap-0.5">
+                  <div className="w-full h-8 flex items-end rounded bg-gray-100 dark:bg-gray-700/50 overflow-hidden">
+                    <div
+                      className="w-full transition-all duration-300"
+                      style={{
+                        height: s.total > 0 ? `${(s.done / s.total) * 100}%` : '0%',
+                        backgroundColor: TODO_ACCENT,
+                        opacity: isToday ? 1 : 0.55,
+                      }}
+                    />
+                  </div>
+                  <span className="text-[9px] text-gray-400 dark:text-gray-500 tabular-nums">
+                    {s.total > 0 ? `${s.done}/${s.total}` : '·'}
+                  </span>
+                  <span className={`text-[9px] ${isToday ? 'font-semibold text-gray-600 dark:text-gray-300' : 'text-gray-400 dark:text-gray-500'}`}>
+                    {t(`todo.weekday.${weekday}`)}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
-      {/* Overdue tasks banner */}
+      {/* Overdue tasks banner — neutral surface, warm color only on the signal */}
       {selectedDate === today && overdueItems.length > 0 && (
-        <div className="panel p-3 flex items-center justify-between gap-2 border-l-4 border-orange-400">
+        <div className="panel p-3 flex items-center justify-between gap-2">
           <span className="text-xs text-gray-600 dark:text-gray-300">
-            ⚠ {t('todo.overdueCount', { count: overdueItems.length })}
+            <span className="text-orange-500">⚠ {overdueItems.length}</span> {t('todo.overdueLabel')}
           </span>
           <button
             onClick={moveOverdueToToday}
-            className="shrink-0 px-2.5 py-1 text-xs font-medium rounded-lg bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-300 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors"
+            className="shrink-0 px-3 py-2 text-xs font-medium rounded-lg text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
           >
             {t('todo.moveToToday')}
           </button>
@@ -99,7 +117,7 @@ export default function TodoDashboard() {
       )}
 
       {/* Add form */}
-      <CollapsibleForm accentColor="#5b8def" addLabel={t('todo.addButton')}>
+      <CollapsibleForm accentColor={TODO_ACCENT} addLabel={t('todo.addButton')}>
         <TodoForm selectedDate={selectedDate} onAdd={addItem} />
       </CollapsibleForm>
 

@@ -551,7 +551,7 @@
     "markUndone": "取消完成",
     "deleteTitle": "删除任务",
     "deleteMessage": "确定删除这个任务？",
-    "emptyTitle": "没有任务",
+    "emptyTitle": "任务板空空如也",
     "notes": "备注",
     "addNotes": "添加备注",
     "priority": {
@@ -590,10 +590,12 @@
     "save": "保存",
     "deleteOccurrence": "只删这一天",
     "deleteSeries": "删除整个系列",
-    "overdueCount": "有 {{count}} 个逾期任务",
     "moveToToday": "全部移到今天",
     "weekStats": "近 7 天完成情况",
-    "changePriority": "修改优先级"
+    "changePriority": "修改优先级",
+    "emptyHint": "点上方 ➕ 添加任务，或设置每日/每周重复任务",
+    "moreActions": "更多操作",
+    "overdueLabel": "个逾期任务"
   },
   "studyApp": {
     "title": "StudyVisual",

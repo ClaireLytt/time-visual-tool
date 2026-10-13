@@ -32,8 +32,12 @@ export default function TodoList({ items, filter, onToggle, onDelete, onUpdate, 
 
   if (filtered.length === 0) {
     return (
-      <div className="text-center py-8">
-        <p className="text-sm text-gray-400 dark:text-gray-500">{t('todo.emptyTitle')}</p>
+      <div className="text-center py-10">
+        <p className="text-2xl mb-2" aria-hidden="true">📋</p>
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('todo.emptyTitle')}</p>
+        {filter === 'all' && (
+          <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">{t('todo.emptyHint')}</p>
+        )}
       </div>
     )
   }

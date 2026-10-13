@@ -1,3 +1,6 @@
+/** Single source of truth for the todo module's accent color */
+export const TODO_ACCENT = '#5b8def'
+
 export const PRIORITY_COLORS = {
   high: '#e43b44',
   medium: '#f4b41a',

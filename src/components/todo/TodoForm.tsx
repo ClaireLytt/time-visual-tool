@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { PRIORITY_COLORS } from '../../constants/todo'
+import { PRIORITY_COLORS, TODO_ACCENT } from '../../constants/todo'
 import RepeatEditor from './RepeatEditor'
 import type { TodoItem, TodoPriority, TodoRepeat } from '../../types/todo'
 
@@ -43,7 +43,7 @@ export default function TodoForm({ selectedDate, onAdd }: TodoFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="panel p-4 space-y-3">
-      <p className="font-pixel text-[8px] text-[#5b8def] mb-1">{t('todo.addTitle')}</p>
+      <p className="font-pixel text-[8px] mb-1" style={{ color: TODO_ACCENT }}>{t('todo.addTitle')}</p>
       <div className="flex gap-2">
         <input
           value={text}
@@ -51,7 +51,7 @@ export default function TodoForm({ selectedDate, onAdd }: TodoFormProps) {
           placeholder={t('todo.textPlaceholder')}
           className="input-base flex-1"
         />
-        <button type="submit" className="btn-tactile px-4 bg-[#5b8def] text-white">
+        <button type="submit" className="btn-tactile px-4 text-white" style={{ backgroundColor: TODO_ACCENT }}>
           {t('todo.addButton')}
         </button>
       </div>

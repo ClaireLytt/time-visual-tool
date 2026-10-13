@@ -17,6 +17,7 @@ import { useEpisodeStats } from '../../hooks/useEpisodeStats'
 import { useIeltsSessions } from '../ielts/hooks'
 import { exportAllData } from '../../utils/exportAllData'
 import { MODE_ACCENT } from '../../constants/modes'
+import { TODO_ACCENT } from '../../constants/todo'
 import { SCENE_COMPONENTS } from './PixelScenes'
 import type { AppMode } from '../../types'
 
@@ -279,7 +280,7 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
           { emoji: '🍽', label: 'Eating', color: '#f77622', values: last7.map(d => eating.getEntriesForDate(d).length) },
           { emoji: '🏃', label: 'Sport', color: '#2ce8f5', values: last7.map(d => sport.getEntriesForDate(d).reduce((s, e) => s + e.duration, 0)) },
           { emoji: '🏰', label: 'Habit', color: '#e8a838', values: last7.map(d => habit.getCheckedCountForDate(d)) },
-          { emoji: '📋', label: 'Todo', color: '#5b8def', values: last7.map(d => todo.getItemsForDate(d).filter(item => item.done).length) },
+          { emoji: '📋', label: 'Todo', color: TODO_ACCENT, values: last7.map(d => todo.getItemsForDate(d).filter(item => item.done).length) },
           { emoji: '🎓', label: 'Study', color: '#4a90d9', values: last7.map(d => study.getEntriesForDate(d).reduce((s, e) => s + e.duration, 0)) },
           { emoji: '🏢', label: 'Work', color: '#e67e22', values: last7.map(d => work.getEntriesForDate(d).reduce((s, e) => s + e.duration, 0)) },
         ]

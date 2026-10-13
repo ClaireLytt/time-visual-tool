@@ -551,7 +551,7 @@
     "markUndone": "Mark undone",
     "deleteTitle": "Delete Task",
     "deleteMessage": "Delete this task?",
-    "emptyTitle": "No tasks",
+    "emptyTitle": "Quest log is empty",
     "notes": "Notes",
     "addNotes": "Add notes",
     "priority": {
@@ -590,10 +590,12 @@
     "save": "Save",
     "deleteOccurrence": "Delete this day only",
     "deleteSeries": "Delete whole series",
-    "overdueCount": "{{count}} overdue task(s)",
     "moveToToday": "Move all to today",
     "weekStats": "Last 7 days",
-    "changePriority": "Change priority"
+    "changePriority": "Change priority",
+    "emptyHint": "Add a task above, or set up a daily/weekly recurring one",
+    "moreActions": "More actions",
+    "overdueLabel": "overdue task(s)"
   },
   "studyApp": {
     "title": "StudyVisual",

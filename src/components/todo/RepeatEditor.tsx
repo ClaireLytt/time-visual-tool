@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { TODO_ACCENT } from '../../constants/todo'
 import type { TodoRepeat, TodoRepeatType } from '../../types/todo'
 
 const REPEAT_TYPES: TodoRepeatType[] = ['none', 'daily', 'weekly', 'monthly', 'custom']
@@ -42,10 +43,9 @@ export default function RepeatEditor({ value, onChange }: RepeatEditorProps) {
             type="button"
             onClick={() => setType(r)}
             className={`px-2.5 py-1 text-xs font-medium rounded-lg transition-all ${
-              type === r
-                ? 'bg-[#5b8def] text-white'
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+              type === r ? 'text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
             }`}
+            style={type === r ? { backgroundColor: TODO_ACCENT } : undefined}
           >
             {t(`todo.repeat.${r}`)}
           </button>
@@ -59,11 +59,10 @@ export default function RepeatEditor({ value, onChange }: RepeatEditorProps) {
               key={d}
               type="button"
               onClick={() => toggleWeekday(d)}
-              className={`w-7 h-7 text-xs font-medium rounded-full transition-all ${
-                (value.weekdays ?? []).includes(d)
-                  ? 'bg-[#5b8def] text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+              className={`w-8 h-8 text-xs font-medium rounded-full transition-all ${
+                (value.weekdays ?? []).includes(d) ? 'text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
               }`}
+              style={(value.weekdays ?? []).includes(d) ? { backgroundColor: TODO_ACCENT } : undefined}
             >
               {t(`todo.weekday.${d}`)}
             </button>
