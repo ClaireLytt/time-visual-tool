@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { Habit } from '../../types/habit'
 
 const EMOJI_OPTIONS = ['🌅', '💧', '📖', '🏃', '🧘', '💪', '🎯', '✍️', '🛌', '🍎', '🚫', '🎵']
-const COLOR_OPTIONS = ['#e43b44', '#f4b41a', '#3e8948', '#0099db', '#8b5cf6', '#f77622', '#2ce8f5', '#be4a7f']
+const COLOR_OPTIONS = ['#c18383', '#c9ab72', '#86a98d', '#7fa3bb', '#b09cc4', '#cb9c77', '#8fc0c6', '#b4879d']
 
 interface HabitFormProps {
   onAdd: (habit: Habit) => void
@@ -13,7 +13,7 @@ export default function HabitForm({ onAdd }: HabitFormProps) {
   const { t } = useTranslation()
   const [name, setName] = useState('')
   const [icon, setIcon] = useState('🎯')
-  const [color, setColor] = useState('#f4b41a')
+  const [color, setColor] = useState('#c9ab72')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,7 +30,7 @@ export default function HabitForm({ onAdd }: HabitFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="panel p-4 space-y-3">
-      <p className="font-pixel text-[8px] text-[#e8a838] mb-1">{t('habit.addTitle')}</p>
+      <p className="font-pixel text-[8px] text-[#c9ab77] mb-1">{t('habit.addTitle')}</p>
       <div className="flex gap-2">
         <input
           value={name}
@@ -38,7 +38,7 @@ export default function HabitForm({ onAdd }: HabitFormProps) {
           placeholder={t('habit.namePlaceholder')}
           className="input-base flex-1"
         />
-        <button type="submit" className="btn-tactile px-4 bg-[#e8a838] text-white">
+        <button type="submit" className="btn-tactile px-4 bg-[#c9ab77] text-white">
           {t('habit.addButton')}
         </button>
       </div>
@@ -48,7 +48,7 @@ export default function HabitForm({ onAdd }: HabitFormProps) {
             key={e}
             type="button"
             onClick={() => setIcon(e)}
-            className={`w-8 h-8 rounded-lg text-base flex items-center justify-center transition-all ${icon === e ? 'ring-2 ring-[#e8a838] bg-[#e8a838]/10 scale-110' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+            className={`w-8 h-8 rounded-lg text-base flex items-center justify-center transition-all ${icon === e ? 'ring-2 ring-[#c9ab77] bg-[#c9ab77]/10 scale-110' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
           >
             {e}
           </button>

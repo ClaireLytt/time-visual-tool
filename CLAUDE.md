@@ -10,6 +10,33 @@ TimeVisual — a React 18 + TypeScript + Tailwind + Vite productivity app with F
 - `npx tsc --noEmit` — type-check
 - `npx vite build` — production build
 - `npm test` — run vitest tests
+- `npm run ui-audit` — automated browser UI inspection (see "UI Audit Workflow")
+
+## UI Audit Workflow (REQUIRED after UI changes)
+
+After **any code change that affects the UI**, and **before committing/pushing**, run the
+ui-audit CLI against the modules you touched:
+
+1. Make sure the dev server is running (`npx vite --port 5173 --strictPort`, background).
+   If Tailwind/config colors were changed, restart it with `--force` to clear the cache.
+2. Run the audit scoped to the affected modules, e.g.:
+   ```bash
+   node scripts/ui-audit.mjs --modes diary,overview
+   ```
+   (`npm run ui-audit` audits all modules.) The tool opens a real browser, switches to each
+   module, exercises the page, and reports: console/page errors, failed requests, touch
+   targets < 40px, horizontal overflow, banned blue-violet colors (hue 235-265 saturated),
+   missing accessible names/alt, duplicate ids. Screenshots land in `ui-audit/` — read the
+   screenshot of each changed screen to visually verify the change actually works.
+3. **Fix every error-level finding automatically** (exit code 1 = errors present), re-run
+   the audit until it's clean. Warn-level findings on screens you touched should be fixed
+   too; pre-existing warnings elsewhere may be noted and left.
+4. Only then run `npm run predeploy-check`, commit, and push.
+
+Auth note: entering `/app` requires Firebase anonymous auth to be enabled, or
+`UI_AUDIT_EMAIL` / `UI_AUDIT_PASSWORD` env vars for form login. If neither is available the
+tool audits the landing page only — say so in the report to the user instead of skipping
+silently. The app uses **HashRouter** (`#/app`, `#/login`, `#/register`).
 
 ## Architecture
 
@@ -20,14 +47,14 @@ TimeVisual — a React 18 + TypeScript + Tailwind + Vite productivity app with F
 
 ## Design / Color Rules
 
-### NO Purple or Blue-Purple
+### NO Blue-Purple (pure purple is allowed)
 
-**NEVER** use purple, blue-purple, bright blue-purple gradients, or purple-blue color schemes anywhere in the UI.
+**NEVER** use blue-purple/violet (hue ~235-265), bright blue-purple gradients, or purple-blue color schemes anywhere in the UI. **Pure purple (hue ~270-300) is allowed** when muted — the user approved it for the diary accent (e.g. `#b09cc4`).
 
-The app's palette is **low-saturation gray-blue, soft haze blue (雾霾蓝), and light gray-blue**:
+The overall palette is **Morandi / low-saturation**: muted warm grays, haze blue (雾霾蓝), gray-green, dusty tones:
 - Avatar backgrounds: solid `#8B9DAB` (muted gray-blue), not gradients
-- Accent tones: `#7B929F`, `#9AABB5`, `#A3B5BF` range
-- Avoid: `blue-400 to purple-500`, any `purple-*`, any `violet-*`, any saturated blue-purple gradient
+- Neutral accents: `#7B929F`, `#9AABB5`, `#A3B5BF` range; ink/borders `#a39b8d`
+- Avoid: `blue-400 to purple-500` style gradients, any saturated `violet-*`/`indigo-*` (hue 235-265 with saturation > ~45%), high-saturation colors in general
 
 ## Canvas Game Rules
 
@@ -122,6 +149,25 @@ When adding a new module, add its `use*Entries()` call to the preload block in A
 10. `src/components/layout/Header.tsx` — icon/title/subtitle/border
 11. `src/components/overview/OverviewDashboard.tsx` — add overview card
 12. `tailwind.config.js` — add `mode.{module}` color
+
+## CLI Issue Recording
+
+**EVERY time a CLI script run hits a problem** (ui-audit findings/crash, predeploy-check failure,
+dev-server issues, test failures, script bugs), record it in the `issue_recode/` folder:
+
+1. The file is `issue_recode/<issue-number>.md`, where `<issue-number>` is the GitHub issue
+   number of the task currently being worked on (e.g. the attached task's issue). If the file
+   doesn't exist yet, create it.
+2. Append a dated entry — date format is year-month-day (e.g. `2026-10-13`), one heading per day:
+
+   ```markdown
+   ## 2026-10-13
+   - ui-audit: anonymous auth rejected (400), could not reach /app — enabled Anonymous sign-in in Firebase console
+   - predeploy-check: TS2554 in OverviewDashboard (getEntry signature) — fixed call site
+   ```
+
+3. Write what went wrong AND how it was resolved (or that it's still open). Keep entries short.
+4. Do this at the moment the problem is found, not batched at the end.
 
 ## Git & Commit Rules
 

@@ -16,7 +16,7 @@ export type DefaultCategory = (typeof DEFAULT_CATEGORIES)[number]
 
 export const CATEGORY_COLORS: Record<DefaultCategory, string> = {
   '工作': '#6b8db5',
-  '学习': '#9b8db5',
+  '学习': '#a98fb3',
   '运动': '#7aab8e',
   '阅读': '#c4a36b',
   '休息': '#a0a0a0',

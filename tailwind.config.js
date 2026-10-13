@@ -23,18 +23,18 @@ export default {
           'accent-light': '#eef3fa',
         },
         mode: {
-          time: '#6b8db5',
-          finance: '#7aab8e',
-          eating: '#c4a36b',
-          diary: '#9b8db5',
-          sport: '#6ba5a0',
-          habit: '#e8a838',
-          todo: '#5b8def',
-          study: '#4a90d9',
-          work: '#e67e22',
-          podcast: '#c2417a',
-          youtube: '#b33e3e',
-          ielts: '#c0392b',
+          time: '#7fa3bb',
+          finance: '#86a98d',
+          eating: '#cb9c77',
+          diary: '#b09cc4',
+          sport: '#8fc0c6',
+          habit: '#c9ab77',
+          todo: '#90a6c9',
+          study: '#8aa7c4',
+          work: '#c79a74',
+          podcast: '#b4879d',
+          youtube: '#b28787',
+          ielts: '#c28a80',
         },
         clash: {
           red: '#e63946',
@@ -49,14 +49,14 @@ export default {
           surface: '#333c57',    // card surface dark
           'surface-light': '#f4f1ea', // card surface light
           border: '#5d6d88',     // muted steel border
-          gold: '#f4b41a',       // XP / coin gold
-          green: '#3e8948',      // health / money green
-          red: '#e43b44',        // damage / expense red
-          blue: '#0099db',       // mana / time blue
-          purple: '#8b5cf6',     // magic / diary purple
-          teal: '#2ce8f5',       // ice / sport cyan
-          orange: '#f77622',     // fire / eating orange
-          pink: '#be4a7f',       // potion pink
+          gold: '#c9ab72',       // XP / coin gold
+          green: '#86a98d',      // health / money green
+          red: '#c18383',        // damage / expense red
+          blue: '#7fa3bb',       // mana / time blue
+          purple: '#b09cc4',     // magic / diary purple
+          teal: '#8fc0c6',       // ice / sport cyan
+          orange: '#cb9c77',     // fire / eating orange
+          pink: '#b4879d',       // potion pink
           white: '#f0f0e8',      // pixel white
           black: '#1a1c2c',      // pixel black
         },

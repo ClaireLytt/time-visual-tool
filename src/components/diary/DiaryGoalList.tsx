@@ -6,9 +6,11 @@ interface DiaryGoalListProps {
   goals: DiaryGoal[]
   onChange: (goals: DiaryGoal[]) => void
   inputLabel: string
+  /** convert a goal into a todo item */
+  onSendToTodo?: (text: string) => void
 }
 
-function DiaryGoalList({ goals, onChange, inputLabel }: DiaryGoalListProps) {
+function DiaryGoalList({ goals, onChange, inputLabel, onSendToTodo }: DiaryGoalListProps) {
   const { t } = useTranslation()
   const [newGoalText, setNewGoalText] = useState('')
 
@@ -33,7 +35,7 @@ function DiaryGoalList({ goals, onChange, inputLabel }: DiaryGoalListProps) {
                 id={`diary-goal-${goal.id}`}
                 checked={goal.done}
                 onChange={() => onChange(goals.map(g => g.id === goal.id ? { ...g, done: !g.done } : g))}
-                className="w-5 h-5 accent-[#9b8db5] shrink-0"
+                className="w-5 h-5 accent-[#a98fb3] shrink-0"
               />
               <label
                 htmlFor={`diary-goal-${goal.id}`}
@@ -41,6 +43,15 @@ function DiaryGoalList({ goals, onChange, inputLabel }: DiaryGoalListProps) {
               >
                 {goal.text}
               </label>
+              {onSendToTodo && !goal.done && (
+                <button
+                  onClick={() => onSendToTodo(goal.text)}
+                  title={t('diary.goalToTodo')}
+                  className="shrink-0 p-2 -m-1 rounded-lg text-gray-400 dark:text-gray-500 hover:text-mode-diary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-xs"
+                >
+                  📋
+                </button>
+              )}
               <button
                 onClick={() => onChange(goals.filter(g => g.id !== goal.id))}
                 aria-label={t('diary.goalRemove')}

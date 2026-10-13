@@ -161,10 +161,10 @@ function EatingDashboard() {
             </h3>
             <div className="flex h-3 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700 mb-2">
               {dayMacros.protein > 0 && (
-                <div className="h-full" style={{ width: `${(dayMacros.protein / dayMacros.total) * 100}%`, backgroundColor: '#5b8def' }} />
+                <div className="h-full" style={{ width: `${(dayMacros.protein / dayMacros.total) * 100}%`, backgroundColor: '#90a6c9' }} />
               )}
               {dayMacros.carbs > 0 && (
-                <div className="h-full" style={{ width: `${(dayMacros.carbs / dayMacros.total) * 100}%`, backgroundColor: '#e8a838' }} />
+                <div className="h-full" style={{ width: `${(dayMacros.carbs / dayMacros.total) * 100}%`, backgroundColor: '#c9ab77' }} />
               )}
               {dayMacros.fat > 0 && (
                 <div className="h-full" style={{ width: `${(dayMacros.fat / dayMacros.total) * 100}%`, backgroundColor: '#e45858' }} />
@@ -172,12 +172,12 @@ function EatingDashboard() {
             </div>
             <div className="flex justify-between text-xs tabular-nums">
               <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: '#5b8def' }} />
+                <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: '#90a6c9' }} />
                 <span className="text-gray-600 dark:text-gray-400">{t('eating.proteinShort')}</span>
                 <span className="font-medium text-gray-800 dark:text-gray-200">{Math.round(dayMacros.protein)}g</span>
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: '#e8a838' }} />
+                <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: '#c9ab77' }} />
                 <span className="text-gray-600 dark:text-gray-400">{t('eating.carbsShort')}</span>
                 <span className="font-medium text-gray-800 dark:text-gray-200">{Math.round(dayMacros.carbs)}g</span>
               </span>

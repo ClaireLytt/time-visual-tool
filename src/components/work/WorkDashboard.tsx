@@ -25,7 +25,7 @@ export default function WorkDashboard() {
 
       {/* Summary */}
       <div className="panel p-4">
-        <p className="font-pixel text-[8px] text-[#e67e22] mb-2">🏢 GUILD HALL</p>
+        <p className="font-pixel text-[8px] text-[#c79a74] mb-2">🏢 GUILD HALL</p>
         <div className="flex items-baseline gap-2">
           <span className="text-3xl font-bold tabular-nums tracking-display text-gray-900 dark:text-gray-100">
             {hours > 0 ? `${hours}h${mins > 0 ? `${mins}m` : ''}` : `${mins}m`}
@@ -38,7 +38,7 @@ export default function WorkDashboard() {
       </div>
 
       {/* Form */}
-      <CollapsibleForm accentColor="#e67e22" addLabel={t('work.addButton')}>
+      <CollapsibleForm accentColor="#c79a74" addLabel={t('work.addButton')}>
         <WorkForm selectedDate={selectedDate} onAdd={addEntry} recentProjects={recentProjects} />
       </CollapsibleForm>
 

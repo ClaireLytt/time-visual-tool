@@ -2,17 +2,19 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PRIORITY_ORDER } from '../../constants/todo'
 import TodoItem from './TodoItem'
-import type { TodoItem as TodoItemType } from '../../types/todo'
+import type { TodoCategory, TodoItem as TodoItemType } from '../../types/todo'
 
 interface TodoListProps {
   items: TodoItemType[]
   filter: 'all' | 'active' | 'completed'
+  categories: TodoCategory[]
   onToggle: (id: string) => void
   onDelete: (id: string) => void
   onUpdate?: (id: string, updates: Partial<TodoItemType>) => void
+  onSkipOccurrence?: (id: string) => void
 }
 
-export default function TodoList({ items, filter, onToggle, onDelete, onUpdate }: TodoListProps) {
+export default function TodoList({ items, filter, categories, onToggle, onDelete, onUpdate, onSkipOccurrence }: TodoListProps) {
   const { t } = useTranslation()
 
   const filtered = useMemo(() => {
@@ -31,8 +33,12 @@ export default function TodoList({ items, filter, onToggle, onDelete, onUpdate }
 
   if (filtered.length === 0) {
     return (
-      <div className="text-center py-8">
-        <p className="text-sm text-gray-400 dark:text-gray-500">{t('todo.emptyTitle')}</p>
+      <div className="text-center py-10">
+        <p className="text-2xl mb-2" aria-hidden="true">📋</p>
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('todo.emptyTitle')}</p>
+        {filter === 'all' && (
+          <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">{t('todo.emptyHint')}</p>
+        )}
       </div>
     )
   }
@@ -40,7 +46,7 @@ export default function TodoList({ items, filter, onToggle, onDelete, onUpdate }
   return (
     <div className="divide-y divide-gray-100 dark:divide-gray-700/50">
       {filtered.map(item => (
-        <TodoItem key={item.id} item={item} onToggle={onToggle} onDelete={onDelete} onUpdate={onUpdate} />
+        <TodoItem key={item.id} item={item} category={categories.find(c => c.id === item.categoryId)} onToggle={onToggle} onDelete={onDelete} onUpdate={onUpdate} onSkipOccurrence={onSkipOccurrence} />
       ))}
     </div>
   )

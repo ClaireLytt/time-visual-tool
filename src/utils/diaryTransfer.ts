@@ -32,7 +32,7 @@ export function isValidDiaryEntry(e: unknown): e is DiaryEntry {
 export function dedupeDiaryEntries(entries: DiaryEntry[]): DiaryEntry[] {
   const byPeriod = new Map<string, DiaryEntry>()
   for (const entry of entries) {
-    const key = `${entry.periodType}:${entry.periodKey}`
+    const key = `${entry.notebookId ?? 'default'}:${entry.periodType}:${entry.periodKey}`
     const existing = byPeriod.get(key)
     if (!existing || entry.updatedAt > existing.updatedAt) {
       byPeriod.set(key, entry)
@@ -47,10 +47,37 @@ export function validateDiaryData(raw: unknown): DiaryStorageData | null {
 
   if (!Array.isArray(obj.entries)) return null
   const entries = dedupeDiaryEntries(
-    obj.entries.filter(isValidDiaryEntry).map(e => ({ ...e, goals: e.goals ?? [] }))
+    obj.entries.filter(isValidDiaryEntry).map(e => ({
+      ...e,
+      goals: e.goals ?? [],
+      // strip malformed optional fields instead of letting them crash the UI
+      ...(Array.isArray(e.images) ? { images: e.images.filter((i: unknown) => typeof i === 'string') } : { images: undefined }),
+      ...(typeof e.custom === 'object' && e.custom !== null && !Array.isArray(e.custom) ? {} : { custom: undefined }),
+      ...(typeof e.notebookId === 'string' || e.notebookId === undefined ? {} : { notebookId: undefined }),
+    }))
   )
 
-  return { version: 1, entries }
+  // notebooks: keep only structurally sound records, defaulting what's optional
+  const notebooks = Array.isArray(obj.notebooks)
+    ? (obj.notebooks as unknown[])
+        .filter((n): n is Record<string, unknown> =>
+          typeof n === 'object' && n !== null &&
+          typeof (n as Record<string, unknown>).id === 'string' &&
+          typeof (n as Record<string, unknown>).name === 'string')
+        .map(n => ({
+          id: n.id as string,
+          name: n.name as string,
+          color: typeof n.color === 'string' ? n.color : '#8B9DAB',
+          sections: Array.isArray(n.sections)
+            ? (n.sections as unknown[]).filter((sec): sec is { id: string; name: string } =>
+                typeof sec === 'object' && sec !== null &&
+                typeof (sec as Record<string, unknown>).id === 'string' &&
+                typeof (sec as Record<string, unknown>).name === 'string')
+            : [],
+          createdAt: typeof n.createdAt === 'string' ? n.createdAt : '',
+        }))
+    : undefined
+  return { version: 1, entries, ...(notebooks && notebooks.length ? { notebooks } : {}) }
 }
 
 export function exportDiaryToFile(data: DiaryStorageData) {

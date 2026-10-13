@@ -2,19 +2,19 @@ import type { AppMode } from '../types'
 
 /** Canonical color for each module — single source of truth */
 export const MODE_ACCENT: Record<AppMode, string> = {
-  overview: '#f4b41a',
-  time: '#0099db',
-  finance: '#3e8948',
-  eating: '#f77622',
-  diary: '#8b5cf6',
-  sport: '#2ce8f5',
-  habit: '#e8a838',
-  todo: '#5b8def',
-  study: '#4a90d9',
-  work: '#e67e22',
-  podcast: '#c2417a',
-  youtube: '#b33e3e',
-  ielts: '#e74c3c',
+  overview: '#c9ab72',
+  time: '#7fa3bb',
+  finance: '#86a98d',
+  eating: '#cb9c77',
+  diary: '#b09cc4',
+  sport: '#8fc0c6',
+  habit: '#c9ab77',
+  todo: '#90a6c9',
+  study: '#8aa7c4',
+  work: '#c79a74',
+  podcast: '#b4879d',
+  youtube: '#b28787',
+  ielts: '#c28a80',
 }
 
 /** All valid mode strings — used by validateMode and anywhere a mode list is needed */

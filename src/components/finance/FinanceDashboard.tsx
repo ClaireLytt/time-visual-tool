@@ -112,7 +112,7 @@ function FinanceDashboard() {
         {monthlyBudget != null && monthlyBudget > 0 && (() => {
           const ratio = monthlySummary.expense / monthlyBudget
           const pct = ratio * 100
-          const barColor = pct > 90 ? '#e43b44' : pct > 60 ? '#e8a838' : '#3e8948'
+          const barColor = pct > 90 ? '#c18383' : pct > 60 ? '#c9ab77' : '#86a98d'
           return (
             <div className="panel p-3 mb-4">
               <div className="flex justify-between items-baseline mb-1.5">
@@ -126,13 +126,12 @@ function FinanceDashboard() {
                   {Math.round(pct)}%
                 </span>
               </div>
-              <div className="h-2.5 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
+              <div className="hp-bar" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemax={100}>
                 <div
-                  className="h-full rounded-full transition-all duration-300"
                   style={{
                     width: `${Math.min(pct, 100)}%`,
-                    backgroundColor: barColor,
-                  }}
+                    '--hp-color': barColor,
+                  } as React.CSSProperties}
                 />
               </div>
             </div>

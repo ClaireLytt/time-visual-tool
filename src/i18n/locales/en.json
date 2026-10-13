@@ -46,7 +46,31 @@
     "deleteConfirmMessage": "Delete this entry? This cannot be undone.",
     "listTitle": "Past Entries ({{count}})",
     "emptyTitle": "No entries yet",
-    "emptySubtitle": "Write your first one"
+    "emptySubtitle": "Write your first one",
+    "todoSummaryLine": "Today's todos: {{done}}/{{total}} done",
+    "insertTodoSummary": "Insert today's todos",
+    "goalToTodo": "Send to todo",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "calendarHint": "Tap a date to view that day",
+    "close": "Close",
+    "noEntryForDay": "No entry for this day yet",
+    "editThisDay": "Edit this day",
+    "writeThisDay": "Write about this day",
+    "defaultNotebook": "Journal",
+    "addNotebook": "New notebook",
+    "notebookNamePlaceholder": "Notebook name",
+    "deleteNotebookTitle": "Delete notebook",
+    "deleteNotebookMessage": "Delete this notebook? Its entries move to the default notebook and are kept.",
+    "addSection": "Add section",
+    "removeSection": "Remove section",
+    "sectionNamePlaceholder": "Section name (e.g. 3 good things)",
+    "contentLabel": "Content",
+    "addImage": "Add photo",
+    "removeImage": "Remove photo",
+    "imageAlt": "Diary photo {{index}}",
+    "imageLimit": "Up to {{max}} photos per entry",
+    "imageFailed": "Could not process that image, try another"
   },
   "overviewApp": {
     "title": "Today",
@@ -131,14 +155,14 @@
     "diary": "Diary",
     "sport": "Sport",
     "habit": "Habit",
-    "todo": "Todo",
     "study": "Study",
     "work": "Work",
     "podcast": "Podcast",
     "toggleToFinance": "Switch to money tracking",
     "toggleToTime": "Switch to time tracking",
     "toggleToEating": "Switch to eating tracker",
-    "ielts": "IELTS"
+    "ielts": "IELTS",
+    "todo": "Todo"
   },
   "eating": {
     "addTitle": "Add eating entry",
@@ -517,8 +541,8 @@
     "subtitle": "Daily habit check-in"
   },
   "todoApp": {
-    "title": "TodoVisual",
-    "subtitle": "Manage your tasks"
+    "subtitle": "Manage your tasks",
+    "title": "TodoVisual"
   },
   "habit": {
     "addTitle": "Add Habit",
@@ -546,7 +570,7 @@
     "markUndone": "Mark undone",
     "deleteTitle": "Delete Task",
     "deleteMessage": "Delete this task?",
-    "emptyTitle": "No tasks",
+    "emptyTitle": "Quest log is empty",
     "notes": "Notes",
     "addNotes": "Add notes",
     "priority": {
@@ -558,7 +582,50 @@
       "all": "All",
       "active": "Active",
       "completed": "Done"
-    }
+    },
+    "repeat": {
+      "label": "Repeat",
+      "none": "None",
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "custom": "Custom",
+      "weekdaysLabel": "Repeat on",
+      "every": "Every",
+      "days": "day(s)",
+      "untilLabel": "Repeat until",
+      "forever": "(empty = forever)"
+    },
+    "weekday": {
+      "0": "Su",
+      "1": "Mo",
+      "2": "Tu",
+      "3": "We",
+      "4": "Th",
+      "5": "Fr",
+      "6": "Sa"
+    },
+    "editRepeat": "Edit repeat rule",
+    "save": "Save",
+    "deleteOccurrence": "Delete this day only",
+    "deleteSeries": "Delete whole series",
+    "moveToToday": "Move all to today",
+    "weekStats": "Last 7 days",
+    "changePriority": "Change priority",
+    "emptyHint": "Add a task above, or set up a daily/weekly recurring one",
+    "moreActions": "More actions",
+    "overdueLabel": "overdue task(s)",
+    "category": {
+      "life": "Life",
+      "work": "Work",
+      "study": "Study"
+    },
+    "categoryAll": "All categories",
+    "categoryLabel": "Category",
+    "addCategory": "New category",
+    "categoryNamePlaceholder": "Category name",
+    "deleteCategoryTitle": "Delete category",
+    "deleteCategoryMessage": "Delete this category? Its tasks become uncategorized and are kept."
   },
   "studyApp": {
     "title": "StudyVisual",

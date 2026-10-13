@@ -14,7 +14,7 @@ const MODULES = [
   { key: 'time', Icon: ClockIcon, color: '#6b8db5' },
   { key: 'finance', Icon: WalletIcon, color: '#7aab8e' },
   { key: 'eating', Icon: UtensilsIcon, color: '#c4a36b' },
-  { key: 'diary', Icon: BookIcon, color: '#9b8db5' },
+  { key: 'diary', Icon: BookIcon, color: '#a98fb3' },
   { key: 'sport', Icon: DumbbellIcon, color: '#6ba5a0' },
 ] as const
 

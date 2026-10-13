@@ -87,7 +87,7 @@ export default function LandingPage() {
           className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full opacity-20 dark:opacity-10 blur-3xl pointer-events-none"
           style={{
             background:
-              'radial-gradient(ellipse, #0099db 0%, #8b5cf6 40%, transparent 70%)',
+              'radial-gradient(ellipse, #0099db 0%, #a855f7 40%, transparent 70%)',
           }}
         />
 
@@ -205,7 +205,7 @@ export default function LandingPage() {
             className="absolute inset-0 opacity-20 pointer-events-none"
             style={{
               background:
-                'radial-gradient(circle at 30% 50%, #0099db, transparent 50%), radial-gradient(circle at 70% 50%, #8b5cf6, transparent 50%)',
+                'radial-gradient(circle at 30% 50%, #0099db, transparent 50%), radial-gradient(circle at 70% 50%, #a855f7, transparent 50%)',
             }}
           />
           <h2 className="relative text-2xl sm:text-3xl font-bold tracking-display mb-4">

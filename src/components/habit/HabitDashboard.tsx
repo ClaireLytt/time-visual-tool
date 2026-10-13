@@ -53,7 +53,7 @@ export default function HabitDashboard() {
 
       {/* Summary */}
       <div className="panel p-4">
-        <p className="font-pixel text-[8px] text-[#e8a838] mb-2">🏰 CASTLE</p>
+        <p className="font-pixel text-[8px] text-[#c9ab77] mb-2">🏰 CASTLE</p>
         <div className="flex items-baseline gap-2">
           <span className="text-3xl font-bold tabular-nums tracking-display text-gray-900 dark:text-gray-100">
             {checkedCount}/{totalCount}
@@ -61,16 +61,13 @@ export default function HabitDashboard() {
           <span className="text-sm text-gray-500 dark:text-gray-400">{t('habit.completed')}</span>
         </div>
         {currentStreak > 0 && (
-          <p className="mt-2 text-sm text-[#e8a838] font-medium">
+          <p className="mt-2 text-sm text-[#c9ab77] font-medium">
             🔥 {t('habit.currentStreak')}: {currentStreak} {t('habit.days')}
           </p>
         )}
         {totalCount > 0 && (
-          <div className="mt-2 h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-300"
-              style={{ width: `${(checkedCount / totalCount) * 100}%`, backgroundColor: '#e8a838' }}
-            />
+          <div className="mt-2 hp-bar" role="progressbar" aria-valuenow={checkedCount} aria-valuemax={totalCount}>
+            <div style={{ width: `${(checkedCount / totalCount) * 100}%`, '--hp-color': '#c9ab77' } as React.CSSProperties} />
           </div>
         )}
       </div>
@@ -120,7 +117,7 @@ export default function HabitDashboard() {
       )}
 
       {/* Add form */}
-      <CollapsibleForm accentColor="#e8a838" addLabel={t('habit.addButton')}>
+      <CollapsibleForm accentColor="#c9ab77" addLabel={t('habit.addButton')}>
         <HabitForm onAdd={addHabit} />
       </CollapsibleForm>
     </div>

@@ -42,7 +42,7 @@ const HabitItem = memo(function HabitItem({ habit, checked, streakDates, onToggl
           </p>
         )}
       </div>
-      <button onClick={() => setConfirmDelete(true)} className="btn-icon text-gray-400 hover:text-red-500">
+      <button onClick={() => setConfirmDelete(true)} className="btn-icon text-gray-400 hover:text-red-500" aria-label={t('habit.deleteTitle')}>
         <XIcon className="w-4 h-4" />
       </button>
       <ConfirmDialog

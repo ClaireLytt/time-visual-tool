@@ -46,7 +46,31 @@
     "deleteConfirmMessage": "确定要删除这篇记录吗?此操作无法撤销。",
     "listTitle": "历史记录 ({{count}})",
     "emptyTitle": "还没有记录",
-    "emptySubtitle": "写下你的第一篇吧"
+    "emptySubtitle": "写下你的第一篇吧",
+    "todoSummaryLine": "今日待办：完成 {{done}}/{{total}}",
+    "insertTodoSummary": "插入今日待办",
+    "goalToTodo": "转为待办",
+    "prevMonth": "上个月",
+    "nextMonth": "下个月",
+    "calendarHint": "点击日期查看当天日记",
+    "close": "关闭",
+    "noEntryForDay": "这一天还没有日记",
+    "editThisDay": "编辑这一天",
+    "writeThisDay": "写下这一天",
+    "defaultNotebook": "日记",
+    "addNotebook": "新日记本",
+    "notebookNamePlaceholder": "日记本名称",
+    "deleteNotebookTitle": "删除日记本",
+    "deleteNotebookMessage": "确定删除这个日记本？里面的日记会移到默认日记本，不会丢失。",
+    "addSection": "添加模块",
+    "removeSection": "移除模块",
+    "sectionNamePlaceholder": "模块名称（如：今日三件事）",
+    "contentLabel": "内容",
+    "addImage": "添加图片",
+    "removeImage": "移除图片",
+    "imageAlt": "日记图片 {{index}}",
+    "imageLimit": "每篇最多 {{max}} 张图片",
+    "imageFailed": "图片处理失败，换一张试试"
   },
   "overviewApp": {
     "title": "今日总览",
@@ -131,14 +155,14 @@
     "diary": "日记",
     "sport": "运动",
     "habit": "习惯",
-    "todo": "待办",
     "study": "学习",
     "work": "工作",
     "podcast": "播客",
     "toggleToFinance": "切换到理财管理",
     "toggleToTime": "切换到时间管理",
     "toggleToEating": "切换到饮食管理",
-    "ielts": "雅思"
+    "ielts": "雅思",
+    "todo": "待办"
   },
   "eating": {
     "addTitle": "添加饮食记录",
@@ -517,8 +541,8 @@
     "subtitle": "每日习惯打卡"
   },
   "todoApp": {
-    "title": "TodoVisual",
-    "subtitle": "管理你的任务"
+    "subtitle": "管理你的任务",
+    "title": "TodoVisual"
   },
   "habit": {
     "addTitle": "添加习惯",
@@ -546,7 +570,7 @@
     "markUndone": "取消完成",
     "deleteTitle": "删除任务",
     "deleteMessage": "确定删除这个任务？",
-    "emptyTitle": "没有任务",
+    "emptyTitle": "任务板空空如也",
     "notes": "备注",
     "addNotes": "添加备注",
     "priority": {
@@ -558,7 +582,50 @@
       "all": "全部",
       "active": "进行中",
       "completed": "已完成"
-    }
+    },
+    "repeat": {
+      "label": "重复",
+      "none": "不重复",
+      "daily": "每天",
+      "weekly": "每周",
+      "monthly": "每月",
+      "custom": "自定义",
+      "weekdaysLabel": "重复于",
+      "every": "每",
+      "days": "天重复一次",
+      "untilLabel": "重复截止",
+      "forever": "（留空则一直重复）"
+    },
+    "weekday": {
+      "0": "日",
+      "1": "一",
+      "2": "二",
+      "3": "三",
+      "4": "四",
+      "5": "五",
+      "6": "六"
+    },
+    "editRepeat": "编辑重复规则",
+    "save": "保存",
+    "deleteOccurrence": "只删这一天",
+    "deleteSeries": "删除整个系列",
+    "moveToToday": "全部移到今天",
+    "weekStats": "近 7 天完成情况",
+    "changePriority": "修改优先级",
+    "emptyHint": "点上方 ➕ 添加任务，或设置每日/每周重复任务",
+    "moreActions": "更多操作",
+    "overdueLabel": "个逾期任务",
+    "category": {
+      "life": "生活",
+      "work": "工作",
+      "study": "学习"
+    },
+    "categoryAll": "全部分类",
+    "categoryLabel": "分类",
+    "addCategory": "新建分类",
+    "categoryNamePlaceholder": "分类名称",
+    "deleteCategoryTitle": "删除分类",
+    "deleteCategoryMessage": "确定删除这个分类？该分类下的任务会变为未分类，不会被删除。"
   },
   "studyApp": {
     "title": "StudyVisual",

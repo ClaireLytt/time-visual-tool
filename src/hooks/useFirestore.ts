@@ -40,6 +40,9 @@ export function useFirestore<T>(
   const [loading, setLoading] = useState(() => !!uid && !hasCachedData)
   const [error, setError] = useState<string | null>(null)
   const dataRef = useRef<T>(data)
+  // whether the first server snapshot has arrived — before that a full-doc
+  // write could clobber the server copy with initialValue + one edit
+  const hydratedRef = useRef(false)
 
   useEffect(() => {
     dataRef.current = data
@@ -79,6 +82,7 @@ export function useFirestore<T>(
           dataRef.current = initialValue
           cache.set(key, initialValue)
         }
+        hydratedRef.current = true
         setLoading(false)
       },
       () => {
@@ -106,7 +110,13 @@ export function useFirestore<T>(
 
       setError(null)
       const docRef = doc(db, 'users', uid, collectionName, 'data')
-      setDoc(docRef, newValue as Record<string, unknown>, { merge: true }).catch(() => {
+      // Firestore rejects `undefined` field values; strip them (JSON drops
+      // undefined object properties) so optional-field updates can't fail the write.
+      // After hydration, write without merge so removed fields actually clear;
+      // before the first snapshot arrives, merge-write to avoid clobbering the
+      // server copy with initialValue.
+      const sanitized = JSON.parse(JSON.stringify(newValue)) as Record<string, unknown>
+      setDoc(docRef, sanitized, hydratedRef.current ? {} : { merge: true }).catch(() => {
         setError('save_failed')
       })
     },
