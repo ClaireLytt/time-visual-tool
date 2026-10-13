@@ -32,7 +32,7 @@ export function isValidDiaryEntry(e: unknown): e is DiaryEntry {
 export function dedupeDiaryEntries(entries: DiaryEntry[]): DiaryEntry[] {
   const byPeriod = new Map<string, DiaryEntry>()
   for (const entry of entries) {
-    const key = `${entry.periodType}:${entry.periodKey}`
+    const key = `${entry.notebookId ?? 'default'}:${entry.periodType}:${entry.periodKey}`
     const existing = byPeriod.get(key)
     if (!existing || entry.updatedAt > existing.updatedAt) {
       byPeriod.set(key, entry)
@@ -50,7 +50,10 @@ export function validateDiaryData(raw: unknown): DiaryStorageData | null {
     obj.entries.filter(isValidDiaryEntry).map(e => ({ ...e, goals: e.goals ?? [] }))
   )
 
-  return { version: 1, entries }
+  const notebooks = Array.isArray(obj.notebooks)
+    ? (obj.notebooks as DiaryStorageData['notebooks'])
+    : undefined
+  return { version: 1, entries, ...(notebooks ? { notebooks } : {}) }
 }
 
 export function exportDiaryToFile(data: DiaryStorageData) {

@@ -1,17 +1,19 @@
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'motion/react'
-import type { DiaryEntry } from '../../types/diary'
+import type { DiaryEntry, DiarySection } from '../../types/diary'
 
 interface DiaryDayPopupProps {
   /** yyyy-MM-dd, null = closed */
   date: string | null
   entry: DiaryEntry | undefined
+  /** active notebook's custom sections (for titling custom contents) */
+  sections: DiarySection[]
   onEdit: (date: string) => void
   onClose: () => void
 }
 
 /** Slide-over panel showing one day's diary, opened from the calendar */
-function DiaryDayPopup({ date, entry, onEdit, onClose }: DiaryDayPopupProps) {
+function DiaryDayPopup({ date, entry, sections, onEdit, onClose }: DiaryDayPopupProps) {
   const { t } = useTranslation()
 
   return (
@@ -70,8 +72,25 @@ function DiaryDayPopup({ date, entry, onEdit, onClose }: DiaryDayPopupProps) {
                       <p className="text-sm leading-relaxed text-gray-800 dark:text-gray-100 whitespace-pre-wrap">{entry.feelings}</p>
                     </section>
                   )}
+                  {sections.map(sec => {
+                    const text = entry.custom?.[sec.id]
+                    if (!text) return null
+                    return (
+                      <section key={sec.id}>
+                        <h4 className="text-xs font-medium text-gray-400 dark:text-gray-500 mb-1">{sec.name}</h4>
+                        <p className="text-sm leading-relaxed text-gray-800 dark:text-gray-100 whitespace-pre-wrap">{text}</p>
+                      </section>
+                    )
+                  })}
                   {entry.motivation && (
                     <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400 whitespace-pre-wrap">{entry.motivation}</p>
+                  )}
+                  {entry.images && entry.images.length > 0 && (
+                    <div className="grid grid-cols-2 gap-2">
+                      {entry.images.map((src, i) => (
+                        <img key={i} src={src} alt={`${date} #${i + 1}`} className="w-full rounded-lg object-cover" />
+                      ))}
+                    </div>
                   )}
                 </>
               ) : (

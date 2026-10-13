@@ -56,7 +56,21 @@
     "close": "关闭",
     "noEntryForDay": "这一天还没有日记",
     "editThisDay": "编辑这一天",
-    "writeThisDay": "写下这一天"
+    "writeThisDay": "写下这一天",
+    "defaultNotebook": "日记",
+    "addNotebook": "新日记本",
+    "notebookNamePlaceholder": "日记本名称",
+    "deleteNotebookTitle": "删除日记本",
+    "deleteNotebookMessage": "确定删除这个日记本？里面的日记会移到默认日记本，不会丢失。",
+    "addSection": "添加模块",
+    "removeSection": "移除模块",
+    "sectionNamePlaceholder": "模块名称（如：今日三件事）",
+    "contentLabel": "内容",
+    "addImage": "添加图片",
+    "removeImage": "移除图片",
+    "imageAlt": "日记图片 {{index}}",
+    "imageLimit": "每篇最多 {{max}} 张图片",
+    "imageFailed": "图片处理失败，换一张试试"
   },
   "overviewApp": {
     "title": "今日总览",

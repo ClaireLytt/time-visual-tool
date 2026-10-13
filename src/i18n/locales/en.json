@@ -56,7 +56,21 @@
     "close": "Close",
     "noEntryForDay": "No entry for this day yet",
     "editThisDay": "Edit this day",
-    "writeThisDay": "Write about this day"
+    "writeThisDay": "Write about this day",
+    "defaultNotebook": "Journal",
+    "addNotebook": "New notebook",
+    "notebookNamePlaceholder": "Notebook name",
+    "deleteNotebookTitle": "Delete notebook",
+    "deleteNotebookMessage": "Delete this notebook? Its entries move to the default notebook and are kept.",
+    "addSection": "Add section",
+    "removeSection": "Remove section",
+    "sectionNamePlaceholder": "Section name (e.g. 3 good things)",
+    "contentLabel": "Content",
+    "addImage": "Add photo",
+    "removeImage": "Remove photo",
+    "imageAlt": "Diary photo {{index}}",
+    "imageLimit": "Up to {{max}} photos per entry",
+    "imageFailed": "Could not process that image, try another"
   },
   "overviewApp": {
     "title": "Today",
