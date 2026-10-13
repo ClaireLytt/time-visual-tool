@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
 import { useAuth } from '../../contexts/AuthContext'
-import { HomeIcon, ClockIcon, WalletIcon, UtensilsIcon, BookIcon, DumbbellIcon, CheckSquareIcon, ListTodoIcon, StudyIcon, WorkIcon, PodcastIcon, YouTubeIcon } from '../icons'
+import { HomeIcon, ClockIcon, WalletIcon, UtensilsIcon, BookIcon, DumbbellIcon, CheckSquareIcon, ListTodoIcon, StudyIcon, WorkIcon, PodcastIcon, YouTubeIcon, IeltsIcon } from '../icons'
+import { PAGE_CONTAINER_STYLE } from './Container'
 import { MODE_ACCENT } from '../../constants/modes'
 import ProfileDrawer from './ProfileDrawer'
 import type { AppMode } from '../../types'
@@ -25,6 +26,7 @@ const MODE_CONFIG: Record<AppMode, { icon: typeof ClockIcon; colorClass: string;
   work:     { icon: WorkIcon,        colorClass: 'text-mode-work',    titleKey: 'workApp.title' },
   podcast:  { icon: PodcastIcon,     colorClass: 'text-mode-podcast', titleKey: 'podcastApp.title' },
   youtube:  { icon: YouTubeIcon,    colorClass: 'text-mode-youtube', titleKey: 'youtubeApp.title' },
+  ielts:    { icon: IeltsIcon,       colorClass: 'text-mode-ielts',   titleKey: 'ieltsApp.title' },
 }
 
 function AvatarButton({ size = 32, onClick }: { size?: number; onClick: () => void }) {
@@ -61,7 +63,7 @@ function Header({ mode, onBack }: HeaderProps) {
           boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04)',
         }}
       >
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
+        <div className="flex items-center gap-3" style={{ ...PAGE_CONTAINER_STYLE, paddingTop: 12, paddingBottom: 12 }}>
           {isOverview ? (
             /* ── Overview mode: avatar + title ── */
             <>

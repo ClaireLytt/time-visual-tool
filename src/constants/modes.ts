@@ -14,6 +14,7 @@ export const MODE_ACCENT: Record<AppMode, string> = {
   work: '#e67e22',
   podcast: '#c2417a',
   youtube: '#b33e3e',
+  ielts: '#e74c3c',
 }
 
 /** All valid mode strings — used by validateMode and anywhere a mode list is needed */
@@ -33,4 +34,5 @@ export const MODE_SCENE: Record<AppMode, { emoji: string; label: string }> = {
   work: { emoji: '🏢', label: 'GUILD HALL' },
   podcast: { emoji: '🎧', label: 'BARD HALL' },
   youtube: { emoji: '📺', label: 'THEATER' },
+  ielts: { emoji: '📝', label: 'EXAM HALL' },
 }

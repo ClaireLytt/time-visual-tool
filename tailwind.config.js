@@ -34,6 +34,7 @@ export default {
           work: '#e67e22',
           podcast: '#c2417a',
           youtube: '#b33e3e',
+          ielts: '#c0392b',
         },
         clash: {
           red: '#e63946',

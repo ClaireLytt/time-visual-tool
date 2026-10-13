@@ -3,6 +3,7 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  signInAnonymously,
   sendPasswordResetEmail,
   signOut,
   type User,
@@ -27,12 +28,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let didAnonymousAttempt = false
     const unsubscribe = onAuthStateChanged(auth, (u) => {
-      setUser(u)
-      setLoading(false)
+      if (u) {
+        setUser(u)
+        setLoading(false)
+      } else if (!didAnonymousAttempt) {
+        // No user — try anonymous sign-in as fallback
+        didAnonymousAttempt = true
+        signInAnonymously(auth).catch(() => {
+          // Anonymous auth failed (e.g. not enabled in Firebase console)
+          // Degrade gracefully — app works without auth, data stays in-memory
+          setLoading(false)
+        })
+      } else {
+        setUser(null)
+        setLoading(false)
+      }
     })
-    // Fallback: if Firebase doesn't respond within 5s (e.g. network issues),
-    // stop loading so the user can see the login page instead of spinning forever.
     const timeout = setTimeout(() => setLoading(false), 5000)
     return () => { unsubscribe(); clearTimeout(timeout) }
   }, [])
