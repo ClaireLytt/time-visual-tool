@@ -26,7 +26,7 @@ interface DiaryEntryEditorProps {
   onSendGoalToTodo?: (text: string) => void
 }
 
-const TEXTAREA_CLASS = 'w-full px-3 py-2.5 border border-calm-border dark:border-gray-600 rounded-xl text-base sm:text-sm leading-relaxed bg-gray-50 dark:bg-gray-700/60 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-mode-diary focus:bg-white dark:focus:bg-gray-700 resize-none transition-colors'
+const TEXTAREA_CLASS = 'input-base text-base sm:text-sm leading-relaxed resize-none'
 
 const LABEL_CLASS = 'block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1.5'
 
@@ -171,7 +171,7 @@ function DiaryEntryEditor({ periodType, periodKey, entry, onSave, onDelete, todo
               goals: isDaily ? [] : goals,
             })}
             disabled={!canSave}
-            className="w-full sm:w-auto px-5 py-2.5 sm:py-2 bg-mode-diary hover:opacity-90 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-base sm:text-sm font-medium rounded-xl transition-colors"
+            className="btn-tactile w-full sm:w-auto px-5 bg-mode-diary disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed disabled:shadow-none disabled:border-gray-400 text-white text-base sm:text-sm"
           >
             {t('diary.saveButton')}
           </button>

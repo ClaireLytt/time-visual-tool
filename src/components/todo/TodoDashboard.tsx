@@ -56,11 +56,8 @@ export default function TodoDashboard() {
           <span className="text-sm text-gray-500 dark:text-gray-400">{t('todo.completed')}</span>
         </div>
         {dayItems.length > 0 && (
-          <div className="mt-2 h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-300"
-              style={{ width: `${(doneCount / dayItems.length) * 100}%`, backgroundColor: TODO_ACCENT }}
-            />
+          <div className="mt-2 hp-bar" role="progressbar" aria-valuenow={doneCount} aria-valuemax={dayItems.length}>
+            <div style={{ width: `${(doneCount / dayItems.length) * 100}%`, '--hp-color': TODO_ACCENT } as React.CSSProperties} />
           </div>
         )}
         {/* 7-day completion mini chart (collapsed by default) */}
@@ -122,7 +119,7 @@ export default function TodoDashboard() {
       </CollapsibleForm>
 
       {/* Filter tabs */}
-      <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
+      <div className="brutal-track flex gap-1 p-1">
         {(['all', 'active', 'completed'] as Filter[]).map(f => (
           <button
             key={f}

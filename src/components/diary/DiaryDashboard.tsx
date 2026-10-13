@@ -77,7 +77,7 @@ function DiaryDashboard() {
   return (
     <div id="main-content">
       {/* Diary / Todo tabs */}
-      <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg mb-4">
+      <div className="brutal-track flex gap-1 p-1 mb-4">
         {(['diary', 'todo'] as DiaryTab[]).map(tb => (
           <button
             key={tb}

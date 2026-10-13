@@ -66,11 +66,8 @@ export default function HabitDashboard() {
           </p>
         )}
         {totalCount > 0 && (
-          <div className="mt-2 h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-300"
-              style={{ width: `${(checkedCount / totalCount) * 100}%`, backgroundColor: '#e8a838' }}
-            />
+          <div className="mt-2 hp-bar" role="progressbar" aria-valuenow={checkedCount} aria-valuemax={totalCount}>
+            <div style={{ width: `${(checkedCount / totalCount) * 100}%`, '--hp-color': '#e8a838' } as React.CSSProperties} />
           </div>
         )}
       </div>

@@ -172,7 +172,7 @@ function pageChecks({ minTap }) {
     if (!name) out.a11y.push(`${describe(el)} — no accessible name`)
   }
   for (const img of document.querySelectorAll('img')) {
-    if (visible(img) && !img.alt && img.getAttribute('aria-hidden') !== 'true' && img.getAttribute('role') !== 'presentation') {
+    if (visible(img) && !img.hasAttribute('alt') && img.getAttribute('aria-hidden') !== 'true' && img.getAttribute('role') !== 'presentation') {
       out.a11y.push(`${describe(img)} — missing alt`)
     }
   }

@@ -126,13 +126,12 @@ function FinanceDashboard() {
                   {Math.round(pct)}%
                 </span>
               </div>
-              <div className="h-2.5 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
+              <div className="hp-bar" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemax={100}>
                 <div
-                  className="h-full rounded-full transition-all duration-300"
                   style={{
                     width: `${Math.min(pct, 100)}%`,
-                    backgroundColor: barColor,
-                  }}
+                    '--hp-color': barColor,
+                  } as React.CSSProperties}
                 />
               </div>
             </div>
