@@ -35,7 +35,7 @@ function DiaryGoalList({ goals, onChange, inputLabel, onSendToTodo }: DiaryGoalL
                 id={`diary-goal-${goal.id}`}
                 checked={goal.done}
                 onChange={() => onChange(goals.map(g => g.id === goal.id ? { ...g, done: !g.done } : g))}
-                className="w-5 h-5 accent-[#9b8db5] shrink-0"
+                className="w-5 h-5 accent-[#a98fb3] shrink-0"
               />
               <label
                 htmlFor={`diary-goal-${goal.id}`}

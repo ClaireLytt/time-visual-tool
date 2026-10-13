@@ -124,7 +124,7 @@ export function LibraryScene({ className }: SceneProps) {
           <rect x="4" y={sy} width="56" height="1" fill="#5a4030" />
           {/* Books */}
           {Array.from({length: 10}, (_, i) => {
-            const colors = ['#e43b44','#3e8948','#0099db','#8b5cf6','#f4b41a','#f77622','#2ce8f5','#be4a7f','#c4a36b','#6b8db5']
+            const colors = ['#e43b44','#3e8948','#0099db','#a855f7','#f4b41a','#f77622','#2ce8f5','#be4a7f','#c4a36b','#6b8db5']
             return <rect key={i} x={6 + i * 5} y={sy + 2} width="4" height="9" fill={colors[i]} rx="0.5" />
           })}
         </g>
@@ -174,7 +174,7 @@ export function QuestScene({ className }: SceneProps) {
       <rect x="32" y="23" width="14" height="9" fill="#f0e8d0" transform="rotate(-2 39 27)" />
       {/* Pins */}
       {[[16,8],[33,7],[48,9],[19,22],[38,23]].map(([x,y],i) => (
-        <circle key={i} cx={x} cy={y} r="1.5" fill={['#e43b44','#5b8def','#f4b41a','#3e8948','#8b5cf6'][i]} />
+        <circle key={i} cx={x} cy={y} r="1.5" fill={['#e43b44','#5b8def','#f4b41a','#3e8948','#a855f7'][i]} />
       ))}
     </svg>
   )

@@ -36,7 +36,7 @@ const MODE_COLORS: Record<AppMode, { light: string; dark: string }> = {
   time:     { light: '#dde6f0', dark: '#141828' },
   finance:  { light: '#dde8df', dark: '#142018' },
   eating:   { light: '#f0e4d4', dark: '#281c14' },
-  diary:    { light: '#e4ddf0', dark: '#1e1428' },
+  diary:    { light: '#e9ddee', dark: '#211428' },
   sport:    { light: '#d4eef0', dark: '#142028' },
   habit:    { light: '#f0e6d0', dark: '#28201a' },
   study:    { light: '#dce4f4', dark: '#141c2a' },

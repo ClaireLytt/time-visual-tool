@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { Habit } from '../../types/habit'
 
 const EMOJI_OPTIONS = ['🌅', '💧', '📖', '🏃', '🧘', '💪', '🎯', '✍️', '🛌', '🍎', '🚫', '🎵']
-const COLOR_OPTIONS = ['#e43b44', '#f4b41a', '#3e8948', '#0099db', '#8b5cf6', '#f77622', '#2ce8f5', '#be4a7f']
+const COLOR_OPTIONS = ['#e43b44', '#f4b41a', '#3e8948', '#0099db', '#a855f7', '#f77622', '#2ce8f5', '#be4a7f']
 
 interface HabitFormProps {
   onAdd: (habit: Habit) => void

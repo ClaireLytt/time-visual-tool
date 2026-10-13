@@ -26,7 +26,7 @@ export default {
           time: '#6b8db5',
           finance: '#7aab8e',
           eating: '#c4a36b',
-          diary: '#9b8db5',
+          diary: '#a98fb3',
           sport: '#6ba5a0',
           habit: '#e8a838',
           todo: '#5b8def',
@@ -53,7 +53,7 @@ export default {
           green: '#3e8948',      // health / money green
           red: '#e43b44',        // damage / expense red
           blue: '#0099db',       // mana / time blue
-          purple: '#8b5cf6',     // magic / diary purple
+          purple: '#a855f7',     // magic / diary purple
           teal: '#2ce8f5',       // ice / sport cyan
           orange: '#f77622',     // fire / eating orange
           pink: '#be4a7f',       // potion pink

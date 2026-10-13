@@ -23,7 +23,7 @@ function EatingProportionChart({ categoryBreakdown, totalCalories }: EatingPropo
   const legendItems = Object.entries(categoryBreakdown).sort((a, b) => b[1].calories - a[1].calories)
 
   return (
-    <div className="panel panel-accent p-4" style={{ '--panel-accent': '#9b8db5' } as React.CSSProperties}>
+    <div className="panel panel-accent p-4" style={{ '--panel-accent': '#a98fb3' } as React.CSSProperties}>
       <h3 className="text-xs font-semibold tracking-wide uppercase text-calm-muted dark:text-gray-400 mb-2 mt-0.5">
         {t('eating.chartProportion')}
       </h3>

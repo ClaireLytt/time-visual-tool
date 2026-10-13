@@ -5,7 +5,7 @@ const SUBJECT_COLORS: Record<string, string> = {
   '数学': '#e43b44',
   '英语': '#0099db',
   '编程': '#3e8948',
-  '阅读': '#8b5cf6',
+  '阅读': '#a855f7',
   '其他': '#f4b41a',
 }
 

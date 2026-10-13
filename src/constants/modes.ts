@@ -6,7 +6,7 @@ export const MODE_ACCENT: Record<AppMode, string> = {
   time: '#0099db',
   finance: '#3e8948',
   eating: '#f77622',
-  diary: '#8b5cf6',
+  diary: '#a855f7',
   sport: '#2ce8f5',
   habit: '#e8a838',
   study: '#4a90d9',

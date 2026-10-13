@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import type { WorkEntry } from '../../types/work'
 
-const PROJECT_COLORS = ['#e67e22', '#0099db', '#3e8948', '#8b5cf6', '#e43b44', '#f4b41a', '#2ce8f5', '#be4a7f']
+const PROJECT_COLORS = ['#e67e22', '#0099db', '#3e8948', '#a855f7', '#e43b44', '#f4b41a', '#2ce8f5', '#be4a7f']
 
 interface WorkProjectStatsProps {
   entries: WorkEntry[]
