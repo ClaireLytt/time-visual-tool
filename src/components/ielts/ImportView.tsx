@@ -378,8 +378,8 @@ export default function ImportView({ onNavigate }: { onNavigate?: (tab: string) 
 
       {/* Errors */}
       {errors.length > 0 && (
-        <div className="panel p-4 border-l-4 border-[#e74c3c]">
-          <p className="text-sm font-semibold text-[#e74c3c] mb-2">{t('ielts.importErrors')} ({errors.length})</p>
+        <div className="panel p-4 border-l-4 border-[#c28a80]">
+          <p className="text-sm font-semibold text-[#c28a80] mb-2">{t('ielts.importErrors')} ({errors.length})</p>
           <ul className="space-y-1">
             {errors.map((err, i) => (
               <li key={i} className="text-sm text-gray-600 dark:text-gray-400 font-mono">• {err}</li>

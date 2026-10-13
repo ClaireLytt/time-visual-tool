@@ -33,7 +33,7 @@ export default function WorkForm({ selectedDate, onAdd, recentProjects = [] }: W
 
   return (
     <form onSubmit={handleSubmit} className="panel p-4 space-y-3">
-      <p className="font-pixel text-[8px] text-[#e67e22] mb-1">{t('work.addTitle')}</p>
+      <p className="font-pixel text-[8px] text-[#c79a74] mb-1">{t('work.addTitle')}</p>
       <RecentChips items={recentProjects} onSelect={setProject} />
       <div className="flex gap-2">
         <select
@@ -62,7 +62,7 @@ export default function WorkForm({ selectedDate, onAdd, recentProjects = [] }: W
           min="1"
         />
         <DurationPresets onSelect={setDuration} selected={duration} />
-        <button type="submit" className="btn-tactile px-4 bg-[#e67e22] text-white ml-auto">
+        <button type="submit" className="btn-tactile px-4 bg-[#c79a74] text-white ml-auto">
           {t('work.addButton')}
         </button>
       </div>

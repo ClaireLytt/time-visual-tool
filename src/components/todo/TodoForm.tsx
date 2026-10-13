@@ -109,7 +109,7 @@ export default function TodoForm({ selectedDate, onAdd, categories, defaultCateg
             value={notes}
             onChange={e => setNotes(e.target.value)}
             placeholder={t('todo.addNotes') + '\n- item 1\n- item 2'}
-            className="mt-1 w-full text-xs text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-2 resize-none focus:outline-none focus:ring-1 focus:ring-[#5b8def]/50"
+            className="mt-1 w-full text-xs text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-2 resize-none focus:outline-none focus:ring-1 focus:ring-[#90a6c9]/50"
             rows={3}
           />
         )}

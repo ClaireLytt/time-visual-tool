@@ -26,7 +26,7 @@ export default function StudyDashboard() {
 
       {/* Summary */}
       <div className="panel p-4">
-        <p className="font-pixel text-[8px] text-[#4a90d9] mb-2">🎓 ACADEMY</p>
+        <p className="font-pixel text-[8px] text-[#8aa7c4] mb-2">🎓 ACADEMY</p>
         <div className="flex items-baseline gap-3">
           <span className="text-3xl font-bold tabular-nums tracking-display text-gray-900 dark:text-gray-100">
             {display}
@@ -39,7 +39,7 @@ export default function StudyDashboard() {
       </div>
 
       {/* Form */}
-      <CollapsibleForm accentColor="#4a90d9" addLabel={t('study.addButton')}>
+      <CollapsibleForm accentColor="#8aa7c4" addLabel={t('study.addButton')}>
         <StudyForm selectedDate={selectedDate} onAdd={addEntry} recentSubjects={recentSubjects} />
       </CollapsibleForm>
 

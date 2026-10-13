@@ -60,8 +60,8 @@ const EatingEntryItem = memo(function EatingEntryItem({ entry, onDelete, onEdit 
           return (
             <div className="mt-1">
               <div className="flex h-1.5 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700">
-                {p > 0 && <div className="h-full" style={{ width: `${(p / total) * 100}%`, backgroundColor: '#5b8def' }} />}
-                {c > 0 && <div className="h-full" style={{ width: `${(c / total) * 100}%`, backgroundColor: '#e8a838' }} />}
+                {p > 0 && <div className="h-full" style={{ width: `${(p / total) * 100}%`, backgroundColor: '#90a6c9' }} />}
+                {c > 0 && <div className="h-full" style={{ width: `${(c / total) * 100}%`, backgroundColor: '#c9ab77' }} />}
                 {f > 0 && <div className="h-full" style={{ width: `${(f / total) * 100}%`, backgroundColor: '#e45858' }} />}
               </div>
               <div className="flex gap-2 mt-0.5 text-[10px] text-gray-400 dark:text-gray-500 tabular-nums">

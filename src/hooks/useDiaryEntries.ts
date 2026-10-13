@@ -12,7 +12,7 @@ const INITIAL_DATA: DiaryStorageData = {
 export const DEFAULT_NOTEBOOK_ID = 'default'
 
 /** Palette cycled through for user-created notebooks */
-const NOTEBOOK_COLORS = ['#a855f7', '#3e8948', '#e67e22', '#4a90d9', '#c2417a', '#e8a838']
+const NOTEBOOK_COLORS = ['#b09cc4', '#86a98d', '#c79a74', '#8aa7c4', '#b4879d', '#c9ab77']
 
 export interface DiaryEntryUpsert {
   gratitude: string
@@ -37,7 +37,7 @@ export function useDiaryEntries() {
     {
       id: DEFAULT_NOTEBOOK_ID,
       name: t('diary.defaultNotebook'),
-      color: '#a855f7',
+      color: '#b09cc4',
       sections: storedDefault?.sections ?? [],
       createdAt: '',
     },

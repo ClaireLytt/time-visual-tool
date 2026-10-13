@@ -29,8 +29,8 @@ export default function ExamCountdown() {
 
   const color = daysLeft === null ? '#888'
     : isExpired ? '#9ca3af'
-    : daysLeft === 0 ? '#e74c3c'
-    : daysLeft < 7 ? '#e74c3c'
+    : daysLeft === 0 ? '#c28a80'
+    : daysLeft < 7 ? '#c28a80'
     : daysLeft < 30 ? '#f59e0b'
     : '#10b981'
 

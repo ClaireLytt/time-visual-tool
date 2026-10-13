@@ -61,7 +61,7 @@ function DiaryCalendar({ selectedDate, entryDates, onPickDate }: DiaryCalendarPr
       {/* weekday header */}
       <div className="grid grid-cols-7 mb-1">
         {WEEKDAY_ORDER.map(d => (
-          <span key={d} className="text-center text-[11px] text-gray-400 dark:text-gray-500">
+          <span key={d} className="text-center text-xs text-gray-500 dark:text-gray-400">
             {t(`todo.weekday.${d}`)}
           </span>
         ))}
@@ -95,7 +95,7 @@ function DiaryCalendar({ selectedDate, entryDates, onPickDate }: DiaryCalendarPr
         ))}
       </div>
 
-      <p className="mt-3 text-[11px] text-gray-400 dark:text-gray-500 text-center">{t('diary.calendarHint')}</p>
+      <p className="mt-3 text-xs text-gray-500 dark:text-gray-400 text-center">{t('diary.calendarHint')}</p>
     </div>
   )
 }

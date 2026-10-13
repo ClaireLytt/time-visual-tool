@@ -137,13 +137,13 @@ const TodoItem = memo(function TodoItem({ item, category, onToggle, onDelete, on
               {category.name}
             </span>
           )}
-          {item.notes && <span className="ml-1.5 text-[10px] text-gray-400" title={t('todo.notes')}>📝</span>}
+          {item.notes && <span className="ml-1.5 text-[11px] text-gray-500" title={t('todo.notes')}>📝</span>}
           {item.dueDate && !item.done && (() => {
             const today = format(new Date(), 'yyyy-MM-dd')
             const isOverdue = item.dueDate < today
             const isToday = item.dueDate === today
             return (
-              <span className={`ml-2 text-[10px] ${isOverdue ? 'text-red-500 font-semibold' : isToday ? 'text-orange-500' : 'text-gray-400 dark:text-gray-500'}`}>
+              <span className={`ml-2 text-[11px] ${isOverdue ? 'text-red-500 font-semibold' : isToday ? 'text-orange-500' : 'text-gray-400 dark:text-gray-500'}`}>
                 {isOverdue ? '⚠ ' : ''}{item.dueDate}
               </span>
             )
@@ -288,7 +288,7 @@ const TodoItem = memo(function TodoItem({ item, category, onToggle, onDelete, on
             onChange={e => setNotesText(e.target.value)}
             onBlur={handleNotesBlur}
             placeholder={t('todo.addNotes') + '\n- item 1\n- item 2'}
-            className="w-full text-xs text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-2 resize-none focus:outline-none focus:ring-1 focus:ring-[#5b8def]/50"
+            className="w-full text-xs text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-2 resize-none focus:outline-none focus:ring-1 focus:ring-[#90a6c9]/50"
             rows={3}
           />
         </div>

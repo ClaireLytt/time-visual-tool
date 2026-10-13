@@ -33,7 +33,7 @@ export default function StudyForm({ selectedDate, onAdd, recentSubjects = [] }: 
 
   return (
     <form onSubmit={handleSubmit} className="panel p-4 space-y-3">
-      <p className="font-pixel text-[8px] text-[#4a90d9] mb-1">{t('study.addTitle')}</p>
+      <p className="font-pixel text-[8px] text-[#8aa7c4] mb-1">{t('study.addTitle')}</p>
       <RecentChips items={recentSubjects} onSelect={setSubject} />
       <div className="flex gap-2">
         <select
@@ -59,7 +59,7 @@ export default function StudyForm({ selectedDate, onAdd, recentSubjects = [] }: 
           placeholder={t('study.notesPlaceholder')}
           className="input-base flex-1"
         />
-        <button type="submit" className="btn-tactile px-4 bg-[#4a90d9] text-white shrink-0">
+        <button type="submit" className="btn-tactile px-4 bg-[#8aa7c4] text-white shrink-0">
           {t('study.addButton')}
         </button>
       </div>

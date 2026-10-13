@@ -182,7 +182,7 @@ export default function TodoDashboard() {
                       }}
                     />
                   </div>
-                  <span className="text-[9px] text-gray-400 dark:text-gray-500 tabular-nums">
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400 tabular-nums">
                     {s.total > 0 ? `${s.done}/${s.total}` : '·'}
                   </span>
                   <span className={`text-[9px] ${isToday ? 'font-semibold text-gray-600 dark:text-gray-300' : 'text-gray-400 dark:text-gray-500'}`}>

@@ -8,9 +8,9 @@
   --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Neo-brutalist ink: borders + hard offset shadows */
-  --ink: #2b2a33;
-  --ink-dark: #0e1020;
+  /* Morandi ink: muted warm-gray borders + soft hard-offset shadows */
+  --ink: #a39b8d;
+  --ink-dark: #3f4458;
 
   /* Design Token — IELTS primary scale */
   --ielts-50: #fdf2f5;
@@ -302,6 +302,11 @@ button, a, [role="button"] {
     box-shadow: inset 2px 2px 0 rgba(0,0,0,0.4);
   }
 
+  /* ── Scene strips — soften the pixel-art illustrations to Morandi tones ── */
+  .scene-strip {
+    filter: saturate(0.5) contrast(0.92) brightness(1.06);
+  }
+
   /* ── HP bar — chunky segmented game-style progress ── */
   .hp-bar {
     @apply w-full overflow-hidden;
@@ -323,7 +328,7 @@ button, a, [role="button"] {
       transparent 0 6px,
       rgba(255,255,255,0.25) 6px 8px
     );
-    background-color: var(--hp-color, #3e8948);
+    background-color: var(--hp-color, #86a98d);
   }
 }
 

@@ -46,7 +46,7 @@ function computePosition(anchor: DOMRect): { top?: number; bottom?: number; left
 }
 
 export default memo(function WordPopover({
-  word, anchorRect, onClose, onLookup, onAddToVocab, onRemoveFromVocab, onSaveSentence, isSentenceSaved, sentenceContext, accentColor = '#c2417a',
+  word, anchorRect, onClose, onLookup, onAddToVocab, onRemoveFromVocab, onSaveSentence, isSentenceSaved, sentenceContext, accentColor = '#b4879d',
 }: WordPopoverProps) {
   const { t } = useTranslation()
   const [data, setData] = useState<DictResult | null>(null)

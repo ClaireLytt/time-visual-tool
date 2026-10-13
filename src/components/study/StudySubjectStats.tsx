@@ -3,8 +3,8 @@ import type { StudyEntry } from '../../types/study'
 
 const SUBJECT_COLORS: Record<string, string> = {
   '数学': '#e43b44',
-  '英语': '#0099db',
-  '编程': '#3e8948',
+  '英语': '#7fa3bb',
+  '编程': '#86a98d',
   '阅读': '#a855f7',
   '其他': '#f4b41a',
 }

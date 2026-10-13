@@ -43,14 +43,14 @@ function Card({ mode, scene, subtitle, children, onClick }: {
       style={{ borderLeft: `3px solid ${color}` }}
     >
       {Scene && (
-        <div className="w-full overflow-hidden bg-black/5 dark:bg-white/5 h-6">
+        <div className="scene-strip w-full overflow-hidden bg-black/5 dark:bg-white/5 h-6">
           <Scene />
         </div>
       )}
       <div className="px-2 py-1.5 flex flex-col gap-0.5">
         <span className="font-pixel text-[8px] leading-none" style={{ color }}>{scene}</span>
         {children}
-        {subtitle && <span className="text-[10px] text-gray-400 leading-tight">{subtitle}</span>}
+        {subtitle && <span className="text-xs text-gray-500 leading-tight">{subtitle}</span>}
       </div>
     </Tag>
   )
@@ -136,7 +136,7 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
         className="panel-hero w-full text-left overflow-hidden no-press"
         style={{ borderLeft: `3px solid ${MODE_ACCENT.time}` }}
       >
-        <div className="w-full overflow-hidden bg-black/5 dark:bg-white/5 h-8">
+        <div className="scene-strip w-full overflow-hidden bg-black/5 dark:bg-white/5 h-8">
           {(() => { const S = SCENE_COMPONENTS.time; return S ? <S /> : null })()}
         </div>
         <div className="px-3 py-2 flex items-end justify-between gap-3">
@@ -146,14 +146,14 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
               <span className="text-3xl font-bold tabular-nums tracking-display text-gray-900 dark:text-gray-100">
                 {fmtDuration(timeMinutes)}
               </span>
-              <span className="text-[10px] text-gray-400">{t('app.subtitle')}</span>
+              <span className="text-xs text-gray-500">{t('app.subtitle')}</span>
               {time.dailyHoursGoal && (
                 <span className="text-sm text-gray-400 tabular-nums">/ {time.dailyHoursGoal}h</span>
               )}
             </div>
           </div>
           {time.dailyHoursGoal && (
-            <MiniRing ratio={timeHours / time.dailyHoursGoal} color="#0099db" size={36} />
+            <MiniRing ratio={timeHours / time.dailyHoursGoal} color="#7fa3bb" size={36} />
           )}
         </div>
       </button>
@@ -169,7 +169,7 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
         </Card>
 
         <Card mode="eating" scene="🍺 TAVERN" subtitle={t('eatingApp.subtitle')} onClick={() => onNavigate('eating')}>
-          <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{eatingCalories.toLocaleString()} <span className="text-[10px] font-normal text-gray-400">kcal</span></span>
+          <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{eatingCalories.toLocaleString()} <span className="text-xs font-normal text-gray-500">kcal</span></span>
         </Card>
 
         <Card mode="sport" scene="⚔️ ARENA" subtitle={t('sportApp.subtitle')} onClick={() => onNavigate('sport')}>
@@ -188,18 +188,18 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
         <Card mode="todo" scene="📋 QUEST LOG" subtitle={t('todoApp.subtitle')} onClick={() => onNavigate('todo')}>
           <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">
             {todoDoneCount}/{todoToday.length}
-            <span className="ml-1 text-[10px] font-normal text-gray-400">{t('todo.completed')}</span>
+            <span className="ml-1 text-xs font-normal text-gray-500">{t('todo.completed')}</span>
           </span>
         </Card>
 
         <Card mode="study" scene="🎓 ACADEMY" subtitle={t('studyApp.subtitle')} onClick={() => onNavigate('study')}>
           <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{fmtDuration(studyMinutes)}</span>
-          <span className="text-[10px] text-gray-400">{studyToday.length} {t('study.entryCount')}</span>
+          <span className="text-xs text-gray-500">{studyToday.length} {t('study.entryCount')}</span>
         </Card>
 
         <Card mode="work" scene="🏢 GUILD HALL" subtitle={t('workApp.subtitle')} onClick={() => onNavigate('work')}>
           <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{fmtDuration(workMinutes)}</span>
-          <span className="text-[10px] text-gray-400">{workToday.length} {t('work.entryCount')}</span>
+          <span className="text-xs text-gray-500">{workToday.length} {t('work.entryCount')}</span>
         </Card>
 
         <Card mode="podcast" scene="🎧 BARD HALL" subtitle={t('podcastApp.subtitle')} onClick={() => onNavigate('podcast')}>
@@ -218,7 +218,7 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
           {ieltsToday.length > 0
             ? <>
                 <span className="text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{fmtDuration(ieltsMinutes)}</span>
-                <span className="text-[10px] text-gray-400">{ieltsToday.length} {t('ielts.sessions')}</span>
+                <span className="text-xs text-gray-500">{ieltsToday.length} {t('ielts.sessions')}</span>
               </>
             : <span className="text-sm text-transparent">—</span>
           }
@@ -257,14 +257,14 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
       <WeeklySparklines data={useMemo(() => {
         const last7 = Array.from({ length: 7 }, (_, i) => format(subDays(new Date(), 6 - i), 'yyyy-MM-dd'))
         return [
-          { emoji: '⏱', label: 'Time', color: '#0099db', values: last7.map(d => time.getEntriesForDate(d).reduce((s, e) => s + e.duration, 0)) },
-          { emoji: '💰', label: 'Finance', color: '#3e8948', values: last7.map(d => finance.getEntriesForDate(d).length) },
-          { emoji: '🍽', label: 'Eating', color: '#f77622', values: last7.map(d => eating.getEntriesForDate(d).length) },
-          { emoji: '🏃', label: 'Sport', color: '#2ce8f5', values: last7.map(d => sport.getEntriesForDate(d).reduce((s, e) => s + e.duration, 0)) },
-          { emoji: '🏰', label: 'Habit', color: '#e8a838', values: last7.map(d => habit.getCheckedCountForDate(d)) },
+          { emoji: '⏱', label: 'Time', color: '#7fa3bb', values: last7.map(d => time.getEntriesForDate(d).reduce((s, e) => s + e.duration, 0)) },
+          { emoji: '💰', label: 'Finance', color: '#86a98d', values: last7.map(d => finance.getEntriesForDate(d).length) },
+          { emoji: '🍽', label: 'Eating', color: '#cb9c77', values: last7.map(d => eating.getEntriesForDate(d).length) },
+          { emoji: '🏃', label: 'Sport', color: '#8fc0c6', values: last7.map(d => sport.getEntriesForDate(d).reduce((s, e) => s + e.duration, 0)) },
+          { emoji: '🏰', label: 'Habit', color: '#c9ab77', values: last7.map(d => habit.getCheckedCountForDate(d)) },
           { emoji: '📋', label: 'Todo', color: TODO_ACCENT, values: last7.map(d => todo.getItemsForDate(d).filter(item => item.done).length) },
-          { emoji: '🎓', label: 'Study', color: '#4a90d9', values: last7.map(d => study.getEntriesForDate(d).reduce((s, e) => s + e.duration, 0)) },
-          { emoji: '🏢', label: 'Work', color: '#e67e22', values: last7.map(d => work.getEntriesForDate(d).reduce((s, e) => s + e.duration, 0)) },
+          { emoji: '🎓', label: 'Study', color: '#8aa7c4', values: last7.map(d => study.getEntriesForDate(d).reduce((s, e) => s + e.duration, 0)) },
+          { emoji: '🏢', label: 'Work', color: '#c79a74', values: last7.map(d => work.getEntriesForDate(d).reduce((s, e) => s + e.duration, 0)) },
         ]
       }, [time.getEntriesForDate, finance.getEntriesForDate, eating.getEntriesForDate, sport.getEntriesForDate, habit.getCheckedCountForDate, todo.getItemsForDate, study.getEntriesForDate, work.getEntriesForDate])} />
 

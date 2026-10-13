@@ -151,7 +151,7 @@ function DiaryEntryEditor({ notebook, periodType, periodKey, entry, onSave, onDe
             </label>
             <textarea
               id="diary-gratitude"
-              rows={3}
+              rows={7}
               maxLength={2000}
               value={gratitude}
               onChange={e => setGratitude(e.target.value)}
