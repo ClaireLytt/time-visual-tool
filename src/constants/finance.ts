@@ -18,3 +18,6 @@ export const DEFAULT_FINANCE_CATEGORY_LIST: FinanceCategory[] = [
   { name: '理财收益', color: '#7aab8e', kind: 'income' },
   { name: '其他收入', color: '#8b95a0', kind: 'income' },
 ]
+
+/** Default expense categories treated as non-essential (blind-box eligible) */
+export const DEFAULT_NON_ESSENTIAL_CATEGORIES = ['购物', '娱乐']

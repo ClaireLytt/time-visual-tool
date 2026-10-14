@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { format } from 'date-fns'
+import { format, parseISO, isSameMonth, getDaysInMonth } from 'date-fns'
 import { useFinanceEntries } from '../../hooks/useFinanceEntries'
 import { CategoryProvider } from '../../contexts/CategoryContext'
 import DatePicker from '../dashboard/DatePicker'
@@ -8,6 +8,10 @@ import ViewModeToggle from '../dashboard/ViewModeToggle'
 import CategoryManager, { type ManagedCategory } from '../categories/CategoryManager'
 import DataTransfer from '../settings/DataTransfer'
 import FinanceSummaryCard from './FinanceSummaryCard'
+import FinanceBudgetManager from './FinanceBudgetManager'
+import FinanceBlindBox from './FinanceBlindBox'
+import FinanceBlindBoxSettings from './FinanceBlindBoxSettings'
+import { computeLuckStats } from '../../utils/financeLuck'
 import FinanceEntryForm from './FinanceEntryForm'
 import FinanceEntryList from './FinanceEntryList'
 import FinanceProportionChart from './FinanceProportionChart'
@@ -15,7 +19,7 @@ import FinanceOverviewChart from './FinanceOverviewChart'
 import FinanceDailyChart from './FinanceDailyChart'
 import AnimatedCollapse from '../common/AnimatedCollapse'
 import { exportFinanceToFile, readFinanceImportFile } from '../../utils/financeTransfer'
-import type { FinanceEntry, FinanceStorageData, FinanceViewMode } from '../../types/finance'
+import type { FinanceEntry, FinanceLuck, FinanceStorageData, FinanceViewMode } from '../../types/finance'
 
 const FINANCE_MODES: readonly FinanceViewMode[] = ['day', 'week', 'month', 'year']
 
@@ -31,8 +35,11 @@ function FinanceDashboard() {
     addCategory, updateCategory, deleteCategory,
     importData,
     getEntriesForDate, getSummaryForPeriod,
-    monthlyBudget,
+    monthlyBudget, setMonthlyBudget,
+    categoryBudgets, setCategoryBudget,
+    nonEssentialCategories, toggleNonEssentialCategory,
   } = useFinanceEntries()
+  const [blindBoxEntry, setBlindBoxEntry] = useState<FinanceEntry | null>(null)
 
   const dayEntries = useMemo(() => getEntriesForDate(selectedDate), [getEntriesForDate, selectedDate])
   const periodSummary = useMemo(() => getSummaryForPeriod(selectedDate, viewMode), [getSummaryForPeriod, selectedDate, viewMode])
@@ -53,6 +60,27 @@ function FinanceDashboard() {
   const handleCancelEdit = useCallback(() => {
     setEditingEntry(null)
   }, [])
+
+  // Record the entry; a non-essential expense triggers the blind-box draw
+  const handleAddEntry = useCallback((entry: Omit<FinanceEntry, 'id' | 'createdAt'>) => {
+    const newEntry = addEntry(entry)
+    if (entry.type === 'expense' && nonEssentialCategories.includes(entry.category)) {
+      setBlindBoxEntry(newEntry)
+    }
+  }, [addEntry, nonEssentialCategories])
+
+  const handleBlindBoxReveal = useCallback((luck: FinanceLuck) => {
+    if (blindBoxEntry) updateEntry(blindBoxEntry.id, { luck })
+  }, [blindBoxEntry, updateEntry])
+
+  const handleBlindBoxClose = useCallback(() => {
+    setBlindBoxEntry(null)
+  }, [])
+
+  const monthLuckStats = useMemo(
+    () => computeLuckStats(entries.filter(e => e.date.startsWith(selectedDate.slice(0, 7)))),
+    [entries, selectedDate],
+  )
 
   const handleAddCategory = useCallback((category: ManagedCategory) => {
     addCategory({ name: category.name, color: category.color, kind: category.kind ?? 'expense' })
@@ -91,6 +119,19 @@ function FinanceDashboard() {
               onDelete={deleteCategory}
               withKind
             />
+            <FinanceBudgetManager
+              key={showSettings ? 'open' : 'closed'}
+              categories={categories}
+              monthlyBudget={monthlyBudget}
+              categoryBudgets={categoryBudgets}
+              onSetMonthlyBudget={setMonthlyBudget}
+              onSetCategoryBudget={setCategoryBudget}
+            />
+            <FinanceBlindBoxSettings
+              categories={categories}
+              nonEssentialCategories={nonEssentialCategories}
+              onToggle={toggleNonEssentialCategory}
+            />
             <DataTransfer
               data={data}
               onImport={importData}
@@ -113,6 +154,11 @@ function FinanceDashboard() {
           const ratio = monthlySummary.expense / monthlyBudget
           const pct = ratio * 100
           const barColor = pct > 90 ? '#c18383' : pct > 60 ? '#c9ab77' : '#86a98d'
+          const today = new Date()
+          const isCurrentMonth = isSameMonth(parseISO(selectedDate), today)
+          const remainingDays = getDaysInMonth(today) - today.getDate() + 1
+          const remaining = monthlyBudget - monthlySummary.expense
+          const dailyAllowance = remaining > 0 ? remaining / remainingDays : 0
           return (
             <div className="panel p-3 mb-4">
               <div className="flex justify-between items-baseline mb-1.5">
@@ -134,16 +180,55 @@ function FinanceDashboard() {
                   } as React.CSSProperties}
                 />
               </div>
+              {isCurrentMonth && (
+                <p className="mt-1.5 text-xs text-calm-muted dark:text-gray-400 tabular-nums">
+                  {remaining >= 0
+                    ? t('finance.budgetDailyAllowance', {
+                        days: remainingDays,
+                        amount: `${t('currency.symbol')}${dailyAllowance.toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
+                      })
+                    : t('finance.budgetOverspent', {
+                        amount: `${t('currency.symbol')}${Math.abs(remaining).toLocaleString()}`,
+                      })}
+                </p>
+              )}
             </div>
           )
         })()}
 
+        {/* Monthly blind-box recap: draws, impulse buys, savings score */}
+        {monthLuckStats.draws > 0 && (
+          <div className="panel p-3 mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-semibold tracking-wide uppercase text-calm-muted dark:text-gray-400">
+                {t('finance.blindBoxRecap')}
+              </h3>
+              <span className="text-xs font-medium tabular-nums text-gray-600 dark:text-gray-400">
+                {t('finance.savingsScore', { score: monthLuckStats.score })}
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-700 dark:text-gray-300 tabular-nums">
+              <span>🎁 {t('finance.luckGoodCount', { count: monthLuckStats.good })}</span>
+              <span>⚖️ {t('finance.luckNormalCount', { count: monthLuckStats.normal })}</span>
+              <span className={monthLuckStats.bad > 0 ? 'text-[#c47070] font-medium' : ''}>
+                💸 {t('finance.luckBadCount', { count: monthLuckStats.bad })}
+              </span>
+            </div>
+            {monthLuckStats.bad > 0 && (
+              <p className="mt-1.5 text-xs text-calm-muted dark:text-gray-400">
+                {t('finance.impulseReview', { count: monthLuckStats.bad })}
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Category expense breakdown for current month */}
         {(() => {
           const breakdown = monthlySummary.expenseBreakdown
-          const sortedCats = Object.entries(breakdown)
+          const allSorted = Object.entries(breakdown)
             .sort(([, a], [, b]) => b.amount - a.amount)
-            .slice(0, 6)
+          // Top 6 spenders, plus any budgeted category with spending beyond the top 6
+          const sortedCats = allSorted.filter(([name], i) => i < 6 || categoryBudgets?.[name] != null)
           if (sortedCats.length === 0) return null
           const maxAmount = sortedCats[0][1].amount
           return (
@@ -155,6 +240,13 @@ function FinanceDashboard() {
                 {sortedCats.map(([catName, data]) => {
                   const cat = categories.find(c => c.name === catName)
                   const color = cat?.color ?? '#888'
+                  const budget = categoryBudgets?.[catName]
+                  const budgetPct = budget != null && budget > 0 ? (data.amount / budget) * 100 : null
+                  const overBudget = budgetPct != null && budgetPct > 100
+                  const nearBudget = budgetPct != null && budgetPct > 90 && budgetPct <= 100
+                  const barWidth = budgetPct != null
+                    ? Math.min(budgetPct, 100)
+                    : maxAmount > 0 ? (data.amount / maxAmount) * 100 : 0
                   return (
                     <div key={catName} className="flex items-center gap-2">
                       <span
@@ -165,18 +257,29 @@ function FinanceDashboard() {
                       <span className="text-xs text-gray-700 dark:text-gray-300 w-16 truncate shrink-0">
                         {t('category.names.' + catName, catName)}
                       </span>
-                      <div className="flex-1 h-4 rounded bg-gray-100 dark:bg-gray-700 overflow-hidden">
+                      <div
+                        className={`flex-1 h-4 rounded bg-gray-100 dark:bg-gray-700 overflow-hidden ${budgetPct != null ? 'ring-1 ring-inset ring-gray-200 dark:ring-gray-600' : ''}`}
+                        {...(budgetPct != null && {
+                          role: 'progressbar',
+                          'aria-valuenow': Math.round(budgetPct),
+                          'aria-valuemax': 100,
+                          'aria-label': t('finance.categoryBudgetLabel', { name: t('category.names.' + catName, catName) }),
+                        })}
+                      >
                         <div
                           className="h-full rounded transition-all duration-300"
                           style={{
-                            width: `${maxAmount > 0 ? (data.amount / maxAmount) * 100 : 0}%`,
-                            backgroundColor: color,
+                            width: `${barWidth}%`,
+                            backgroundColor: overBudget ? '#c18383' : nearBudget ? '#c9ab77' : color,
                             opacity: 0.8,
                           }}
                         />
                       </div>
-                      <span className="text-xs font-medium tabular-nums text-gray-600 dark:text-gray-400 w-16 text-right shrink-0">
+                      <span className={`text-xs font-medium tabular-nums text-right shrink-0 ${overBudget ? 'text-[#c47070]' : 'text-gray-600 dark:text-gray-400'} ${budget != null ? 'w-28' : 'w-16'}`}>
                         {t('currency.symbol')}{data.amount.toLocaleString()}
+                        {budget != null && (
+                          <span className="text-calm-muted dark:text-gray-500"> {t('finance.budgetOf', { budget: budget.toLocaleString() })}</span>
+                        )}
                       </span>
                     </div>
                   )
@@ -200,7 +303,7 @@ function FinanceDashboard() {
             <FinanceEntryForm
               selectedDate={selectedDate}
               categories={categories}
-              onAdd={addEntry}
+              onAdd={handleAddEntry}
               editingEntry={editingEntry}
               onUpdate={updateEntry}
               onCancelEdit={handleCancelEdit}
@@ -224,6 +327,15 @@ function FinanceDashboard() {
             />
           </div>
         )}
+
+        <FinanceBlindBox
+          open={blindBoxEntry != null}
+          label={blindBoxEntry
+            ? `${blindBoxEntry.description || t('category.names.' + blindBoxEntry.category, blindBoxEntry.category)} · ${t('currency.symbol')}${blindBoxEntry.amount.toLocaleString()}`
+            : ''}
+          onReveal={handleBlindBoxReveal}
+          onClose={handleBlindBoxClose}
+        />
       </div>
     </CategoryProvider>
   )

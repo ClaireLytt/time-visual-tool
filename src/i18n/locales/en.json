@@ -122,7 +122,35 @@
     "budgetUsed": "Spent",
     "budgetProgress": "{{spent}} / {{budget}}",
     "categoryBreakdown": "Category Spending",
-    "budgetOf": "/ ${{budget}}"
+    "budgetOf": "/ ${{budget}}",
+    "budgetSettings": "Budget Settings",
+    "budgetPlaceholder": "Not set",
+    "categoryBudgetHint": "Set a monthly budget per expense category (leave empty for no limit)",
+    "noBudget": "No limit",
+    "categoryBudgetLabel": "{{name}} budget",
+    "budgetDailyAllowance": "{{days}} days left, {{amount}}/day available",
+    "budgetOverspent": "Over budget by {{amount}} this month",
+    "blindBoxTitle": "Spending Blind Box",
+    "blindBoxTap": "Tap the box to test this purchase's luck",
+    "blindBoxOpen": "Open the blind box",
+    "blindBoxResult": {
+      "good": "🎉 Lucky!",
+      "normal": "Just average",
+      "bad": "Oops, impulse buy!"
+    },
+    "blindBoxDesc": {
+      "good": "This one counts as \"worth it\" — no savings points lost",
+      "normal": "Deducted from budget as usual, savings score -1",
+      "bad": "Marked as an impulse buy, savings score -3"
+    },
+    "blindBoxSettings": "Blind Box Categories",
+    "blindBoxSettingsHint": "Selected categories count as non-essential and draw a blind box",
+    "blindBoxRecap": "This Month's Blind Boxes",
+    "savingsScore": "Savings score {{score}}",
+    "luckGoodCount": "Worth it {{count}}",
+    "luckNormalCount": "Average {{count}}",
+    "luckBadCount": "Impulse {{count}}",
+    "impulseReview": "{{count}} impulse buys this month — think three seconds before ordering~"
   },
   "time": {
     "hoursGoalLabel": "Set daily hours goal",

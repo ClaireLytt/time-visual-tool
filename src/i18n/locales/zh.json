@@ -122,7 +122,35 @@
     "budgetUsed": "已花费",
     "budgetProgress": "{{spent}} / {{budget}}",
     "categoryBreakdown": "分类支出",
-    "budgetOf": "/ ¥{{budget}}"
+    "budgetOf": "/ ¥{{budget}}",
+    "budgetSettings": "预算设置",
+    "budgetPlaceholder": "未设置",
+    "categoryBudgetHint": "为支出分类单独设置月度预算（留空表示不限）",
+    "noBudget": "不限",
+    "categoryBudgetLabel": "{{name}}预算",
+    "budgetDailyAllowance": "剩余 {{days}} 天，日均可用 {{amount}}",
+    "budgetOverspent": "本月已超支 {{amount}}",
+    "blindBoxTitle": "消费盲盒",
+    "blindBoxTap": "点击盒子，看看这笔消费的运气",
+    "blindBoxOpen": "开启盲盒",
+    "blindBoxResult": {
+      "good": "🎉 好运！",
+      "normal": "普普通通",
+      "bad": "哎呀，冲动消费！"
+    },
+    "blindBoxDesc": {
+      "good": "这笔消费判定为「值得」，不扣储蓄分",
+      "normal": "正常扣除预算额度，储蓄分 -1",
+      "bad": "标记为冲动消费，储蓄分 -3"
+    },
+    "blindBoxSettings": "盲盒分类",
+    "blindBoxSettingsHint": "选中的分类记为非必要支出，记账后抽盲盒",
+    "blindBoxRecap": "本月盲盒",
+    "savingsScore": "储蓄分 {{score}}",
+    "luckGoodCount": "值得 {{count}}",
+    "luckNormalCount": "普通 {{count}}",
+    "luckBadCount": "冲动 {{count}}",
+    "impulseReview": "本月踩坑 {{count}} 次，下单前多想三秒～"
   },
   "time": {
     "hoursGoalLabel": "设置每日时间目标",
