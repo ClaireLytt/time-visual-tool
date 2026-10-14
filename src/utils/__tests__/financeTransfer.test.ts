@@ -150,6 +150,22 @@ describe('validateFinanceData', () => {
     expect(result!.categoryBudgets).toEqual({ ok: 500 })
   })
 
+  it('accepts entries with a valid luck field and rejects invalid luck', () => {
+    expect(isValidFinanceEntry({ ...validEntry, luck: 'good' })).toBe(true)
+    expect(isValidFinanceEntry({ ...validEntry, luck: 'bad' })).toBe(true)
+    expect(isValidFinanceEntry({ ...validEntry, luck: 'jackpot' })).toBe(false)
+  })
+
+  it('preserves nonEssentialCategories, dropping non-strings', () => {
+    const result = validateFinanceData({ entries: [], nonEssentialCategories: ['购物', 42, '娱乐'] })
+    expect(result!.nonEssentialCategories).toEqual(['购物', '娱乐'])
+  })
+
+  it('omits nonEssentialCategories when not an array', () => {
+    const result = validateFinanceData({ entries: [], nonEssentialCategories: 'bad' })
+    expect(result!.nonEssentialCategories).toBeUndefined()
+  })
+
   it('omits categoryBudgets when empty or not an object', () => {
     expect(validateFinanceData({ entries: [], categoryBudgets: { zero: 0 } })!.categoryBudgets).toBeUndefined()
     expect(validateFinanceData({ entries: [], categoryBudgets: [500] })!.categoryBudgets).toBeUndefined()

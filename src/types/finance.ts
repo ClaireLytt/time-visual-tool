@@ -4,6 +4,9 @@ export type FinanceViewMode = ExtendedViewMode
 
 export type FinanceEntryType = 'income' | 'expense'
 
+/** Blind-box draw result for a non-essential expense */
+export type FinanceLuck = 'good' | 'normal' | 'bad'
+
 export interface FinanceEntry {
   id: string
   date: string
@@ -13,6 +16,8 @@ export interface FinanceEntry {
   type: FinanceEntryType
   category: string
   createdAt: string
+  /** Blind-box result; only present on non-essential expenses that drew one */
+  luck?: FinanceLuck
 }
 
 export interface FinanceCategory {
@@ -28,6 +33,8 @@ export interface FinanceStorageData {
   monthlyBudget?: number
   /** Per-category monthly budgets (expense categories), keyed by category name */
   categoryBudgets?: Record<string, number>
+  /** Expense categories that trigger the blind-box draw; undefined = defaults */
+  nonEssentialCategories?: string[]
 }
 
 export interface FinanceCategoryBreakdown {

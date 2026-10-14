@@ -9,6 +9,9 @@ import CategoryManager, { type ManagedCategory } from '../categories/CategoryMan
 import DataTransfer from '../settings/DataTransfer'
 import FinanceSummaryCard from './FinanceSummaryCard'
 import FinanceBudgetManager from './FinanceBudgetManager'
+import FinanceBlindBox from './FinanceBlindBox'
+import FinanceBlindBoxSettings from './FinanceBlindBoxSettings'
+import { computeLuckStats } from '../../utils/financeLuck'
 import FinanceEntryForm from './FinanceEntryForm'
 import FinanceEntryList from './FinanceEntryList'
 import FinanceProportionChart from './FinanceProportionChart'
@@ -16,7 +19,7 @@ import FinanceOverviewChart from './FinanceOverviewChart'
 import FinanceDailyChart from './FinanceDailyChart'
 import AnimatedCollapse from '../common/AnimatedCollapse'
 import { exportFinanceToFile, readFinanceImportFile } from '../../utils/financeTransfer'
-import type { FinanceEntry, FinanceStorageData, FinanceViewMode } from '../../types/finance'
+import type { FinanceEntry, FinanceLuck, FinanceStorageData, FinanceViewMode } from '../../types/finance'
 
 const FINANCE_MODES: readonly FinanceViewMode[] = ['day', 'week', 'month', 'year']
 
@@ -34,7 +37,9 @@ function FinanceDashboard() {
     getEntriesForDate, getSummaryForPeriod,
     monthlyBudget, setMonthlyBudget,
     categoryBudgets, setCategoryBudget,
+    nonEssentialCategories, toggleNonEssentialCategory,
   } = useFinanceEntries()
+  const [blindBoxEntry, setBlindBoxEntry] = useState<FinanceEntry | null>(null)
 
   const dayEntries = useMemo(() => getEntriesForDate(selectedDate), [getEntriesForDate, selectedDate])
   const periodSummary = useMemo(() => getSummaryForPeriod(selectedDate, viewMode), [getSummaryForPeriod, selectedDate, viewMode])
@@ -55,6 +60,27 @@ function FinanceDashboard() {
   const handleCancelEdit = useCallback(() => {
     setEditingEntry(null)
   }, [])
+
+  // Record the entry; a non-essential expense triggers the blind-box draw
+  const handleAddEntry = useCallback((entry: Omit<FinanceEntry, 'id' | 'createdAt'>) => {
+    const newEntry = addEntry(entry)
+    if (entry.type === 'expense' && nonEssentialCategories.includes(entry.category)) {
+      setBlindBoxEntry(newEntry)
+    }
+  }, [addEntry, nonEssentialCategories])
+
+  const handleBlindBoxReveal = useCallback((luck: FinanceLuck) => {
+    if (blindBoxEntry) updateEntry(blindBoxEntry.id, { luck })
+  }, [blindBoxEntry, updateEntry])
+
+  const handleBlindBoxClose = useCallback(() => {
+    setBlindBoxEntry(null)
+  }, [])
+
+  const monthLuckStats = useMemo(
+    () => computeLuckStats(entries.filter(e => e.date.startsWith(selectedDate.slice(0, 7)))),
+    [entries, selectedDate],
+  )
 
   const handleAddCategory = useCallback((category: ManagedCategory) => {
     addCategory({ name: category.name, color: category.color, kind: category.kind ?? 'expense' })
@@ -100,6 +126,11 @@ function FinanceDashboard() {
               categoryBudgets={categoryBudgets}
               onSetMonthlyBudget={setMonthlyBudget}
               onSetCategoryBudget={setCategoryBudget}
+            />
+            <FinanceBlindBoxSettings
+              categories={categories}
+              nonEssentialCategories={nonEssentialCategories}
+              onToggle={toggleNonEssentialCategory}
             />
             <DataTransfer
               data={data}
@@ -164,6 +195,32 @@ function FinanceDashboard() {
             </div>
           )
         })()}
+
+        {/* Monthly blind-box recap: draws, impulse buys, savings score */}
+        {monthLuckStats.draws > 0 && (
+          <div className="panel p-3 mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-semibold tracking-wide uppercase text-calm-muted dark:text-gray-400">
+                {t('finance.blindBoxRecap')}
+              </h3>
+              <span className="text-xs font-medium tabular-nums text-gray-600 dark:text-gray-400">
+                {t('finance.savingsScore', { score: monthLuckStats.score })}
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-700 dark:text-gray-300 tabular-nums">
+              <span>🎁 {t('finance.luckGoodCount', { count: monthLuckStats.good })}</span>
+              <span>⚖️ {t('finance.luckNormalCount', { count: monthLuckStats.normal })}</span>
+              <span className={monthLuckStats.bad > 0 ? 'text-[#c47070] font-medium' : ''}>
+                💸 {t('finance.luckBadCount', { count: monthLuckStats.bad })}
+              </span>
+            </div>
+            {monthLuckStats.bad > 0 && (
+              <p className="mt-1.5 text-xs text-calm-muted dark:text-gray-400">
+                {t('finance.impulseReview', { count: monthLuckStats.bad })}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Category expense breakdown for current month */}
         {(() => {
@@ -246,7 +303,7 @@ function FinanceDashboard() {
             <FinanceEntryForm
               selectedDate={selectedDate}
               categories={categories}
-              onAdd={addEntry}
+              onAdd={handleAddEntry}
               editingEntry={editingEntry}
               onUpdate={updateEntry}
               onCancelEdit={handleCancelEdit}
@@ -270,6 +327,15 @@ function FinanceDashboard() {
             />
           </div>
         )}
+
+        <FinanceBlindBox
+          open={blindBoxEntry != null}
+          label={blindBoxEntry
+            ? `${blindBoxEntry.description || t('category.names.' + blindBoxEntry.category, blindBoxEntry.category)} · ${t('currency.symbol')}${blindBoxEntry.amount.toLocaleString()}`
+            : ''}
+          onReveal={handleBlindBoxReveal}
+          onClose={handleBlindBoxClose}
+        />
       </div>
     </CategoryProvider>
   )

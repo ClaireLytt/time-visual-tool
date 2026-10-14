@@ -13,7 +13,8 @@ export function isValidFinanceEntry(e: unknown): e is FinanceEntry {
     typeof obj.amount === 'number' && obj.amount > 0 && obj.amount <= 1000000000 &&
     (obj.type === 'income' || obj.type === 'expense') &&
     typeof obj.category === 'string' &&
-    typeof obj.createdAt === 'string'
+    typeof obj.createdAt === 'string' &&
+    (obj.luck === undefined || obj.luck === 'good' || obj.luck === 'normal' || obj.luck === 'bad')
   )
 }
 
@@ -58,12 +59,18 @@ export function validateFinanceData(raw: unknown): FinanceStorageData | null {
     if (Object.keys(valid).length > 0) categoryBudgets = valid
   }
 
+  let nonEssentialCategories: string[] | undefined
+  if (Array.isArray(obj.nonEssentialCategories)) {
+    nonEssentialCategories = obj.nonEssentialCategories.filter((n): n is string => typeof n === 'string')
+  }
+
   return {
     version: 1,
     entries,
     categories,
     ...(monthlyBudget != null && { monthlyBudget }),
     ...(categoryBudgets != null && { categoryBudgets }),
+    ...(nonEssentialCategories != null && { nonEssentialCategories }),
   }
 }
 

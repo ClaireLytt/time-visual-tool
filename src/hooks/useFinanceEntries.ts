@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { useFirestore } from './useFirestore'
-import { DEFAULT_FINANCE_CATEGORY_LIST } from '../constants/finance'
+import { DEFAULT_FINANCE_CATEGORY_LIST, DEFAULT_NON_ESSENTIAL_CATEGORIES } from '../constants/finance'
 import { computeFinancePeriodSummary } from '../utils/financeSummary'
 import { validateFinanceData } from '../utils/financeTransfer'
 import type { FinanceEntry, FinanceCategory, FinanceStorageData, FinancePeriodSummary, FinanceViewMode } from '../types/finance'
@@ -17,7 +17,7 @@ export function useFinanceEntries() {
   const entries = data.entries
   const categories = data.categories ?? DEFAULT_FINANCE_CATEGORY_LIST
 
-  const addEntry = useCallback((entry: Omit<FinanceEntry, 'id' | 'createdAt'>) => {
+  const addEntry = useCallback((entry: Omit<FinanceEntry, 'id' | 'createdAt'>): FinanceEntry => {
     const newEntry: FinanceEntry = {
       ...entry,
       id: crypto.randomUUID(),
@@ -27,6 +27,7 @@ export function useFinanceEntries() {
       ...prev,
       entries: [...prev.entries, newEntry],
     }))
+    return newEntry
   }, [setData])
 
   const deleteEntry = useCallback((id: string) => {
@@ -58,6 +59,9 @@ export function useFinanceEntries() {
         const { [oldName]: budget, ...rest } = categoryBudgets
         categoryBudgets = { ...rest, [updated.name]: budget }
       }
+      const nonEssentialCategories = renamed && prev.nonEssentialCategories?.includes(oldName)
+        ? prev.nonEssentialCategories.map(n => n === oldName ? updated.name : n)
+        : prev.nonEssentialCategories
       return {
         ...prev,
         categories: prev.categories.map(c => c.name === oldName ? updated : c),
@@ -65,6 +69,7 @@ export function useFinanceEntries() {
           ? prev.entries.map(e => e.category === oldName ? { ...e, category: updated.name } : e)
           : prev.entries,
         ...(categoryBudgets != null && { categoryBudgets }),
+        ...(nonEssentialCategories != null && { nonEssentialCategories }),
       }
     })
   }, [setData])
@@ -78,10 +83,14 @@ export function useFinanceEntries() {
         const { [name]: _removed, ...rest } = categoryBudgets
         categoryBudgets = rest
       }
+      const nonEssentialCategories = prev.nonEssentialCategories?.includes(name)
+        ? prev.nonEssentialCategories.filter(n => n !== name)
+        : prev.nonEssentialCategories
       return {
         ...prev,
         categories: prev.categories.filter(c => c.name !== name),
         ...(categoryBudgets != null && { categoryBudgets }),
+        ...(nonEssentialCategories != null && { nonEssentialCategories }),
       }
     })
   }, [setData])
@@ -107,6 +116,11 @@ export function useFinanceEntries() {
           ...(imported.categoryBudgets != null || prev.categoryBudgets != null
             ? { categoryBudgets: { ...prev.categoryBudgets, ...imported.categoryBudgets } }
             : {}),
+          ...(imported.nonEssentialCategories != null
+            ? { nonEssentialCategories: imported.nonEssentialCategories }
+            : prev.nonEssentialCategories != null
+              ? { nonEssentialCategories: prev.nonEssentialCategories }
+              : {}),
         }
       })
     }
@@ -153,6 +167,22 @@ export function useFinanceEntries() {
     })
   }, [setData])
 
+  // undefined in storage means "use defaults" (intersected with current expense categories)
+  const nonEssentialCategories = data.nonEssentialCategories
+    ?? DEFAULT_NON_ESSENTIAL_CATEGORIES.filter(n => categories.some(c => c.name === n && c.kind === 'expense'))
+
+  const toggleNonEssentialCategory = useCallback((name: string) => {
+    setData(prev => {
+      const current = prev.nonEssentialCategories
+        ?? DEFAULT_NON_ESSENTIAL_CATEGORIES.filter(n =>
+          (prev.categories ?? DEFAULT_FINANCE_CATEGORY_LIST).some(c => c.name === n && c.kind === 'expense'))
+      const next = current.includes(name)
+        ? current.filter(n => n !== name)
+        : [...current, name]
+      return { ...prev, nonEssentialCategories: next }
+    })
+  }, [setData])
+
   return {
     entries, categories, data, loading,
     addEntry, deleteEntry, updateEntry,
@@ -161,5 +191,6 @@ export function useFinanceEntries() {
     getEntriesForDate, getSummaryForPeriod,
     monthlyBudget, setMonthlyBudget,
     categoryBudgets, setCategoryBudget,
+    nonEssentialCategories, toggleNonEssentialCategory,
   }
 }
