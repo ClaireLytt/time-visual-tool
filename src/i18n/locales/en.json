@@ -122,7 +122,14 @@
     "budgetUsed": "Spent",
     "budgetProgress": "{{spent}} / {{budget}}",
     "categoryBreakdown": "Category Spending",
-    "budgetOf": "/ ${{budget}}"
+    "budgetOf": "/ ${{budget}}",
+    "budgetSettings": "Budget Settings",
+    "budgetPlaceholder": "Not set",
+    "categoryBudgetHint": "Set a monthly budget per expense category (leave empty for no limit)",
+    "noBudget": "No limit",
+    "categoryBudgetLabel": "{{name}} budget",
+    "budgetDailyAllowance": "{{days}} days left, {{amount}}/day available",
+    "budgetOverspent": "Over budget by {{amount}} this month"
   },
   "time": {
     "hoursGoalLabel": "Set daily hours goal",

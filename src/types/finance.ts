@@ -26,6 +26,8 @@ export interface FinanceStorageData {
   entries: FinanceEntry[]
   categories: FinanceCategory[]
   monthlyBudget?: number
+  /** Per-category monthly budgets (expense categories), keyed by category name */
+  categoryBudgets?: Record<string, number>
 }
 
 export interface FinanceCategoryBreakdown {

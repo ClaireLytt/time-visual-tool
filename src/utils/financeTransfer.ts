@@ -47,7 +47,24 @@ export function validateFinanceData(raw: unknown): FinanceStorageData | null {
     monthlyBudget = Math.round(obj.monthlyBudget)
   }
 
-  return { version: 1, entries, categories, ...(monthlyBudget != null && { monthlyBudget }) }
+  let categoryBudgets: Record<string, number> | undefined
+  if (typeof obj.categoryBudgets === 'object' && obj.categoryBudgets !== null && !Array.isArray(obj.categoryBudgets)) {
+    const valid: Record<string, number> = {}
+    for (const [name, value] of Object.entries(obj.categoryBudgets as Record<string, unknown>)) {
+      if (typeof value === 'number' && value >= 1 && value <= 1000000) {
+        valid[name] = Math.round(value)
+      }
+    }
+    if (Object.keys(valid).length > 0) categoryBudgets = valid
+  }
+
+  return {
+    version: 1,
+    entries,
+    categories,
+    ...(monthlyBudget != null && { monthlyBudget }),
+    ...(categoryBudgets != null && { categoryBudgets }),
+  }
 }
 
 export function exportFinanceToFile(data: FinanceStorageData) {

@@ -51,19 +51,38 @@ export function useFinanceEntries() {
   }, [setData])
 
   const updateCategory = useCallback((oldName: string, updated: FinanceCategory) => {
-    setData(prev => ({
-      ...prev,
-      categories: prev.categories.map(c => c.name === oldName ? updated : c),
-      entries: oldName !== updated.name
-        ? prev.entries.map(e => e.category === oldName ? { ...e, category: updated.name } : e)
-        : prev.entries,
-    }))
+    setData(prev => {
+      const renamed = oldName !== updated.name
+      let categoryBudgets = prev.categoryBudgets
+      if (renamed && categoryBudgets && oldName in categoryBudgets) {
+        const { [oldName]: budget, ...rest } = categoryBudgets
+        categoryBudgets = { ...rest, [updated.name]: budget }
+      }
+      return {
+        ...prev,
+        categories: prev.categories.map(c => c.name === oldName ? updated : c),
+        entries: renamed
+          ? prev.entries.map(e => e.category === oldName ? { ...e, category: updated.name } : e)
+          : prev.entries,
+        ...(categoryBudgets != null && { categoryBudgets }),
+      }
+    })
   }, [setData])
 
   const deleteCategory = useCallback((name: string) => {
     setData(prev => {
       if (prev.entries.some(e => e.category === name)) return prev
-      return { ...prev, categories: prev.categories.filter(c => c.name !== name) }
+      let categoryBudgets = prev.categoryBudgets
+      if (categoryBudgets && name in categoryBudgets) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { [name]: _removed, ...rest } = categoryBudgets
+        categoryBudgets = rest
+      }
+      return {
+        ...prev,
+        categories: prev.categories.filter(c => c.name !== name),
+        ...(categoryBudgets != null && { categoryBudgets }),
+      }
     })
   }, [setData])
 
@@ -85,6 +104,9 @@ export function useFinanceEntries() {
             : prev.monthlyBudget != null
               ? { monthlyBudget: prev.monthlyBudget }
               : {}),
+          ...(imported.categoryBudgets != null || prev.categoryBudgets != null
+            ? { categoryBudgets: { ...prev.categoryBudgets, ...imported.categoryBudgets } }
+            : {}),
         }
       })
     }
@@ -111,6 +133,26 @@ export function useFinanceEntries() {
     })
   }, [setData])
 
+  const categoryBudgets = data.categoryBudgets
+
+  const setCategoryBudget = useCallback((name: string, budget: number | undefined) => {
+    setData(prev => {
+      const current = prev.categoryBudgets ?? {}
+      if (budget === undefined) {
+        if (!(name in current)) return prev
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { [name]: _removed, ...rest } = current
+        if (Object.keys(rest).length === 0) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { categoryBudgets: _all, ...withoutBudgets } = prev
+          return withoutBudgets as FinanceStorageData
+        }
+        return { ...prev, categoryBudgets: rest }
+      }
+      return { ...prev, categoryBudgets: { ...current, [name]: budget } }
+    })
+  }, [setData])
+
   return {
     entries, categories, data, loading,
     addEntry, deleteEntry, updateEntry,
@@ -118,5 +160,6 @@ export function useFinanceEntries() {
     importData,
     getEntriesForDate, getSummaryForPeriod,
     monthlyBudget, setMonthlyBudget,
+    categoryBudgets, setCategoryBudget,
   }
 }

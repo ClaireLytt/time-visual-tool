@@ -136,4 +136,23 @@ describe('validateFinanceData', () => {
     const result = validateFinanceData({ entries: [], monthlyBudget: 'bad' })
     expect(result!.monthlyBudget).toBeUndefined()
   })
+
+  it('preserves valid categoryBudgets and rounds values', () => {
+    const result = validateFinanceData({ entries: [], categoryBudgets: { 餐饮: 800.6, 购物: 300 } })
+    expect(result!.categoryBudgets).toEqual({ 餐饮: 801, 购物: 300 })
+  })
+
+  it('drops out-of-range and non-number category budget values', () => {
+    const result = validateFinanceData({
+      entries: [],
+      categoryBudgets: { ok: 500, zero: 0, huge: 2000000, bad: 'x', nan: NaN },
+    })
+    expect(result!.categoryBudgets).toEqual({ ok: 500 })
+  })
+
+  it('omits categoryBudgets when empty or not an object', () => {
+    expect(validateFinanceData({ entries: [], categoryBudgets: { zero: 0 } })!.categoryBudgets).toBeUndefined()
+    expect(validateFinanceData({ entries: [], categoryBudgets: [500] })!.categoryBudgets).toBeUndefined()
+    expect(validateFinanceData({ entries: [], categoryBudgets: 'bad' })!.categoryBudgets).toBeUndefined()
+  })
 })
