@@ -59,8 +59,13 @@ export function useFinanceEntries() {
         const { [oldName]: budget, ...rest } = categoryBudgets
         categoryBudgets = { ...rest, [updated.name]: budget }
       }
-      const nonEssentialCategories = renamed && prev.nonEssentialCategories?.includes(oldName)
-        ? prev.nonEssentialCategories.map(n => n === oldName ? updated.name : n)
+      // Resolve defaults before remapping, otherwise renaming a default
+      // non-essential category (e.g. 购物) would silently drop its eligibility
+      const storedNonEssential = prev.nonEssentialCategories
+        ?? DEFAULT_NON_ESSENTIAL_CATEGORIES.filter(n =>
+          (prev.categories ?? DEFAULT_FINANCE_CATEGORY_LIST).some(c => c.name === n && c.kind === 'expense'))
+      const nonEssentialCategories = renamed && storedNonEssential.includes(oldName)
+        ? storedNonEssential.map(n => n === oldName ? updated.name : n)
         : prev.nonEssentialCategories
       return {
         ...prev,
