@@ -29,7 +29,8 @@
     "react-i18next": "^17.0.13",
     "react-router-dom": "^7.18.3",
     "recharts": "^2.15.3",
-    "sonner": "^2.0.8"
+    "sonner": "^2.0.8",
+    "zustand": "^5.0.16"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

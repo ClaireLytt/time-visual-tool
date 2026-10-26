@@ -1,9 +1,12 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
 import LandingPage from './components/landing/LandingPage'
 import LoginPage from './components/auth/LoginPage'
 import RegisterPage from './components/auth/RegisterPage'
 import AppShell from './components/layout/AppShell'
+
+const PhantomGame = lazy(() => import('./phantom'))
 
 function ProtectedRoute() {
   const { user, loading } = useAuth()
@@ -39,6 +42,7 @@ function App() {
       <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
       <Route path="/app" element={<ProtectedRoute />} />
+      <Route path="/phantom" element={<Suspense fallback={<div style={{background:'#0a0908',minHeight:'100vh'}} />}><PhantomGame /></Suspense>} />
       <Route path="/" element={<LandingPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
