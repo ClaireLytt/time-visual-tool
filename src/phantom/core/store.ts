@@ -85,8 +85,18 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
   resetGame: () => set({ ...initialState }),
 
   saveGame: () => {
-    const { setCameraX, collectItem, triggerEvent, setArea, setAct,
-      togglePause, startGame, resetGame, saveGame, loadGame, ...state } = get();
+    const full = get();
+    const state: GameState = {
+      currentAct: full.currentAct,
+      currentArea: full.currentArea,
+      cameraX: full.cameraX,
+      collectedItems: full.collectedItems,
+      triggeredEvents: full.triggeredEvents,
+      phantomTier: full.phantomTier,
+      musicLayers: full.musicLayers,
+      isPlaying: full.isPlaying,
+      isPaused: full.isPaused,
+    };
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify(state));
     } catch {

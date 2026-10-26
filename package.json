@@ -13,7 +13,9 @@
     "format": "prettier --write src/",
     "predeploy-check": "bash scripts/pre-deploy-check.sh",
     "server": "npm --prefix server run dev",
-    "ui-audit": "node scripts/ui-audit.mjs"
+    "ui-audit": "node scripts/ui-audit.mjs",
+    "lint:phantom-colors": "node scripts/lint-phantom-colors.mjs",
+    "lint:all": "npm run lint && npm run lint:phantom-colors"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useGameStore } from '../core/store';
-import { ACT1_AREAS, ACT1_COLLECTIBLES } from '../core/constants';
+import { ACT1_AREAS } from '../core/constants';
 import { Hotspot } from '../core/types';
 
 const CANVAS_W = 1024;
@@ -396,7 +396,7 @@ export default function Canvas2D() {
 
     animRef.current = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(animRef.current);
-  }, [currentArea, cameraX, collectedItems, hoveredHotspot, ghostOpacity, showThinkOfMe]);
+  }, [currentArea, cameraX, collectedItems, hoveredHotspot, ghostOpacity, showThinkOfMe, area]);
 
   return (
     <canvas

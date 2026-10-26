@@ -10,16 +10,19 @@ export default function PhantomGame() {
   } = useGameStore();
 
   const [viewingItem, setViewingItem] = useState<string | null>(null);
-  const [lastCollectedCount, setLastCollectedCount] = useState(0);
 
-  // Show parchment when a new item is collected
+  // Subscribe to store changes outside of render to detect new collectibles
   useEffect(() => {
-    if (collectedItems.length > lastCollectedCount) {
-      const newest = collectedItems[collectedItems.length - 1];
-      setViewingItem(newest);
-      setLastCollectedCount(collectedItems.length);
-    }
-  }, [collectedItems, lastCollectedCount]);
+    let prevCount = useGameStore.getState().collectedItems.length;
+    const unsub = useGameStore.subscribe((state) => {
+      const count = state.collectedItems.length;
+      if (count > prevCount) {
+        prevCount = count;
+        setViewingItem(state.collectedItems[count - 1]);
+      }
+    });
+    return unsub;
+  }, []);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') togglePause();
