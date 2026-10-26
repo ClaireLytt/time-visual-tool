@@ -1,0 +1,437 @@
+<title>Phantom Chibi</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+  :root { --bg: #1a1218; color-scheme: dark; }
+  body {
+    background: var(--bg); margin: 0; overflow: hidden;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 0;
+  }
+  canvas { display: block; width: 100vw; height: 100vh; }
+  .title {
+    position: absolute; top: 24px; left: 0; right: 0; text-align: center;
+    font-family: Georgia, serif; color: #f0e8dd; pointer-events: none;
+  }
+  .title h1 { font-size: 2rem; margin: 0; letter-spacing: 0.1em; text-shadow: 0 2px 12px rgba(0,0,0,0.7); }
+  .title p { font-size: 0.9rem; color: #9a8a78; margin: 4px 0 0; letter-spacing: 0.15em; }
+  .hint {
+    position: absolute; bottom: 20px; left: 0; right: 0; text-align: center;
+    font: 0.75rem sans-serif; color: #5a5048; pointer-events: none;
+  }
+</style>
+<div class="title"><h1>THE PHANTOM OF THE OPERA</h1><p>BLIND BOX TOY DESIGN</p></div>
+<div class="hint">Drag to rotate · Scroll to zoom</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const {Scene,PerspectiveCamera,WebGLRenderer,AmbientLight,DirectionalLight,PointLight,
+  SphereGeometry,CylinderGeometry,BoxGeometry,TorusGeometry,ConeGeometry,RingGeometry,
+  MeshStandardMaterial,MeshPhysicalMaterial,Mesh,Group,Color,Vector3,BufferAttribute,
+  PlaneGeometry,MeshBasicMaterial,DoubleSide,FrontSide,BackSide,EdgesGeometry,LineBasicMaterial,LineSegments,
+  PCFSoftShadowMap,HemisphereLight
+} = THREE;
+
+const scene = new Scene();
+scene.background = new Color('#1a1218');
+const camera = new PerspectiveCamera(32, innerWidth/innerHeight, 0.1, 100);
+camera.position.set(0, 2.2, 8.5);
+
+const renderer = new WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+renderer.outputEncoding = THREE.sRGBEncoding;
+document.body.appendChild(renderer.domElement);
+
+// ── Lighting — warm stage setup ──
+scene.add(new HemisphereLight('#ffe0b0', '#201018', 0.5));
+
+const key = new DirectionalLight('#ffe8cc', 1.0);
+key.position.set(3, 6, 5);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+key.shadow.camera.near = 1; key.shadow.camera.far = 20;
+key.shadow.camera.left = -4; key.shadow.camera.right = 4;
+key.shadow.camera.top = 6; key.shadow.camera.bottom = -1;
+key.shadow.bias = -0.001;
+scene.add(key);
+
+scene.add(Object.assign(new DirectionalLight('#aac8e8', 0.35), { position: new Vector3(-4, 3, 3) }));
+scene.add(Object.assign(new DirectionalLight('#ffd0a0', 0.3), { position: new Vector3(0, 2, -4) }));
+
+const candleL = new PointLight('#ff9944', 0.7, 10);
+candleL.position.set(-2.8, 3.5, 1.5);
+scene.add(candleL);
+const candleR = new PointLight('#ff9944', 0.7, 10);
+candleR.position.set(2.8, 3.5, 1.5);
+scene.add(candleR);
+
+// ── Floor ──
+const floor = new Mesh(new PlaneGeometry(14, 10), new MeshStandardMaterial({ color: '#1e1610', roughness: 0.9 }));
+floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true;
+scene.add(floor);
+
+// ── Curtains ──
+for (let side of [-1, 1]) {
+  for (let i = 0; i < 4; i++) {
+    const c = new Mesh(
+      new CylinderGeometry(0.3 + i*0.04, 0.4 + i*0.04, 7, 12),
+      new MeshStandardMaterial({
+        color: new Color('#4a1e2c').lerp(new Color('#5c2838'), i*0.12),
+        roughness: 0.65
+      })
+    );
+    c.position.set(side * (3.2 + i * 0.5), 3, -1.8);
+    c.castShadow = true;
+    scene.add(c);
+  }
+}
+
+// ── Helper: clip sphere to half ──
+function makeHalfSphere(radius, segments, material, side) {
+  const geo = new SphereGeometry(radius, segments, segments);
+  const pos = geo.attributes.position;
+  const indices = [];
+  const origIndex = geo.index ? geo.index.array : null;
+
+  // We'll use a shader-based approach: just position the mask correctly
+  // and use a slightly larger radius so it sits ON TOP of the skin
+  return new Mesh(geo, material);
+}
+
+// ══════════════════════════
+// CHARACTER
+// ══════════════════════════
+const phantom = new Group();
+scene.add(phantom);
+
+// ── HEAD ──
+const headG = new Group();
+headG.position.y = 3.2;
+phantom.add(headG);
+
+// Skin sphere (the full head)
+const skinMat = new MeshStandardMaterial({ color: '#efd0b8', roughness: 0.55, metalness: 0 });
+const headMesh = new Mesh(new SphereGeometry(1.1, 48, 48), skinMat);
+headMesh.castShadow = true;
+headG.add(headMesh);
+
+// ── MASK — using clipping plane approach ──
+// Create a mask as a slightly larger half-sphere with a clean vertical cut
+const maskGeo = new SphereGeometry(1.12, 48, 48, 0, Math.PI); // half sphere (0 to PI in phi)
+const maskMat = new MeshPhysicalMaterial({
+  color: '#fefcf8',
+  roughness: 0.12,
+  metalness: 0.01,
+  clearcoat: 1.0,
+  clearcoatRoughness: 0.08,
+  side: FrontSide
+});
+const maskMesh = new Mesh(maskGeo, maskMat);
+maskMesh.rotation.y = -Math.PI / 2; // rotate so the flat edge is at center of face
+maskMesh.position.set(0, 0, 0);
+maskMesh.castShadow = true;
+headG.add(maskMesh);
+
+// Mask edge — a visible dark line where mask meets skin
+const edgeGeo = new TorusGeometry(1.12, 0.015, 8, 48, Math.PI);
+const edgeMat = new MeshStandardMaterial({ color: '#b0a898', roughness: 0.4, metalness: 0.3 });
+const maskEdge = new Mesh(edgeGeo, edgeMat);
+maskEdge.rotation.set(Math.PI/2, 0, -Math.PI/2);
+maskEdge.position.set(0, 0, 0);
+headG.add(maskEdge);
+
+// ── HAIR ──
+const hairMat = new MeshStandardMaterial({ color: '#28201a', roughness: 0.72, metalness: 0.05 });
+
+// Top dome
+const hairTop = new Mesh(new SphereGeometry(1.16, 32, 32), hairMat);
+hairTop.scale.set(1.02, 0.65, 1.0);
+hairTop.position.set(0, 0.45, -0.05);
+hairTop.castShadow = true;
+headG.add(hairTop);
+
+// Back volume
+const hairBack = new Mesh(new SphereGeometry(1.14, 32, 32), hairMat);
+hairBack.scale.set(0.96, 0.8, 0.92);
+hairBack.position.set(0, 0.15, -0.2);
+headG.add(hairBack);
+
+// Side burns left
+const sideL = new Mesh(new SphereGeometry(0.3, 16, 16), hairMat);
+sideL.scale.set(0.6, 1.5, 0.7);
+sideL.position.set(-1.0, 0.05, 0.15);
+headG.add(sideL);
+// Side burns right
+const sideR = sideL.clone();
+sideR.position.x = 1.0;
+headG.add(sideR);
+
+// Hair swoop on top
+const swoopMat = new MeshStandardMaterial({ color: '#302820', roughness: 0.7 });
+const swoop = new Mesh(new SphereGeometry(0.5, 16, 16), swoopMat);
+swoop.scale.set(1.8, 0.4, 1.0);
+swoop.position.set(0.1, 0.85, 0.3);
+swoop.rotation.z = -0.15;
+headG.add(swoop);
+
+// ── EYES — large, dark, expressive ──
+function makeEye(x) {
+  const g = new Group();
+  // White area
+  const white = new Mesh(new SphereGeometry(0.22, 20, 20), new MeshStandardMaterial({ color: '#f5f0ea', roughness: 0.4 }));
+  white.scale.set(1.2, 0.85, 0.5);
+  g.add(white);
+  // Dark iris+pupil
+  const iris = new Mesh(new SphereGeometry(0.17, 16, 16), new MeshStandardMaterial({ color: '#0e0a06', roughness: 0.25 }));
+  iris.scale.set(1, 0.9, 0.6);
+  iris.position.z = 0.06;
+  g.add(iris);
+  // Highlight dot
+  const hi = new Mesh(new SphereGeometry(0.04, 8, 8), new MeshStandardMaterial({ color: '#ffffff', emissive: '#ffffff', emissiveIntensity: 0.5 }));
+  hi.position.set(0.05, 0.05, 0.12);
+  g.add(hi);
+  // Upper eyelid (dark arc)
+  const lid = new Mesh(new TorusGeometry(0.2, 0.025, 8, 20, Math.PI), new MeshStandardMaterial({ color: '#3a2a22', roughness: 0.7 }));
+  lid.rotation.x = 0.15;
+  lid.position.set(0, 0.04, 0.04);
+  g.add(lid);
+
+  g.position.set(x, -0.08, 0.88);
+  return g;
+}
+headG.add(makeEye(-0.36));
+headG.add(makeEye(0.36));
+
+// ── Eyebrows ──
+function makeBrow(x, rz) {
+  const b = new Mesh(
+    new CylinderGeometry(0.025, 0.018, 0.38, 8),
+    new MeshStandardMaterial({ color: '#2a201a', roughness: 0.8 })
+  );
+  b.rotation.z = rz;
+  b.position.set(x, 0.22, 0.92);
+  return b;
+}
+headG.add(makeBrow(-0.36, 0.25));
+headG.add(makeBrow(0.36, -0.25));
+
+// ── Nose ──
+const nose = new Mesh(new SphereGeometry(0.09, 12, 12), skinMat);
+nose.scale.set(0.7, 0.5, 0.8);
+nose.position.set(0, -0.22, 1.02);
+headG.add(nose);
+
+// ── Mouth ──
+const mouth = new Mesh(
+  new TorusGeometry(0.14, 0.018, 8, 20, Math.PI),
+  new MeshStandardMaterial({ color: '#996058', roughness: 0.55 })
+);
+mouth.position.set(0, -0.42, 0.88);
+mouth.rotation.x = 0.15;
+headG.add(mouth);
+
+// ── Beauty mark ──
+const mole = new Mesh(new SphereGeometry(0.028, 8, 8), new MeshStandardMaterial({ color: '#3a2820' }));
+mole.position.set(-0.22, -0.28, 1.0);
+headG.add(mole);
+
+// ── Cheek blush (subtle sphere) ──
+const blushMat = new MeshStandardMaterial({ color: '#e0a090', roughness: 0.7, transparent: true, opacity: 0.12 });
+const blushL = new Mesh(new SphereGeometry(0.2, 12, 12), blushMat);
+blushL.scale.set(1.3, 0.8, 0.3);
+blushL.position.set(-0.55, -0.15, 0.85);
+headG.add(blushL);
+
+// ══════════════════════════
+// BODY — short, stubby, blind-box proportions
+// ══════════════════════════
+const bodyG = new Group();
+bodyG.position.y = 1.25;
+phantom.add(bodyG);
+
+// ── Cape behind ──
+const capeGeo = new CylinderGeometry(0.75, 1.0, 2.2, 16, 1, true);
+const capeMesh = new Mesh(capeGeo, new MeshStandardMaterial({ color: '#0c0c12', roughness: 0.8, side: DoubleSide }));
+capeMesh.position.set(0, -0.1, -0.15);
+capeMesh.castShadow = true;
+bodyG.add(capeMesh);
+
+// Cape red lining visible on sides
+const redLiningL = new Mesh(new BoxGeometry(0.1, 1.9, 0.55), new MeshStandardMaterial({ color: '#6a1a25', roughness: 0.6 }));
+redLiningL.position.set(-0.72, -0.15, -0.0);
+redLiningL.rotation.y = 0.3;
+bodyG.add(redLiningL);
+const redLiningR = redLiningL.clone();
+redLiningR.position.x = 0.72;
+redLiningR.rotation.y = -0.3;
+bodyG.add(redLiningR);
+
+// ── Torso/coat ──
+const coatMat = new MeshStandardMaterial({ color: '#1c1c2a', roughness: 0.7, metalness: 0.05 });
+const torso = new Mesh(new CylinderGeometry(0.58, 0.68, 1.7, 20), coatMat);
+torso.castShadow = true;
+bodyG.add(torso);
+
+// ── Coat lapels ──
+const lapelMat = new MeshStandardMaterial({ color: '#242434', roughness: 0.65 });
+const lapelL = new Mesh(new BoxGeometry(0.22, 0.9, 0.12), lapelMat);
+lapelL.position.set(-0.32, 0.25, 0.38);
+lapelL.rotation.z = -0.15;
+bodyG.add(lapelL);
+const lapelR = lapelL.clone();
+lapelR.position.x = 0.32;
+lapelR.rotation.z = 0.15;
+bodyG.add(lapelR);
+
+// ── Vest ──
+const vestMat = new MeshStandardMaterial({ color: '#5a3828', roughness: 0.65, metalness: 0.08 });
+const vest = new Mesh(new BoxGeometry(0.48, 1.3, 0.18), vestMat);
+vest.position.set(0, 0.0, 0.35);
+bodyG.add(vest);
+
+// Gold embroidery on vest — small decorative elements
+const goldMat = new MeshStandardMaterial({ color: '#c8a850', roughness: 0.3, metalness: 0.65 });
+for (let i = 0; i < 5; i++) {
+  const btn = new Mesh(new SphereGeometry(0.035, 8, 8), goldMat);
+  btn.position.set(0, 0.45 - i * 0.24, 0.46);
+  bodyG.add(btn);
+  // Small decorative dots beside buttons
+  if (i < 4) {
+    for (let s of [-1, 1]) {
+      const dot = new Mesh(new SphereGeometry(0.015, 6, 6), goldMat);
+      dot.position.set(s * 0.12, 0.33 - i * 0.24, 0.46);
+      bodyG.add(dot);
+    }
+  }
+}
+
+// ── Shirt V ──
+const shirtMat = new MeshStandardMaterial({ color: '#ddd5c8', roughness: 0.55 });
+const shirtV = new Mesh(new ConeGeometry(0.14, 0.35, 4), shirtMat);
+shirtV.rotation.set(0, Math.PI/4, Math.PI);
+shirtV.position.set(0, 0.65, 0.42);
+bodyG.add(shirtV);
+
+// Cravat knot
+const cravatKnot = new Mesh(new SphereGeometry(0.065, 10, 10), new MeshStandardMaterial({ color: '#1a1a28', roughness: 0.6 }));
+cravatKnot.position.set(0, 0.52, 0.5);
+bodyG.add(cravatKnot);
+
+// ── Arms ──
+function makeArm(x, rz) {
+  const ag = new Group();
+  const sleeve = new Mesh(new CylinderGeometry(0.16, 0.14, 0.95, 12), coatMat);
+  sleeve.position.y = -0.4;
+  sleeve.castShadow = true;
+  ag.add(sleeve);
+  const hand = new Mesh(new SphereGeometry(0.13, 14, 14),
+    new MeshStandardMaterial({ color: '#efd0b8', roughness: 0.5 }));
+  hand.position.y = -0.92;
+  ag.add(hand);
+  ag.position.set(x, 0.5, 0.12);
+  ag.rotation.z = rz;
+  return ag;
+}
+const armL = makeArm(-0.68, 0.12);
+bodyG.add(armL);
+const armR = makeArm(0.68, -0.22);
+bodyG.add(armR);
+
+// ── ROSE in right hand ──
+const roseG = new Group();
+roseG.position.set(0, -0.75, 0.15);
+armR.add(roseG);
+
+// Stem
+const stem = new Mesh(new CylinderGeometry(0.02, 0.02, 0.8, 6),
+  new MeshStandardMaterial({ color: '#2a5a28', roughness: 0.7 }));
+stem.position.y = 0.4;
+roseG.add(stem);
+
+// Leaves
+for (const [px,py,sc,rot] of [[0.06,0.3,1,0.5],[-0.04,0.45,0.8,-0.4]]) {
+  const leaf = new Mesh(new SphereGeometry(0.08, 10, 10),
+    new MeshStandardMaterial({ color: '#3a7a38', roughness: 0.6 }));
+  leaf.scale.set(sc, 0.25, 0.5);
+  leaf.position.set(px, py, 0);
+  leaf.rotation.z = rot;
+  roseG.add(leaf);
+}
+
+// Rose bloom — layered petals for depth
+const roseCols = ['#7a1828','#8a2030','#aa3040','#c04858','#d05868'];
+const roseScales = [0.14, 0.12, 0.1, 0.07, 0.04];
+for (let i = 0; i < 5; i++) {
+  const petal = new Mesh(new SphereGeometry(roseScales[i], 12, 12),
+    new MeshStandardMaterial({ color: roseCols[i], roughness: 0.45 }));
+  petal.position.set((Math.random()-0.5)*0.03, 0.8 + i*0.02, (Math.random()-0.5)*0.03);
+  roseG.add(petal);
+}
+
+// ── Feet ──
+const shoeMat = new MeshStandardMaterial({ color: '#141420', roughness: 0.55, metalness: 0.1 });
+for (const x of [-0.24, 0.24]) {
+  const foot = new Mesh(new SphereGeometry(0.2, 14, 14), shoeMat);
+  foot.scale.set(1, 0.45, 1.4);
+  foot.position.set(x, 0.18, 0.08);
+  foot.castShadow = true;
+  phantom.add(foot);
+}
+
+// ── Shadow blob on floor ──
+const shadowBlob = new Mesh(
+  new PlaneGeometry(1.5, 0.8),
+  new MeshBasicMaterial({ color: '#000000', transparent: true, opacity: 0.3 })
+);
+shadowBlob.rotation.x = -Math.PI/2;
+shadowBlob.position.y = 0.01;
+phantom.add(shadowBlob);
+
+// ══════════════════════════
+// INTERACTION
+// ══════════════════════════
+let isDrag = false, px = 0, targetRot = -0.15, rot = -0.15;
+
+renderer.domElement.addEventListener('pointerdown', e => { isDrag = true; px = e.clientX; });
+addEventListener('pointerup', () => isDrag = false);
+addEventListener('pointermove', e => {
+  if (!isDrag) return;
+  targetRot += (e.clientX - px) * 0.008;
+  px = e.clientX;
+});
+addEventListener('wheel', e => {
+  camera.position.z = Math.max(5, Math.min(13, camera.position.z + e.deltaY * 0.005));
+}, { passive: true });
+addEventListener('resize', () => {
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+function animate(now) {
+  requestAnimationFrame(animate);
+  const t = now * 0.001;
+
+  rot += (targetRot - rot) * 0.08;
+  phantom.rotation.y = rot;
+
+  // Breathing
+  const b = Math.sin(t * 1.5) * 0.012;
+  headG.position.y = 3.2 + b * 2.5;
+  bodyG.scale.y = 1 + b;
+  headG.rotation.z = Math.sin(t * 0.7) * 0.015;
+
+  // Candle flicker
+  candleL.intensity = 0.6 + Math.sin(t*8)*0.15 + Math.sin(t*13)*0.08;
+  candleR.intensity = 0.6 + Math.sin(t*9+1)*0.15 + Math.sin(t*11+2)*0.08;
+
+  camera.lookAt(0, 1.9, 0);
+  renderer.render(scene, camera);
+}
+animate(0);
+</script>

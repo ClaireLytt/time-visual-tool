@@ -1,0 +1,583 @@
+<title>Phantom Characters</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+3:wght@300;400&display=swap">
+<style>
+  :root {
+    --bg: #0a0908;
+    --fg: #d4cec5;
+    --fg-muted: #6b6159;
+    --accent-phantom: #1a1a2e;
+    --accent-christine: #c5a55a;
+    --accent-raoul: #8bafc4;
+    --accent-red: #8B1A1A;
+    color-scheme: dark;
+  }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 0;
+    margin: 0;
+    font-family: 'Source Sans 3', system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+  .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem 0;
+  }
+  h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.6rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg);
+    margin: 0 0 0.3rem;
+    text-align: center;
+    text-wrap: balance;
+  }
+  .subtitle {
+    font-size: 0.85rem;
+    color: var(--fg-muted);
+    margin: 0 0 2rem;
+    text-align: center;
+    font-weight: 300;
+  }
+  .characters {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    max-width: 960px;
+  }
+  .char-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    flex: 1 1 260px;
+    max-width: 300px;
+  }
+  canvas.char-canvas {
+    border-radius: 8px;
+    background: radial-gradient(ellipse at 50% 80%, #12110f 0%, #0a0908 100%);
+  }
+  .char-label {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1rem;
+    letter-spacing: 0.06em;
+    text-align: center;
+  }
+  .char-desc {
+    font-size: 0.8rem;
+    color: var(--fg-muted);
+    text-align: center;
+    line-height: 1.5;
+    max-width: 240px;
+    font-weight: 300;
+  }
+  .controls {
+    margin-top: 2rem;
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  button {
+    font-family: 'Source Sans 3', system-ui, sans-serif;
+    font-size: 0.82rem;
+    padding: 0.5rem 1.2rem;
+    border: 1px solid #3d3630;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--fg);
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+    letter-spacing: 0.03em;
+  }
+  button:hover, button:focus-visible { border-color: var(--accent-christine); color: #fff; }
+  button:focus-visible { outline: 2px solid var(--accent-christine); outline-offset: 2px; }
+  button.active { border-color: var(--accent-christine); color: var(--accent-christine); }
+  .mask-demo {
+    margin-top: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+  .mask-label {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 0.95rem;
+    color: var(--accent-christine);
+  }
+  .mask-desc {
+    font-size: 0.78rem;
+    color: var(--fg-muted);
+    text-align: center;
+    max-width: 400px;
+    line-height: 1.6;
+    font-weight: 300;
+  }
+  @media (max-width: 600px) {
+    .characters { gap: 2rem; }
+    .char-slot { flex: 1 1 100%; max-width: 100%; }
+    h1 { font-size: 1.3rem; }
+  }
+</style>
+
+<div class="stage">
+  <h1>Character Prototypes</h1>
+  <p class="subtitle">Plan A — translucent particle silhouettes, the only solid object is the mask</p>
+
+  <div class="characters">
+    <div class="char-slot">
+      <canvas class="char-canvas" id="phantom" width="280" height="400"></canvas>
+      <div class="char-label" style="color:#7a7a9e">The Phantom</div>
+      <div class="char-desc">Dark smoke silhouette. Glowing eyes. The white mask is the only solid, physical object in the entire game.</div>
+    </div>
+    <div class="char-slot">
+      <canvas class="char-canvas" id="christine" width="280" height="400"></canvas>
+      <div class="char-label" style="color:var(--accent-christine)">Christine</div>
+      <div class="char-desc">Warm golden particles. Long dress outline visible. She is a memory made of light.</div>
+    </div>
+    <div class="char-slot">
+      <canvas class="char-canvas" id="raoul" width="280" height="400"></canvas>
+      <div class="char-label" style="color:var(--accent-raoul)">Raoul</div>
+      <div class="char-desc">Cool silver-blue particles. Military epaulette outline. Present but less vivid than the other two.</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="active" data-anim="idle">Idle</button>
+    <button data-anim="sing">Singing</button>
+    <button data-anim="walk">Walking</button>
+    <button data-anim="vanish">Vanish</button>
+  </div>
+
+  <div class="mask-demo">
+    <canvas id="mask" width="200" height="200"></canvas>
+    <div class="mask-label">The Mask</div>
+    <div class="mask-desc">The only real object. Porcelain white, high gloss. When every character dissolves into particles, this stays behind on the ground — the final shot of the game.</div>
+  </div>
+</div>
+
+<script>
+// ── Particle silhouette system ──
+// Each character is ~800-1200 particles following a skeletal keyframe path
+
+const TAU = Math.PI * 2;
+let currentAnim = 'idle';
+let animTransition = 0; // 0-1 transition progress
+
+// Skeleton: simplified 2D joint positions (normalized 0-1 within canvas)
+function baseSkeleton() {
+  return {
+    head:     { x: 0.5,  y: 0.12 },
+    neck:     { x: 0.5,  y: 0.18 },
+    chest:    { x: 0.5,  y: 0.28 },
+    waist:    { x: 0.5,  y: 0.40 },
+    hip:      { x: 0.5,  y: 0.45 },
+    lShoulder:{ x: 0.35, y: 0.22 },
+    rShoulder:{ x: 0.65, y: 0.22 },
+    lElbow:   { x: 0.28, y: 0.33 },
+    rElbow:   { x: 0.72, y: 0.33 },
+    lHand:    { x: 0.24, y: 0.42 },
+    rHand:    { x: 0.76, y: 0.42 },
+    lKnee:    { x: 0.44, y: 0.60 },
+    rKnee:    { x: 0.56, y: 0.60 },
+    lFoot:    { x: 0.42, y: 0.78 },
+    rFoot:    { x: 0.58, y: 0.78 },
+  };
+}
+
+// Bones: pairs of joints that particles distribute along
+const BONES = [
+  ['head','neck'], ['neck','chest'], ['chest','waist'], ['waist','hip'],
+  ['neck','lShoulder'], ['neck','rShoulder'],
+  ['lShoulder','lElbow'], ['rShoulder','rElbow'],
+  ['lElbow','lHand'], ['rElbow','rHand'],
+  ['hip','lKnee'], ['hip','rKnee'],
+  ['lKnee','lFoot'], ['rKnee','rFoot'],
+];
+
+// Character-specific shapes (extra particle regions)
+const PHANTOM_CLOAK = [
+  ['lShoulder','lKnee'], ['rShoulder','rKnee'],
+  ['chest','lKnee'], ['chest','rKnee'],
+  ['waist','lFoot'], ['waist','rFoot'],
+];
+const CHRISTINE_DRESS = [
+  ['waist','lFoot'], ['waist','rFoot'],
+  ['hip','lFoot'], ['hip','rFoot'],
+  ['lKnee','rKnee'],
+];
+
+function animateSkeleton(skel, t, anim) {
+  const s = Object.assign({}, skel);
+  for (const k in s) s[k] = { x: s[k].x, y: s[k].y };
+
+  if (anim === 'idle') {
+    const breathe = Math.sin(t * 1.5) * 0.005;
+    s.chest.y += breathe;
+    s.head.y += breathe * 0.5;
+    s.lShoulder.y += breathe * 0.7;
+    s.rShoulder.y += breathe * 0.7;
+    const sway = Math.sin(t * 0.7) * 0.008;
+    for (const k in s) s[k].x += sway;
+  } else if (anim === 'sing') {
+    const breathe = Math.sin(t * 2) * 0.008;
+    s.chest.y += breathe;
+    s.head.y += breathe * 0.3 - 0.01; // head tilted up
+    // Arms raised
+    const raise = Math.sin(t * 1.2) * 0.03;
+    s.lElbow.y -= 0.06 + raise;
+    s.rElbow.y -= 0.06 + raise;
+    s.lHand.y -= 0.12 + raise;
+    s.rHand.y -= 0.12 + raise;
+    s.lHand.x -= 0.04;
+    s.rHand.x += 0.04;
+  } else if (anim === 'walk') {
+    const stride = Math.sin(t * 3) * 0.04;
+    s.lFoot.y += stride;
+    s.rFoot.y -= stride;
+    s.lKnee.y += stride * 0.5;
+    s.rKnee.y -= stride * 0.5;
+    s.lFoot.x -= stride * 0.3;
+    s.rFoot.x += stride * 0.3;
+    // Arms swing opposite
+    s.lHand.y -= stride * 0.4;
+    s.rHand.y += stride * 0.4;
+    // Body sway
+    const sway = Math.sin(t * 3) * 0.01;
+    s.chest.x += sway;
+    s.head.x += sway;
+  } else if (anim === 'vanish') {
+    // Dissolve upward
+    const dissolve = Math.min(1, (t % 6) / 3);
+    for (const k in s) {
+      s[k].y -= dissolve * 0.15;
+    }
+  }
+  return s;
+}
+
+class GhostCharacter {
+  constructor(canvas, config) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.w = canvas.width;
+    this.h = canvas.height;
+    this.config = config;
+    this.particles = [];
+    this.baseSkel = baseSkeleton();
+    this.initParticles();
+  }
+
+  initParticles() {
+    this.particles = [];
+    const bones = [...BONES, ...(this.config.extraBones || [])];
+    const perBone = Math.floor(this.config.count / bones.length);
+
+    for (const [a, b] of bones) {
+      for (let i = 0; i < perBone; i++) {
+        const t = Math.random();
+        this.particles.push({
+          bone: [a, b],
+          t,
+          offset: { x: (Math.random() - 0.5) * this.config.spread, y: (Math.random() - 0.5) * this.config.spread },
+          size: 0.8 + Math.random() * 1.5,
+          alpha: 0.3 + Math.random() * 0.5,
+          phase: Math.random() * TAU,
+          speed: 0.5 + Math.random() * 1.5,
+          drift: { x: (Math.random() - 0.5) * 0.3, y: -Math.random() * 0.5 },
+        });
+      }
+    }
+
+    // Head cluster: denser particles around head
+    for (let i = 0; i < 80; i++) {
+      const angle = Math.random() * TAU;
+      const r = Math.random() * 0.04;
+      this.particles.push({
+        bone: ['head', 'head'],
+        t: 0,
+        offset: { x: Math.cos(angle) * r, y: Math.sin(angle) * r },
+        size: 0.6 + Math.random() * 1.2,
+        alpha: 0.4 + Math.random() * 0.4,
+        phase: Math.random() * TAU,
+        speed: 0.8 + Math.random(),
+        drift: { x: 0, y: 0 },
+      });
+    }
+  }
+
+  draw(time) {
+    const ctx = this.ctx;
+    const w = this.w;
+    const h = this.h;
+    ctx.clearRect(0, 0, w, h);
+
+    const skel = animateSkeleton(this.baseSkel, time, currentAnim);
+    const isVanish = currentAnim === 'vanish';
+    const vanishT = isVanish ? Math.min(1, (time % 6) / 3) : 0;
+
+    for (const p of this.particles) {
+      const ja = skel[p.bone[0]];
+      const jb = skel[p.bone[1]];
+      if (!ja || !jb) continue;
+
+      let px = (ja.x + (jb.x - ja.x) * p.t + p.offset.x) * w;
+      let py = (ja.y + (jb.y - ja.y) * p.t + p.offset.y) * h;
+
+      // Organic drift
+      const wobble = Math.sin(time * p.speed + p.phase);
+      px += wobble * 1.5 + p.drift.x * Math.sin(time * 0.5 + p.phase);
+      py += wobble * 0.8 + p.drift.y * Math.cos(time * 0.3 + p.phase);
+
+      let alpha = p.alpha * (0.7 + 0.3 * Math.sin(time * p.speed * 0.7 + p.phase));
+
+      if (isVanish) {
+        py -= vanishT * h * 0.3 * (1 + Math.random() * 0.1);
+        px += (Math.random() - 0.5) * vanishT * 40;
+        alpha *= (1 - vanishT);
+      }
+
+      const [r, g, b] = this.config.color;
+      ctx.beginPath();
+      ctx.arc(px, py, p.size * (isVanish ? 1 + vanishT : 1), 0, TAU);
+      ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
+      ctx.fill();
+    }
+
+    // Character-specific overlays
+    if (this.config.eyes) {
+      this.drawEyes(ctx, skel, time, vanishT);
+    }
+    if (this.config.mask) {
+      this.drawMask(ctx, skel, time, vanishT);
+    }
+  }
+
+  drawEyes(ctx, skel, time, vanishT) {
+    const head = skel.head;
+    const px = head.x * this.w;
+    const py = head.y * this.h;
+    const blink = Math.sin(time * 0.4) > 0.95 ? 0 : 1;
+    const alpha = (0.7 + 0.3 * Math.sin(time * 2)) * blink * (1 - vanishT);
+
+    // Phantom's glowing eyes
+    for (const dx of [-6, 6]) {
+      ctx.beginPath();
+      ctx.arc(px + dx, py + 2, 2, 0, TAU);
+      ctx.fillStyle = `rgba(180,200,255,${alpha})`;
+      ctx.fill();
+
+      // Glow
+      const grad = ctx.createRadialGradient(px + dx, py + 2, 0, px + dx, py + 2, 8);
+      grad.addColorStop(0, `rgba(150,180,255,${alpha * 0.3})`);
+      grad.addColorStop(1, 'rgba(150,180,255,0)');
+      ctx.beginPath();
+      ctx.arc(px + dx, py + 2, 8, 0, TAU);
+      ctx.fillStyle = grad;
+      ctx.fill();
+    }
+  }
+
+  drawMask(ctx, skel, time, vanishT) {
+    const head = skel.head;
+    const px = head.x * this.w;
+    const py = head.y * this.h;
+    const maskAlpha = (1 - vanishT * 0.3); // Mask fades slower — it's the last thing visible
+
+    ctx.save();
+    ctx.translate(px - 1, py);
+
+    // Half-mask (right side of face)
+    ctx.beginPath();
+    ctx.ellipse(3, 0, 11, 14, 0.05, -Math.PI * 0.5, Math.PI * 0.5);
+    ctx.closePath();
+
+    // Porcelain white fill
+    const maskGrad = ctx.createLinearGradient(-4, -14, 14, 14);
+    maskGrad.addColorStop(0, `rgba(245,242,235,${maskAlpha})`);
+    maskGrad.addColorStop(0.5, `rgba(255,253,248,${maskAlpha})`);
+    maskGrad.addColorStop(1, `rgba(220,215,205,${maskAlpha})`);
+    ctx.fillStyle = maskGrad;
+    ctx.fill();
+
+    // Subtle edge
+    ctx.strokeStyle = `rgba(180,175,165,${maskAlpha * 0.6})`;
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+
+    // Eye hole
+    ctx.beginPath();
+    ctx.ellipse(5, -1, 3.5, 2.5, 0.1, 0, TAU);
+    ctx.fillStyle = `rgba(10,9,8,${maskAlpha * 0.8})`;
+    ctx.fill();
+
+    // Highlight
+    ctx.beginPath();
+    ctx.ellipse(1, -8, 4, 2, -0.3, 0, TAU);
+    ctx.fillStyle = `rgba(255,255,255,${maskAlpha * 0.15})`;
+    ctx.fill();
+
+    ctx.restore();
+  }
+}
+
+// ── Standalone mask render ──
+function drawStandaloneMask(canvas, time) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width;
+  const h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const cx = w / 2;
+  const cy = h / 2;
+
+  // Subtle ambient glow
+  const ambientGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 80);
+  ambientGrad.addColorStop(0, 'rgba(197,165,90,0.04)');
+  ambientGrad.addColorStop(1, 'rgba(197,165,90,0)');
+  ctx.beginPath();
+  ctx.arc(cx, cy, 80, 0, TAU);
+  ctx.fillStyle = ambientGrad;
+  ctx.fill();
+
+  // The mask — larger, more detailed
+  ctx.save();
+  ctx.translate(cx, cy);
+
+  const breathe = Math.sin(time * 0.8) * 0.5;
+  ctx.rotate(Math.sin(time * 0.3) * 0.02);
+
+  // Full mask shape
+  ctx.beginPath();
+  ctx.moveTo(0, -45 + breathe);
+  ctx.bezierCurveTo(30, -45, 42, -20, 40, 5);
+  ctx.bezierCurveTo(38, 25, 25, 42, 0, 48);
+  ctx.bezierCurveTo(-25, 42, -38, 25, -40, 5);
+  ctx.bezierCurveTo(-42, -20, -30, -45, 0, -45 + breathe);
+  ctx.closePath();
+
+  // Porcelain gradient
+  const maskGrad = ctx.createLinearGradient(-40, -45, 40, 48);
+  maskGrad.addColorStop(0, '#f5f2eb');
+  maskGrad.addColorStop(0.3, '#fffdf8');
+  maskGrad.addColorStop(0.7, '#f0ece4');
+  maskGrad.addColorStop(1, '#dcd7cd');
+  ctx.fillStyle = maskGrad;
+  ctx.fill();
+
+  // Edge shadow
+  ctx.strokeStyle = 'rgba(160,152,140,0.4)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Right eye hole
+  ctx.beginPath();
+  ctx.ellipse(14, -8, 10, 7, 0.1, 0, TAU);
+  ctx.fillStyle = '#0a0908';
+  ctx.fill();
+
+  // Left eye hole
+  ctx.beginPath();
+  ctx.ellipse(-14, -8, 10, 7, -0.1, 0, TAU);
+  ctx.fillStyle = '#0a0908';
+  ctx.fill();
+
+  // Nose ridge
+  ctx.beginPath();
+  ctx.moveTo(0, -12);
+  ctx.lineTo(2, 8);
+  ctx.lineTo(-2, 8);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(210,205,195,0.3)';
+  ctx.fill();
+
+  // Specular highlight
+  ctx.beginPath();
+  ctx.ellipse(-10, -30, 12, 6, -0.4, 0, TAU);
+  ctx.fillStyle = 'rgba(255,255,255,0.18)';
+  ctx.fill();
+
+  // Second highlight
+  ctx.beginPath();
+  ctx.ellipse(20, -18, 6, 3, 0.3, 0, TAU);
+  ctx.fillStyle = 'rgba(255,255,255,0.1)';
+  ctx.fill();
+
+  ctx.restore();
+
+  // Floating dust motes around mask
+  for (let i = 0; i < 12; i++) {
+    const angle = (i / 12) * TAU + time * 0.2;
+    const r = 60 + Math.sin(time * 0.5 + i) * 15;
+    const mx = cx + Math.cos(angle) * r;
+    const my = cy + Math.sin(angle) * r;
+    const alpha = 0.15 + 0.1 * Math.sin(time + i * 2);
+    ctx.beginPath();
+    ctx.arc(mx, my, 1, 0, TAU);
+    ctx.fillStyle = `rgba(197,165,90,${alpha})`;
+    ctx.fill();
+  }
+}
+
+// ── Init characters ──
+const phantom = new GhostCharacter(document.getElementById('phantom'), {
+  color: [100, 100, 140],
+  count: 900,
+  spread: 0.035,
+  extraBones: PHANTOM_CLOAK,
+  eyes: true,
+  mask: true,
+});
+
+const christine = new GhostCharacter(document.getElementById('christine'), {
+  color: [197, 165, 90],
+  count: 1000,
+  spread: 0.03,
+  extraBones: CHRISTINE_DRESS,
+  eyes: false,
+  mask: false,
+});
+
+const raoul = new GhostCharacter(document.getElementById('raoul'), {
+  color: [139, 175, 196],
+  count: 700,
+  spread: 0.028,
+  extraBones: [],
+  eyes: false,
+  mask: false,
+});
+
+const maskCanvas = document.getElementById('mask');
+
+// ── Animation loop ──
+let startTime = performance.now();
+function loop(now) {
+  const t = (now - startTime) / 1000;
+  phantom.draw(t);
+  christine.draw(t);
+  raoul.draw(t);
+  drawStandaloneMask(maskCanvas, t);
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+// ── Controls ──
+document.querySelectorAll('button[data-anim]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('button[data-anim]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentAnim = btn.dataset.anim;
+    if (currentAnim === 'vanish') startTime = performance.now();
+  });
+});
+</script>

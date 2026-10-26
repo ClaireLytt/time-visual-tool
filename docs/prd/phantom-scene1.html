@@ -1,0 +1,394 @@
+<title>Phantom Scene 1 PRD</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;600&display=swap">
+<style>
+  /* Layout: single-column document, gothic-editorial treatment */
+  :root {
+    --bg: #faf8f5;
+    --fg: #2a2520;
+    --fg-muted: #6b6159;
+    --accent: #8B1A1A;
+    --accent-light: #c5a55a;
+    --surface: #f0ece6;
+    --border: #d6cfc5;
+    --code-bg: #eae5dd;
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1a1714;
+      --fg: #e0dbd4;
+      --fg-muted: #9a9088;
+      --accent: #c44040;
+      --accent-light: #d4b96a;
+      --surface: #252119;
+      --border: #3d3630;
+      --code-bg: #2a2520;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1a1714;
+    --fg: #e0dbd4;
+    --fg-muted: #9a9088;
+    --accent: #c44040;
+    --accent-light: #d4b96a;
+    --surface: #252119;
+    --border: #3d3630;
+    --code-bg: #2a2520;
+    color-scheme: dark;
+  }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 0;
+    line-height: 1.7;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 3rem 0 4rem; }
+  h1, h2, h3 { font-family: 'Playfair Display', Georgia, serif; font-weight: 700; line-height: 1.2; text-wrap: balance; }
+  h1 { font-size: 2.2rem; margin: 0 0 0.3rem; color: var(--accent); }
+  .subtitle { font-family: 'Playfair Display', Georgia, serif; font-style: italic; font-size: 1.15rem; color: var(--fg-muted); margin: 0 0 2rem; }
+  h2 { font-size: 1.4rem; margin: 2.5rem 0 1rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border); color: var(--accent); }
+  h3 { font-size: 1.1rem; margin: 1.8rem 0 0.6rem; color: var(--fg); }
+  p { margin: 0 0 1rem; }
+  .meta { display: flex; flex-wrap: wrap; gap: 1.2rem; font-size: 0.85rem; color: var(--fg-muted); margin-bottom: 2.5rem; padding: 0.8rem 1rem; background: var(--surface); border-radius: 6px; }
+  .meta span { white-space: nowrap; }
+  .meta strong { color: var(--fg); font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0 1.5rem; font-size: 0.92rem; }
+  th { text-align: left; font-weight: 600; padding: 0.5rem 0.7rem; border-bottom: 2px solid var(--border); color: var(--fg-muted); font-size: 0.8rem; letter-spacing: 0.04em; text-transform: uppercase; }
+  td { padding: 0.5rem 0.7rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  code { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.88em; background: var(--code-bg); padding: 0.15em 0.4em; border-radius: 3px; }
+  pre { background: var(--code-bg); padding: 1rem; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 1rem 0; }
+  pre code { background: none; padding: 0; }
+  ul, ol { margin: 0 0 1rem; padding-left: 1.5rem; }
+  li { margin-bottom: 0.4rem; }
+  .area-card { background: var(--surface); border-radius: 8px; padding: 1.2rem 1.4rem; margin: 1rem 0 1.5rem; border-left: 3px solid var(--accent); }
+  .area-card h3 { margin-top: 0; color: var(--accent); }
+  .collectible { display: flex; gap: 0.6rem; align-items: baseline; padding: 0.5rem 0; }
+  .collectible-num { font-family: 'Playfair Display', Georgia, serif; font-weight: 700; color: var(--accent-light); font-size: 1.1rem; flex-shrink: 0; width: 1.5rem; }
+  .tier-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 3px; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; }
+  .tier-ambient { background: #3a5a3a22; color: #5a8a5a; }
+  .tier-stirring { background: #8a8a3a22; color: #8a8a3a; }
+  .tier-watching { background: #8a5a3a22; color: #b07030; }
+  .tier-stalking { background: #8a3a3a22; color: #aa4444; }
+  .tier-climax { background: #8B1A1A22; color: var(--accent); }
+  .timeline { position: relative; padding-left: 2.5rem; margin: 1rem 0; }
+  .timeline::before { content: ''; position: absolute; left: 0.9rem; top: 0.3rem; bottom: 0.3rem; width: 2px; background: var(--border); }
+  .timeline-item { position: relative; margin-bottom: 0.8rem; }
+  .timeline-item::before { content: ''; position: absolute; left: -1.85rem; top: 0.55rem; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .time-label { font-size: 0.8rem; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+  .file-tree { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.82rem; line-height: 1.8; }
+  .file-tree .comment { color: var(--fg-muted); }
+  .badge { display: inline-block; padding: 0.1rem 0.45rem; border-radius: 3px; font-size: 0.78rem; background: var(--accent); color: #fff; font-weight: 600; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+  .ac-table td:first-child { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--fg-muted); width: 3rem; }
+  @media (max-width: 600px) {
+    h1 { font-size: 1.6rem; }
+    .meta { flex-direction: column; gap: 0.4rem; }
+    .area-card { padding: 1rem; }
+    table { font-size: 0.85rem; }
+    th, td { padding: 0.4rem; }
+  }
+</style>
+
+<div class="wrap">
+  <h1>The Phantom of the Opera</h1>
+  <p class="subtitle">Scene I — The Paris Opera House</p>
+
+  <div class="meta">
+    <span><strong>Status:</strong> Draft</span>
+    <span><strong>Date:</strong> 2026-10-26</span>
+    <span><strong>Engine:</strong> React Three Fiber</span>
+    <span><strong>Platform:</strong> Desktop browser (WebGL 2)</span>
+    <span><strong>Duration:</strong> 10–15 min</span>
+  </div>
+
+  <h2>1. Vision</h2>
+  <p>A first-person, cinematic, music-driven browser 3D experience set in the Paris Opera House (Palais Garnier). The player explores gilded halls, discovers hidden collectibles left by the Phantom, and triggers an escalating atmospheric narrative — culminating in the iconic chandelier drop.</p>
+  <p>No combat, no puzzles — pure exploration and atmosphere.</p>
+  <p><strong>Tone:</strong> Gothic romance, 19th-century grandeur, creeping dread.</p>
+
+  <h2>2. Tech Stack</h2>
+  <table>
+    <thead><tr><th>Layer</th><th>Choice</th><th>Rationale</th></tr></thead>
+    <tbody>
+      <tr><td>Renderer</td><td><code>react-three-fiber</code></td><td>Declarative 3D in existing React + Vite stack</td></tr>
+      <tr><td>3D Helpers</td><td><code>@react-three/drei</code></td><td>PointerLockControls, useGLTF, Environment</td></tr>
+      <tr><td>Physics</td><td><code>@react-three/rapier</code></td><td>Collision walls, floor, player capsule</td></tr>
+      <tr><td>Audio</td><td>Tone.js + Web Audio API</td><td>Adaptive layered music, spatial ambient</td></tr>
+      <tr><td>2D UI</td><td>Tailwind CSS</td><td>Overlays (inventory, prompts, menus)</td></tr>
+      <tr><td>State</td><td>Zustand</td><td>Lightweight game state</td></tr>
+    </tbody>
+  </table>
+
+  <h2>3. Domain Glossary</h2>
+  <table>
+    <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Scene</strong></td><td>A self-contained narrative chapter. Scene 1 = Paris Opera House.</td></tr>
+      <tr><td><strong>Area</strong></td><td>A navigable sub-region: Grand Foyer, Staircase, Auditorium, Backstage.</td></tr>
+      <tr><td><strong>Passage</strong></td><td>A connection between Areas — seamless or fade-transition.</td></tr>
+      <tr><td><strong>Collectible</strong></td><td>An interactive object the player picks up: letters, sheet music, phantom marks.</td></tr>
+      <tr><td><strong>Clue</strong></td><td>A non-collectible environmental detail that reacts to interaction.</td></tr>
+      <tr><td><strong>Music Cue</strong></td><td>A scored audio event triggered by entering an Area or finding a Collectible.</td></tr>
+      <tr><td><strong>Narrative Trigger</strong></td><td>A condition that fires a story beat: lighting change, sound, environmental shift.</td></tr>
+      <tr><td><strong>Phantom Presence</strong></td><td>Escalating environmental effects conveying the Phantom without showing him.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>4. Areas</h2>
+
+  <div class="area-card">
+    <h3>4.1 Grand Foyer <span class="badge">Entry Point</span></h3>
+    <p>A vast gilded hall — marble floors, painted ceiling, ornate columns, mirrored walls. ~30m × 15m × 12m high.</p>
+    <p><strong>Materials:</strong> Procedural marble PBR (white/gray veined, reflective), gilded panels (gold metallic), mirror sections.</p>
+    <p><strong>Lighting:</strong> Baked warm golden ambient. Real-time: 2 chandelier point lights with subtle flicker, wall candle sconces.</p>
+    <p><strong>Ambient Audio:</strong> Footstep echoes on marble, distant ghostly crowd murmur.</p>
+
+    <h3 style="margin-top:1rem;">Collectibles</h3>
+    <div class="collectible"><span class="collectible-num">①</span><span><strong>Christine's Letter</strong> — Sealed envelope tucked behind a marble bust near the east wall. Proximity: dust motes catch golden light.</span></div>
+    <div class="collectible"><span class="collectible-num">④</span><span><strong>Phantom's Wax Seal</strong> — Red skull-stamped seal pressed into a wall panel near the Staircase entrance. Proximity: nearby sconce flickers intensely.</span></div>
+
+    <p><strong>Passage →</strong> Grand Staircase: seamless (open archway, no loading).</p>
+  </div>
+
+  <div class="area-card">
+    <h3>4.2 Grand Staircase</h3>
+    <p>The iconic double-return marble staircase. Two flights converge at a landing, then split upward. Balustrades, statuary, a high vaulted dome.</p>
+    <p><strong>Materials:</strong> Gold-veined marble variant, ornate railing, painted dome ceiling.</p>
+    <p><strong>Lighting:</strong> Cooler than Foyer (moonlight through high windows). 1 dome light, 2 wall sconces.</p>
+    <p><strong>Ambient Audio:</strong> Wind through high windows, creaking wood, more reverb on footsteps.</p>
+
+    <h3 style="margin-top:1rem;">Collectibles</h3>
+    <div class="collectible"><span class="collectible-num">②</span><span><strong>"Angel of Music" Sheet Music</strong> — A page wedged between banister rails on the first landing. Proximity: page gently flutters (vertex animation).</span></div>
+
+    <p><strong>Passages →</strong> South: seamless back to Foyer. Top: doors to Auditorium (1.5s fade).</p>
+  </div>
+
+  <div class="area-card">
+    <h3>4.3 Auditorium</h3>
+    <p>Horseshoe-shaped hall with tiered balconies, ~500 red velvet seats (instanced), proscenium stage with red curtain, and the <strong>grand chandelier</strong> — the climax prop with the highest detail budget.</p>
+    <p><strong>Materials:</strong> Red velvet seats, gold-trimmed balconies, glass PBR crystals on chandelier, wooden stage floor.</p>
+    <p><strong>Lighting:</strong> Dim, warm — lit only by chandelier (6 point lights) and stage footlights. Box 5 has a cooler, eerie light.</p>
+    <p><strong>Ambient Audio:</strong> Deep silence, occasional seat creak, chandelier crystal tinkling (spatial, from above).</p>
+
+    <h3 style="margin-top:1rem;">Collectibles</h3>
+    <div class="collectible"><span class="collectible-num">③</span><span><strong>Phantom's Demand Letter</strong> — Pinned to the velvet chair in Box 5. Proximity: Box 5 light flickers cold blue.</span></div>
+    <div class="collectible"><span class="collectible-num">⑤</span><span><strong>"Music of the Night" Full Score</strong> — On the conductor's stand in the orchestra pit. Proximity: faint organ note swells.</span></div>
+
+    <p><strong>Passages →</strong> Rear doors: fade back to Staircase. Stage-left door: fade to Backstage.</p>
+  </div>
+
+  <div class="area-card">
+    <h3>4.4 Backstage Corridor</h3>
+    <p>Narrow, oppressive passage behind the stage. ~3m wide × 20m long × 3m high. Exposed brick, gas lamps, dressing room doors. At the far end: a <strong>locked iron door</strong> with the Phantom's skull seal.</p>
+    <p><strong>Materials:</strong> Dark red-brown exposed brick PBR, copper pipes, wood doors.</p>
+    <p><strong>Lighting:</strong> Entirely real-time — 4 flickering gas lamps (warm orange). Much darker. Green light seeps from under the locked door.</p>
+    <p><strong>Ambient Audio:</strong> Dripping water, rats, muffled distant organ (low-pass filtered), creaking.</p>
+
+    <h3 style="margin-top:1rem;">Collectibles</h3>
+    <div class="collectible"><span class="collectible-num">⑥</span><span><strong>Threatening Note</strong> — Slipped under the ajar dressing room door. Proximity: door creaks slightly.</span></div>
+    <div class="collectible"><span class="collectible-num">⑦</span><span><strong>Black-Ribbon Rose</strong> — On the floor before the locked door. Proximity: strong phantom presence (shadow, whisper). <em>Final collectible — triggers climax.</em></span></div>
+  </div>
+
+  <h2>5. Player Controls</h2>
+  <table>
+    <thead><tr><th>Action</th><th>Input</th><th>Behavior</th></tr></thead>
+    <tbody>
+      <tr><td>Move</td><td>WASD</td><td>Cinematic slow walk (~2.5 m/s), no sprint</td></tr>
+      <tr><td>Look</td><td>Mouse</td><td>Pointer lock, subtle camera sway (0.3° amplitude, 2s period)</td></tr>
+      <tr><td>Interact</td><td>E</td><td>Pick up / examine when crosshair on interactable within 2m</td></tr>
+      <tr><td>Inventory</td><td>Tab</td><td>Toggle leather journal overlay</td></tr>
+      <tr><td>Pause</td><td>Escape</td><td>Release pointer lock, show pause menu</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Player capsule:</strong> Rapier kinematic capsule (0.5m radius, 1.8m height). No jump. Eye height ~1.7m.</p>
+
+  <h2>6. Interaction System</h2>
+  <h3>Detection</h3>
+  <ul>
+    <li>Raycast from camera center, max 3m</li>
+    <li>Within 2m + looking at interactable → prompt <code>[E] Pick up</code></li>
+    <li>Within 3m → proximity effects only (no prompt)</li>
+  </ul>
+
+  <h3>Proximity Effects</h3>
+  <p>Dust motes (bright particles drifting upward, 1m radius) near uncollected items, plus item-specific cues per area descriptions.</p>
+
+  <h3>Pickup Flow</h3>
+  <ol>
+    <li>Player presses E → controls disabled (0.8s)</li>
+    <li>Object lifts and rotates toward camera (0.6s ease-out tween)</li>
+    <li>Crossfade to full-screen parchment overlay (0.2s)</li>
+    <li>Player reads → click or key to dismiss</li>
+    <li>Item added to inventory, object removed from world</li>
+    <li>Music layer threshold check → new layer fades in (4s)</li>
+    <li>If all 7 collected → climax event</li>
+  </ol>
+
+  <h2>7. Phantom Presence System</h2>
+  <p>Escalating environmental effects. Never a visible character — always indirect.</p>
+  <table>
+    <thead><tr><th>Tier</th><th>Trigger</th><th>Effects</th></tr></thead>
+    <tbody>
+      <tr><td><span class="tier-badge tier-ambient">Ambient</span></td><td>0 items</td><td>Base organ drone. Chandelier crystal tinkle.</td></tr>
+      <tr><td><span class="tier-badge tier-stirring">Stirring</span></td><td>1–2 items</td><td>Lights flicker every 30–60s. Distant organ note.</td></tr>
+      <tr><td><span class="tier-badge tier-watching">Watching</span></td><td>3–4 items</td><td>+ Spatial whispers behind player (~15s). Rose petals near uncollected items.</td></tr>
+      <tr><td><span class="tier-badge tier-stalking">Stalking</span></td><td>5–6 items</td><td>+ Dark shadow darts across peripheral vision (0.3s). Gas lamps flicker violently.</td></tr>
+      <tr><td><span class="tier-badge tier-climax">Climax</span></td><td>7 items</td><td>Full chandelier drop sequence.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>8. Climax: The Chandelier Drop</h2>
+  <p>Triggered when the 7th collectible overlay is dismissed. Total duration ~28s.</p>
+  <div class="timeline">
+    <div class="timeline-item"><span class="time-label">0.0s</span> — All lights cut to black. Silence.</div>
+    <div class="timeline-item"><span class="time-label">0.5s</span> — Single organ chord (low C, fortissimo). Sustained.</div>
+    <div class="timeline-item"><span class="time-label">1.0s</span> — Controls locked. Camera auto-pans toward chandelier.</div>
+    <div class="timeline-item"><span class="time-label">2.0s</span> — Chandelier sways. Crystal tinkling crescendo.</div>
+    <div class="timeline-item"><span class="time-label">4.0s</span> — Full orchestral layer erupts: timpani + strings + choir.</div>
+    <div class="timeline-item"><span class="time-label">5.0s</span> — Chain snaps (spark particles). Chandelier drops.</div>
+    <div class="timeline-item"><span class="time-label">5.5s</span> — Impact: screen shake, crash sound, crystal shatter, dust cloud.</div>
+    <div class="timeline-item"><span class="time-label">7.0s</span> — Phantom's laugh echoes (3s, deep reverb).</div>
+    <div class="timeline-item"><span class="time-label">10.0s</span> — Music subsides to solo melancholic organ. Lights at half.</div>
+    <div class="timeline-item"><span class="time-label">12.0s</span> — Backstage locked door creaks open. Green light spills out.</div>
+    <div class="timeline-item"><span class="time-label">18.0s</span> — Camera reaches doorway: spiral staircase descending into darkness.</div>
+    <div class="timeline-item"><span class="time-label">22.0s</span> — Fade to black.</div>
+    <div class="timeline-item"><span class="time-label">24.0s</span> — Title card: "To be continued…"</div>
+  </div>
+  <p><strong>If not in Auditorium:</strong> Distant boom + reduced screen shake. Dust falls from ceiling. Text prompt guides player to Backstage. Fallen chandelier visible if player visits Auditorium afterward.</p>
+
+  <h2>9. Adaptive Music System</h2>
+  <p>Five concurrent Tone.js layers, mixed in real-time.</p>
+  <table>
+    <thead><tr><th>Layer</th><th>Instrument</th><th>Trigger</th></tr></thead>
+    <tbody>
+      <tr><td>1 (base)</td><td>Organ drone</td><td>Always — varies per area</td></tr>
+      <tr><td>2</td><td>Strings (sustained)</td><td>1st collectible found</td></tr>
+      <tr><td>3</td><td>Harp arpeggios</td><td>3 collectibles found</td></tr>
+      <tr><td>4</td><td>Choir pad</td><td>5 collectibles found</td></tr>
+      <tr><td>5</td><td>Full orchestral + timpani</td><td>Climax event</td></tr>
+    </tbody>
+  </table>
+  <h3>Per-Area Organ Variations</h3>
+  <ul>
+    <li><strong>Grand Foyer:</strong> Warm, major-key, stately (C major, legato)</li>
+    <li><strong>Grand Staircase:</strong> Rising motif (ascending C → G)</li>
+    <li><strong>Auditorium:</strong> Mysterious, A minor tremolo</li>
+    <li><strong>Backstage:</strong> Dissonant, sparse (tritone intervals, long decay)</li>
+  </ul>
+  <p>Layer activation: volume ramp 0 → 1 over 4s (exponential) + one-shot sting. Area crossfade: 3s linear. Placeholder: Tone.js synthesizers. Production: <code>.ogg</code> loops, 8-bar @ 120 BPM.</p>
+
+  <h2>10. UI Overlays</h2>
+  <p>HTML overlays on the R3F canvas, styled with Tailwind. Pointer events pass through except when active.</p>
+  <table>
+    <thead><tr><th>Element</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Crosshair</strong></td><td>Center screen, thin white cross, 20px, 50% opacity. Always visible.</td></tr>
+      <tr><td><strong>Interaction Prompt</strong></td><td><code>[E] Pick up</code> below crosshair. White, 14px, text-shadow. Fade-in 0.2s.</td></tr>
+      <tr><td><strong>Parchment Overlay</strong></td><td>Full-screen backdrop (80% black). Aged paper card (600px max, Playfair Display title, Caveat body). Scale-in 0.3s.</td></tr>
+      <tr><td><strong>Inventory Journal</strong></td><td>Tab toggle. Leather book (CSS texture). Left: item list + count. Right: selected content. RotateY open animation 0.4s.</td></tr>
+      <tr><td><strong>Pause Menu</strong></td><td>Resume / Restart / Controls on aged-paper card. Triggered by ESC.</td></tr>
+      <tr><td><strong>Loading Curtain</strong></td><td>Red (#8B1A1A) full-screen. Gold title. Progress bar. Curtains part on load (CSS clip-path, 2s).</td></tr>
+      <tr><td><strong>End Card</strong></td><td>"To be continued…" in gold Playfair on black. "Play Again" button. Golden dust particles.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>11. File Structure</h2>
+  <div class="file-tree">
+    <pre><code>src/phantom/
+├── PhantomGame.tsx          <span class="comment"># Top-level: canvas + overlays</span>
+├── store.ts                 <span class="comment"># Zustand: inventory, progression</span>
+├── constants.ts             <span class="comment"># Collectibles, areas, music configs</span>
+├── types.ts                 <span class="comment"># Area, Collectible, PhantomTier…</span>
+│
+├── scene/
+│   ├── Scene1.tsx           <span class="comment"># 3D scene: areas + lighting + player</span>
+│   ├── Player.tsx           <span class="comment"># First-person controller</span>
+│   ├── areas/
+│   │   ├── GrandFoyer.tsx
+│   │   ├── GrandStaircase.tsx
+│   │   ├── Auditorium.tsx
+│   │   └── BackstageCorridor.tsx
+│   ├── objects/
+│   │   ├── Collectible.tsx  <span class="comment"># Proximity + pickup</span>
+│   │   ├── Chandelier.tsx   <span class="comment"># Animated, destructible</span>
+│   │   ├── LockedDoor.tsx
+│   │   └── GasLamp.tsx      <span class="comment"># Flickering lamp</span>
+│   └── effects/
+│       ├── PhantomPresence.tsx
+│       ├── DustMotes.tsx
+│       ├── RosePetals.tsx
+│       ├── ShadowDart.tsx   <span class="comment"># Post-process peripheral</span>
+│       └── ClimaxSequence.tsx
+│
+├── audio/
+│   ├── MusicEngine.ts       <span class="comment"># Tone.js adaptive layers</span>
+│   ├── AmbientAudio.tsx     <span class="comment"># Per-area PositionalAudio</span>
+│   └── sfx.ts               <span class="comment"># One-shots: pickup, crash…</span>
+│
+└── ui/
+    ├── Crosshair.tsx
+    ├── InteractionPrompt.tsx
+    ├── ParchmentOverlay.tsx
+    ├── InventoryJournal.tsx
+    ├── PauseMenu.tsx
+    ├── LoadingCurtain.tsx
+    └── EndCard.tsx</code></pre>
+  </div>
+
+  <h2>12. Performance Budget</h2>
+  <table>
+    <thead><tr><th>Metric</th><th>Target</th></tr></thead>
+    <tbody>
+      <tr><td>Initial load</td><td>&lt; 8s on 50 Mbps</td></tr>
+      <tr><td>Frame rate</td><td>60 FPS on GTX 1060 / M1 Mac</td></tr>
+      <tr><td>Draw calls</td><td>&lt; 200 / frame</td></tr>
+      <tr><td>Triangles</td><td>&lt; 500K total</td></tr>
+      <tr><td>Textures</td><td>&lt; 256 MB</td></tr>
+      <tr><td>Audio</td><td>&lt; 50 MB</td></tr>
+      <tr><td>JS bundle</td><td>&lt; 500 KB gzipped</td></tr>
+    </tbody>
+  </table>
+
+  <h2>13. Acceptance Criteria</h2>
+  <table class="ac-table">
+    <thead><tr><th>ID</th><th>Criterion</th></tr></thead>
+    <tbody>
+      <tr><td>AC1</td><td>Player spawns in Grand Foyer in first-person with pointer lock</td></tr>
+      <tr><td>AC2</td><td>WASD moves at cinematic speed with subtle camera sway</td></tr>
+      <tr><td>AC3</td><td>All 4 areas reachable via passages</td></tr>
+      <tr><td>AC4</td><td>Proximity particles appear within 3m of uncollected items</td></tr>
+      <tr><td>AC5</td><td>E key picks up collectible and shows parchment overlay</td></tr>
+      <tr><td>AC6</td><td>Tab opens inventory journal with collected items</td></tr>
+      <tr><td>AC7</td><td>Organ base layer varies by area with crossfade</td></tr>
+      <tr><td>AC8</td><td>Music layers activate at 1, 3, 5, and 7 collectibles</td></tr>
+      <tr><td>AC9</td><td>Phantom presence escalates per tier table</td></tr>
+      <tr><td>AC10</td><td>All 7 collected triggers chandelier climax sequence</td></tr>
+      <tr><td>AC11</td><td>Post-climax: Backstage locked door opens</td></tr>
+      <tr><td>AC12</td><td>End card with "To be continued…" and play-again</td></tr>
+      <tr><td>AC13</td><td>Loading screen: red curtain parts on load</td></tr>
+      <tr><td>AC14</td><td>ESC pauses, click resumes with pointer lock</td></tr>
+      <tr><td>AC15</td><td>60 FPS on target hardware</td></tr>
+    </tbody>
+  </table>
+
+  <h2>14. Out of Scope (v1)</h2>
+  <ul>
+    <li>Mobile / touch controls</li>
+    <li>Save / resume</li>
+    <li>Voice acting</li>
+    <li>Multiplayer</li>
+    <li>AI-generated textures</li>
+    <li>Scene 2 (only teased)</li>
+    <li>VR / WebXR</li>
+  </ul>
+
+  <hr class="divider">
+  <p style="text-align:center;color:var(--fg-muted);font-family:'Playfair Display',Georgia,serif;font-style:italic;">
+    "The music of the night shall guide you."
+  </p>
+</div>
