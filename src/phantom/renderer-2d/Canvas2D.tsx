@@ -111,17 +111,23 @@ export default function Canvas2D() {
 
   const area = ACT1_AREAS.find((a) => a.id === currentArea);
 
+  /** Convert a mouse event to scene-space coordinates (accounts for canvas scale + camera offset) */
+  const toSceneCoords = useCallback((e: React.MouseEvent<HTMLCanvasElement>): { x: number; y: number } | null => {
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: (e.clientX - rect.left) * (CANVAS_W / rect.width) + cameraX,
+      y: (e.clientY - rect.top) * (CANVAS_H / rect.height),
+    };
+  }, [cameraX]);
+
   // Click handler
   const handleClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!area || isPaused) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = CANVAS_W / rect.width;
-    const scaleY = CANVAS_H / rect.height;
-    const clickX = (e.clientX - rect.left) * scaleX + cameraX;
-    const clickY = (e.clientY - rect.top) * scaleY;
+    const coords = toSceneCoords(e);
+    if (!coords) return;
+    const { x: clickX, y: clickY } = coords;
 
     // Check hotspot hits
     for (const hs of area.hotspots) {
@@ -151,19 +157,14 @@ export default function Canvas2D() {
     // Move camera toward click
     const targetX = Math.max(0, Math.min(clickX - VIEWPORT_W / 2, area.width - VIEWPORT_W));
     setCameraX(targetX);
-  }, [area, cameraX, collectedItems, collectItem, triggeredEvents, triggerEvent, setArea, setCameraX, isPaused]);
+  }, [area, toSceneCoords, collectedItems, collectItem, triggeredEvents, triggerEvent, setArea, setCameraX, isPaused]);
 
   // Mouse move for hover detection
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!area) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = CANVAS_W / rect.width;
-    const scaleY = CANVAS_H / rect.height;
-    const mx = (e.clientX - rect.left) * scaleX + cameraX;
-    const my = (e.clientY - rect.top) * scaleY;
+    const coords = toSceneCoords(e);
+    if (!coords) return;
+    const { x: mx, y: my } = coords;
 
     let found: Hotspot | null = null;
     for (const hs of area.hotspots) {
@@ -173,7 +174,7 @@ export default function Canvas2D() {
       }
     }
     setHoveredHotspot(found);
-  }, [area, cameraX]);
+  }, [area, toSceneCoords]);
 
   // Animation loop
   useEffect(() => {
@@ -335,7 +336,7 @@ export default function Canvas2D() {
         // Phantom in Box 5 — brief flash
         const phantomFlash = Math.sin(t * 0.3) > 0.9;
         if (phantomFlash) {
-          drawParticles(ctx, phantomParticles, [80, 80, 120], t, cam);
+          drawParticles(ctx, phantomParticles, [60, 58, 55], t, cam);
         }
       }
 

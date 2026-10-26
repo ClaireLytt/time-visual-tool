@@ -97,7 +97,6 @@ export const ACT1_COLLECTIBLES: Collectible[] = [
     name: '被砍断的绳索',
     description: '舞台上方坠落布景板的绳索——被利刃割断，不是自然磨损。',
     contentZh: '这根绳索被一把极其锋利的刀整齐切断。切面光滑，没有任何磨损或撕裂的痕迹。这不是意外——是有人故意为之。',
-    contentEn: 'The rope was severed cleanly, not frayed. The cut is smooth, without any sign of wear or tearing. This was no accident — it was deliberate.',
     areaId: 'theater-stage',
   },
   {
@@ -106,7 +105,6 @@ export const ACT1_COLLECTIBLES: Collectible[] = [
     name: '经理的备忘录',
     description: '前排座椅上遗留的一张纸条，写着关于五号包厢的指示。',
     contentZh: '"五号包厢绝不可出售给任何人。这是命令。"\n——署名：O.G.\n\n纸张的边缘有火漆封印的痕迹，印章图案是一个骷髅。',
-    contentEn: '"Box Five is to remain empty at ALL times. This is not a request."\n— Signed: O.G.\n\nThe edge of the paper bears the trace of a wax seal — a skull.',
     areaId: 'theater-audience',
   },
   {
@@ -115,7 +113,6 @@ export const ACT1_COLLECTIBLES: Collectible[] = [
     name: '魅影的纸条',
     description: '五号包厢椅背后发现的纸条，笔迹优雅但力道极重。',
     contentZh: '"她已经准备好了。音乐天使已经开口。"\n\n笔迹优雅流畅，但每一笔都深深刻入纸面，仿佛写下这些字的人用尽了全部力量。',
-    contentEn: '"She is ready. The Angel of Music has spoken."\n\nThe handwriting is elegant and flowing, yet each stroke cuts deep into the paper, as though the writer poured all their strength into every word.',
     areaId: 'theater-audience',
   },
 ];
@@ -124,7 +121,7 @@ export const CHARACTERS: Record<string, CharacterConfig> = {
   phantom: {
     id: 'phantom',
     name: '魅影',
-    color: [100, 100, 140],
+    color: [60, 58, 55],  // desaturated dark smoke — avoids banned hue 235-265
     particleCount: 600,
     spread: 0.04,
   },
@@ -200,9 +197,6 @@ export const ACT1_EVENTS: StoryEvent[] = [
 export const PHANTOM_TIER_THRESHOLDS: Record<number, string> = {
   0: 'ambient',
   1: 'stirring',
-  2: 'stirring',
-  3: 'watching',
-  4: 'watching',
-  5: 'stalking',
-  6: 'stalking',
+  2: 'watching',
+  3: 'climax',
 };

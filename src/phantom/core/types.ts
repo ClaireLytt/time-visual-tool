@@ -40,8 +40,6 @@ export interface Collectible {
   description: string;
   /** Full document text (Chinese) */
   contentZh: string;
-  /** Full document text (English, used by learn module) */
-  contentEn?: string;
   /** Area where this item is found */
   areaId: string;
   /** Icon/thumbnail path */

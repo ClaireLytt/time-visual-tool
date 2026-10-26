@@ -45,8 +45,8 @@ function computeTier(count: number): PhantomTier {
 }
 
 function computeMusicLayers(count: number): number {
-  if (count >= 3) return 4;
-  if (count >= 2) return 3;
+  if (count >= 5) return 4;
+  if (count >= 3) return 3;
   if (count >= 1) return 2;
   return 1;
 }
