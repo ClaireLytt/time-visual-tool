@@ -61,6 +61,7 @@ function PaintingFrame({ painting, onSelect }: { painting: Painting; onSelect: (
           className="relative w-full h-full object-cover rounded-sm"
           style={{ opacity: imgLoaded ? 1 : 0, transition: 'opacity 0.3s' }}
           loading="lazy"
+          referrerPolicy="no-referrer"
           onLoad={() => setImgLoaded(true)}
           onError={() => setImgError(true)}
         />
@@ -164,6 +165,7 @@ function PaintingModal({ painting, onClose }: { painting: Painting; onClose: () 
               src={painting.imageUrl}
               alt={`${painting.title} by ${painting.artist}`}
               className="relative w-full max-h-[60vh] object-contain rounded-sm"
+              referrerPolicy="no-referrer"
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
             />
           </div>
@@ -405,6 +407,7 @@ function GalleryDashboard() {
                   alt={`${p.title} by ${p.artist}`}
                   className="relative w-full h-full object-cover"
                   loading="lazy"
+                  referrerPolicy="no-referrer"
                   onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
                 />
               </div>
