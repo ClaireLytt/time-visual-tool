@@ -40,7 +40,7 @@ export const rooftopScene: ParallaxScene = {
     // Mid-far: Paris skyline
     {
       depth: 0.2,
-      draw(ctx, w, h, ox) {
+      draw(ctx, _w, h, ox) {
         ctx.fillStyle = '#0c0e16';
         const bldgs: ReadonlyArray<readonly [number, number, number]> = [
           [40, 0.52, 38], [110, 0.45, 32], [190, 0.5, 48],

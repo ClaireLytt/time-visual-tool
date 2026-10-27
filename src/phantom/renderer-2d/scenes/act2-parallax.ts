@@ -26,7 +26,7 @@ export const dressingRoomScene: ParallaxScene = {
     // Mid: furniture + flowers
     {
       depth: 0.5,
-      draw(ctx, w, h, ox, oy, time) {
+      draw(ctx, _w, h, ox, oy, time) {
         // Vanity table
         const tx = 300 - ox;
         const ty = h * 0.55 - oy;
@@ -77,7 +77,7 @@ export const dressingRoomScene: ParallaxScene = {
     // Main: the full-length mirror (key interactive element)
     {
       depth: 0.85,
-      draw(ctx, w, h, ox, oy, time) {
+      draw(ctx, _w, h, ox, oy, time) {
         const mirrorX = 1100 - ox;
         const mirrorY = h * 0.22 - oy;
         const mw = 100, mh = 230;
@@ -133,7 +133,7 @@ export const spiralStairsScene: ParallaxScene = {
     // Mid: stone walls
     {
       depth: 0.4,
-      draw(ctx, w, h, ox, oy) {
+      draw(ctx, _w, _h, ox, oy) {
         for (let row = 0; row < 26; row++) {
           for (let col = 0; col < 16; col++) {
             const bx = col * 72 + (row % 2) * 36 - ox;
@@ -148,7 +148,7 @@ export const spiralStairsScene: ParallaxScene = {
     // Main: steps + candles
     {
       depth: 0.8,
-      draw(ctx, w, h, ox, oy, time) {
+      draw(ctx, _w, h, ox, oy, time) {
         // Spiral steps receding
         for (let i = 0; i < 14; i++) {
           const sx = 300 + i * 28 - ox;
@@ -197,7 +197,7 @@ export const spiralStairsScene: ParallaxScene = {
     // Foreground: iron railing
     {
       depth: 1.4,
-      draw(ctx, w, h, ox) {
+      draw(ctx, _w, h, ox) {
         ctx.strokeStyle = 'rgba(70,60,45,0.3)';
         ctx.lineWidth = 3;
         ctx.beginPath();
@@ -238,7 +238,7 @@ export const tunnelScene: ParallaxScene = {
     // Mid: arched ceiling + iron gates
     {
       depth: 0.45,
-      draw(ctx, w, h, ox, oy) {
+      draw(ctx, _w, h, ox, oy) {
         // Arched ceiling
         ctx.fillStyle = '#0c0a08';
         ctx.beginPath();
@@ -374,7 +374,7 @@ export const lakeScene: ParallaxScene = {
     // Mid-far: fog + distant candle glow
     {
       depth: 0.3,
-      draw(ctx, w, h, ox, oy, time) {
+      draw(ctx, w, h, _ox, oy, time) {
         // Fog bands
         for (let i = 0; i < 10; i++) {
           const fx = (i * 280 + time * 6) % (w + 200) - 100;

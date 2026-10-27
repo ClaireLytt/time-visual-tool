@@ -68,7 +68,7 @@ export const lairScene: ParallaxScene = {
     // Main: organ + keyboard + music stand
     {
       depth: 0.8,
-      draw(ctx, w, h, ox, oy, time) {
+      draw(ctx, _w, h, ox, oy, time) {
         const orgX = 1000 - ox;
         // Organ pipes
         const pipes = [115, 145, 175, 155, 135, 165, 125, 150, 140];

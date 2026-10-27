@@ -47,7 +47,7 @@ export const performanceScene: ParallaxScene = {
     // Mid: balconies
     {
       depth: 0.35,
-      draw(ctx, w, h, ox, oy) {
+      draw(ctx, w, _h, ox, oy) {
         for (let tier = 0; tier < 3; tier++) {
           for (const side of [-1, 1]) {
             const bx = side === -1 ? -15 - ox : w - 105 - ox;

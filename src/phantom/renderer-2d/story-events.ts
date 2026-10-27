@@ -59,7 +59,7 @@ export function updateBackdropFall(state: StoryEventState, dt: number) {
 
 /** Draw the falling backdrop + shake + debris */
 export function drawBackdropFall(
-  ctx: CanvasRenderingContext2D, w: number, h: number,
+  ctx: CanvasRenderingContext2D, _w: number, _h: number,
   cam: number, time: number, state: StoryEventState
 ) {
   if (!state.backdropFalling) return;

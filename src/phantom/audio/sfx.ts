@@ -65,7 +65,7 @@ export async function playCrash() {
     resonance: 4000,
     octaves: 1.5,
   }).connect(reverb!);
-  metal.triggerAttackRelease('16n');
+  metal.triggerAttackRelease('16n', Tone.now());
   // Low boom
   const boom = new Tone.Synth({
     oscillator: { type: 'sine' },

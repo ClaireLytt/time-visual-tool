@@ -66,7 +66,7 @@ export const theaterAudienceScene: ParallaxScene = {
     // ── Layer 1: Balconies + Box 5 (mid-far) ──
     {
       depth: 0.35,
-      draw(ctx, w, h, ox, oy) {
+      draw(ctx, w, _h, ox, oy) {
         // Balcony tiers on sides
         for (let tier = 0; tier < 3; tier++) {
           for (const side of [-1, 1]) {
@@ -195,7 +195,7 @@ export const theaterAudienceScene: ParallaxScene = {
     // ── Layer 4: Curtains (foreground, fastest) ──
     {
       depth: 1.4,
-      draw(ctx, w, h, ox, oy, time) {
+      draw(ctx, w, h, ox, _oy, time) {
         // Left curtain drapes
         for (let i = 0; i < 4; i++) {
           const cx = i * 16 - 5 - ox;
@@ -334,7 +334,7 @@ export const backstageScene: ParallaxScene = {
     // Far: pipes and ducts on ceiling
     {
       depth: 0.2,
-      draw(ctx, w, h, ox, oy) {
+      draw(ctx, w, h, _ox, oy) {
         ctx.fillStyle = '#080606';
         ctx.fillRect(0, 0, w, h);
         // Pipes
@@ -352,7 +352,7 @@ export const backstageScene: ParallaxScene = {
     // Mid: brick walls
     {
       depth: 0.6,
-      draw(ctx, w, h, ox, oy) {
+      draw(ctx, w, _h, ox, oy) {
         for (let row = 0; row < 22; row++) {
           for (let col = 0; col < 30; col++) {
             const bx = col * 55 + (row % 2) * 27 - ox;
