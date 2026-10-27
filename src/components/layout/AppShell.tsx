@@ -18,6 +18,7 @@ import WorkDashboard from '../work/WorkDashboard'
 import PodcastDashboard from '../podcast/PodcastDashboard'
 import YouTubeDashboard from '../youtube/YouTubeDashboard'
 import IeltsDashboard from '../ielts/IeltsDashboard'
+import GalleryDashboard from '../gallery/GalleryDashboard'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
 import { useTimeEntries } from '../../hooks/useTimeEntries'
 import { useFinanceEntries } from '../../hooks/useFinanceEntries'
@@ -46,6 +47,7 @@ const MODE_COLORS: Record<AppMode, { light: string; dark: string }> = {
   podcast:  { light: '#f2dde6', dark: '#28141e' },
   youtube:  { light: '#f0dede', dark: '#281414' },
   ielts:    { light: '#fdf2f5', dark: '#281418' },
+  gallery:  { light: '#eae6e0', dark: '#1c1a18' },
 }
 
 function validateMode(raw: unknown): AppMode | null {
@@ -97,6 +99,7 @@ function AppShell() {
       case 'podcast': return <PodcastDashboard />
       case 'youtube': return <YouTubeDashboard />
       case 'ielts': return <IeltsDashboard />
+      case 'gallery': return <GalleryDashboard />
       default: {
         const _exhaustive: never = mode
         console.warn(`Unhandled mode: ${_exhaustive}`)

@@ -983,5 +983,12 @@
     "vocabEmpty": "No vocabulary yet",
     "vocabReviewDone": "Review Complete!",
     "vocabBackToList": "Back to list"
+  },
+  "galleryApp": {
+    "title": "Gallery",
+    "hint": "← → keys or tap doorways to explore"
+  },
+  "modes": {
+    "gallery": "Gallery"
   }
 }

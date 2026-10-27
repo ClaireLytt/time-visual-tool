@@ -248,6 +248,11 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
         </div>
       </Card>
 
+      {/* ── Gallery shortcut ── */}
+      <Card mode="gallery" scene="🖼️ GALLERY" onClick={() => onNavigate('gallery')}>
+        <span className="text-sm text-gray-600 dark:text-gray-300">{t('galleryApp.title')}</span>
+      </Card>
+
       {/* ── Streaks ── */}
       <div className="panel p-3">
         <StreakRow timeDates={timeDates} financeDates={financeDates} eatingDates={eatingDates} diaryDates={diaryDates} sportDates={sportDates} />
