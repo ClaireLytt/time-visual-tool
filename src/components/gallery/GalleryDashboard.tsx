@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'motion/react'
 import { GALLERY_ROOMS } from '../../constants/gallery'
-import type { GalleryRoom, Painting } from '../../types/gallery'
+import type { Painting } from '../../types/gallery'
 
 /* ── Painting frame with hover info ── */
 function PaintingFrame({ painting, onSelect }: { painting: Painting; onSelect: (p: Painting) => void }) {
