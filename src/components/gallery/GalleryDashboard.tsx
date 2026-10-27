@@ -253,20 +253,24 @@ function GalleryDashboard() {
             <h2 className="text-xl font-bold tracking-wide text-gray-800 dark:text-gray-100">
               {isZh ? room.nameZh : room.name}
             </h2>
-            <div className="flex items-center justify-center gap-2 mt-1">
+            <div className="flex items-center justify-center gap-0 mt-1">
               {GALLERY_ROOMS.map((r, i) => (
                 <button
                   key={r.id}
                   onClick={() => goToRoom(i)}
-                  className="transition-all duration-200"
-                  style={{
-                    width: i === roomIndex ? 24 : 8,
-                    height: 8,
-                    borderRadius: 4,
-                    background: i === roomIndex ? '#c9a84c' : 'rgba(180,160,120,0.3)',
-                  }}
+                  className="flex items-center justify-center"
+                  style={{ width: 44, height: 44 }}
                   aria-label={isZh ? r.nameZh : r.name}
-                />
+                >
+                  <span
+                    className="block rounded-full transition-all duration-200"
+                    style={{
+                      width: i === roomIndex ? 24 : 8,
+                      height: 8,
+                      background: i === roomIndex ? '#c9a84c' : 'rgba(180,160,120,0.3)',
+                    }}
+                  />
+                </button>
               ))}
             </div>
           </motion.div>
