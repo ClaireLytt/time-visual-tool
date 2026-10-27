@@ -106,7 +106,11 @@ function drawGhostAudience(ctx: CanvasRenderingContext2D, time: number, offsetX:
 }
 
 // ── Main canvas component ──
-export default function Canvas2D() {
+interface Canvas2DProps {
+  onTransition?: (type: 'fade' | 'mirror-portal', midpointFn: () => void) => void;
+}
+
+export default function Canvas2D({ onTransition }: Canvas2DProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef(0);
   const [hoveredHotspot, setHoveredHotspot] = useState<Hotspot | null>(null);
@@ -167,13 +171,14 @@ export default function Canvas2D() {
               setShowThinkOfMe(true);
               setTimeout(() => setGhostOpacity(1), 5000);
             } else if (hs.triggerKey === 'act1-end') {
-              useGameStore.getState().setAct(2);
-              setArea('dressing-room');
+              const doIt = () => { useGameStore.getState().setAct(2); setArea('dressing-room'); };
+              if (onTransition) { onTransition('fade', doIt); } else { doIt(); }
             } else if (hs.triggerKey === 'mirror-open') {
-              setTimeout(() => setArea('spiral-stairs'), 1500);
+              const doIt = () => setArea('spiral-stairs');
+              if (onTransition) { onTransition('mirror-portal', doIt); } else { setTimeout(doIt, 1500); }
             } else if (hs.triggerKey === 'act2-end') {
-              useGameStore.getState().setAct(3);
-              setArea('lair');
+              const doIt = () => { useGameStore.getState().setAct(3); setArea('lair'); };
+              if (onTransition) { onTransition('fade', doIt); } else { doIt(); }
             } else if (hs.triggerKey === 'music-of-night-start') {
               act3Ref.current.candleWaveProgress = 0;
               // Animate candle wave over 3 seconds
@@ -187,10 +192,8 @@ export default function Canvas2D() {
             } else if (hs.triggerKey === 'act3-end') {
               act3Ref.current.unmasked = true;
               act3Ref.current.coldLighting = true;
-              setTimeout(() => {
-                useGameStore.getState().setAct(4);
-                setArea('rooftop');
-              }, 2000);
+              const doIt = () => { useGameStore.getState().setAct(4); setArea('rooftop'); };
+              setTimeout(() => { if (onTransition) { onTransition('fade', doIt); } else { doIt(); } }, 2000);
             } else if (hs.triggerKey === 'all-i-ask-start') {
               act4Ref.current.petalsActive = true;
               // After 10s simulate reprise
@@ -200,8 +203,8 @@ export default function Canvas2D() {
                 setTimeout(() => { act4Ref.current.lightning = 0; }, 300);
               }, 10000);
             } else if (hs.triggerKey === 'act4-end') {
-              useGameStore.getState().setAct(5);
-              setArea('theater-performance');
+              const doIt = () => { useGameStore.getState().setAct(5); setArea('theater-performance'); };
+              if (onTransition) { onTransition('fade', doIt); } else { doIt(); }
             } else if (hs.triggerKey === 'point-of-no-return-start') {
               // Chandelier falls after 8s
               setTimeout(() => {
@@ -213,12 +216,14 @@ export default function Canvas2D() {
                 };
                 requestAnimationFrame(decayShake);
                 // Transition to final lair after shake
-                setTimeout(() => setArea('final-lair'), 3000);
+                const goLair = () => setArea('final-lair');
+                setTimeout(() => { if (onTransition) { onTransition('fade', goLair); } else { goLair(); } }, 3000);
               }, 8000);
             } else if (hs.triggerKey === 'kiss-scene') {
               act5Ref.current.kissHappened = true;
               // Fade to epilogue after 5s
-              setTimeout(() => setArea('epilogue'), 5000);
+              const goEpilogue = () => setArea('epilogue');
+              setTimeout(() => { if (onTransition) { onTransition('fade', goEpilogue); } else { goEpilogue(); } }, 5000);
               // Start epilogue fade after arriving
               setTimeout(() => {
                 const fadeStart = performance.now();

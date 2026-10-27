@@ -1,7 +1,11 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useGameStore } from './core/store';
 import Canvas2D from './renderer-2d/Canvas2D';
 import ParchmentOverlay from './ui/ParchmentOverlay';
+import Transition from './ui/Transition';
+import { useTransition } from './ui/useTransition';
+import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
+import { playPickup } from './audio/sfx';
 
 const AREA_NAMES: Record<string, string> = {
   'theater-audience': '观众席', 'theater-stage': '舞台', 'theater-backstage': '后台通道',
@@ -18,8 +22,10 @@ export default function PhantomGame() {
   } = useGameStore();
 
   const [viewingItem, setViewingItem] = useState<string | null>(null);
+  const { transition, startTransition } = useTransition();
+  const audioStarted = useRef(false);
 
-  // Subscribe to store changes outside of render to detect new collectibles
+  // Subscribe to collectible changes → show parchment + play SFX + update music layers
   useEffect(() => {
     let prevCount = useGameStore.getState().collectedItems.length;
     const unsub = useGameStore.subscribe((state) => {
@@ -27,10 +33,22 @@ export default function PhantomGame() {
       if (count > prevCount) {
         prevCount = count;
         setViewingItem(state.collectedItems[count - 1]);
+        playPickup();
+        setLayerCount(count);
       }
     });
     return unsub;
   }, []);
+
+  // Sync music area when game area changes
+  useEffect(() => {
+    if (isPlaying && audioStarted.current) {
+      setMusicArea(currentArea);
+    }
+  }, [currentArea, isPlaying]);
+
+  // Stop audio on unmount
+  useEffect(() => () => stopAudio(), []);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') togglePause();
@@ -75,7 +93,12 @@ export default function PhantomGame() {
         </p>
         <div style={{ width: 60, height: 1, background: '#4a3a2e', margin: '0.5rem 0' }} />
         <button
-          onClick={() => startGame()}
+          onClick={async () => {
+            await initAudio();
+            audioStarted.current = true;
+            setMusicArea('theater-audience');
+            startTransition('curtain-rise', () => startGame(), 3000);
+          }}
           style={{
             fontFamily: 'Georgia, serif',
             fontSize: '1rem',
@@ -145,7 +168,7 @@ export default function PhantomGame() {
       </div>
 
       {/* Canvas */}
-      <Canvas2D />
+      <Canvas2D onTransition={(type, fn) => startTransition(type, fn)} />
 
       {/* Hint bar */}
       <p style={{
@@ -163,6 +186,9 @@ export default function PhantomGame() {
         itemId={viewingItem}
         onClose={() => setViewingItem(null)}
       />
+
+      {/* Scene transition overlay */}
+      <Transition transition={transition} />
 
       {/* Pause overlay */}
       {isPaused && (
