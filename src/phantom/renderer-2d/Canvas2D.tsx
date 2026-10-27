@@ -11,6 +11,10 @@ import { drawRooftop, createAct4State } from './acts/Act4AllIAskOfYou';
 import {
   drawTheaterPerformance, drawFinalLair, drawEpilogue, createAct5State,
 } from './acts/Act5PointOfNoReturn';
+import { renderParallaxScene } from './parallax';
+import {
+  theaterAudienceScene, theaterStageScene, backstageScene,
+} from './scenes/theater-parallax';
 
 const CANVAS_W = 1024;
 const CANVAS_H = 576;
@@ -118,6 +122,9 @@ export default function Canvas2D() {
   const act3Ref = useRef(createAct3State());
   const act4Ref = useRef(createAct4State());
   const act5Ref = useRef(createAct5State());
+
+  // Mouse position for parallax (normalized -1 to 1)
+  const mouseRef = useRef({ x: 0, y: 0 });
 
   const {
     currentArea, cameraX, setCameraX, collectedItems, collectItem,
@@ -241,6 +248,14 @@ export default function Canvas2D() {
 
   // Mouse move for hover detection
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    // Update parallax mouse position (normalized -1 to 1)
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const rect = canvas.getBoundingClientRect();
+      mouseRef.current.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouseRef.current.y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+    }
+
     if (!area) return;
     const coords = toSceneCoords(e);
     if (!coords) return;
@@ -284,136 +299,18 @@ export default function Canvas2D() {
 
       const cam = cameraX;
 
-      // ── Background gradient (placeholder for AI-generated background) ──
-      if (currentArea === 'theater-audience' || currentArea === 'theater-stage') {
-        // Dark theater background
-        const bg = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
-        bg.addColorStop(0, '#0e0a0a');
-        bg.addColorStop(0.3, '#1a1014');
-        bg.addColorStop(0.7, '#1e1418');
-        bg.addColorStop(1, '#12100e');
-        ctx.fillStyle = bg;
-        ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+      // ── Act 1 areas (2.5D parallax) ──
+      const mx = mouseRef.current.x;
+      const my = mouseRef.current.y;
 
-        // Curtain elements on sides
-        for (let i = 0; i < 3; i++) {
-          const lx = i * 15 - cam * 0.1;
-          const rx = CANVAS_W - 45 + i * 15 + cam * 0.1;
-          ctx.fillStyle = `rgba(80,30,40,${0.6 - i * 0.15})`;
-          ctx.fillRect(lx, 0, 20, CANVAS_H);
-          ctx.fillRect(rx, 0, 20, CANVAS_H);
-        }
-
-        // Stage area
-        if (currentArea === 'theater-stage') {
-          // Stage floor
-          ctx.fillStyle = '#2a1e18';
-          ctx.fillRect(0, 440, CANVAS_W, CANVAS_H - 440);
-          // Footlights
-          for (let i = 0; i < 8; i++) {
-            const fx = 200 + i * 80 - cam;
-            const glow = ctx.createRadialGradient(fx, 445, 0, fx, 445, 30);
-            glow.addColorStop(0, `rgba(255,200,100,${0.3 + 0.1 * Math.sin(t * 3 + i)})`);
-            glow.addColorStop(1, 'rgba(255,200,100,0)');
-            ctx.fillStyle = glow;
-            ctx.fillRect(fx - 30, 415, 60, 60);
-          }
-          // Spotlight on Christine position
-          if (showThinkOfMe) {
-            const spotGrad = ctx.createRadialGradient(1000 - cam, 300, 0, 1000 - cam, 300, 200);
-            spotGrad.addColorStop(0, 'rgba(255,240,200,0.15)');
-            spotGrad.addColorStop(1, 'rgba(255,240,200,0)');
-            ctx.fillStyle = spotGrad;
-            ctx.beginPath();
-            ctx.arc(1000 - cam, 300, 200, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        }
-
-        // Audience seats (rows of dark shapes)
-        if (currentArea === 'theater-audience') {
-          for (let row = 0; row < 5; row++) {
-            for (let col = 0; col < 15; col++) {
-              const sx = 100 + col * 120 - cam;
-              const sy = 360 + row * 40;
-              ctx.fillStyle = `rgba(60,20,25,${0.5 - row * 0.08})`;
-              ctx.beginPath();
-              ctx.roundRect(sx, sy, 40, 25, 4);
-              ctx.fill();
-            }
-          }
-          // Ghost audience
-          drawGhostAudience(ctx, t, cam, ghostOpacity);
-        }
-
-        // Chandelier
-        const chandelierX = 900 - cam * 0.5;
-        const chandelierGlow = ctx.createRadialGradient(chandelierX, 40, 0, chandelierX, 40, 80);
-        chandelierGlow.addColorStop(0, 'rgba(255,220,150,0.2)');
-        chandelierGlow.addColorStop(1, 'rgba(255,220,150,0)');
-        ctx.fillStyle = chandelierGlow;
-        ctx.beginPath();
-        ctx.arc(chandelierX, 40, 80, 0, Math.PI * 2);
-        ctx.fill();
-        // Chandelier body
-        ctx.fillStyle = '#c8b880';
-        ctx.beginPath();
-        ctx.moveTo(chandelierX - 25, 30);
-        ctx.lineTo(chandelierX + 25, 30);
-        ctx.lineTo(chandelierX + 15, 55);
-        ctx.lineTo(chandelierX - 15, 55);
-        ctx.fill();
-
-        // Box 5 area (upper right)
-        if (currentArea === 'theater-audience') {
-          const bx = 1680 - cam;
-          ctx.fillStyle = 'rgba(40,15,20,0.7)';
-          ctx.beginPath();
-          ctx.roundRect(bx, 160, 120, 140, 6);
-          ctx.fill();
-          ctx.strokeStyle = '#8a7050';
-          ctx.lineWidth = 1;
-          ctx.stroke();
-          // "5" label
-          ctx.fillStyle = 'rgba(200,180,140,0.4)';
-          ctx.font = '20px Georgia, serif';
-          ctx.textAlign = 'center';
-          ctx.fillText('V', bx + 60, 230);
-        }
-
+      if (currentArea === 'theater-audience') {
+        renderParallaxScene(ctx, theaterAudienceScene, CANVAS_W, CANVAS_H, cam, mx, my, t);
+        // Ghost audience overlay (on top of parallax)
+        drawGhostAudience(ctx, t, cam, ghostOpacity);
+      } else if (currentArea === 'theater-stage') {
+        renderParallaxScene(ctx, theaterStageScene, CANVAS_W, CANVAS_H, cam, mx, my, t);
       } else if (currentArea === 'theater-backstage') {
-        // Backstage: darker, narrower
-        const bg = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
-        bg.addColorStop(0, '#0a0808');
-        bg.addColorStop(1, '#100c0a');
-        ctx.fillStyle = bg;
-        ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-        // Brick walls
-        for (let row = 0; row < 20; row++) {
-          for (let col = 0; col < 30; col++) {
-            const bx = col * 55 + (row % 2) * 27 - cam;
-            const by = row * 30;
-            ctx.fillStyle = `rgba(${70 + Math.sin(row + col) * 15},${35 + Math.sin(row * col) * 8},${25},0.6)`;
-            ctx.fillRect(bx, by, 52, 27);
-          }
-        }
-        // Mirror at end
-        const mirrorX = 1200 - cam;
-        ctx.fillStyle = 'rgba(180,200,220,0.15)';
-        ctx.beginPath();
-        ctx.roundRect(mirrorX, 260, 80, 180, 8);
-        ctx.fill();
-        ctx.strokeStyle = '#a09060';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.roundRect(mirrorX - 4, 256, 88, 188, 10);
-        ctx.stroke();
-        // Mirror shimmer
-        const shimmer = 0.08 + 0.05 * Math.sin(t * 1.5);
-        ctx.fillStyle = `rgba(200,220,255,${shimmer})`;
-        ctx.beginPath();
-        ctx.roundRect(mirrorX + 5, 270, 70, 160, 4);
-        ctx.fill();
+        renderParallaxScene(ctx, backstageScene, CANVAS_W, CANVAS_H, cam, mx, my, t);
       }
 
       // ── Act 2 areas ──
