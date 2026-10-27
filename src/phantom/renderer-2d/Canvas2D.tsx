@@ -6,6 +6,11 @@ import {
   drawDressingRoom, drawSpiralStairs, drawUndergroundTunnel, drawUndergroundLake,
   createAct2State,
 } from './acts/Act2PhantomOfOpera';
+import { drawLair, createAct3State } from './acts/Act3MusicOfNight';
+import { drawRooftop, createAct4State } from './acts/Act4AllIAskOfYou';
+import {
+  drawTheaterPerformance, drawFinalLair, drawEpilogue, createAct5State,
+} from './acts/Act5PointOfNoReturn';
 
 const CANVAS_W = 1024;
 const CANVAS_H = 576;
@@ -154,10 +159,18 @@ export default function Canvas2D() {
               setShowThinkOfMe(true);
               setTimeout(() => setGhostOpacity(1), 5000);
             } else if (hs.triggerKey === 'mirror-open') {
-              // Transition to spiral stairs via mirror portal
               setTimeout(() => setArea('spiral-stairs'), 1500);
             } else if (hs.triggerKey === 'act2-end') {
-              // End of Act 2 — would transition to Act 3
+              useGameStore.getState().setAct(3);
+              setArea('lair');
+            } else if (hs.triggerKey === 'act3-end') {
+              useGameStore.getState().setAct(4);
+              setArea('rooftop');
+            } else if (hs.triggerKey === 'act4-end') {
+              useGameStore.getState().setAct(5);
+              setArea('theater-performance');
+            } else if (hs.triggerKey === 'kiss-scene') {
+              // Trigger finale sequence
             }
           }
         }
@@ -199,11 +212,13 @@ export default function Canvas2D() {
     // Phantom silhouette particles (Box 5)
     const phantomParticles = makeParticles(200, 1700, 220, 0.02);
 
-    // Act 2 state
+    // Per-act state
     const act2State = createAct2State();
-    if (currentArea === 'underground-lake') {
-      act2State.boatActive = true;
-    }
+    if (currentArea === 'underground-lake') act2State.boatActive = true;
+    const act3State = createAct3State();
+    act3State.candleWaveProgress = 1; // fully lit for now
+    const act4State = createAct4State();
+    const act5State = createAct5State();
 
     const startTime = performance.now();
 
@@ -354,6 +369,25 @@ export default function Canvas2D() {
         drawUndergroundTunnel(ctx, CANVAS_W, CANVAS_H, cam, t);
       } else if (currentArea === 'underground-lake') {
         drawUndergroundLake(ctx, CANVAS_W, CANVAS_H, cam, t, act2State);
+      }
+
+      // ── Act 3 ──
+      if (currentArea === 'lair') {
+        drawLair(ctx, CANVAS_W, CANVAS_H, cam, t, act3State);
+      }
+
+      // ── Act 4 ──
+      if (currentArea === 'rooftop') {
+        drawRooftop(ctx, CANVAS_W, CANVAS_H, cam, t, act4State);
+      }
+
+      // ── Act 5 ──
+      if (currentArea === 'theater-performance') {
+        drawTheaterPerformance(ctx, CANVAS_W, CANVAS_H, cam, t, act5State);
+      } else if (currentArea === 'final-lair') {
+        drawFinalLair(ctx, CANVAS_W, CANVAS_H, cam, t, act5State);
+      } else if (currentArea === 'epilogue') {
+        drawEpilogue(ctx, CANVAS_W, CANVAS_H, cam, t, act5State);
       }
 
       // ── Characters ──

@@ -3,6 +3,14 @@ import { useGameStore } from './core/store';
 import Canvas2D from './renderer-2d/Canvas2D';
 import ParchmentOverlay from './ui/ParchmentOverlay';
 
+const AREA_NAMES: Record<string, string> = {
+  'theater-audience': '观众席', 'theater-stage': '舞台', 'theater-backstage': '后台通道',
+  'dressing-room': '化妆间', 'spiral-stairs': '螺旋石梯',
+  'underground-tunnel': '地下隧道', 'underground-lake': '地下湖',
+  'lair': '魅影的密室', 'rooftop': '歌剧院屋顶',
+  'theater-performance': '剧场（演出）', 'final-lair': '地下湖密室', 'epilogue': '终章',
+};
+
 export default function PhantomGame() {
   const {
     isPlaying, isPaused, startGame, togglePause,
@@ -125,15 +133,14 @@ export default function PhantomGame() {
           color: '#9a8a78',
           letterSpacing: '0.08em',
         }}>
-          第{currentAct}幕 · {currentArea === 'theater-audience' ? '观众席' :
-            currentArea === 'theater-stage' ? '舞台' : '后台通道'}
+          第{currentAct}幕 · {AREA_NAMES[currentArea] || currentArea}
         </span>
         <span style={{
           fontFamily: 'Georgia, serif',
           fontSize: '0.8rem',
           color: '#c5a55a',
         }}>
-          📜 {collectedItems.length} / 3
+          📜 {collectedItems.length} / 15
         </span>
       </div>
 
