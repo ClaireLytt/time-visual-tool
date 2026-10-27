@@ -171,6 +171,21 @@ dev-server issues, test failures, script bugs), record it in the `issue_recode/`
 
 ## Git & Commit Rules
 
+### Branch Policy
+
+**NEVER develop directly on `main`.** All new work must happen on a feature branch.
+
+| Branch | Purpose | Who merges |
+|--------|---------|-----------|
+| `main` | Production-ready code only. Protected. | PR merge only. |
+| `phantom` | Phantom of the Opera game development. | Merge to main via PR when milestone is complete. |
+| `feature/*` | Other new features. | Merge to main via PR. |
+
+**Before starting any work:**
+1. Check which branch you're on: `git branch --show-current`
+2. If on `main`, create or switch to the appropriate feature branch first
+3. Never commit directly to `main` — always use a Pull Request
+
 ### Auto-Commit After Every Change
 
 **ALWAYS** commit your changes after making any code modifications.
