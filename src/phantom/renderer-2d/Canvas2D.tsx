@@ -5,6 +5,13 @@ import { Hotspot } from '../core/types';
 import { createAct3State } from './acts/Act3MusicOfNight';
 import { drawCollectibleFx } from './collectible-fx';
 import { getCharactersForArea, drawCharacters } from './characters';
+import {
+  createStoryEventState, updateBackdropFall, drawBackdropFall,
+  updateChristineBloom, updateUnmasking, drawUnmasking,
+  updateDuetMerge, updateFarewell, drawFarewell,
+  triggerBackdropFall, triggerUnmasking, triggerFarewell,
+  determineEnding,
+} from './story-events';
 import { createAct4State } from './acts/Act4AllIAskOfYou';
 import { createAct5State } from './acts/Act5PointOfNoReturn';
 import { renderParallaxScene, ParallaxScene } from './parallax';
@@ -80,6 +87,7 @@ export default function Canvas2D({ onTransition }: Canvas2DProps) {
 
   // Mouse position for parallax (normalized -1 to 1)
   const mouseRef = useRef({ x: 0, y: 0 });
+  const storyRef = useRef(createStoryEventState());
 
   const {
     currentArea, cameraX, setCameraX, collectedItems, collectItem,
@@ -124,8 +132,12 @@ export default function Canvas2D({ onTransition }: Canvas2DProps) {
           if (!triggeredEvents.includes('evt-' + hs.triggerKey)) {
             triggerEvent('evt-' + hs.triggerKey);
             if (hs.triggerKey === 'think-of-me-start') {
-              setShowThinkOfMe(true);
-              setTimeout(() => setGhostOpacity(1), 5000);
+              // Backdrop falls first, then Christine appears
+              triggerBackdropFall(storyRef.current);
+              setTimeout(() => {
+                setShowThinkOfMe(true);
+                setTimeout(() => setGhostOpacity(1), 5000);
+              }, 3000); // Christine enters 3s after backdrop crash
             } else if (hs.triggerKey === 'act1-end') {
               const doIt = () => { useGameStore.getState().setAct(2); setArea('dressing-room'); };
               if (onTransition) { onTransition('fade', doIt); } else { doIt(); }
@@ -146,10 +158,12 @@ export default function Canvas2D({ onTransition }: Canvas2DProps) {
               };
               requestAnimationFrame(animWave);
             } else if (hs.triggerKey === 'act3-end') {
+              // Unmasking sequence: reaching → flash → dark → cold relight → transition
+              triggerUnmasking(storyRef.current);
               act3Ref.current.unmasked = true;
               act3Ref.current.coldLighting = true;
               const doIt = () => { useGameStore.getState().setAct(4); setArea('rooftop'); };
-              setTimeout(() => { if (onTransition) { onTransition('fade', doIt); } else { doIt(); } }, 2000);
+              setTimeout(() => { if (onTransition) { onTransition('fade', doIt); } else { doIt(); } }, 5000);
             } else if (hs.triggerKey === 'all-i-ask-start') {
               act4Ref.current.petalsActive = true;
               // After 10s simulate reprise
@@ -177,10 +191,14 @@ export default function Canvas2D({ onTransition }: Canvas2DProps) {
               }, 8000);
             } else if (hs.triggerKey === 'kiss-scene') {
               act5Ref.current.kissHappened = true;
-              // Fade to epilogue after 5s
+              // Trigger farewell sequence (kiss glow → departure → alone → final notes → blow candle)
+              triggerFarewell(storyRef.current);
+              // Determine ending type based on collectibles
+              storyRef.current.endingType = determineEnding(useGameStore.getState().collectedItems.length);
+              // After farewell sequence plays out, transition to epilogue
               const goEpilogue = () => setArea('epilogue');
-              setTimeout(() => { if (onTransition) { onTransition('fade', goEpilogue); } else { goEpilogue(); } }, 5000);
-              // Start epilogue fade after arriving
+              setTimeout(() => { if (onTransition) { onTransition('fade', goEpilogue); } else { goEpilogue(); } }, 18000);
+              // Epilogue fade
               setTimeout(() => {
                 const fadeStart = performance.now();
                 const animFade = () => {
@@ -329,6 +347,19 @@ export default function Canvas2D({ onTransition }: Canvas2DProps) {
           ctx.fill();
         }
       }
+
+      // ── Story events update + draw ──
+      const dt = 1 / 60; // approximate frame delta
+      const story = storyRef.current;
+      updateBackdropFall(story, dt);
+      updateChristineBloom(story, dt, showThinkOfMe);
+      updateUnmasking(story, dt);
+      updateDuetMerge(story, dt, currentArea === 'theater-performance');
+      updateFarewell(story, dt);
+
+      drawBackdropFall(ctx, CANVAS_W, CANVAS_H, cam, t, story);
+      drawUnmasking(ctx, CANVAS_W, CANVAS_H, story);
+      drawFarewell(ctx, CANVAS_W, CANVAS_H, cam, t, story);
 
       // ── Vignette ──
       const vign = ctx.createRadialGradient(CANVAS_W / 2, CANVAS_H / 2, CANVAS_W * 0.3, CANVAS_W / 2, CANVAS_H / 2, CANVAS_W * 0.7);

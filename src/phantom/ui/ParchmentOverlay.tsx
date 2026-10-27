@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { getAllCollectibles } from '../core/constants';
+import { useGameStore } from '../core/store';
 
 interface Props {
   itemId: string | null;
@@ -7,12 +8,22 @@ interface Props {
 }
 
 export default function ParchmentOverlay({ itemId, onClose }: Props) {
-  // Hooks must run before any early return
   const handleClick = useCallback(() => onClose(), [onClose]);
+  const allItems = useMemo(() => getAllCollectibles(), []);
+  const collectedItems = useGameStore((s) => s.collectedItems);
   const item = useMemo(
-    () => (itemId ? getAllCollectibles().find((c) => c.id === itemId) : undefined),
-    [itemId]
+    () => (itemId ? allItems.find((c) => c.id === itemId) : undefined),
+    [itemId, allItems]
   );
+
+  // Find related items that player has already collected
+  const relatedItems = useMemo(() => {
+    if (!item?.relatedIds) return [];
+    return item.relatedIds
+      .filter((rid) => collectedItems.includes(rid))
+      .map((rid) => allItems.find((c) => c.id === rid))
+      .filter(Boolean);
+  }, [item, collectedItems, allItems]);
 
   if (!itemId || !item) return null;
 
@@ -30,7 +41,7 @@ export default function ParchmentOverlay({ itemId, onClose }: Props) {
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          maxWidth: '500px', width: '90%',
+          maxWidth: '500px', width: '90%', maxHeight: '80vh', overflowY: 'auto',
           background: 'linear-gradient(145deg, #e8dcc8, #d8ccb4, #e0d4c0)',
           borderRadius: '8px',
           padding: '2rem',
@@ -64,8 +75,30 @@ export default function ParchmentOverlay({ itemId, onClose }: Props) {
         }}>
           {item.contentZh}
         </div>
+
+        {/* Cross-references to related collectibles */}
+        {relatedItems.length > 0 && (
+          <div style={{
+            marginTop: '1rem',
+            paddingTop: '0.8rem',
+            borderTop: '1px solid rgba(100,80,60,0.2)',
+          }}>
+            <p style={{ fontSize: '0.72rem', color: '#8a7a68', margin: '0 0 0.4rem' }}>
+              🔗 关联线索：
+            </p>
+            {relatedItems.map((ri) => ri && (
+              <p key={ri.id} style={{
+                fontSize: '0.78rem', color: '#6a5a48',
+                margin: '0.2rem 0', fontStyle: 'italic',
+              }}>
+                📜 {ri.name}（第{ri.actId}幕）
+              </p>
+            ))}
+          </div>
+        )}
+
         <p style={{
-          marginTop: '1.5rem',
+          marginTop: '1rem',
           textAlign: 'center',
           fontSize: '0.75rem',
           color: '#9a8a78',

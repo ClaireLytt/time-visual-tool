@@ -40,6 +40,8 @@ export interface Collectible {
   description: string;
   /** Full document text (Chinese) */
   contentZh: string;
+  /** Related collectible IDs for cross-reference */
+  relatedIds?: string[];
   /** Area where this item is found */
   areaId: string;
   /** Icon/thumbnail path */
