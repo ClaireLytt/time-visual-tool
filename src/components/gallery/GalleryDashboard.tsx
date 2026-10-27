@@ -6,6 +6,9 @@ import type { GalleryRoom, Painting } from '../../types/gallery'
 
 /* ── Painting frame with hover info ── */
 function PaintingFrame({ painting, onSelect }: { painting: Painting; onSelect: (p: Painting) => void }) {
+  const [imgLoaded, setImgLoaded] = useState(false)
+  const [imgError, setImgError] = useState(false)
+
   return (
     <button
       onClick={() => onSelect(painting)}
@@ -32,13 +35,36 @@ function PaintingFrame({ painting, onSelect }: { painting: Painting; onSelect: (
         className="absolute -inset-1 rounded-sm"
         style={{ background: '#1a1610' }}
       />
-      {/* The painting */}
-      <img
-        src={painting.imageUrl}
-        alt={`${painting.title} by ${painting.artist}`}
-        className="relative w-full h-full object-cover rounded-sm"
-        loading="lazy"
-      />
+      {/* Fallback gradient (always rendered behind) */}
+      <div
+        className="absolute inset-0 rounded-sm"
+        style={{
+          background: painting.fallbackGradient,
+          opacity: imgLoaded ? 0 : 1,
+          transition: 'opacity 0.3s',
+        }}
+      >
+        {/* Painting title overlay on fallback */}
+        {!imgLoaded && (
+          <div className="absolute inset-0 flex items-end justify-center pb-2">
+            <span className="text-white/70 text-[9px] font-medium tracking-wide text-center px-1 drop-shadow-md">
+              {painting.title}
+            </span>
+          </div>
+        )}
+      </div>
+      {/* The painting image */}
+      {!imgError && (
+        <img
+          src={painting.imageUrl}
+          alt={`${painting.title} by ${painting.artist}`}
+          className="relative w-full h-full object-cover rounded-sm"
+          style={{ opacity: imgLoaded ? 1 : 0, transition: 'opacity 0.3s' }}
+          loading="lazy"
+          onLoad={() => setImgLoaded(true)}
+          onError={() => setImgError(true)}
+        />
+      )}
       {/* Hover label */}
       <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-10">
         <div className="bg-black/80 text-white text-xs px-3 py-1.5 rounded-md shadow-lg backdrop-blur-sm">
@@ -132,11 +158,13 @@ function PaintingModal({ painting, onClose }: { painting: Painting; onClose: () 
             boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
           }}
         >
-          <div className="bg-[#1a1610] p-2 rounded-sm">
+          <div className="bg-[#1a1610] p-2 rounded-sm relative overflow-hidden" style={{ minHeight: 200 }}>
+            <div className="absolute inset-2 rounded-sm" style={{ background: painting.fallbackGradient }} />
             <img
               src={painting.imageUrl}
               alt={`${painting.title} by ${painting.artist}`}
-              className="w-full max-h-[60vh] object-contain rounded-sm"
+              className="relative w-full max-h-[60vh] object-contain rounded-sm"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
             />
           </div>
         </div>
@@ -299,33 +327,45 @@ function GalleryDashboard() {
                 <PaintingFrame key={p.id} painting={p} onSelect={setSelectedPainting} />
               ))}
 
-              {/* Doorways */}
-              <Doorway
-                label={isZh ? prevRoom.nameZh : prevRoom.name}
-                direction="left"
-                onClick={() => goToRoom((roomIndex - 1 + GALLERY_ROOMS.length) % GALLERY_ROOMS.length)}
-              />
-              <Doorway
-                label={isZh ? nextRoom.nameZh : nextRoom.name}
-                direction="right"
-                onClick={() => goToRoom((roomIndex + 1) % GALLERY_ROOMS.length)}
-              />
             </div>
 
             {/* ── Floor with checkered pattern ── */}
             <div
-              className="absolute left-0 right-0 bottom-0"
-              style={{
-                height: '40%',
-                transformOrigin: 'bottom center',
-                transform: 'rotateX(60deg)',
-                background: `
-                  repeating-conic-gradient(
-                    ${room.floorLight} 0% 25%,
-                    ${room.floorDark} 0% 50%
-                  ) 0 0 / 60px 60px`,
-                opacity: 0.7,
-              }}
+              className="absolute left-0 right-0 bottom-0 overflow-hidden"
+              style={{ height: '35%' }}
+            >
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: `
+                    linear-gradient(45deg, ${room.floorDark} 25%, transparent 25%),
+                    linear-gradient(-45deg, ${room.floorDark} 25%, transparent 25%),
+                    linear-gradient(45deg, transparent 75%, ${room.floorDark} 75%),
+                    linear-gradient(-45deg, transparent 75%, ${room.floorDark} 75%)`,
+                  backgroundSize: '40px 40px',
+                  backgroundPosition: '0 0, 0 20px, 20px -20px, -20px 0px',
+                  backgroundColor: room.floorLight,
+                }}
+              />
+              {/* Perspective fade — darker toward viewer */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: 'linear-gradient(0deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.1) 50%, transparent 100%)',
+                }}
+              />
+            </div>
+
+            {/* Doorways — rendered above floor */}
+            <Doorway
+              label={isZh ? prevRoom.nameZh : prevRoom.name}
+              direction="left"
+              onClick={() => goToRoom((roomIndex - 1 + GALLERY_ROOMS.length) % GALLERY_ROOMS.length)}
+            />
+            <Doorway
+              label={isZh ? nextRoom.nameZh : nextRoom.name}
+              direction="right"
+              onClick={() => goToRoom((roomIndex + 1) % GALLERY_ROOMS.length)}
             />
 
             {/* Ambient lighting */}
@@ -358,12 +398,16 @@ function GalleryDashboard() {
               onClick={() => setSelectedPainting(p)}
               className="panel p-2 text-left hover:ring-2 ring-amber-400/50 transition-all cursor-pointer"
             >
-              <img
-                src={p.imageUrl}
-                alt={`${p.title} by ${p.artist}`}
-                className="w-full h-20 object-cover rounded mb-1.5"
-                loading="lazy"
-              />
+              <div className="w-full h-20 rounded mb-1.5 overflow-hidden relative">
+                <div className="absolute inset-0" style={{ background: p.fallbackGradient }} />
+                <img
+                  src={p.imageUrl}
+                  alt={`${p.title} by ${p.artist}`}
+                  className="relative w-full h-full object-cover"
+                  loading="lazy"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                />
+              </div>
               <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate">{p.title}</p>
               <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate">{p.artist} · {p.year}</p>
             </button>

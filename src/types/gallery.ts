@@ -13,6 +13,8 @@ export interface Painting {
   /** Display height in px */
   height: number
   description?: string
+  /** CSS gradient fallback when image can't load */
+  fallbackGradient: string
 }
 
 export interface GalleryRoom {
