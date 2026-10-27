@@ -1,7 +1,11 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useGameStore } from '../core/store';
-import { ACT1_AREAS } from '../core/constants';
+import { getAreasForAct } from '../core/constants';
 import { Hotspot } from '../core/types';
+import {
+  drawDressingRoom, drawSpiralStairs, drawUndergroundTunnel, drawUndergroundLake,
+  createAct2State,
+} from './acts/Act2PhantomOfOpera';
 
 const CANVAS_W = 1024;
 const CANVAS_H = 576;
@@ -109,7 +113,9 @@ export default function Canvas2D() {
     triggeredEvents, triggerEvent, setArea, isPaused,
   } = useGameStore();
 
-  const area = ACT1_AREAS.find((a) => a.id === currentArea);
+  const currentAct = useGameStore((s) => s.currentAct);
+  const areas = getAreasForAct(currentAct);
+  const area = areas.find((a) => a.id === currentArea);
 
   /** Convert a mouse event to scene-space coordinates (accounts for canvas scale + camera offset) */
   const toSceneCoords = useCallback((e: React.MouseEvent<HTMLCanvasElement>): { x: number; y: number } | null => {
@@ -147,6 +153,11 @@ export default function Canvas2D() {
             if (hs.triggerKey === 'think-of-me-start') {
               setShowThinkOfMe(true);
               setTimeout(() => setGhostOpacity(1), 5000);
+            } else if (hs.triggerKey === 'mirror-open') {
+              // Transition to spiral stairs via mirror portal
+              setTimeout(() => setArea('spiral-stairs'), 1500);
+            } else if (hs.triggerKey === 'act2-end') {
+              // End of Act 2 — would transition to Act 3
             }
           }
         }
@@ -187,6 +198,12 @@ export default function Canvas2D() {
     const christineParticles = makeParticles(400, 1000, 380, 0.025);
     // Phantom silhouette particles (Box 5)
     const phantomParticles = makeParticles(200, 1700, 220, 0.02);
+
+    // Act 2 state
+    const act2State = createAct2State();
+    if (currentArea === 'underground-lake') {
+      act2State.boatActive = true;
+    }
 
     const startTime = performance.now();
 
@@ -326,6 +343,17 @@ export default function Canvas2D() {
         ctx.beginPath();
         ctx.roundRect(mirrorX + 5, 270, 70, 160, 4);
         ctx.fill();
+      }
+
+      // ── Act 2 areas ──
+      if (currentArea === 'dressing-room') {
+        drawDressingRoom(ctx, CANVAS_W, CANVAS_H, cam, t, act2State);
+      } else if (currentArea === 'spiral-stairs') {
+        drawSpiralStairs(ctx, CANVAS_W, CANVAS_H, cam, t);
+      } else if (currentArea === 'underground-tunnel') {
+        drawUndergroundTunnel(ctx, CANVAS_W, CANVAS_H, cam, t);
+      } else if (currentArea === 'underground-lake') {
+        drawUndergroundLake(ctx, CANVAS_W, CANVAS_H, cam, t, act2State);
       }
 
       // ── Characters ──

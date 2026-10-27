@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { ACT1_COLLECTIBLES } from '../core/constants';
+import { getAllCollectibles } from '../core/constants';
 
 interface Props {
   itemId: string | null;
@@ -10,7 +10,7 @@ export default function ParchmentOverlay({ itemId, onClose }: Props) {
   // Hooks must run before any early return
   const handleClick = useCallback(() => onClose(), [onClose]);
   const item = useMemo(
-    () => (itemId ? ACT1_COLLECTIBLES.find((c) => c.id === itemId) : undefined),
+    () => (itemId ? getAllCollectibles().find((c) => c.id === itemId) : undefined),
     [itemId]
   );
 
