@@ -5,15 +5,62 @@
 
 const TAU = Math.PI * 2;
 
-interface Act2State {
-  mirrorRipple: number;      // 0-1 ripple intensity
-  candlesLit: number;        // how many tunnel candles are lit
-  boatX: number;             // auto-scroll position on the lake
-  boatActive: boolean;       // whether the boat is moving
+export interface Act2State {
+  mirrorRipple: number;
+  boatActive: boolean;
 }
 
 export function createAct2State(): Act2State {
-  return { mirrorRipple: 0, candlesLit: 0, boatX: 0, boatActive: false };
+  return { mirrorRipple: 0, boatActive: false };
+}
+
+// ── Shared drawing helpers (deduplicated) ──
+
+/** Draw a single candle with flame and glow at (cx, cy) */
+function drawCandle(
+  ctx: CanvasRenderingContext2D, cx: number, cy: number,
+  time: number, index: number, brightness: number = 1
+) {
+  // Candle body
+  ctx.fillStyle = '#f0e8d8';
+  ctx.fillRect(cx - 2, cy, 4, 12);
+  // Flame
+  const fl = Math.sin(time * 7 + index * 1.7) * 1;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - 5 + fl * 0.2);
+  ctx.bezierCurveTo(cx + 2.5, cy - 2, cx + 2.5, cy, cx, cy + 1);
+  ctx.bezierCurveTo(cx - 2.5, cy, cx - 2.5, cy - 2, cx, cy - 5 + fl * 0.2);
+  ctx.fillStyle = `rgba(255,190,70,${brightness})`;
+  ctx.fill();
+  // Glow
+  const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, 40);
+  g.addColorStop(0, `rgba(255,170,60,${0.12 * brightness})`);
+  g.addColorStop(1, 'rgba(255,170,60,0)');
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 40, 0, TAU);
+  ctx.fill();
+}
+
+/** Draw dripping water drops */
+function drawDrips(
+  ctx: CanvasRenderingContext2D, cam: number, time: number,
+  count: number, startX: number, spacing: number, maxY: number, speed: number
+) {
+  for (let i = 0; i < count; i++) {
+    const dx = startX + i * spacing - cam;
+    const dropY = ((time * speed + i * 300) % maxY);
+    ctx.fillStyle = `rgba(120,150,180,${0.25 - dropY / maxY * 0.2})`;
+    ctx.beginPath();
+    ctx.ellipse(dx, dropY + 80, 1, 2.5, 0, 0, TAU);
+    ctx.fill();
+  }
+}
+
+/** Seeded pseudo-random for deterministic ghost particles */
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
+  return x - Math.floor(x);
 }
 
 // ── Dressing Room ──
@@ -49,7 +96,6 @@ export function drawDressingRoom(
   const tableX = 300 - cam;
   ctx.fillStyle = '#3a2a1e';
   ctx.fillRect(tableX, h * 0.55, 250, 15);
-  // Table legs
   ctx.fillRect(tableX + 10, h * 0.565, 8, h * 0.22);
   ctx.fillRect(tableX + 232, h * 0.565, 8, h * 0.22);
 
@@ -61,7 +107,6 @@ export function drawDressingRoom(
     ctx.beginPath();
     ctx.arc(fx, fy, 6, 0, TAU);
     ctx.fill();
-    // Stems
     ctx.strokeStyle = 'rgba(60,90,50,0.5)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
@@ -72,37 +117,20 @@ export function drawDressingRoom(
 
   // Candles on table
   for (const cx of [tableX + 30, tableX + 220]) {
-    ctx.fillStyle = '#f0e8d8';
-    ctx.fillRect(cx - 3, h * 0.48, 6, 30);
-    // Flame
-    const flicker = Math.sin(time * 8 + cx) * 1.2;
-    const fg = ctx.createRadialGradient(cx + flicker * 0.3, h * 0.47, 0, cx, h * 0.47, 20);
-    fg.addColorStop(0, 'rgba(255,200,100,0.3)');
-    fg.addColorStop(1, 'rgba(255,200,100,0)');
-    ctx.fillStyle = fg;
-    ctx.beginPath();
-    ctx.arc(cx + flicker * 0.3, h * 0.47, 20, 0, TAU);
-    ctx.fill();
-    // Flame core
-    ctx.beginPath();
-    ctx.moveTo(cx, h * 0.45 + flicker * 0.2);
-    ctx.bezierCurveTo(cx + 3, h * 0.46, cx + 3, h * 0.48, cx, h * 0.485);
-    ctx.bezierCurveTo(cx - 3, h * 0.48, cx - 3, h * 0.46, cx, h * 0.45 + flicker * 0.2);
-    ctx.fillStyle = '#ffcc44';
-    ctx.fill();
+    drawCandle(ctx, cx, h * 0.48, time, cx);
   }
 
-  // Mirror (the key interactive element)
+  // Mirror
   const mirrorX = 1100 - cam;
   const mirrorW = 100;
   const mirrorH = 220;
   const mirrorY = h * 0.25;
 
-  // Mirror frame (ornate gold)
+  // Mirror frame (gold)
   ctx.strokeStyle = '#b89a50';
   ctx.lineWidth = 4;
   ctx.beginPath();
-  ctx.roundRect(mirrorX - 8, mirrorY - 8, mirrorW + 16, mirrorH + 16, 6);
+  ctx.rect(mirrorX - 8, mirrorY - 8, mirrorW + 16, mirrorH + 16);
   ctx.stroke();
 
   // Mirror surface
@@ -113,7 +141,7 @@ export function drawDressingRoom(
   ctx.fillStyle = mirrorGrad;
   ctx.fillRect(mirrorX, mirrorY, mirrorW, mirrorH);
 
-  // Mirror ripple effect (when triggered)
+  // Mirror ripple effect
   if (state.mirrorRipple > 0) {
     const ripple = state.mirrorRipple;
     for (let ring = 0; ring < 4; ring++) {
@@ -125,7 +153,6 @@ export function drawDressingRoom(
       ctx.arc(mirrorX + mirrorW / 2, mirrorY + mirrorH / 2, r, 0, TAU);
       ctx.stroke();
     }
-    // White glow center
     const glowGrad = ctx.createRadialGradient(
       mirrorX + mirrorW / 2, mirrorY + mirrorH / 2, 0,
       mirrorX + mirrorW / 2, mirrorY + mirrorH / 2, ripple * 80
@@ -138,7 +165,7 @@ export function drawDressingRoom(
     ctx.fill();
   }
 
-  // Shimmer on mirror surface
+  // Shimmer
   const shimmer = 0.06 + 0.03 * Math.sin(time * 1.2);
   ctx.fillStyle = `rgba(200,220,255,${shimmer})`;
   ctx.fillRect(mirrorX + 5, mirrorY + 5, mirrorW - 10, mirrorH - 10);
@@ -149,7 +176,6 @@ export function drawSpiralStairs(
   ctx: CanvasRenderingContext2D, w: number, h: number,
   cam: number, time: number
 ) {
-  // Dark stone background
   ctx.fillStyle = '#0c0a08';
   ctx.fillRect(0, 0, w, h);
 
@@ -164,7 +190,7 @@ export function drawSpiralStairs(
     }
   }
 
-  // Spiral staircase steps (receding into depth)
+  // Steps
   for (let i = 0; i < 12; i++) {
     const sx = 350 + i * 30 - cam;
     const sy = 150 + i * 30;
@@ -172,49 +198,22 @@ export function drawSpiralStairs(
     const shade = 40 - i * 2;
     ctx.fillStyle = `rgba(${shade + 10},${shade + 5},${shade},0.9)`;
     ctx.fillRect(sx, sy, sw, 12);
-    // Step edge highlight
     ctx.fillStyle = `rgba(${shade + 30},${shade + 25},${shade + 20},0.3)`;
     ctx.fillRect(sx, sy, sw, 2);
   }
 
-  // Candles along the wall (auto-lighting as you enter)
+  // Auto-lighting candles
   for (let i = 0; i < 6; i++) {
     const cx = 200 + i * 120 - cam;
     const cy = 130 + i * 25;
     const litProgress = Math.min(1, Math.max(0, (time * 0.5 - i * 0.3)));
-
     if (litProgress > 0) {
-      // Candle body
-      ctx.fillStyle = '#f0e8d8';
-      ctx.fillRect(cx - 2, cy, 4, 15);
-      // Flame
-      const fl = Math.sin(time * 7 + i * 2) * 1;
-      ctx.beginPath();
-      ctx.moveTo(cx, cy - 6 + fl * 0.3);
-      ctx.bezierCurveTo(cx + 3, cy - 3, cx + 3, cy, cx, cy + 1);
-      ctx.bezierCurveTo(cx - 3, cy, cx - 3, cy - 3, cx, cy - 6 + fl * 0.3);
-      ctx.fillStyle = `rgba(255,200,80,${litProgress})`;
-      ctx.fill();
-      // Glow
-      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, 40);
-      g.addColorStop(0, `rgba(255,180,80,${0.15 * litProgress})`);
-      g.addColorStop(1, 'rgba(255,180,80,0)');
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(cx, cy, 40, 0, TAU);
-      ctx.fill();
+      drawCandle(ctx, cx, cy, time, i, litProgress);
     }
   }
 
-  // Dripping water particles
-  for (let i = 0; i < 3; i++) {
-    const dx = 300 + i * 200 - cam;
-    const dropY = ((time * 60 + i * 200) % h);
-    ctx.fillStyle = `rgba(150,180,200,${0.3 - dropY / h * 0.3})`;
-    ctx.beginPath();
-    ctx.ellipse(dx, dropY, 1.5, 3, 0, 0, TAU);
-    ctx.fill();
-  }
+  // Dripping water
+  drawDrips(ctx, cam, time, 3, 300, 200, h, 60);
 }
 
 // ── Underground Tunnel ──
@@ -222,7 +221,6 @@ export function drawUndergroundTunnel(
   ctx: CanvasRenderingContext2D, w: number, h: number,
   cam: number, time: number
 ) {
-  // Very dark background
   ctx.fillStyle = '#080605';
   ctx.fillRect(0, 0, w, h);
 
@@ -250,7 +248,7 @@ export function drawUndergroundTunnel(
     ctx.fillRect(rx, ry, 60, 2);
   }
 
-  // Iron gates/arches along the tunnel
+  // Iron gate arches
   for (let i = 0; i < 5; i++) {
     const gx = 300 + i * 500 - cam;
     ctx.strokeStyle = 'rgba(80,70,55,0.4)';
@@ -261,7 +259,6 @@ export function drawUndergroundTunnel(
     ctx.arc(gx + 40, 120, 40, Math.PI, 0);
     ctx.lineTo(gx + 80, h * 0.75);
     ctx.stroke();
-    // Vertical bars
     for (let b = 0; b < 3; b++) {
       ctx.beginPath();
       ctx.moveTo(gx + 20 + b * 20, 130);
@@ -270,57 +267,31 @@ export function drawUndergroundTunnel(
     }
   }
 
-  // Candles that light up as you progress (based on camera position)
+  // Progressive candles
   const totalCandles = 25;
   for (let i = 0; i < totalCandles; i++) {
     const cx = 100 + i * 100;
     const cy = 100 + Math.sin(i * 0.7) * 30;
     const screenX = cx - cam;
-
-    // Light candles based on how far camera has scrolled
     const lit = cam + w * 0.3 > cx;
     if (!lit) continue;
-
-    const litTime = Math.max(0, (cam + w * 0.3 - cx) * 0.01);
-    const brightness = Math.min(1, litTime);
-
-    // Candle
-    ctx.fillStyle = '#f0e8d8';
-    ctx.fillRect(screenX - 2, cy, 4, 12);
-
-    // Flame
-    const fl = Math.sin(time * 8 + i * 1.7) * 1;
-    ctx.beginPath();
-    ctx.moveTo(screenX, cy - 5 + fl * 0.2);
-    ctx.bezierCurveTo(screenX + 2.5, cy - 2, screenX + 2.5, cy, screenX, cy + 1);
-    ctx.bezierCurveTo(screenX - 2.5, cy, screenX - 2.5, cy - 2, screenX, cy - 5 + fl * 0.2);
-    ctx.fillStyle = `rgba(255,190,70,${brightness})`;
-    ctx.fill();
-
-    // Glow
-    const g = ctx.createRadialGradient(screenX, cy, 0, screenX, cy, 50);
-    g.addColorStop(0, `rgba(255,170,60,${0.12 * brightness})`);
-    g.addColorStop(1, 'rgba(255,170,60,0)');
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(screenX, cy, 50, 0, TAU);
-    ctx.fill();
+    const brightness = Math.min(1, (cam + w * 0.3 - cx) * 0.01);
+    drawCandle(ctx, screenX, cy, time, i, brightness);
   }
 
-  // Score graffiti on wall (near collectible)
+  // Score graffiti on wall
   const scoreX = 1200 - cam;
   if (scoreX > -100 && scoreX < w + 100) {
     ctx.strokeStyle = 'rgba(200,180,140,0.2)';
     ctx.lineWidth = 1;
-    // Staff lines
     for (let l = 0; l < 5; l++) {
       ctx.beginPath();
       ctx.moveTo(scoreX, 270 + l * 8);
       ctx.lineTo(scoreX + 70, 270 + l * 8);
       ctx.stroke();
     }
-    // Notes (crude circles)
-    for (const [nx, ny] of [[15, 274], [30, 282], [45, 278], [60, 290]] as const) {
+    const notes: ReadonlyArray<readonly [number, number]> = [[15, 274], [30, 282], [45, 278], [60, 290]];
+    for (const [nx, ny] of notes) {
       ctx.fillStyle = 'rgba(200,180,140,0.25)';
       ctx.beginPath();
       ctx.ellipse(scoreX + nx, ny, 4, 3, -0.2, 0, TAU);
@@ -329,14 +300,7 @@ export function drawUndergroundTunnel(
   }
 
   // Dripping water
-  for (let i = 0; i < 5; i++) {
-    const dx = 200 + i * 500 - cam;
-    const dropY = ((time * 40 + i * 300) % (h * 0.7));
-    ctx.fillStyle = `rgba(120,150,180,${0.25 - dropY / h * 0.2})`;
-    ctx.beginPath();
-    ctx.ellipse(dx, dropY + 80, 1, 2.5, 0, 0, TAU);
-    ctx.fill();
-  }
+  drawDrips(ctx, cam, time, 5, 200, 500, h * 0.7, 40);
 }
 
 // ── Underground Lake ──
@@ -344,7 +308,7 @@ export function drawUndergroundLake(
   ctx: CanvasRenderingContext2D, w: number, h: number,
   cam: number, time: number, state: Act2State
 ) {
-  // Deep dark blue-black
+  // Deep dark background
   const bg = ctx.createLinearGradient(0, 0, 0, h);
   bg.addColorStop(0, '#08070a');
   bg.addColorStop(0.4, '#0a090c');
@@ -352,7 +316,6 @@ export function drawUndergroundLake(
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, w, h);
 
-  // Water surface line
   const waterY = h * 0.55;
 
   // Water below surface
@@ -362,7 +325,7 @@ export function drawUndergroundLake(
   ctx.fillStyle = waterGrad;
   ctx.fillRect(0, waterY, w, h - waterY);
 
-  // Water surface ripples
+  // Water ripple lines
   ctx.strokeStyle = 'rgba(100,120,160,0.08)';
   ctx.lineWidth = 1;
   for (let i = 0; i < 8; i++) {
@@ -375,16 +338,15 @@ export function drawUndergroundLake(
     ctx.stroke();
   }
 
-  // Candles rising from water (the iconic image)
-  const candleCount = 40;
-  for (let i = 0; i < candleCount; i++) {
+  // Candles rising from water
+  for (let i = 0; i < 40; i++) {
     const cx = 200 + i * 70 + Math.sin(i * 3.1) * 30 - cam;
     if (cx < -30 || cx > w + 30) continue;
 
     const baseY = waterY - 5 + Math.sin(time * 0.5 + i) * 2;
     const candleH = 20 + Math.sin(i * 2.3) * 8;
 
-    // Candle body (in water, partially submerged)
+    // Candle body
     ctx.fillStyle = '#e8dcc4';
     ctx.fillRect(cx - 2, baseY - candleH, 4, candleH);
 
@@ -410,7 +372,6 @@ export function drawUndergroundLake(
     ctx.globalAlpha = 0.15;
     ctx.fillStyle = '#e8dcc4';
     ctx.fillRect(cx - 2, baseY + 5, 4, candleH * 0.6);
-    // Flame reflection
     const rg = ctx.createRadialGradient(cx, baseY + 10, 0, cx, baseY + 10, 20);
     rg.addColorStop(0, 'rgba(255,180,70,0.15)');
     rg.addColorStop(1, 'rgba(255,180,70,0)');
@@ -421,25 +382,26 @@ export function drawUndergroundLake(
     ctx.globalAlpha = 1;
   }
 
-  // Fog/mist above water
+  // Fog/mist
   for (let i = 0; i < 12; i++) {
     const fx = (i * 250 + time * 8 + Math.sin(i * 2) * 100) % (w + 200) - 100;
     const fy = waterY - 15 + Math.sin(time * 0.2 + i) * 10;
-    const fogGrad = ctx.createRadialGradient(fx, fy, 0, fx, fy, 60 + Math.sin(i) * 20);
+    const fogR = 60 + Math.sin(i) * 20;
+    const fogGrad = ctx.createRadialGradient(fx, fy, 0, fx, fy, fogR);
     fogGrad.addColorStop(0, 'rgba(180,190,210,0.05)');
     fogGrad.addColorStop(1, 'rgba(180,190,210,0)');
     ctx.fillStyle = fogGrad;
     ctx.beginPath();
-    ctx.arc(fx, fy, 60 + Math.sin(i) * 20, 0, TAU);
+    ctx.arc(fx, fy, fogR, 0, TAU);
     ctx.fill();
   }
 
-  // Boat with Christine and Phantom silhouettes (if boat is active)
+  // Boat with character silhouettes
   if (state.boatActive) {
-    const boatScreenX = w * 0.4; // boat stays centered-ish
+    const boatScreenX = w * 0.4;
     const boatY = waterY - 8 + Math.sin(time * 0.8) * 2;
 
-    // Boat hull
+    // Hull
     ctx.fillStyle = '#2a2018';
     ctx.beginPath();
     ctx.moveTo(boatScreenX - 35, boatY);
@@ -447,14 +409,12 @@ export function drawUndergroundLake(
     ctx.closePath();
     ctx.fill();
 
-    // Phantom silhouette (dark, at back of boat)
+    // Ghost figures (deterministic, no Math.random)
     drawGhostFigure(ctx, boatScreenX - 15, boatY - 40, [60, 58, 55], time, 0.6);
-
-    // Christine silhouette (golden, at front)
     drawGhostFigure(ctx, boatScreenX + 15, boatY - 35, [197, 165, 90], time, 0.5);
   }
 
-  // Cave ceiling stalactites
+  // Cave stalactites
   for (let i = 0; i < 15; i++) {
     const sx = i * 200 + Math.sin(i * 4.1) * 50 - cam;
     const sl = 30 + Math.sin(i * 2.7) * 20;
@@ -467,7 +427,7 @@ export function drawUndergroundLake(
   }
 }
 
-/** Simple ghost figure for boat scene — a small cluster of colored particles */
+/** Deterministic ghost figure using seeded positions — no Math.random in render loop */
 function drawGhostFigure(
   ctx: CanvasRenderingContext2D,
   x: number, y: number,
@@ -475,27 +435,29 @@ function drawGhostFigure(
   time: number, scale: number
 ) {
   const [r, g, b] = color;
-  // Head
+  // Head particles (seeded positions + time-based wobble)
   for (let i = 0; i < 15; i++) {
-    const angle = Math.random() * TAU;
-    const rad = Math.random() * 6 * scale;
+    const seed = i * 7.3 + 0.5;
+    const angle = seededRandom(seed) * TAU;
+    const rad = seededRandom(seed + 1) * 6 * scale;
     const px = x + Math.cos(angle + time * 0.5) * rad;
     const py = y + Math.sin(angle + time * 0.3) * rad * 0.8;
-    const a = 0.3 + Math.random() * 0.3;
+    const a = 0.3 + seededRandom(seed + 2) * 0.3;
     ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
     ctx.beginPath();
-    ctx.arc(px, py, 1 + Math.random(), 0, TAU);
+    ctx.arc(px, py, 1 + seededRandom(seed + 3), 0, TAU);
     ctx.fill();
   }
-  // Body
+  // Body particles
   for (let i = 0; i < 25; i++) {
-    const px = x + (Math.random() - 0.5) * 14 * scale;
-    const py = y + 8 + Math.random() * 25 * scale;
+    const seed = i * 13.7 + 100;
+    const px = x + (seededRandom(seed) - 0.5) * 14 * scale;
+    const py = y + 8 + seededRandom(seed + 1) * 25 * scale;
     const wobble = Math.sin(time * 1.2 + i) * 1;
-    const a = 0.2 + Math.random() * 0.25;
+    const a = 0.2 + seededRandom(seed + 2) * 0.25;
     ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
     ctx.beginPath();
-    ctx.arc(px + wobble, py, 1 + Math.random() * 0.8, 0, TAU);
+    ctx.arc(px + wobble, py, 1 + seededRandom(seed + 3) * 0.8, 0, TAU);
     ctx.fill();
   }
 }

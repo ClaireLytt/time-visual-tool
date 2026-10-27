@@ -1,4 +1,4 @@
-import { Area, Collectible, CharacterConfig, MusicLayer, StoryEvent } from './types';
+import { Area, Collectible, CharacterConfig, MusicLayer } from './types';
 
 // ── Act 1: Think of Me ──
 
@@ -156,44 +156,6 @@ export const MUSIC_LAYERS: MusicLayer[] = [
   { id: 5, instrument: 'full-orchestra', threshold: -1, active: false }, // climax only
 ];
 
-export const ACT1_EVENTS: StoryEvent[] = [
-  {
-    id: 'evt-backdrop-fall',
-    actId: 1,
-    conditions: { areaId: 'theater-stage' },
-    action: 'animation',
-    payload: { animation: 'backdrop-fall', delay: 2000 },
-  },
-  {
-    id: 'evt-think-of-me',
-    actId: 1,
-    conditions: { triggerKey: 'think-of-me-start' },
-    action: 'music_change',
-    payload: { track: 'think-of-me', fadeIn: 3000 },
-  },
-  {
-    id: 'evt-ghost-audience',
-    actId: 1,
-    conditions: { triggerKey: 'think-of-me-start' },
-    action: 'animation',
-    payload: { animation: 'ghost-audience-appear', delay: 8000 },
-  },
-  {
-    id: 'evt-phantom-box5',
-    actId: 1,
-    conditions: { triggerKey: 'think-of-me-start' },
-    action: 'animation',
-    payload: { animation: 'phantom-silhouette-box5', delay: 15000 },
-  },
-  {
-    id: 'evt-act1-end',
-    actId: 1,
-    conditions: { triggerKey: 'act1-end', collectiblesFound: 3 },
-    action: 'transition',
-    payload: { nextAct: 2, transition: 'mirror-portal' },
-  },
-];
-
 // ── Act 2: The Phantom of the Opera ──
 
 export const ACT2_AREAS: Area[] = [
@@ -315,23 +277,6 @@ export const ACT2_COLLECTIBLES: Collectible[] = [
     description: '地下湖岸边一个铜质蜡烛台的底座上刻着图案。',
     contentZh: '一个心形图案，里面刻着字母 "C"。\n\n刻痕很浅，像是用指甲一点点刻上去的。蜡烛台的铜面被摸得发亮，显然有人经常抚摸这个字母。',
     areaId: 'underground-lake',
-  },
-];
-
-export const ACT2_EVENTS: StoryEvent[] = [
-  {
-    id: 'evt-mirror-open',
-    actId: 2,
-    conditions: { triggerKey: 'mirror-open' },
-    action: 'transition',
-    payload: { targetArea: 'spiral-stairs', transition: 'mirror-portal' },
-  },
-  {
-    id: 'evt-act2-end',
-    actId: 2,
-    conditions: { triggerKey: 'act2-end', collectiblesFound: 3 },
-    action: 'transition',
-    payload: { nextAct: 3, transition: 'fade' },
   },
 ];
 
