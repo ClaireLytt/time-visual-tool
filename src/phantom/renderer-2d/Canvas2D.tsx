@@ -3,6 +3,8 @@ import { useGameStore } from '../core/store';
 import { getAreasForAct } from '../core/constants';
 import { Hotspot } from '../core/types';
 import { createAct3State } from './acts/Act3MusicOfNight';
+import { drawCollectibleFx } from './collectible-fx';
+import { getCharactersForArea, drawCharacters } from './characters';
 import { createAct4State } from './acts/Act4AllIAskOfYou';
 import { createAct5State } from './acts/Act5PointOfNoReturn';
 import { renderParallaxScene, ParallaxScene } from './parallax';
@@ -16,52 +18,6 @@ const CANVAS_W = 1024;
 const CANVAS_H = 576;
 const VIEWPORT_W = 1024;
 
-// ── Particle character ──
-interface Particle {
-  x: number; y: number; size: number; alpha: number;
-  phase: number; speed: number;
-  driftX: number; driftY: number;
-}
-
-function makeParticles(count: number, cx: number, cy: number, spread: number): Particle[] {
-  const out: Particle[] = [];
-  for (let i = 0; i < count; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const r = Math.random() * spread * 300;
-    out.push({
-      x: cx + Math.cos(angle) * r,
-      y: cy + Math.sin(angle) * r - Math.random() * 120,
-      size: 0.5 + Math.random() * 2,
-      alpha: 0.2 + Math.random() * 0.5,
-      phase: Math.random() * Math.PI * 2,
-      speed: 0.5 + Math.random() * 1.5,
-      driftX: (Math.random() - 0.5) * 0.4,
-      driftY: -Math.random() * 0.3,
-    });
-  }
-  return out;
-}
-
-function drawParticles(
-  ctx: CanvasRenderingContext2D,
-  particles: Particle[],
-  color: [number, number, number],
-  time: number,
-  offsetX: number
-) {
-  const [r, g, b] = color;
-  for (const p of particles) {
-    const wobbleX = Math.sin(time * p.speed + p.phase) * 1.5;
-    const wobbleY = Math.cos(time * p.speed * 0.7 + p.phase) * 0.8;
-    const px = p.x - offsetX + wobbleX + p.driftX * Math.sin(time * 0.5 + p.phase);
-    const py = p.y + wobbleY + p.driftY * Math.cos(time * 0.3 + p.phase);
-    const a = p.alpha * (0.7 + 0.3 * Math.sin(time * p.speed * 0.7 + p.phase));
-    ctx.beginPath();
-    ctx.arc(px, py, p.size, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
-    ctx.fill();
-  }
-}
 
 // ── Hotspot glow ──
 function drawHotspotGlow(
@@ -278,10 +234,7 @@ export default function Canvas2D({ onTransition }: Canvas2DProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Christine particles (on stage)
-    const christineParticles = makeParticles(400, 1000, 380, 0.025);
-    // Phantom silhouette particles (Box 5)
-    const phantomParticles = makeParticles(200, 1700, 220, 0.02);
+
 
     const startTime = performance.now();
 
@@ -322,22 +275,21 @@ export default function Canvas2D({ onTransition }: Canvas2DProps) {
         renderParallaxScene(ctx, pScene, CANVAS_W, CANVAS_H, cam, mx, my, t);
       }
 
-      // ── Characters ──
-      if (currentArea === 'theater-stage' && showThinkOfMe) {
-        drawParticles(ctx, christineParticles, [197, 165, 90], t, cam);
-      }
-      if (currentArea === 'theater-audience' && showThinkOfMe) {
-        // Phantom in Box 5 — brief flash
-        const phantomFlash = Math.sin(t * 0.3) > 0.9;
-        if (phantomFlash) {
-          drawParticles(ctx, phantomParticles, [60, 58, 55], t, cam);
-        }
-      }
+      // ── Characters (data-driven) ──
+      const triggered = useGameStore.getState().triggeredEvents;
+      const sceneChars = getCharactersForArea(currentArea, triggered);
+      drawCharacters(ctx, sceneChars, cam, t);
 
-      // ── Hotspot glows ──
+      // ── Hotspot glows + collectible-specific FX ──
       if (area) {
         for (const hs of area.hotspots) {
           drawHotspotGlow(ctx, hs, cam, t, collectedItems);
+          // Draw special proximity effect for uncollected collectibles
+          if (hs.type === 'collectible' && hs.collectibleId && !collectedItems.includes(hs.collectibleId)) {
+            const fxX = hs.x + hs.width / 2 - cam;
+            const fxY = hs.y + hs.height / 2;
+            drawCollectibleFx(ctx, hs.collectibleId, fxX, fxY, t);
+          }
         }
       }
 
