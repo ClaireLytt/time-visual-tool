@@ -2,6 +2,9 @@ import type { GalleryRoom } from '../types/gallery'
 
 export const GALLERY_ACCENT = '#a39080'
 
+/** Base path for gallery images served from public/gallery/ */
+const IMG = `${import.meta.env.BASE_URL}gallery/`
+
 export const GALLERY_ROOMS: GalleryRoom[] = [
   {
     id: 'dutch-masters',
@@ -16,7 +19,7 @@ export const GALLERY_ROOMS: GalleryRoom[] = [
         title: 'Girl with a Pearl Earring',
         artist: 'Johannes Vermeer',
         year: '1665',
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/1665_Girl_with_a_Pearl_Earring.jpg/400px-1665_Girl_with_a_Pearl_Earring.jpg',
+        imageUrl: `${IMG}girl-pearl.jpg`,
         fallbackGradient: 'linear-gradient(170deg, #1a2030 0%, #2a3040 30%, #d4b896 50%, #f0d890 60%, #304050 80%, #1a2030 100%)',
         wallX: 15,
         wallY: 20,
@@ -28,7 +31,7 @@ export const GALLERY_ROOMS: GalleryRoom[] = [
         title: 'The Night Watch',
         artist: 'Rembrandt',
         year: '1642',
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/The_Night_Watch_-_HD.jpg/400px-The_Night_Watch_-_HD.jpg',
+        imageUrl: `${IMG}night-watch.jpg`,
         fallbackGradient: 'linear-gradient(180deg, #2a1c10 0%, #4a3620 25%, #c8a050 40%, #8a6a30 60%, #3a2a18 80%, #1a1008 100%)',
         wallX: 45,
         wallY: 15,
@@ -40,7 +43,7 @@ export const GALLERY_ROOMS: GalleryRoom[] = [
         title: 'The Milkmaid',
         artist: 'Johannes Vermeer',
         year: '1658',
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Johannes_Vermeer_-_Het_melkmeisje_-_Google_Art_Project.jpg/400px-Johannes_Vermeer_-_Het_melkmeisje_-_Google_Art_Project.jpg',
+        imageUrl: `${IMG}milkmaid.jpg`,
         fallbackGradient: 'linear-gradient(180deg, #e8dcc4 0%, #d4c4a0 30%, #6080a0 50%, #c4a470 70%, #a08850 100%)',
         wallX: 80,
         wallY: 22,
@@ -62,7 +65,7 @@ export const GALLERY_ROOMS: GalleryRoom[] = [
         title: 'The Starry Night',
         artist: 'Vincent van Gogh',
         year: '1889',
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/400px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg',
+        imageUrl: `${IMG}starry-night.jpg`,
         fallbackGradient: 'radial-gradient(ellipse at 70% 60%, #f0d040 0%, #f0d040 8%, #2040a0 20%, #1830a0 40%, #304090 60%, #1a2060 80%, #0a1040 100%)',
         wallX: 12,
         wallY: 18,
@@ -74,7 +77,7 @@ export const GALLERY_ROOMS: GalleryRoom[] = [
         title: 'Water Lilies',
         artist: 'Claude Monet',
         year: '1906',
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg/400px-Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg',
+        imageUrl: `${IMG}water-lilies.jpg`,
         fallbackGradient: 'linear-gradient(135deg, #4a7060 0%, #608070 20%, #90a890 40%, #c0b0d0 55%, #80a090 70%, #506858 100%)',
         wallX: 50,
         wallY: 20,
@@ -86,7 +89,7 @@ export const GALLERY_ROOMS: GalleryRoom[] = [
         title: 'Impression, Sunrise',
         artist: 'Claude Monet',
         year: '1872',
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Monet_-_Impression%2C_Sunrise.jpg/400px-Monet_-_Impression%2C_Sunrise.jpg',
+        imageUrl: `${IMG}impression-sunrise.jpg`,
         fallbackGradient: 'radial-gradient(circle at 50% 40%, #f08030 0%, #e07040 15%, #7090b0 30%, #5070a0 50%, #304060 80%, #203040 100%)',
         wallX: 82,
         wallY: 22,
@@ -108,7 +111,7 @@ export const GALLERY_ROOMS: GalleryRoom[] = [
         title: 'Mona Lisa',
         artist: 'Leonardo da Vinci',
         year: '1503',
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/400px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg',
+        imageUrl: `${IMG}mona-lisa.jpg`,
         fallbackGradient: 'linear-gradient(180deg, #5a6848 0%, #7a8458 20%, #c4a878 40%, #d8c098 50%, #b09868 60%, #6a5838 80%, #3a3020 100%)',
         wallX: 40,
         wallY: 12,
@@ -120,7 +123,7 @@ export const GALLERY_ROOMS: GalleryRoom[] = [
         title: 'The Birth of Venus',
         artist: 'Sandro Botticelli',
         year: '1485',
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg/400px-Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg',
+        imageUrl: `${IMG}birth-venus.jpg`,
         fallbackGradient: 'linear-gradient(90deg, #3a6050 0%, #60a090 20%, #d0c0a0 40%, #f0d8c0 50%, #80c0d0 70%, #5090a0 100%)',
         wallX: 10,
         wallY: 20,
@@ -132,7 +135,7 @@ export const GALLERY_ROOMS: GalleryRoom[] = [
         title: 'The Creation of Adam',
         artist: 'Michelangelo',
         year: '1512',
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Michelangelo_-_Creation_of_Adam_%28cropped%29.jpg/400px-Michelangelo_-_Creation_of_Adam_%28cropped%29.jpg',
+        imageUrl: `${IMG}creation-adam.jpg`,
         fallbackGradient: 'linear-gradient(135deg, #c4a878 0%, #d8c098 25%, #e0d0b0 40%, #b8a070 55%, #c0a880 70%, #90785a 100%)',
         wallX: 55,
         wallY: 25,
