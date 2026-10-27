@@ -2,19 +2,15 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { useGameStore } from '../core/store';
 import { getAreasForAct } from '../core/constants';
 import { Hotspot } from '../core/types';
-import {
-  drawDressingRoom, drawSpiralStairs, drawUndergroundTunnel, drawUndergroundLake,
-  createAct2State,
-} from './acts/Act2PhantomOfOpera';
-import { drawLair, createAct3State } from './acts/Act3MusicOfNight';
-import { drawRooftop, createAct4State } from './acts/Act4AllIAskOfYou';
-import {
-  drawTheaterPerformance, drawFinalLair, drawEpilogue, createAct5State,
-} from './acts/Act5PointOfNoReturn';
-import { renderParallaxScene } from './parallax';
-import {
-  theaterAudienceScene, theaterStageScene, backstageScene,
-} from './scenes/theater-parallax';
+import { createAct3State } from './acts/Act3MusicOfNight';
+import { createAct4State } from './acts/Act4AllIAskOfYou';
+import { createAct5State } from './acts/Act5PointOfNoReturn';
+import { renderParallaxScene, ParallaxScene } from './parallax';
+import { theaterAudienceScene, theaterStageScene, backstageScene } from './scenes/theater-parallax';
+import { dressingRoomScene, spiralStairsScene, tunnelScene, lakeScene } from './scenes/act2-parallax';
+import { lairScene } from './scenes/act3-parallax';
+import { rooftopScene } from './scenes/act4-parallax';
+import { performanceScene, finalLairScene, epilogueScene } from './scenes/act5-parallax';
 
 const CANVAS_W = 1024;
 const CANVAS_H = 576;
@@ -118,7 +114,6 @@ export default function Canvas2D() {
   const [showThinkOfMe, setShowThinkOfMe] = useState(false);
 
   // Per-act state refs (mutable from triggers, read in draw loop)
-  const act2Ref = useRef(createAct2State());
   const act3Ref = useRef(createAct3State());
   const act4Ref = useRef(createAct4State());
   const act5Ref = useRef(createAct5State());
@@ -283,14 +278,6 @@ export default function Canvas2D() {
     // Phantom silhouette particles (Box 5)
     const phantomParticles = makeParticles(200, 1700, 220, 0.02);
 
-    // Update per-act state from refs
-    if (currentArea === 'underground-lake') act2Ref.current.boatActive = true;
-    if (currentArea === 'lair') act3Ref.current.candleWaveProgress = 1;
-    const act2State = act2Ref.current;
-    const act3State = act3Ref.current;
-    const act4State = act4Ref.current;
-    const act5State = act5Ref.current;
-
     const startTime = performance.now();
 
     function draw(now: number) {
@@ -313,34 +300,21 @@ export default function Canvas2D() {
         renderParallaxScene(ctx, backstageScene, CANVAS_W, CANVAS_H, cam, mx, my, t);
       }
 
-      // ── Act 2 areas ──
-      if (currentArea === 'dressing-room') {
-        drawDressingRoom(ctx, CANVAS_W, CANVAS_H, cam, t, act2State);
-      } else if (currentArea === 'spiral-stairs') {
-        drawSpiralStairs(ctx, CANVAS_W, CANVAS_H, cam, t);
-      } else if (currentArea === 'underground-tunnel') {
-        drawUndergroundTunnel(ctx, CANVAS_W, CANVAS_H, cam, t);
-      } else if (currentArea === 'underground-lake') {
-        drawUndergroundLake(ctx, CANVAS_W, CANVAS_H, cam, t, act2State);
-      }
-
-      // ── Act 3 ──
-      if (currentArea === 'lair') {
-        drawLair(ctx, CANVAS_W, CANVAS_H, cam, t, act3State);
-      }
-
-      // ── Act 4 ──
-      if (currentArea === 'rooftop') {
-        drawRooftop(ctx, CANVAS_W, CANVAS_H, cam, t, act4State);
-      }
-
-      // ── Act 5 ──
-      if (currentArea === 'theater-performance') {
-        drawTheaterPerformance(ctx, CANVAS_W, CANVAS_H, cam, t, act5State);
-      } else if (currentArea === 'final-lair') {
-        drawFinalLair(ctx, CANVAS_W, CANVAS_H, cam, t, act5State);
-      } else if (currentArea === 'epilogue') {
-        drawEpilogue(ctx, CANVAS_W, CANVAS_H, cam, t, act5State);
+      // ── Acts 2-5: parallax scenes ──
+      const parallaxScenes: Record<string, ParallaxScene> = {
+        'dressing-room': dressingRoomScene,
+        'spiral-stairs': spiralStairsScene,
+        'underground-tunnel': tunnelScene,
+        'underground-lake': lakeScene,
+        'lair': lairScene,
+        'rooftop': rooftopScene,
+        'theater-performance': performanceScene,
+        'final-lair': finalLairScene,
+        'epilogue': epilogueScene,
+      };
+      const pScene = parallaxScenes[currentArea];
+      if (pScene) {
+        renderParallaxScene(ctx, pScene, CANVAS_W, CANVAS_H, cam, mx, my, t);
       }
 
       // ── Characters ──
