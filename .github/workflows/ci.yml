@@ -16,6 +16,8 @@ jobs:
       - run: npm run lint
       - name: Lint phantom banned colors
         run: npm run lint:phantom-colors
+      - name: Check phantom wiring integrity
+        run: npm run check:phantom
       - run: npx tsc -b
       - run: npm test
       - run: npm run build

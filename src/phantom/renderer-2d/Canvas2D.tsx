@@ -164,6 +164,9 @@ export default function Canvas2D() {
             if (hs.triggerKey === 'think-of-me-start') {
               setShowThinkOfMe(true);
               setTimeout(() => setGhostOpacity(1), 5000);
+            } else if (hs.triggerKey === 'act1-end') {
+              useGameStore.getState().setAct(2);
+              setArea('dressing-room');
             } else if (hs.triggerKey === 'mirror-open') {
               setTimeout(() => setArea('spiral-stairs'), 1500);
             } else if (hs.triggerKey === 'act2-end') {
