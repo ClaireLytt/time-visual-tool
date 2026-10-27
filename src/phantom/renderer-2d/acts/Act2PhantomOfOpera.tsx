@@ -3,7 +3,7 @@
  * 4 areas: Dressing Room → Mirror Portal → Spiral Stairs → Underground Tunnel → Underground Lake
  */
 
-const TAU = Math.PI * 2;
+import { TAU, srand as seededRandom } from '../draw-utils';
 
 export interface Act2State {
   mirrorRipple: number;
@@ -58,10 +58,6 @@ function drawDrips(
 }
 
 /** Seeded pseudo-random for deterministic ghost particles */
-function seededRandom(seed: number): number {
-  const x = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
-  return x - Math.floor(x);
-}
 
 // ── Dressing Room ──
 export function drawDressingRoom(

@@ -1,6 +1,6 @@
 /** Act 4: All I Ask of You — Opera House Rooftop */
 
-const TAU = Math.PI * 2;
+import { TAU, srand } from '../draw-utils';
 
 export interface Act4State {
   petalsActive: boolean;      // flower petals falling
@@ -13,10 +13,6 @@ export function createAct4State(): Act4State {
 }
 
 /** Seeded random for deterministic petal positions */
-function srand(seed: number): number {
-  const x = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
-  return x - Math.floor(x);
-}
 
 export function drawRooftop(
   ctx: CanvasRenderingContext2D, w: number, h: number,

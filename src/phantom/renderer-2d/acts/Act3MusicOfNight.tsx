@@ -1,6 +1,6 @@
 /** Act 3: Music of the Night — Phantom's Lair */
 
-const TAU = Math.PI * 2;
+import { TAU } from '../draw-utils';
 
 export interface Act3State {
   candleWaveProgress: number;  // 0-1, how far the candle-wave has spread

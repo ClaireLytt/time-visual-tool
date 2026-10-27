@@ -1,6 +1,6 @@
 /** Act 5: The Point of No Return + Finale */
 
-const TAU = Math.PI * 2;
+import { TAU, srand } from '../draw-utils';
 
 export interface Act5State {
   chandelierFallen: boolean;
@@ -14,10 +14,6 @@ export function createAct5State(): Act5State {
   return { chandelierFallen: false, chandelierY: 0, screenShake: 0, kissHappened: false, finalFade: 0 };
 }
 
-function srand(seed: number): number {
-  const x = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
-  return x - Math.floor(x);
-}
 
 // ── Theater Performance ──
 export function drawTheaterPerformance(

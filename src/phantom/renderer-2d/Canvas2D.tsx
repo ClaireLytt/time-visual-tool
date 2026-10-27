@@ -113,6 +113,12 @@ export default function Canvas2D() {
   const [ghostOpacity, setGhostOpacity] = useState(0);
   const [showThinkOfMe, setShowThinkOfMe] = useState(false);
 
+  // Per-act state refs (mutable from triggers, read in draw loop)
+  const act2Ref = useRef(createAct2State());
+  const act3Ref = useRef(createAct3State());
+  const act4Ref = useRef(createAct4State());
+  const act5Ref = useRef(createAct5State());
+
   const {
     currentArea, cameraX, setCameraX, collectedItems, collectItem,
     triggeredEvents, triggerEvent, setArea, isPaused,
@@ -163,14 +169,61 @@ export default function Canvas2D() {
             } else if (hs.triggerKey === 'act2-end') {
               useGameStore.getState().setAct(3);
               setArea('lair');
+            } else if (hs.triggerKey === 'music-of-night-start') {
+              act3Ref.current.candleWaveProgress = 0;
+              // Animate candle wave over 3 seconds
+              const start = performance.now();
+              const animWave = () => {
+                const p = Math.min(1, (performance.now() - start) / 3000);
+                act3Ref.current.candleWaveProgress = p;
+                if (p < 1) requestAnimationFrame(animWave);
+              };
+              requestAnimationFrame(animWave);
             } else if (hs.triggerKey === 'act3-end') {
-              useGameStore.getState().setAct(4);
-              setArea('rooftop');
+              act3Ref.current.unmasked = true;
+              act3Ref.current.coldLighting = true;
+              setTimeout(() => {
+                useGameStore.getState().setAct(4);
+                setArea('rooftop');
+              }, 2000);
+            } else if (hs.triggerKey === 'all-i-ask-start') {
+              act4Ref.current.petalsActive = true;
+              // After 10s simulate reprise
+              setTimeout(() => {
+                act4Ref.current.repriseActive = true;
+                act4Ref.current.lightning = 0.8;
+                setTimeout(() => { act4Ref.current.lightning = 0; }, 300);
+              }, 10000);
             } else if (hs.triggerKey === 'act4-end') {
               useGameStore.getState().setAct(5);
               setArea('theater-performance');
+            } else if (hs.triggerKey === 'point-of-no-return-start') {
+              // Chandelier falls after 8s
+              setTimeout(() => {
+                act5Ref.current.chandelierFallen = true;
+                act5Ref.current.screenShake = 1;
+                const decayShake = () => {
+                  act5Ref.current.screenShake *= 0.95;
+                  if (act5Ref.current.screenShake > 0.01) requestAnimationFrame(decayShake);
+                };
+                requestAnimationFrame(decayShake);
+                // Transition to final lair after shake
+                setTimeout(() => setArea('final-lair'), 3000);
+              }, 8000);
             } else if (hs.triggerKey === 'kiss-scene') {
-              // Trigger finale sequence
+              act5Ref.current.kissHappened = true;
+              // Fade to epilogue after 5s
+              setTimeout(() => setArea('epilogue'), 5000);
+              // Start epilogue fade after arriving
+              setTimeout(() => {
+                const fadeStart = performance.now();
+                const animFade = () => {
+                  const p = Math.min(1, (performance.now() - fadeStart) / 4000);
+                  act5Ref.current.finalFade = p;
+                  if (p < 1) requestAnimationFrame(animFade);
+                };
+                requestAnimationFrame(animFade);
+              }, 8000);
             }
           }
         }
@@ -212,13 +265,13 @@ export default function Canvas2D() {
     // Phantom silhouette particles (Box 5)
     const phantomParticles = makeParticles(200, 1700, 220, 0.02);
 
-    // Per-act state
-    const act2State = createAct2State();
-    if (currentArea === 'underground-lake') act2State.boatActive = true;
-    const act3State = createAct3State();
-    act3State.candleWaveProgress = 1; // fully lit for now
-    const act4State = createAct4State();
-    const act5State = createAct5State();
+    // Update per-act state from refs
+    if (currentArea === 'underground-lake') act2Ref.current.boatActive = true;
+    if (currentArea === 'lair') act3Ref.current.candleWaveProgress = 1;
+    const act2State = act2Ref.current;
+    const act3State = act3Ref.current;
+    const act4State = act4Ref.current;
+    const act5State = act5Ref.current;
 
     const startTime = performance.now();
 
