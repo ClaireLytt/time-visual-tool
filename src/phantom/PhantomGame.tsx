@@ -15,6 +15,8 @@ import EnvDescriptionOverlay from './ui/EnvDescriptionOverlay';
 import ActRecap from './ui/ActRecap';
 import GameEnding from './ui/GameEnding';
 import SentenceBuilder from './ui/SentenceBuilder';
+import CharacterProfiles from './ui/CharacterProfiles';
+import ProgressMap from './ui/ProgressMap';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
 import { ActId, DialogueScene, EnglishChallenge } from './core/types';
@@ -66,6 +68,8 @@ export default function PhantomGame() {
   const [flashcardsOpen, setFlashcardsOpen] = useState(false);
   const [scrambleOpen, setScrambleOpen] = useState(false);
   const [sentenceOpen, setSentenceOpen] = useState(false);
+  const [profilesOpen, setProfilesOpen] = useState(false);
+  const [mapOpen, setMapOpen] = useState(false);
   const [envDesc, setEnvDesc] = useState<EnvDescription | null>(null);
   const [showRecap, setShowRecap] = useState<ActId | null>(null);
   const [showEnding, setShowEnding] = useState(false);
@@ -160,6 +164,9 @@ export default function PhantomGame() {
     if (e.key === 'Tab') {
       e.preventDefault();
       setInventoryOpen((v) => !v);
+    }
+    if (e.key === 'm' || e.key === 'M') {
+      setMapOpen((v) => !v);
     }
   }, [togglePause, inventoryOpen]);
 
@@ -355,7 +362,7 @@ export default function PhantomGame() {
         fontFamily: 'sans-serif', fontSize: '0.7rem', color: '#4a3a2e',
         marginTop: '0.8rem', textAlign: 'center',
       }}>
-        点击场景移动 · 点击发光物品 · Tab 背包 · ESC 暂停
+        点击场景移动 · 点击发光物品 · Tab 背包 · M 地图 · ESC 暂停
       </p>
 
       <ParchmentOverlay itemId={viewingItem} onClose={() => {
@@ -412,6 +419,8 @@ export default function PhantomGame() {
       <FlashcardReview open={flashcardsOpen} onClose={() => setFlashcardsOpen(false)} />
       <WordScramble open={scrambleOpen} onClose={() => setScrambleOpen(false)} />
       <SentenceBuilder open={sentenceOpen} onClose={() => setSentenceOpen(false)} />
+      <CharacterProfiles open={profilesOpen} onClose={() => setProfilesOpen(false)} />
+      <ProgressMap open={mapOpen} onClose={() => setMapOpen(false)} />
 
       {showRecap && (
         <ActRecap
@@ -462,6 +471,12 @@ export default function PhantomGame() {
           </button>
           <button onClick={() => setSentenceOpen(true)} style={menuBtnStyle}>
             📝 句子拼装
+          </button>
+          <button onClick={() => setProfilesOpen(true)} style={menuBtnStyle}>
+            🎭 人物档案
+          </button>
+          <button onClick={() => setMapOpen(true)} style={menuBtnStyle}>
+            🗺️ 探索地图
           </button>
           <button
             onClick={() => { togglePause(); resetGame(); }}

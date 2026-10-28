@@ -280,6 +280,29 @@ export default function EnglishChallengeModal({ challenge, onComplete }: Props) 
           </p>
         </>
       )}
+      {/* Grammar note */}
+      {challenge.grammarNote && (
+        <div style={{
+          marginTop: '1rem',
+          background: 'rgba(138,175,176,0.08)',
+          borderLeft: '3px solid #8aafb0',
+          borderRadius: '0 4px 4px 0',
+          padding: '0.5rem 0.8rem',
+          textAlign: 'left',
+        }}>
+          <p style={{ fontSize: '0.65rem', color: '#6a5a48', letterSpacing: '0.1em', margin: '0 0 0.2rem' }}>
+            GRAMMAR NOTE
+          </p>
+          <p style={{ fontSize: '0.78rem', color: '#8aafb0', margin: '0 0 0.2rem' }}>
+            {challenge.grammarNote}
+          </p>
+          {challenge.grammarNoteZh && (
+            <p style={{ fontSize: '0.72rem', color: '#5a6a6a', margin: 0 }}>
+              {challenge.grammarNoteZh}
+            </p>
+          )}
+        </div>
+      )}
       <button
         onClick={() => onComplete(passed)}
         style={{ ...btnStyle, marginTop: '1.2rem' }}

@@ -39,6 +39,8 @@ export const ENGLISH_CHALLENGES: EnglishChallenge[] = [
     question: 'Fill in the blank: "Someone had _____ the stage rigging."',
     answers: ['sabotaged'],
     hint: 'This word means to deliberately destroy or damage something.',
+    grammarNote: 'Past Perfect: "had sabotaged" = had + past participle. Used for actions completed before another past action.',
+    grammarNoteZh: '过去完成时：had + 过去分词。用于表示在另一个过去动作之前已经完成的动作。',
   },
   {
     id: 'en-act1-memo',
@@ -73,6 +75,8 @@ export const ENGLISH_CHALLENGES: EnglishChallenge[] = [
     question: 'Translate to English: "五号包厢必须始终保持空置。"',
     answers: ['Box Five is to be kept empty at all times', 'Box Five must be kept empty at all times', 'Box 5 must always be kept empty'],
     hint: '"Box Five" is the key phrase. "kept empty" = 保持空置.',
+    grammarNote: 'Passive Voice: "is to be kept" = be + to be + past participle. A formal way of giving orders.',
+    grammarNoteZh: '被动语态：is to be kept = 应被保持。正式的命令语气。',
   },
   {
     id: 'en-act1-note',
@@ -177,6 +181,8 @@ export const ENGLISH_CHALLENGES: EnglishChallenge[] = [
     question: 'Translate: "在睡梦中他向我歌唱。"',
     answers: ['In sleep he sang to me', 'He sang to me in sleep', 'In my sleep he sang to me'],
     hint: '"In sleep" = 在睡梦中; "sang" is past tense of "sing".',
+    grammarNote: 'Past Simple: "sang" is the irregular past tense of "sing" (sing → sang → sung). "came" is from "come" (come → came → come).',
+    grammarNoteZh: '一般过去时：不规则动词 sing→sang→sung，come→came→come。',
   },
   {
     id: 'en-act2-carving',
@@ -240,6 +246,8 @@ export const ENGLISH_CHALLENGES: EnglishChallenge[] = [
     question: 'Translate: "过了这个点就再也回不了头。"',
     answers: ['Past the point of no return', 'Beyond the point of no return'],
     hint: '"Point of no return" is a famous phrase meaning the moment after which you cannot go back.',
+    grammarNote: 'Compound Noun: "point of no return" functions as a single noun phrase. "no" negates "return" to create a fixed expression.',
+    grammarNoteZh: '复合名词：point of no return 是固定表达，意为“不归之点”。',
   },
   {
     id: 'en-act3-diary',
@@ -475,6 +483,8 @@ export const ENGLISH_CHALLENGES: EnglishChallenge[] = [
     question: 'Translate: "结束了，夜之音乐。"',
     answers: ['It\'s over now, the music of the night', 'The music of the night is over', 'It is over now, the music of the night'],
     hint: '"Music of the Night" is the Phantom\'s most famous song.',
+    grammarNote: 'Contraction: "It\'s" = "It is". Adjective + Adverb: "over now" — "over" is a predicate adjective, "now" is a time adverb.',
+    grammarNoteZh: '缩写：It\'s = It is。over 作表语形容词，now 是时间副词。',
   },
 ];
 

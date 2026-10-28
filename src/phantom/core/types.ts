@@ -125,6 +125,9 @@ export interface EnglishChallenge {
   answers: string[];
   /** Hint shown after first wrong attempt */
   hint: string;
+  /** Optional grammar note */
+  grammarNote?: string;
+  grammarNoteZh?: string;
 }
 
 export interface LearningProgress {
