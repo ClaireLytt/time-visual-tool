@@ -93,8 +93,8 @@ interface Canvas2DProps {
 export default function Canvas2D({ onTransition, onTriggerFired, onClueClick }: Canvas2DProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef(0);
-  const cameraTargetRef = useRef(cameraX);
-  const camPosRef = useRef(cameraX);
+  const cameraTargetRef = useRef(0);
+  const camPosRef = useRef(0);
   const pickupBurstRef = useRef<{ x: number; y: number; t: number } | null>(null);
   const [hoveredHotspot, setHoveredHotspot] = useState<Hotspot | null>(null);
   const [ghostOpacity, setGhostOpacity] = useState(0);
