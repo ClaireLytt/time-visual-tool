@@ -6,6 +6,7 @@ import { ARTISTS } from '../../constants/artists'
 import { PAINTING_EXTRAS } from '../../constants/paintingData'
 import { useAchievements, AchievementToast, AchievementPanel, GlobalTimeline, PaintingQuiz } from './GalleryExtras'
 import { WorldMap, PaintingComparison, ColorWheel } from './GalleryViews'
+import { PuzzleGame } from './PuzzleGame'
 import type { Painting } from '../../types/gallery'
 
 /* ═══════════════════════════════════════════
@@ -493,6 +494,7 @@ function GalleryDashboard({ onBack }: { onBack?: () => void } = {}) {
   const [showMap, setShowMap] = useState(false)
   const [showCompare, setShowCompare] = useState(false)
   const [showColorWheel, setShowColorWheel] = useState(false)
+  const [showPuzzle, setShowPuzzle] = useState(false)
   const [newAchievement, setNewAchievement] = useState<{ icon: string; titleZh: string; titleEn: string } | null>(null)
   const prevUnlockedCount = useRef(achievements.unlocked.length)
 
@@ -655,6 +657,11 @@ function GalleryDashboard({ onBack }: { onBack?: () => void } = {}) {
             aria-label="Quiz">
             🎯 {isZh ? '猜画' : 'Quiz'}
           </button>
+          <button onClick={() => setShowPuzzle(true)}
+            className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 text-white/40 hover:text-white/70 text-xs tracking-wide transition-all cursor-pointer"
+            aria-label="Puzzle">
+            🧩
+          </button>
           <button onClick={() => setShowMap(true)}
             className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 text-white/40 hover:text-white/70 text-xs tracking-wide transition-all cursor-pointer"
             aria-label="World map">
@@ -714,6 +721,10 @@ function GalleryDashboard({ onBack }: { onBack?: () => void } = {}) {
       </AnimatePresence>
       <AnimatePresence>
         {showColorWheel && <ColorWheel isZh={isZh} onClose={() => setShowColorWheel(false)} />}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showPuzzle && <PuzzleGame isZh={isZh} onClose={() => setShowPuzzle(false)} />}
       </AnimatePresence>
 
       <AchievementToast achievement={newAchievement} isZh={isZh} onDone={() => setNewAchievement(null)} />
