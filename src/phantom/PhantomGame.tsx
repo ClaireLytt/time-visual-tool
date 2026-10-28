@@ -29,6 +29,7 @@ import MiniMap from './ui/MiniMap';
 import MemoryMatch from './ui/MemoryMatch';
 import ListeningDictation from './ui/ListeningDictation';
 import AreaNameToast from './ui/AreaNameToast';
+import LearningStats from './ui/LearningStats';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
 import { ActId, DialogueScene, EnglishChallenge } from './core/types';
@@ -91,6 +92,7 @@ export default function PhantomGame() {
   const [writingOpen, setWritingOpen] = useState(false);
   const [memoryOpen, setMemoryOpen] = useState(false);
   const [dictationOpen, setDictationOpen] = useState(false);
+  const [statsOpen, setStatsOpen] = useState(false);
   const [envDesc, setEnvDesc] = useState<EnvDescription | null>(null);
   const [showRecap, setShowRecap] = useState<ActId | null>(null);
   const [showEnding, setShowEnding] = useState(false);
@@ -525,6 +527,7 @@ export default function PhantomGame() {
       <WritingJournal open={writingOpen} onClose={() => setWritingOpen(false)} />
       <MemoryMatch open={memoryOpen} onClose={() => setMemoryOpen(false)} />
       <ListeningDictation open={dictationOpen} onClose={() => setDictationOpen(false)} />
+      <LearningStats open={statsOpen} onClose={() => setStatsOpen(false)} earnedAchievements={earnedAchievements} />
 
       {showRecap && (
         <ActRecap
@@ -583,6 +586,9 @@ export default function PhantomGame() {
               </button>
               <button onClick={() => setTimelineOpen(true)} style={menuBtnStyle}>
                 📜 故事时间线
+              </button>
+              <button onClick={() => setStatsOpen(true)} style={menuBtnStyle}>
+                📊 学习统计
               </button>
             </div>
 
