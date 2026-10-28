@@ -5,219 +5,6 @@ import { GALLERY_ROOMS } from '../../constants/gallery'
 import type { Painting } from '../../types/gallery'
 
 /* ═══════════════════════════════════════════
-   Ambient sound — Web Audio API drones
-   ═══════════════════════════════════════════ */
-const AMBIENT_FREQS: Record<string, number[]> = {
-  bells:  [261.6, 329.6, 392.0],   // C major chord — church-like
-  piano:  [220.0, 277.2, 330.0],   // A major — gentle
-  organ:  [130.8, 196.0, 261.6],   // low C — solemn
-}
-
-function useAmbientSound(soundType?: string, enabled = true) {
-  const ctxRef = useRef<AudioContext | null>(null)
-  const gainsRef = useRef<GainNode[]>([])
-
-  useEffect(() => {
-    if (!enabled || !soundType) return
-    const freqs = AMBIENT_FREQS[soundType]
-    if (!freqs) return
-
-    try {
-      const ctx = new AudioContext()
-      ctxRef.current = ctx
-      const gains: GainNode[] = []
-
-      freqs.forEach((freq) => {
-        const osc = ctx.createOscillator()
-        osc.type = 'sine'
-        osc.frequency.value = freq
-        const gain = ctx.createGain()
-        gain.gain.value = 0
-        gain.gain.linearRampToValueAtTime(0.015, ctx.currentTime + 2)
-        osc.connect(gain)
-        gain.connect(ctx.destination)
-        osc.start()
-        gains.push(gain)
-      })
-      gainsRef.current = gains
-
-      return () => {
-        gains.forEach(g => {
-          try { g.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.5) } catch (e) { void e }
-        })
-        setTimeout(() => { try { ctx.close() } catch (e) { void e } }, 600)
-      }
-    } catch (e) {
-      void e
-      return undefined
-    }
-  }, [soundType, enabled])
-}
-
-/* ═══════════════════════════════════════════
-   Flashlight mode — CSS mask follows pointer
-   ═══════════════════════════════════════════ */
-function useFlashlight(containerRef: React.RefObject<HTMLDivElement | null>, enabled: boolean) {
-  const [pos, setPos] = useState({ x: 50, y: 50 })
-
-  useEffect(() => {
-    if (!enabled || !containerRef.current) return
-    const el = containerRef.current
-    const handler = (e: MouseEvent | TouchEvent) => {
-      const rect = el.getBoundingClientRect()
-      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
-      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
-      setPos({
-        x: ((clientX - rect.left) / rect.width) * 100,
-        y: ((clientY - rect.top) / rect.height) * 100,
-      })
-    }
-    el.addEventListener('mousemove', handler)
-    el.addEventListener('touchmove', handler)
-    return () => {
-      el.removeEventListener('mousemove', handler)
-      el.removeEventListener('touchmove', handler)
-    }
-  }, [enabled, containerRef])
-
-  return pos
-}
-
-/* ═══════════════════════════════════════════
-   Single painting on the wall
-   ═══════════════════════════════════════════ */
-function WallPainting({ painting, onSelect, index }: {
-  painting: Painting
-  onSelect: (p: Painting) => void
-  index: number
-}) {
-  const [imgLoaded, setImgLoaded] = useState(false)
-  const [imgError, setImgError] = useState(false)
-
-  return (
-    <motion.button
-      onClick={() => onSelect(painting)}
-      className="group cursor-pointer relative flex flex-col items-center"
-      initial={{ opacity: 0, y: 40, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{
-        duration: 0.8,
-        delay: index * 0.2,
-        ease: [0.23, 1, 0.32, 1] as [number, number, number, number],
-      }}
-      whileHover={{ scale: 1.04, y: -6 }}
-      aria-label={`${painting.title} by ${painting.artist}`}
-    >
-      {/* Spotlight glow */}
-      <div
-        className="absolute -inset-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl pointer-events-none"
-        style={{
-          background: 'radial-gradient(ellipse at 50% 30%, rgba(255,240,200,0.1) 0%, transparent 70%)',
-        }}
-      />
-
-      {/* Thin gold border */}
-      <div
-        className="relative rounded overflow-hidden"
-        style={{
-          padding: 2,
-          background: 'linear-gradient(135deg, #c9a84c66, #f0d68a44, #c9a84c66)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
-        }}
-      >
-        <div className="relative overflow-hidden rounded-sm bg-black">
-          <div
-            className="absolute inset-0"
-            style={{
-              background: painting.fallbackGradient,
-              opacity: imgLoaded ? 0 : 1,
-              transition: 'opacity 0.5s',
-            }}
-          />
-          {!imgError && (
-            <img
-              src={painting.imageUrl}
-              alt={`${painting.title} by ${painting.artist}`}
-              className="relative block object-cover"
-              style={{
-                opacity: imgLoaded ? 1 : 0,
-                transition: 'opacity 0.5s',
-                width: painting.width,
-                height: painting.height,
-              }}
-              loading="lazy"
-              referrerPolicy="no-referrer"
-              onLoad={() => setImgLoaded(true)}
-              onError={() => setImgError(true)}
-            />
-          )}
-          {imgError && <div style={{ width: painting.width, height: painting.height }} />}
-        </div>
-      </div>
-
-      {/* Always-visible label */}
-      <div className="mt-2.5 text-center max-w-[200px]">
-        <p className="text-white/70 text-[11px] font-medium tracking-wide leading-tight">{painting.title}</p>
-        <p className="text-white/35 text-[10px] mt-0.5">{painting.artist}</p>
-      </div>
-
-      {/* Color palette dots */}
-      {painting.palette && (
-        <div className="flex gap-1 mt-1.5 opacity-50 group-hover:opacity-100 transition-opacity">
-          {painting.palette.map((c, i) => (
-            <span
-              key={i}
-              className="w-2.5 h-2.5 rounded-full border border-white/10"
-              style={{ background: c }}
-              title={c}
-            />
-          ))}
-        </div>
-      )}
-    </motion.button>
-  )
-}
-
-/* ═══════════════════════════════════════════
-   Human scale reference (silhouette)
-   ═══════════════════════════════════════════ */
-function HumanScale({ realSize }: { realSize: { widthCm: number; heightCm: number } }) {
-  // Scale: 170cm person = 60px tall
-  const SCALE = 60 / 170
-  const paintH = realSize.heightCm * SCALE
-  const paintW = realSize.widthCm * SCALE
-  const humanH = 60
-
-  return (
-    <div className="flex items-end gap-2 justify-center mt-3">
-      {/* Human silhouette */}
-      <div className="flex flex-col items-center">
-        <svg width="16" height={humanH} viewBox="0 0 16 60" fill="none" aria-hidden="true">
-          <circle cx="8" cy="4" r="4" fill="rgba(255,255,255,0.4)" />
-          <rect x="5" y="9" width="6" height="22" rx="3" fill="rgba(255,255,255,0.3)" />
-          <rect x="3" y="31" width="4" height="24" rx="2" fill="rgba(255,255,255,0.25)" />
-          <rect x="9" y="31" width="4" height="24" rx="2" fill="rgba(255,255,255,0.25)" />
-        </svg>
-        <span className="text-[8px] text-white/30 mt-0.5">170cm</span>
-      </div>
-      {/* Painting rectangle */}
-      <div className="flex flex-col items-center">
-        <div
-          className="border border-white/30 rounded-sm bg-white/5"
-          style={{
-            width: Math.max(8, Math.min(paintW, 120)),
-            height: Math.max(8, Math.min(paintH, 80)),
-          }}
-        />
-        <span className="text-[8px] text-white/30 mt-0.5">
-          {realSize.heightCm}×{realSize.widthCm}cm
-        </span>
-      </div>
-    </div>
-  )
-}
-
-/* ═══════════════════════════════════════════
    Magnifier lens for brushstroke detail
    ═══════════════════════════════════════════ */
 function MagnifierImage({ painting }: { painting: Painting }) {
@@ -237,44 +24,33 @@ function MagnifierImage({ painting }: { painting: Painting }) {
   return (
     <div
       ref={imgRef}
-      className="relative overflow-hidden rounded-lg cursor-crosshair"
+      className="relative overflow-hidden rounded cursor-crosshair"
       style={{ minHeight: 200 }}
       onMouseMove={handleMove}
       onMouseEnter={() => setLens(p => ({ ...p, show: true }))}
       onMouseLeave={() => setLens(p => ({ ...p, show: false }))}
     >
-      <div className="absolute inset-0 rounded-lg" style={{ background: painting.fallbackGradient }} />
+      <div className="absolute inset-0 rounded" style={{ background: painting.fallbackGradient }} />
       <img
         src={painting.imageUrl}
         alt={`${painting.title} by ${painting.artist}`}
-        className="relative w-full max-h-[55vh] object-contain rounded-lg"
+        className="relative w-full max-h-[60vh] object-contain rounded"
         referrerPolicy="no-referrer"
         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
       />
-      {/* Magnifier lens */}
       {lens.show && (
         <div
-          className="absolute w-28 h-28 rounded-full border-2 border-white/30 pointer-events-none overflow-hidden"
+          className="absolute w-32 h-32 rounded-full border-2 border-white/20 pointer-events-none overflow-hidden"
           style={{
-            left: `${lens.x}%`,
-            top: `${lens.y}%`,
+            left: `${lens.x}%`, top: `${lens.y}%`,
             transform: 'translate(-50%, -50%)',
-            boxShadow: '0 0 20px rgba(0,0,0,0.6)',
+            boxShadow: '0 0 30px rgba(0,0,0,0.7)',
           }}
         >
           <img
-            src={painting.imageUrl}
-            alt=""
-            className="absolute"
-            style={{
-              width: '300%',
-              height: '300%',
-              left: `${-lens.x * 3 + 50}%`,
-              top: `${-lens.y * 3 + 50}%`,
-              maxWidth: 'none',
-            }}
-            referrerPolicy="no-referrer"
-            aria-hidden="true"
+            src={painting.imageUrl} alt="" aria-hidden="true"
+            className="absolute" referrerPolicy="no-referrer"
+            style={{ width: '300%', height: '300%', left: `${-lens.x * 3 + 50}%`, top: `${-lens.y * 3 + 50}%`, maxWidth: 'none' }}
           />
         </div>
       )}
@@ -283,7 +59,36 @@ function MagnifierImage({ painting }: { painting: Painting }) {
 }
 
 /* ═══════════════════════════════════════════
-   Painting detail modal
+   Human scale reference
+   ═══════════════════════════════════════════ */
+function HumanScale({ realSize }: { realSize: { widthCm: number; heightCm: number } }) {
+  const SCALE = 60 / 170
+  const paintH = realSize.heightCm * SCALE
+  const paintW = realSize.widthCm * SCALE
+
+  return (
+    <div className="flex items-end gap-2 justify-center mt-3">
+      <div className="flex flex-col items-center">
+        <svg width="16" height={60} viewBox="0 0 16 60" fill="none" aria-hidden="true">
+          <circle cx="8" cy="4" r="4" fill="rgba(255,255,255,0.4)" />
+          <rect x="5" y="9" width="6" height="22" rx="3" fill="rgba(255,255,255,0.3)" />
+          <rect x="3" y="31" width="4" height="24" rx="2" fill="rgba(255,255,255,0.25)" />
+          <rect x="9" y="31" width="4" height="24" rx="2" fill="rgba(255,255,255,0.25)" />
+        </svg>
+        <span className="text-[8px] text-white/30 mt-0.5">170cm</span>
+      </div>
+      <div className="flex flex-col items-center">
+        <div className="border border-white/30 rounded-sm bg-white/5"
+          style={{ width: Math.max(8, Math.min(paintW, 120)), height: Math.max(8, Math.min(paintH, 80)) }}
+        />
+        <span className="text-[8px] text-white/30 mt-0.5">{realSize.heightCm}×{realSize.widthCm}cm</span>
+      </div>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════
+   Painting detail modal — full screen
    ═══════════════════════════════════════════ */
 function PaintingModal({ painting, onClose, isZh }: { painting: Painting; onClose: () => void; isZh: boolean }) {
   return (
@@ -291,147 +96,158 @@ function PaintingModal({ painting, onClose, isZh }: { painting: Painting; onClos
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
+      transition={{ duration: 0.4 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-6 overflow-y-auto"
       onClick={onClose}
     >
-      <div className="absolute inset-0 bg-black/92 backdrop-blur-md" />
+      <div className="absolute inset-0 bg-black/95 backdrop-blur-lg" />
       <motion.div
-        initial={{ scale: 0.85, opacity: 0 }}
+        initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.85, opacity: 0 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className="relative max-w-2xl w-full my-8"
+        exit={{ scale: 0.9, opacity: 0 }}
+        transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+        className="relative max-w-3xl w-full my-8"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Magnifier image */}
         <MagnifierImage painting={painting} />
 
-        {/* Info */}
-        <motion.div
-          className="mt-4 text-center"
-          initial={{ opacity: 0, y: 10 }}
+        <motion.div className="mt-5 text-center"
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
+          transition={{ delay: 0.2 }}
         >
-          <h3 className="text-xl font-bold text-white tracking-wide">{painting.title}</h3>
-          <p className="text-sm text-white/50 mt-1">{painting.artist} · {painting.year}</p>
+          <h3 className="text-2xl font-bold text-white tracking-wide">{painting.title}</h3>
+          <p className="text-sm text-white/40 mt-1">{painting.artist} · {painting.year}</p>
 
-          {/* Story */}
           {painting.story && (
-            <p className="text-sm text-white/60 mt-3 leading-relaxed max-w-md mx-auto px-4">
+            <p className="text-sm text-white/55 mt-4 leading-relaxed max-w-lg mx-auto">
               {isZh ? painting.story.zh : painting.story.en}
             </p>
           )}
 
-          {/* Palette */}
           {painting.palette && (
-            <div className="flex gap-2 justify-center mt-4">
+            <div className="flex gap-2.5 justify-center mt-5">
               {painting.palette.map((c, i) => (
                 <div key={i} className="flex flex-col items-center gap-1">
-                  <span
-                    className="w-6 h-6 rounded-full border border-white/15 shadow-lg"
-                    style={{ background: c }}
-                  />
-                  <span className="text-[9px] text-white/30 font-mono">{c}</span>
+                  <span className="w-7 h-7 rounded-full border border-white/10 shadow-lg" style={{ background: c }} />
+                  <span className="text-[9px] text-white/25 font-mono">{c}</span>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Human scale comparison */}
           {painting.realSize && <HumanScale realSize={painting.realSize} />}
         </motion.div>
 
-        {/* Close */}
-        <button
-          onClick={onClose}
-          className="absolute -top-3 -right-3 w-10 h-10 rounded-full bg-white/10 backdrop-blur text-white flex items-center justify-center hover:bg-white/20 transition-colors text-xl"
+        <button onClick={onClose}
+          className="absolute top-2 right-2 w-11 h-11 rounded-full bg-white/5 backdrop-blur text-white/60 hover:text-white hover:bg-white/15 flex items-center justify-center transition-all text-xl"
           aria-label="Close"
-        >
-          ×
-        </button>
+        >×</button>
       </motion.div>
     </motion.div>
   )
 }
 
 /* ═══════════════════════════════════════════
-   Timeline bar
+   Free-form painting on the wall
+   Each painting has unique position, size, rotation
    ═══════════════════════════════════════════ */
-function Timeline({ paintings }: { paintings: Painting[] }) {
-  const years = paintings.map(p => Number(p.year))
-  const min = Math.min(...years) - 20
-  const max = Math.max(...years) + 20
-  const range = max - min
+const LAYOUTS: { x: string; y: string; rotate: number; scale: number }[][] = [
+  // Dutch Masters — asymmetric salon hang
+  [
+    { x: '8%',  y: '12%', rotate: -1.5, scale: 1.15 },
+    { x: '38%', y: '6%',  rotate: 0.5,  scale: 1.4 },
+    { x: '72%', y: '14%', rotate: 1.2,  scale: 1.1 },
+  ],
+  // Impressionism — airy, floating
+  [
+    { x: '6%',  y: '8%',  rotate: -0.8, scale: 1.35 },
+    { x: '42%', y: '18%', rotate: 0,    scale: 1.2 },
+    { x: '74%', y: '5%',  rotate: 1.5,  scale: 1.0 },
+  ],
+  // Renaissance — stately, centered weight
+  [
+    { x: '10%', y: '10%', rotate: 0,    scale: 1.0 },
+    { x: '35%', y: '4%',  rotate: -0.5, scale: 1.5 },
+    { x: '70%', y: '15%', rotate: 0.8,  scale: 1.25 },
+  ],
+]
+
+function WallPainting({ painting, layout, onSelect, index }: {
+  painting: Painting
+  layout: { x: string; y: string; rotate: number; scale: number }
+  onSelect: (p: Painting) => void
+  index: number
+}) {
+  const [imgLoaded, setImgLoaded] = useState(false)
+  const [imgError, setImgError] = useState(false)
+  const w = painting.width * layout.scale
+  const h = painting.height * layout.scale
 
   return (
-    <div className="px-8 py-2">
-      <div className="relative h-8">
-        {/* Line */}
-        <div className="absolute top-3 left-0 right-0 h-px bg-white/15" />
-        {/* Year markers */}
-        {paintings.map((p) => {
-          const pct = ((Number(p.year) - min) / range) * 100
-          return (
-            <div
-              key={p.id}
-              className="absolute flex flex-col items-center"
-              style={{ left: `${pct}%`, transform: 'translateX(-50%)' }}
-            >
-              <div className="w-2 h-2 rounded-full bg-amber-400/80 border border-amber-300/50" />
-              <span className="text-[9px] text-white/50 mt-1 whitespace-nowrap">
-                {p.year}
-              </span>
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
-/* ═══════════════════════════════════════════
-   Nav arrow
-   ═══════════════════════════════════════════ */
-function NavArrow({ direction, label, onClick }: { direction: 'left' | 'right'; label: string; onClick: () => void }) {
-  const isLeft = direction === 'left'
-  return (
-    <button
-      onClick={onClick}
-      className="absolute top-1/2 -translate-y-1/2 z-20 group cursor-pointer"
-      style={{ [isLeft ? 'left' : 'right']: 12 }}
-      aria-label={`Go to ${label}`}
+    <motion.button
+      onClick={() => onSelect(painting)}
+      className="absolute group cursor-pointer"
+      style={{ left: layout.x, top: layout.y }}
+      initial={{ opacity: 0, y: 50, scale: 0.85 }}
+      animate={{ opacity: 1, y: 0, scale: 1, rotate: layout.rotate }}
+      transition={{
+        duration: 1,
+        delay: 0.15 + index * 0.25,
+        ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+      }}
+      whileHover={{ scale: 1.06, rotate: 0, zIndex: 30 }}
+      aria-label={`${painting.title} by ${painting.artist}`}
     >
-      <div className="w-11 h-11 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/15 backdrop-blur-sm transition-all duration-200 border border-white/10">
-        <span className="text-lg text-white/60 group-hover:text-white transition-colors">
-          {isLeft ? '‹' : '›'}
-        </span>
+      {/* Warm spotlight on hover */}
+      <div
+        className="absolute -inset-10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse at 50% 20%, rgba(255,240,200,0.08) 0%, transparent 70%)' }}
+      />
+
+      {/* Shadow behind painting */}
+      <div className="absolute inset-0 rounded" style={{
+        boxShadow: '0 12px 48px rgba(0,0,0,0.7), 0 4px 12px rgba(0,0,0,0.5)',
+      }} />
+
+      {/* Painting */}
+      <div className="relative overflow-hidden rounded bg-black" style={{ width: w, height: h }}>
+        <div className="absolute inset-0" style={{ background: painting.fallbackGradient, opacity: imgLoaded ? 0 : 1, transition: 'opacity 0.6s' }} />
+        {!imgError && (
+          <img
+            src={painting.imageUrl}
+            alt={`${painting.title} by ${painting.artist}`}
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ opacity: imgLoaded ? 1 : 0, transition: 'opacity 0.6s' }}
+            loading="lazy" referrerPolicy="no-referrer"
+            onLoad={() => setImgLoaded(true)}
+            onError={() => setImgError(true)}
+          />
+        )}
       </div>
-    </button>
+
+      {/* Label — appears on hover */}
+      <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+        <p className="text-white/80 text-xs font-medium tracking-wide">{painting.title}</p>
+        <p className="text-white/40 text-[10px] text-center">{painting.artist} · {painting.year}</p>
+      </div>
+    </motion.button>
   )
 }
 
 /* ═══════════════════════════════════════════
-   Main Gallery
+   Main Gallery — full screen
    ═══════════════════════════════════════════ */
 function GalleryDashboard() {
   const { i18n } = useTranslation()
   const [roomIndex, setRoomIndex] = useState(0)
   const [selectedPainting, setSelectedPainting] = useState<Painting | null>(null)
   const [transitioning, setTransitioning] = useState(false)
-  const [slideDir, setSlideDir] = useState(0) // -1 left, 1 right
-  const [flashlight, setFlashlight] = useState(false)
-  const [soundOn, setSoundOn] = useState(false)
-  const galleryRef = useRef<HTMLDivElement>(null)
+  const [slideDir, setSlideDir] = useState(0)
 
   const room = GALLERY_ROOMS[roomIndex]
   const isZh = i18n.language === 'zh'
-
-  // Ambient sound
-  useAmbientSound(room.ambientSound, soundOn)
-
-  // Flashlight
-  const flashPos = useFlashlight(galleryRef, flashlight)
+  const layouts = LAYOUTS[roomIndex] || LAYOUTS[0]
 
   const goToRoom = useCallback((index: number, dir: number) => {
     if (transitioning) return
@@ -440,26 +256,15 @@ function GalleryDashboard() {
     setTimeout(() => {
       setRoomIndex(index)
       setTransitioning(false)
-    }, 400)
+    }, 500)
   }, [transitioning])
 
-  const prevRoom = useMemo(() => {
-    const i = (roomIndex - 1 + GALLERY_ROOMS.length) % GALLERY_ROOMS.length
-    return GALLERY_ROOMS[i]
-  }, [roomIndex])
+  const prevRoom = useMemo(() => GALLERY_ROOMS[(roomIndex - 1 + GALLERY_ROOMS.length) % GALLERY_ROOMS.length], [roomIndex])
+  const nextRoom = useMemo(() => GALLERY_ROOMS[(roomIndex + 1) % GALLERY_ROOMS.length], [roomIndex])
 
-  const nextRoom = useMemo(() => {
-    const i = (roomIndex + 1) % GALLERY_ROOMS.length
-    return GALLERY_ROOMS[i]
-  }, [roomIndex])
-
-  // Keyboard navigation
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (selectedPainting) {
-        if (e.key === 'Escape') setSelectedPainting(null)
-        return
-      }
+      if (selectedPainting) { if (e.key === 'Escape') setSelectedPainting(null); return }
       if (e.key === 'ArrowLeft') goToRoom((roomIndex - 1 + GALLERY_ROOMS.length) % GALLERY_ROOMS.length, -1)
       if (e.key === 'ArrowRight') goToRoom((roomIndex + 1) % GALLERY_ROOMS.length, 1)
     }
@@ -467,57 +272,42 @@ function GalleryDashboard() {
     return () => window.removeEventListener('keydown', handler)
   }, [roomIndex, selectedPainting, goToRoom])
 
-  // Always dark — immersive gallery
-  const dotActive = '#c9a84c'
-  const dotInactive = 'rgba(255,255,255,0.2)'
-
   return (
-    <div className="w-full -mx-4 sm:-mx-6">
-      {/* ── Gallery canvas ── */}
+    <div className="w-full -mx-4 sm:-mx-6" style={{ marginTop: -16 }}>
+      {/* ── Full-screen black gallery ── */}
       <div
-        ref={galleryRef}
         className="relative w-full overflow-hidden"
-        style={{
-          background: '#0a0a0a',
-          minHeight: 480,
-          // Flashlight mask
-          ...(flashlight ? {
-            WebkitMaskImage: `radial-gradient(circle 120px at ${flashPos.x}% ${flashPos.y}%, black 60%, transparent 100%)`,
-            maskImage: `radial-gradient(circle 120px at ${flashPos.x}% ${flashPos.y}%, black 60%, transparent 100%)`,
-          } : {}),
-        }}
+        style={{ background: '#050505', height: 'calc(100vh - 56px)', minHeight: 500 }}
       >
-        {/* Room title */}
-        <div className="pt-5 pb-1 text-center relative z-10">
+        {/* Room title — top center */}
+        <div className="absolute top-4 left-0 right-0 z-20 text-center">
           <AnimatePresence mode="wait">
             <motion.h2
               key={room.id}
-              className="text-lg font-semibold tracking-widest uppercase text-white/80"
-              initial={{ opacity: 0, x: slideDir * 40, filter: 'blur(4px)' }}
-              animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, x: -slideDir * 40, filter: 'blur(4px)' }}
-              transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] as [number, number, number, number] }}
+              className="text-sm font-medium tracking-[0.3em] uppercase text-white/50"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.4 }}
             >
               {isZh ? room.nameZh : room.name}
             </motion.h2>
           </AnimatePresence>
 
           {/* Room dots */}
-          <div className="flex items-center justify-center gap-0 mt-1.5">
+          <div className="flex items-center justify-center gap-3 mt-2">
             {GALLERY_ROOMS.map((r, i) => (
               <button
                 key={r.id}
                 onClick={() => goToRoom(i, i > roomIndex ? 1 : -1)}
-                className="flex items-center justify-center"
-                style={{ width: 44, height: 32 }}
+                className="w-11 h-8 flex items-center justify-center"
                 aria-label={isZh ? r.nameZh : r.name}
               >
-                <span
-                  className="block rounded-full transition-all duration-300"
+                <span className="block rounded-full transition-all duration-400"
                   style={{
-                    width: i === roomIndex ? 20 : 6,
-                    height: 6,
-                    background: i === roomIndex ? dotActive : dotInactive,
+                    width: i === roomIndex ? 18 : 5,
+                    height: 5,
+                    background: i === roomIndex ? '#c9a84c' : 'rgba(255,255,255,0.15)',
                   }}
                 />
               </button>
@@ -525,90 +315,49 @@ function GalleryDashboard() {
           </div>
         </div>
 
-        {/* Paintings — slide transition */}
-        <div className="relative z-10 px-16 pb-4">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={room.id}
-              initial={{ opacity: 0, x: slideDir * 100, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -slideDir * 100, scale: 0.95 }}
-              transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] as [number, number, number, number] }}
-              className="flex items-start justify-center gap-10 sm:gap-14 flex-wrap py-4"
-            >
-              {room.paintings.map((p, i) => (
-                <WallPainting
-                  key={p.id}
-                  painting={{
-                    ...p,
-                    // Override label colors for light mode via a trick — we override in the component
-                  }}
-                  onSelect={setSelectedPainting}
-                  index={i}
-                />
-              ))}
-            </motion.div>
-          </AnimatePresence>
-        </div>
+        {/* Paintings — free-form positioned */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={room.id}
+            className="absolute inset-0"
+            initial={{ opacity: 0, x: slideDir * 120 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -slideDir * 120 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+          >
+            {room.paintings.map((p, i) => (
+              <WallPainting
+                key={p.id}
+                painting={p}
+                layout={layouts[i]}
+                onSelect={setSelectedPainting}
+                index={i}
+              />
+            ))}
+          </motion.div>
+        </AnimatePresence>
 
-        {/* Timeline */}
-        <div className="relative z-10">
-          <Timeline paintings={room.paintings} />
-        </div>
-
-        {/* Nav arrows */}
-        <NavArrow
-          direction="left"
-          label={isZh ? prevRoom.nameZh : prevRoom.name}
+        {/* Nav arrows — edges */}
+        <button
           onClick={() => goToRoom((roomIndex - 1 + GALLERY_ROOMS.length) % GALLERY_ROOMS.length, -1)}
-        />
-        <NavArrow
-          direction="right"
-          label={isZh ? nextRoom.nameZh : nextRoom.name}
+          className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/15 backdrop-blur-sm transition-all border border-white/10 cursor-pointer"
+          aria-label={`Go to ${isZh ? prevRoom.nameZh : prevRoom.name}`}
+        >
+          <span className="text-lg text-white/50 hover:text-white">‹</span>
+        </button>
+        <button
           onClick={() => goToRoom((roomIndex + 1) % GALLERY_ROOMS.length, 1)}
-        />
+          className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/15 backdrop-blur-sm transition-all border border-white/10 cursor-pointer"
+          aria-label={`Go to ${isZh ? nextRoom.nameZh : nextRoom.name}`}
+        >
+          <span className="text-lg text-white/50 hover:text-white">›</span>
+        </button>
 
-        {/* Vignette edges */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: 'linear-gradient(90deg, rgba(0,0,0,0.3) 0%, transparent 15%, transparent 85%, rgba(0,0,0,0.3) 100%)',
-          }}
-        />
-
-        {/* Control buttons — top right */}
-        <div className="absolute top-3 right-3 z-20 flex gap-1.5">
-          <button
-            onClick={() => setFlashlight(f => !f)}
-            className={`w-9 h-9 rounded-full flex items-center justify-center text-sm transition-all ${
-              flashlight
-                ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40'
-                : 'bg-white/5 text-white/40 border border-white/10'
-            }`}
-            aria-label="Flashlight mode"
-            title={isZh ? '手电筒模式' : 'Flashlight mode'}
-          >
-            🔦
-          </button>
-          <button
-            onClick={() => setSoundOn(s => !s)}
-            className={`w-9 h-9 rounded-full flex items-center justify-center text-sm transition-all ${
-              soundOn
-                ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40'
-                : 'bg-white/5 text-white/40 border border-white/10'
-            }`}
-            aria-label="Ambient sound"
-            title={isZh ? '环境音' : 'Ambient sound'}
-          >
-            {soundOn ? '🔊' : '🔇'}
-          </button>
-        </div>
+        {/* Subtle vignette */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          background: 'radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,0.5) 100%)',
+        }} />
       </div>
-
-      {/* Hint */}
-      <p className="text-xs text-gray-500 text-center mt-2.5 px-4">
-        ← → {isZh ? '方向键切换展厅 · 点击画作查看详情 · 🔦手电筒 · 🔊环境音' : 'switch rooms · click painting for details · 🔦flashlight · 🔊ambient'}
-      </p>
 
       {/* Detail modal */}
       <AnimatePresence>
