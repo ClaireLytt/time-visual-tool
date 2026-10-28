@@ -26,6 +26,8 @@ import HelpGuide from './ui/HelpGuide';
 import PronunciationPractice from './ui/PronunciationPractice';
 import WritingJournal from './ui/WritingJournal';
 import MiniMap from './ui/MiniMap';
+import MemoryMatch from './ui/MemoryMatch';
+import ListeningDictation from './ui/ListeningDictation';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
 import { ActId, DialogueScene, EnglishChallenge } from './core/types';
@@ -86,6 +88,8 @@ export default function PhantomGame() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [pronunciationOpen, setPronunciationOpen] = useState(false);
   const [writingOpen, setWritingOpen] = useState(false);
+  const [memoryOpen, setMemoryOpen] = useState(false);
+  const [dictationOpen, setDictationOpen] = useState(false);
   const [envDesc, setEnvDesc] = useState<EnvDescription | null>(null);
   const [showRecap, setShowRecap] = useState<ActId | null>(null);
   const [showEnding, setShowEnding] = useState(false);
@@ -516,6 +520,8 @@ export default function PhantomGame() {
       <HelpGuide open={helpOpen} onClose={() => setHelpOpen(false)} />
       <PronunciationPractice open={pronunciationOpen} onClose={() => setPronunciationOpen(false)} />
       <WritingJournal open={writingOpen} onClose={() => setWritingOpen(false)} />
+      <MemoryMatch open={memoryOpen} onClose={() => setMemoryOpen(false)} />
+      <ListeningDictation open={dictationOpen} onClose={() => setDictationOpen(false)} />
 
       {showRecap && (
         <ActRecap
@@ -605,6 +611,12 @@ export default function PhantomGame() {
               </button>
               <button onClick={() => setWritingOpen(true)} style={menuBtnStyle}>
                 ✍️ 写作练习
+              </button>
+              <button onClick={() => setMemoryOpen(true)} style={menuBtnStyle}>
+                🃏 记忆配对
+              </button>
+              <button onClick={() => setDictationOpen(true)} style={menuBtnStyle}>
+                🎧 听写练习
               </button>
             </div>
           </div>
