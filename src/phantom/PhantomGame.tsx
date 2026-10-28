@@ -21,6 +21,7 @@ import ReadingPassages from './ui/ReadingPassages';
 import DailyChallenge from './ui/DailyChallenge';
 import IdiomCollection from './ui/IdiomCollection';
 import StoryTimeline from './ui/StoryTimeline';
+import ReviewQuiz from './ui/ReviewQuiz';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
 import { ActId, DialogueScene, EnglishChallenge } from './core/types';
@@ -77,6 +78,7 @@ export default function PhantomGame() {
   const [readingOpen, setReadingOpen] = useState(false);
   const [idiomsOpen, setIdiomsOpen] = useState(false);
   const [timelineOpen, setTimelineOpen] = useState(false);
+  const [quizOpen, setQuizOpen] = useState(false);
   const [envDesc, setEnvDesc] = useState<EnvDescription | null>(null);
   const [showRecap, setShowRecap] = useState<ActId | null>(null);
   const [showEnding, setShowEnding] = useState(false);
@@ -467,6 +469,7 @@ export default function PhantomGame() {
       <ReadingPassages open={readingOpen} onClose={() => setReadingOpen(false)} />
       <IdiomCollection open={idiomsOpen} onClose={() => setIdiomsOpen(false)} />
       <StoryTimeline open={timelineOpen} onClose={() => setTimelineOpen(false)} />
+      <ReviewQuiz open={quizOpen} onClose={() => setQuizOpen(false)} />
 
       {showRecap && (
         <ActRecap
@@ -547,6 +550,9 @@ export default function PhantomGame() {
               </button>
               <button onClick={() => setIdiomsOpen(true)} style={menuBtnStyle}>
                 💬 习语收集
+              </button>
+              <button onClick={() => setQuizOpen(true)} style={menuBtnStyle}>
+                🏆 综合测验
               </button>
             </div>
           </div>

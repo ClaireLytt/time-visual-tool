@@ -25,8 +25,14 @@ export default function FlashcardReview({ open, onClose }: Props) {
           vocab.push({ ...v, source: ch.source });
         });
       });
+    // Spaced repetition: sort by least reviewed first
+    vocab.sort((a, b) => {
+      const ra = learning.vocabReviewed[a.word] || 0;
+      const rb = learning.vocabReviewed[b.word] || 0;
+      return ra - rb;
+    });
     return vocab;
-  }, [learning.completedChallenges]);
+  }, [learning.completedChallenges, learning.vocabReviewed]);
 
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
