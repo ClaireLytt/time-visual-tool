@@ -706,27 +706,35 @@ function GalleryDashboard({ onBack }: { onBack?: () => void } = {}) {
     <div className="fixed inset-0 z-30 flex flex-col" style={{ background: '#2c3e50' }}
       {...swipeHandlers}
     >
-      {/* Museum wall + checkered floor background */}
+      {/* Museum wall background */}
       <div className="absolute inset-0 pointer-events-none" style={{
-        background: 'linear-gradient(180deg, #2a3a4a 0%, #344a5a 30%, #3a5060 50%, #2a3a48 65%, #1a1a1a 65%, #1a1a1a 100%)',
+        background: 'linear-gradient(180deg, #2a3a4a 0%, #344a5a 25%, #3a5060 45%, #2a3a48 60%, #222 60.5%, #1a1a1a 100%)',
       }} />
-      {/* Checkered floor */}
-      <div className="absolute bottom-0 left-0 right-0 pointer-events-none" style={{
-        height: '35%',
-        background: `
-          linear-gradient(45deg, #1a1a1a 25%, transparent 25%),
-          linear-gradient(-45deg, #1a1a1a 25%, transparent 25%),
-          linear-gradient(45deg, transparent 75%, #1a1a1a 75%),
-          linear-gradient(-45deg, transparent 75%, #1a1a1a 75%)`,
-        backgroundSize: '48px 48px',
-        backgroundPosition: '0 0, 0 24px, 24px -24px, -24px 0px',
-        backgroundColor: '#252525',
-        opacity: 0.7,
-      }} />
-      {/* Floor fade — darker toward viewer */}
-      <div className="absolute bottom-0 left-0 right-0 pointer-events-none" style={{
-        height: '35%',
-        background: 'linear-gradient(0deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 50%, transparent 100%)',
+      {/* 3D perspective checkered floor */}
+      <div className="absolute bottom-0 left-0 right-0 pointer-events-none overflow-hidden" style={{ height: '40%', perspective: '600px', perspectiveOrigin: '50% 0%' }}>
+        <div style={{
+          position: 'absolute', inset: 0,
+          transformOrigin: 'top center',
+          transform: 'rotateX(55deg)',
+          background: `
+            linear-gradient(45deg, #1c1c1c 25%, transparent 25%),
+            linear-gradient(-45deg, #1c1c1c 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, #1c1c1c 75%),
+            linear-gradient(-45deg, transparent 75%, #1c1c1c 75%)`,
+          backgroundSize: '60px 60px',
+          backgroundPosition: '0 0, 0 30px, 30px -30px, -30px 0px',
+          backgroundColor: '#2a2a2a',
+        }} />
+        {/* Depth fade — floor fades into distance */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(180deg, rgba(42,58,74,0.6) 0%, transparent 30%, rgba(0,0,0,0.4) 100%)',
+        }} />
+      </div>
+      {/* Wall-floor seam line */}
+      <div className="absolute left-0 right-0 pointer-events-none" style={{
+        top: '60%', height: 2,
+        background: 'linear-gradient(90deg, transparent 5%, rgba(0,0,0,0.3) 20%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.3) 80%, transparent 95%)',
       }} />
 
       {/* Zone 1: Room header with back button */}
