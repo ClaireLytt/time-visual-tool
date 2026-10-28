@@ -492,6 +492,60 @@ function InfoBar({ room, isZh }: { room: typeof GALLERY_ROOMS[number]; isZh: boo
 /* ═══════════════════════════════════════════
    Main Gallery
    ═══════════════════════════════════════════ */
+/* ═══════════════════════════════════════════
+   Expandable toolbar menu
+   ═══════════════════════════════════════════ */
+const TOOL_BTN = 'w-11 h-11 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/15 backdrop-blur-sm border border-white/10 text-sm transition-all cursor-pointer'
+
+function ToolbarMenu({ isZh, achievementCount, onRandom, onTimeline, onQuiz, onPuzzle, onMap, onCompare, onColorWheel, onAchievements }: {
+  isZh: boolean; achievementCount: number
+  onRandom: () => void; onTimeline: () => void; onQuiz: () => void; onPuzzle: () => void
+  onMap: () => void; onCompare: () => void; onColorWheel: () => void; onAchievements: () => void
+}) {
+  const [open, setOpen] = useState(false)
+
+  const items = [
+    { icon: '🎲', label: isZh ? '随机' : 'Random', action: onRandom },
+    { icon: '📈', label: isZh ? '时间线' : 'Timeline', action: onTimeline },
+    { icon: '🎯', label: isZh ? '猜画' : 'Quiz', action: onQuiz },
+    { icon: '🧩', label: isZh ? '拼图' : 'Puzzle', action: onPuzzle },
+    { icon: '🌍', label: isZh ? '地图' : 'Map', action: onMap },
+    { icon: '📐', label: isZh ? '对比' : 'Compare', action: onCompare },
+    { icon: '🎨', label: isZh ? '色彩' : 'Color', action: onColorWheel },
+    { icon: '🏆', label: `${achievementCount}/6`, action: onAchievements },
+  ]
+
+  return (
+    <div className="absolute bottom-4 right-4 z-20">
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 10 }}
+            className="absolute bottom-14 right-0 bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl p-2 grid grid-cols-4 gap-1.5"
+            style={{ minWidth: 200 }}
+          >
+            {items.map(item => (
+              <button key={item.icon} onClick={() => { item.action(); setOpen(false) }}
+                className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-white/10 transition-all cursor-pointer"
+                aria-label={item.label}>
+                <span className="text-base">{item.icon}</span>
+                <span className="text-[9px] text-white/40">{item.label}</span>
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <button onClick={() => setOpen(!open)}
+        className={`${TOOL_BTN} ${open ? 'bg-white/15 text-white' : 'text-white/50'}`}
+        aria-label={isZh ? '工具菜单' : 'Tools menu'}>
+        {open ? '✕' : '⋯'}
+      </button>
+    </div>
+  )
+}
+
 function GalleryDashboard({ onBack }: { onBack?: () => void } = {}) {
   const { i18n } = useTranslation()
   const [roomIndex, setRoomIndex] = useState(0)
@@ -656,49 +710,19 @@ function GalleryDashboard({ onBack }: { onBack?: () => void } = {}) {
 
         <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,0.5) 100%)' }} />
 
-        {/* Bottom toolbar */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-          <button onClick={randomExplore}
-            className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 text-white/40 hover:text-white/70 text-xs tracking-wide transition-all cursor-pointer"
-            aria-label="Random painting">
-            🎲 {isZh ? '随机' : 'Random'}
-          </button>
-          <button onClick={() => setShowTimeline(true)}
-            className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 text-white/40 hover:text-white/70 text-xs tracking-wide transition-all cursor-pointer"
-            aria-label="Timeline">
-            📈 {isZh ? '时间线' : 'Timeline'}
-          </button>
-          <button onClick={() => setShowQuiz(true)}
-            className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 text-white/40 hover:text-white/70 text-xs tracking-wide transition-all cursor-pointer"
-            aria-label="Quiz">
-            🎯 {isZh ? '猜画' : 'Quiz'}
-          </button>
-          <button onClick={() => setShowPuzzle(true)}
-            className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 text-white/40 hover:text-white/70 text-xs tracking-wide transition-all cursor-pointer"
-            aria-label="Puzzle">
-            🧩
-          </button>
-          <button onClick={() => setShowMap(true)}
-            className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 text-white/40 hover:text-white/70 text-xs tracking-wide transition-all cursor-pointer"
-            aria-label="World map">
-            🌍
-          </button>
-          <button onClick={() => setShowCompare(true)}
-            className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 text-white/40 hover:text-white/70 text-xs tracking-wide transition-all cursor-pointer"
-            aria-label="Compare">
-            📐
-          </button>
-          <button onClick={() => setShowColorWheel(true)}
-            className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 text-white/40 hover:text-white/70 text-xs tracking-wide transition-all cursor-pointer"
-            aria-label="Color analysis">
-            🎨
-          </button>
-          <button onClick={() => setShowAchievements(true)}
-            className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 text-white/40 hover:text-white/70 text-xs tracking-wide transition-all cursor-pointer"
-            aria-label="Achievements">
-            🏆 {achievements.unlocked.length}/{6}
-          </button>
-        </div>
+        {/* Bottom toolbar — expandable menu */}
+        <ToolbarMenu
+          isZh={isZh}
+          achievementCount={achievements.unlocked.length}
+          onRandom={randomExplore}
+          onTimeline={() => setShowTimeline(true)}
+          onQuiz={() => setShowQuiz(true)}
+          onPuzzle={() => setShowPuzzle(true)}
+          onMap={() => setShowMap(true)}
+          onCompare={() => setShowCompare(true)}
+          onColorWheel={() => setShowColorWheel(true)}
+          onAchievements={() => setShowAchievements(true)}
+        />
       </div>
 
       {/* Zone 3: Info bar */}
