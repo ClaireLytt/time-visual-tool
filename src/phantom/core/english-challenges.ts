@@ -28,6 +28,7 @@ export const ENGLISH_CHALLENGES: EnglishChallenge[] = [
         meaning: '灾难，大祸',
         example: 'It was a catastrophe — the lead soprano could not sing.',
         exampleZh: '这是一场灾难——首席女高音无法演唱。',
+        etymology: 'Greek "katastrophē" (overturning) from "kata" (down) + "strephein" (to turn).',
       },
       {
         word: 'sabotage',
@@ -172,6 +173,7 @@ export const ENGLISH_CHALLENGES: EnglishChallenge[] = [
         meaning: '旋律',
         example: 'His melody haunted her dreams.',
         exampleZh: '他的旋律营绕在她的梦中。',
+        etymology: 'Greek "melos" (song) + "oidia" (singing) → melodia → melody.',
       },
       {
         word: 'haunt',
@@ -237,6 +239,7 @@ export const ENGLISH_CHALLENGES: EnglishChallenge[] = [
         meaning: '胜利，凯旋',
         example: 'Don Juan\'s triumph was also his downfall.',
         exampleZh: '唐璐的胜利也是他的败亡。',
+        etymology: 'Latin "triumphus" (victory procession). Roman generals received a triumph after great victories.',
       },
       {
         word: 'surrender',
@@ -273,6 +276,7 @@ export const ENGLISH_CHALLENGES: EnglishChallenge[] = [
         meaning: '孤独，独处',
         example: 'He lived in solitude beneath the opera house.',
         exampleZh: '他孤独地住在歌剧院下方。',
+        etymology: 'Latin "solus" (alone) → "solitudo" (loneliness). Same root as "solo" and "sole".',
       },
       {
         word: 'torment',
@@ -413,6 +417,7 @@ export const ENGLISH_CHALLENGES: EnglishChallenge[] = [
         meaning: '命运',
         example: 'He believed music was his destiny.',
         exampleZh: '他相信音乐是他的命运。',
+        etymology: 'Latin "destinare" (to make firm, establish). Related to "destination" — where fate leads you.',
       },
     ],
     question: 'Fill in: "Don Juan _____" (the name of the opera within the opera)',
