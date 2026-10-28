@@ -18,6 +18,9 @@ import SentenceBuilder from './ui/SentenceBuilder';
 import CharacterProfiles from './ui/CharacterProfiles';
 import ProgressMap from './ui/ProgressMap';
 import ReadingPassages from './ui/ReadingPassages';
+import DailyChallenge from './ui/DailyChallenge';
+import IdiomCollection from './ui/IdiomCollection';
+import StoryTimeline from './ui/StoryTimeline';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
 import { ActId, DialogueScene, EnglishChallenge } from './core/types';
@@ -72,6 +75,8 @@ export default function PhantomGame() {
   const [profilesOpen, setProfilesOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
   const [readingOpen, setReadingOpen] = useState(false);
+  const [idiomsOpen, setIdiomsOpen] = useState(false);
+  const [timelineOpen, setTimelineOpen] = useState(false);
   const [envDesc, setEnvDesc] = useState<EnvDescription | null>(null);
   const [showRecap, setShowRecap] = useState<ActId | null>(null);
   const [showEnding, setShowEnding] = useState(false);
@@ -299,6 +304,9 @@ export default function PhantomGame() {
           点击场景移动视角 · 点击发光物品互动 · Tab 背包 · ESC 暂停
         </p>
 
+        {/* Daily challenge on title screen */}
+        <DailyChallenge onComplete={() => {}} />
+
         {/* Learning stats on title screen */}
         {(learning.totalScore > 0 || learning.completedChallenges.length > 0) && (
           <div style={{
@@ -457,6 +465,8 @@ export default function PhantomGame() {
       <CharacterProfiles open={profilesOpen} onClose={() => setProfilesOpen(false)} />
       <ProgressMap open={mapOpen} onClose={() => setMapOpen(false)} />
       <ReadingPassages open={readingOpen} onClose={() => setReadingOpen(false)} />
+      <IdiomCollection open={idiomsOpen} onClose={() => setIdiomsOpen(false)} />
+      <StoryTimeline open={timelineOpen} onClose={() => setTimelineOpen(false)} />
 
       {showRecap && (
         <ActRecap
@@ -513,6 +523,9 @@ export default function PhantomGame() {
               <button onClick={() => setMapOpen(true)} style={menuBtnStyle}>
                 🗺️ 探索地图
               </button>
+              <button onClick={() => setTimelineOpen(true)} style={menuBtnStyle}>
+                📜 故事时间线
+              </button>
             </div>
 
             {/* Right column: English Learning */}
@@ -531,6 +544,9 @@ export default function PhantomGame() {
               </button>
               <button onClick={() => setReadingOpen(true)} style={menuBtnStyle}>
                 📚 阅读理解
+              </button>
+              <button onClick={() => setIdiomsOpen(true)} style={menuBtnStyle}>
+                💬 习语收集
               </button>
             </div>
           </div>
