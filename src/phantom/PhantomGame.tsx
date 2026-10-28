@@ -6,9 +6,13 @@ import Transition from './ui/Transition';
 import { useTransition } from './ui/useTransition';
 import IntroText from './ui/IntroText';
 import InventoryJournal from './ui/InventoryJournal';
+import DialogueOverlay from './ui/DialogueOverlay';
+import EnglishChallengeModal from './ui/EnglishChallenge';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
-import { ActId } from './core/types';
+import { ActId, DialogueScene, EnglishChallenge } from './core/types';
+import { getDialogueForTrigger } from './core/dialogues';
+import { getChallengeForTrigger } from './core/english-challenges';
 
 const AREA_NAMES: Record<string, string> = {
   'theater-audience': '观众席', 'theater-stage': '舞台', 'theater-backstage': '后台通道',
@@ -41,11 +45,15 @@ export default function PhantomGame() {
   const {
     isPlaying, isPaused, startGame, togglePause, resetGame,
     collectedItems, currentArea, currentAct, setAct, setArea, loadGame, saveGame,
+    learning,
   } = useGameStore();
 
   const [viewingItem, setViewingItem] = useState<string | null>(null);
   const [inventoryOpen, setInventoryOpen] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
+  const [activeDialogue, setActiveDialogue] = useState<DialogueScene | null>(null);
+  const [activeChallenge, setActiveChallenge] = useState<EnglishChallenge | null>(null);
+  const [pendingChallengeId, setPendingChallengeId] = useState<string | null>(null);
   const { transition, startTransition } = useTransition();
   const audioStarted = useRef(false);
   const [hasSave] = useState(() => {
@@ -60,9 +68,15 @@ export default function PhantomGame() {
       const count = state.collectedItems.length;
       if (count > prevCount) {
         prevCount = count;
-        setViewingItem(state.collectedItems[count - 1]);
+        const itemId = state.collectedItems[count - 1];
+        setViewingItem(itemId);
         playPickup();
         setLayerCount(count);
+        // Queue English challenge for this collectible
+        const ch = getChallengeForTrigger(itemId);
+        if (ch && !state.learning.completedChallenges.includes(ch.id)) {
+          setPendingChallengeId(ch.id);
+        }
       }
     });
     return unsub;
@@ -216,6 +230,13 @@ export default function PhantomGame() {
           第{currentAct}幕 · {AREA_NAMES[currentArea] || currentArea}
         </span>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', pointerEvents: 'auto' }}>
+          {learning.totalScore > 0 && (
+            <span style={{
+              fontFamily: 'Georgia, serif', fontSize: '0.75rem', color: '#8aafb0',
+            }}>
+              🎓 {learning.totalScore}
+            </span>
+          )}
           <button
             onClick={() => setInventoryOpen(true)}
             style={{
@@ -230,7 +251,13 @@ export default function PhantomGame() {
         </div>
       </div>
 
-      <Canvas2D onTransition={(type, fn) => startTransition(type, fn)} />
+      <Canvas2D
+        onTransition={(type, fn) => startTransition(type, fn)}
+        onTriggerFired={(triggerKey) => {
+          const dlg = getDialogueForTrigger(triggerKey);
+          if (dlg) setActiveDialogue(dlg);
+        }}
+      />
 
       <p style={{
         fontFamily: 'sans-serif', fontSize: '0.7rem', color: '#4a3a2e',
@@ -239,8 +266,49 @@ export default function PhantomGame() {
         点击场景移动 · 点击发光物品 · Tab 背包 · ESC 暂停
       </p>
 
-      <ParchmentOverlay itemId={viewingItem} onClose={() => setViewingItem(null)} />
+      <ParchmentOverlay itemId={viewingItem} onClose={() => {
+        setViewingItem(null);
+        // Show English challenge if one is queued
+        if (pendingChallengeId) {
+          const ch = getChallengeForTrigger(viewingItem || '');
+          if (ch) setActiveChallenge(ch);
+          setPendingChallengeId(null);
+        }
+      }} />
       <InventoryJournal open={inventoryOpen} onClose={() => setInventoryOpen(false)} />
+
+      {/* Dialogue overlay */}
+      {activeDialogue && (
+        <DialogueOverlay
+          scene={activeDialogue}
+          onComplete={() => {
+            const challengeId = activeDialogue.challengeId;
+            setActiveDialogue(null);
+            // Chain to English challenge if dialogue has one
+            if (challengeId) {
+              const { learning } = useGameStore.getState();
+              if (!learning.completedChallenges.includes(challengeId)) {
+                import('./core/english-challenges').then(({ ENGLISH_CHALLENGES }) => {
+                  const ch = ENGLISH_CHALLENGES.find((c) => c.id === challengeId);
+                  if (ch) setActiveChallenge(ch);
+                });
+              }
+            }
+          }}
+        />
+      )}
+
+      {/* English challenge overlay */}
+      {activeChallenge && (
+        <EnglishChallengeModal
+          challenge={activeChallenge}
+          onComplete={(passed) => {
+            useGameStore.getState().completeChallenge(activeChallenge.id, passed);
+            setActiveChallenge(null);
+          }}
+        />
+      )}
+
       <Transition transition={transition} />
 
       {/* Pause overlay */}

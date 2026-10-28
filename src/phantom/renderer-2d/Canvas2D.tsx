@@ -71,9 +71,10 @@ function drawGhostAudience(ctx: CanvasRenderingContext2D, time: number, offsetX:
 // ── Main canvas component ──
 interface Canvas2DProps {
   onTransition?: (type: 'fade' | 'mirror-portal', midpointFn: () => void) => void;
+  onTriggerFired?: (triggerKey: string) => void;
 }
 
-export default function Canvas2D({ onTransition }: Canvas2DProps) {
+export default function Canvas2D({ onTransition, onTriggerFired }: Canvas2DProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef(0);
   const [hoveredHotspot, setHoveredHotspot] = useState<Hotspot | null>(null);
@@ -131,6 +132,7 @@ export default function Canvas2D({ onTransition }: Canvas2DProps) {
         } else if (hs.type === 'trigger' && hs.triggerKey) {
           if (!triggeredEvents.includes('evt-' + hs.triggerKey)) {
             triggerEvent('evt-' + hs.triggerKey);
+            onTriggerFired?.(hs.triggerKey);
             if (hs.triggerKey === 'think-of-me-start') {
               // Backdrop falls first, then Christine appears
               triggerBackdropFall(storyRef.current);
@@ -218,7 +220,7 @@ export default function Canvas2D({ onTransition }: Canvas2DProps) {
     // Move camera toward click
     const targetX = Math.max(0, Math.min(clickX - VIEWPORT_W / 2, area.width - VIEWPORT_W));
     setCameraX(targetX);
-  }, [area, toSceneCoords, collectedItems, collectItem, triggeredEvents, triggerEvent, setArea, setCameraX, isPaused]);
+  }, [area, toSceneCoords, collectedItems, collectItem, triggeredEvents, triggerEvent, setArea, setCameraX, isPaused, onTriggerFired]);
 
   // Mouse move for hover detection
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {

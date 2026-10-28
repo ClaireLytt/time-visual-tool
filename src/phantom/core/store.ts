@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { ActId, GameState, PhantomTier } from './types';
+import { ActId, GameState, LearningProgress, PhantomTier } from './types';
 import { PHANTOM_TIER_THRESHOLDS } from './constants';
 
 interface GameActions {
@@ -23,9 +23,23 @@ interface GameActions {
   saveGame: () => void;
   /** Load from localStorage */
   loadGame: () => boolean;
+  /** English learning */
+  completeChallenge: (challengeId: string, passed: boolean) => void;
+  reviewVocab: (word: string) => void;
+}
+
+interface LearningState {
+  learning: LearningProgress;
 }
 
 const SAVE_KEY = 'phantom-save';
+const LEARN_KEY = 'phantom-learning';
+
+const initialLearning: LearningProgress = {
+  completedChallenges: [],
+  vocabReviewed: {},
+  totalScore: 0,
+};
 
 const initialState: GameState = {
   currentAct: 1,
@@ -51,8 +65,21 @@ function computeMusicLayers(count: number): number {
   return 1;
 }
 
-export const useGameStore = create<GameState & GameActions>((set, get) => ({
+function loadLearning(): LearningProgress {
+  try {
+    const raw = localStorage.getItem(LEARN_KEY);
+    if (raw) return JSON.parse(raw) as LearningProgress;
+  } catch { /* ignore */ }
+  return { ...initialLearning };
+}
+
+function saveLearning(lp: LearningProgress) {
+  try { localStorage.setItem(LEARN_KEY, JSON.stringify(lp)); } catch { /* ignore */ }
+}
+
+export const useGameStore = create<GameState & LearningState & GameActions>((set, get) => ({
   ...initialState,
+  learning: loadLearning(),
 
   setCameraX: (x) => set({ cameraX: x }),
 
@@ -110,12 +137,30 @@ export const useGameStore = create<GameState & GameActions>((set, get) => ({
       if (!raw) return false;
       const saved = JSON.parse(raw) as Partial<GameState>;
       if (saved.currentAct !== undefined) {
-        set({ ...saved } as GameState);
+        set({ ...saved, learning: loadLearning() } as GameState & LearningState);
         return true;
       }
     } catch {
       // corrupted or unavailable
     }
     return false;
+  },
+
+  completeChallenge: (challengeId, passed) => {
+    const lp = { ...get().learning };
+    if (!lp.completedChallenges.includes(challengeId)) {
+      lp.completedChallenges = [...lp.completedChallenges, challengeId];
+      if (passed) lp.totalScore += 10;
+      else lp.totalScore += 3; // partial credit for trying
+    }
+    set({ learning: lp });
+    saveLearning(lp);
+  },
+
+  reviewVocab: (word) => {
+    const lp = { ...get().learning };
+    lp.vocabReviewed = { ...lp.vocabReviewed, [word]: (lp.vocabReviewed[word] || 0) + 1 };
+    set({ learning: lp });
+    saveLearning(lp);
   },
 }));

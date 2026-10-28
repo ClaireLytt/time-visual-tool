@@ -92,3 +92,60 @@ export interface MusicLayer {
   threshold: number;
   active: boolean;
 }
+
+// ── English Learning System ──
+
+export interface EnglishVocab {
+  word: string;
+  phonetic: string;
+  meaning: string;
+  /** Example sentence from the opera context */
+  example: string;
+  exampleZh: string;
+}
+
+export type ChallengeType = 'translate' | 'fill-blank' | 'match';
+
+export interface EnglishChallenge {
+  id: string;
+  /** Which collectible or trigger activates this */
+  triggerId: string;
+  /** Opera quote in English */
+  quote: string;
+  quoteZh: string;
+  /** Source context */
+  source: string;
+  /** Challenge type */
+  type: ChallengeType;
+  /** Vocabulary words to learn */
+  vocab: EnglishVocab[];
+  /** The challenge question */
+  question: string;
+  /** Correct answer(s) */
+  answers: string[];
+  /** Hint shown after first wrong attempt */
+  hint: string;
+}
+
+export interface LearningProgress {
+  completedChallenges: string[];
+  vocabReviewed: Record<string, number>;
+  totalScore: number;
+}
+
+// ── Dialogue System ──
+
+export interface DialogueLine {
+  speaker: string;
+  text: string;
+  textEn?: string;
+  mood?: 'neutral' | 'angry' | 'sad' | 'fearful' | 'tender' | 'desperate' | 'triumphant';
+}
+
+export interface DialogueScene {
+  id: string;
+  actId: ActId;
+  triggerKey: string;
+  lines: DialogueLine[];
+  challengeId?: string;
+}
