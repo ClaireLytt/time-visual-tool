@@ -3,7 +3,55 @@ import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'motion/react'
 import { GALLERY_ROOMS } from '../../constants/gallery'
 import { ARTISTS } from '../../constants/artists'
+import { PAINTING_EXTRAS } from '../../constants/paintingData'
 import type { Painting } from '../../types/gallery'
+
+/* ═══════════════════════════════════════════
+   Painting animations CSS (injected once)
+   ═══════════════════════════════════════════ */
+const ANIM_STYLE = `
+@keyframes starry-swirl { 0%,100% { filter: brightness(1) } 50% { filter: brightness(1.08) } }
+@keyframes ripple { 0%,100% { transform: scaleY(1) } 50% { transform: scaleY(1.005) } }
+@keyframes wave-sway { 0%,100% { transform: translateX(0) } 50% { transform: translateX(1px) } }
+.animate-starry img { animation: starry-swirl 4s ease-in-out infinite }
+.animate-ripple img { animation: ripple 6s ease-in-out infinite }
+.animate-wave img { animation: wave-sway 3s ease-in-out infinite }
+`
+
+/* ═══════════════════════════════════════════
+   Typewriter hook for AI narration
+   ═══════════════════════════════════════════ */
+/** Typewriter — must be used in a component that remounts when text changes (use key prop) */
+function Typewriter({ text, speed = 35 }: { text: string; speed?: number }) {
+  const [i, setI] = useState(0)
+
+  useEffect(() => {
+    if (i >= text.length) return
+    const timer = setTimeout(() => setI(prev => prev + 1), speed)
+    return () => clearTimeout(timer)
+  }, [i, text, speed])
+
+  return (
+    <span>
+      &ldquo;{text.slice(0, i)}{i < text.length && <span className="animate-pulse">|</span>}&rdquo;
+    </span>
+  )
+}
+
+/* ═══════════════════════════════════════════
+   Painting notes hook (localStorage)
+   ═══════════════════════════════════════════ */
+function useNotes(paintingId: string) {
+  const key = `gallery-note-${paintingId}`
+  const [note, setNote] = useState(() => {
+    try { return localStorage.getItem(key) || '' } catch { return '' }
+  })
+  const save = useCallback((val: string) => {
+    setNote(val)
+    try { localStorage.setItem(key, val) } catch { /* */ }
+  }, [key])
+  return { note, save }
+}
 
 /* ═══════════════════════════════════════════
    Favorites hook (localStorage)
@@ -120,7 +168,11 @@ function PaintingModal({ painting, onClose, isZh, onPrev, onNext, isFav, onToggl
   isFav: boolean; onToggleFav: () => void
 }) {
   const [showBio, setShowBio] = useState(false)
+  const [showNarration, setShowNarration] = useState(false)
   const artist = ARTISTS[painting.artist]
+  const extra = PAINTING_EXTRAS[painting.id]
+  const { note, save: saveNote } = useNotes(painting.id)
+  const quoteText = extra?.quote ? (isZh ? extra.quote.zh : extra.quote.en) : ''
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -151,38 +203,78 @@ function PaintingModal({ painting, onClose, isZh, onPrev, onNext, isFav, onToggl
         <motion.div className="mt-4 text-center" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <h3 className="text-xl font-bold text-white tracking-wide">{painting.title}</h3>
 
-          {/* Artist name — clickable for bio */}
-          <p className="text-sm text-white/40 mt-1">
-            {artist ? (
-              <button onClick={() => setShowBio(true)} className="hover:text-amber-400/70 transition-colors underline underline-offset-2 decoration-white/20 cursor-pointer">
-                {painting.artist}
-              </button>
-            ) : painting.artist}
-            {' · '}{painting.year}
-            {/* Favorite button */}
-            <button onClick={onToggleFav} className="ml-2 text-base transition-transform hover:scale-110 inline-block" aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}>
+          {/* Artist + year + fav + narration button */}
+          <div className="flex items-center justify-center gap-2 mt-1">
+            <p className="text-sm text-white/40">
+              {artist ? (
+                <button onClick={() => setShowBio(true)} className="hover:text-amber-400/70 transition-colors underline underline-offset-2 decoration-white/20 cursor-pointer">
+                  {painting.artist}
+                </button>
+              ) : painting.artist}
+              {' · '}{painting.year}
+            </p>
+            <button onClick={onToggleFav} className="text-base transition-transform hover:scale-110" aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}>
               {isFav ? '★' : '☆'}
             </button>
-          </p>
+            {extra?.quote && (
+              <button onClick={() => setShowNarration(!showNarration)}
+                className={`text-xs px-2 py-0.5 rounded-full transition-all ${showNarration ? 'bg-amber-400/20 text-amber-300' : 'bg-white/5 text-white/30 hover:text-white/60'}`}
+                aria-label="AI narration">
+                {isZh ? '导览' : 'Tour'}
+              </button>
+            )}
+          </div>
 
-          {painting.story && (
+          {/* AI narration — typewriter */}
+          {showNarration && quoteText && (
+            <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
+              className="mt-3 max-w-md mx-auto bg-white/3 rounded-lg p-3 border border-white/5">
+              <p className="text-sm text-amber-200/70 italic leading-relaxed text-left">
+                <Typewriter key={painting.id} text={quoteText} />
+              </p>
+              <p className="text-[10px] text-white/25 mt-1.5 text-right">— {painting.artist}</p>
+            </motion.div>
+          )}
+
+          {painting.story && !showNarration && (
             <p className="text-sm text-white/50 mt-3 leading-relaxed max-w-lg mx-auto">
               {isZh ? painting.story.zh : painting.story.en}
             </p>
           )}
 
+          {/* Data card: museum, value, duration, incidents */}
+          {extra && (
+            <div className="flex flex-wrap gap-x-4 gap-y-1 justify-center mt-3 text-[10px] text-white/30">
+              <span>📍 {extra.museum}</span>
+              {extra.value && <span>💰 {extra.value}</span>}
+              {extra.duration && <span>⏱ {extra.duration}</span>}
+              {extra.incidents && <span>⚡ {extra.incidents}</span>}
+            </div>
+          )}
+
           {painting.palette && (
-            <div className="flex gap-2 justify-center mt-4">
+            <div className="flex gap-2 justify-center mt-3">
               {painting.palette.map((c, i) => (
-                <div key={i} className="flex flex-col items-center gap-1">
-                  <span className="w-6 h-6 rounded-full border border-white/10 shadow-lg" style={{ background: c }} />
-                  <span className="text-[8px] text-white/25 font-mono">{c}</span>
+                <div key={i} className="flex flex-col items-center gap-0.5">
+                  <span className="w-5 h-5 rounded-full border border-white/10" style={{ background: c }} />
+                  <span className="text-[7px] text-white/20 font-mono">{c}</span>
                 </div>
               ))}
             </div>
           )}
 
           {painting.realSize && <HumanScale realSize={painting.realSize} />}
+
+          {/* Personal notes */}
+          <div className="mt-3 max-w-sm mx-auto">
+            <textarea
+              value={note}
+              onChange={(e) => saveNote(e.target.value)}
+              placeholder={isZh ? '写下你的感想...' : 'Your thoughts...'}
+              className="w-full bg-white/3 border border-white/8 rounded-lg px-3 py-2 text-xs text-white/60 placeholder-white/20 resize-none focus:outline-none focus:border-white/20 transition-colors"
+              rows={2}
+            />
+          </div>
         </motion.div>
 
         {/* Close */}
@@ -258,7 +350,7 @@ function WallPainting({ painting, layout, onSelect, index }: {
       <div className="absolute -inset-10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
         style={{ background: 'radial-gradient(ellipse at 50% 20%, rgba(255,240,200,0.08) 0%, transparent 70%)' }} />
       <div className="absolute inset-0 rounded" style={{ boxShadow: '0 12px 48px rgba(0,0,0,0.7), 0 4px 12px rgba(0,0,0,0.5)' }} />
-      <div className="relative overflow-hidden rounded bg-black" style={{ width: w, height: h }}>
+      <div className={`relative overflow-hidden rounded bg-black ${PAINTING_EXTRAS[painting.id]?.animClass || ''}`} style={{ width: w, height: h }}>
         <div className="absolute inset-0" style={{ background: painting.fallbackGradient, opacity: imgLoaded ? 0 : 1, transition: 'opacity 0.6s' }} />
         {!imgError && (
           <img src={painting.imageUrl} alt={`${painting.title} by ${painting.artist}`}
@@ -339,6 +431,25 @@ function GalleryDashboard() {
   const isZh = i18n.language === 'zh'
   const layouts = LAYOUTS[roomIndex] || LAYOUTS[0]
   const { toggle: toggleFav, isFav } = useFavorites()
+
+  // Inject animation styles once
+  useEffect(() => {
+    if (document.getElementById('gallery-anims')) return
+    const style = document.createElement('style')
+    style.id = 'gallery-anims'
+    style.textContent = ANIM_STYLE
+    document.head.appendChild(style)
+    return () => { style.remove() }
+  }, [])
+
+  // Random explore
+  const randomExplore = useCallback(() => {
+    const ri = Math.floor(Math.random() * GALLERY_ROOMS.length)
+    const pi = Math.floor(Math.random() * GALLERY_ROOMS[ri].paintings.length)
+    setSlideDir(ri > roomIndex ? 1 : -1)
+    setRoomIndex(ri)
+    setTimeout(() => setSelectedPainting(GALLERY_ROOMS[ri].paintings[pi]), 400)
+  }, [roomIndex])
 
   const goToRoom = useCallback((index: number, dir: number) => {
     if (transitioning) return
@@ -426,6 +537,13 @@ function GalleryDashboard() {
         </button>
 
         <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,0.5) 100%)' }} />
+
+        {/* Random explore button — bottom center */}
+        <button onClick={randomExplore}
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 text-white/40 hover:text-white/70 text-xs tracking-wide transition-all cursor-pointer"
+          aria-label="Random painting">
+          🎲 {isZh ? '随机漫游' : 'Explore'}
+        </button>
       </div>
 
       {/* Zone 3: Info bar */}
