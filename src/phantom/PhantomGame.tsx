@@ -8,11 +8,14 @@ import IntroText from './ui/IntroText';
 import InventoryJournal from './ui/InventoryJournal';
 import DialogueOverlay from './ui/DialogueOverlay';
 import EnglishChallengeModal from './ui/EnglishChallenge';
+import AchievementToast from './ui/AchievementToast';
+import FlashcardReview from './ui/FlashcardReview';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
 import { ActId, DialogueScene, EnglishChallenge } from './core/types';
 import { getDialogueForTrigger } from './core/dialogues';
-import { getChallengeForTrigger } from './core/english-challenges';
+import { getChallengeForTrigger, ENGLISH_CHALLENGES } from './core/english-challenges';
+import { Achievement, checkNewAchievements, AchievementStats } from './core/achievements';
 
 const AREA_NAMES: Record<string, string> = {
   'theater-audience': '观众席', 'theater-stage': '舞台', 'theater-backstage': '后台通道',
@@ -54,6 +57,15 @@ export default function PhantomGame() {
   const [activeDialogue, setActiveDialogue] = useState<DialogueScene | null>(null);
   const [activeChallenge, setActiveChallenge] = useState<EnglishChallenge | null>(null);
   const [pendingChallengeId, setPendingChallengeId] = useState<string | null>(null);
+  const [flashcardsOpen, setFlashcardsOpen] = useState(false);
+  const [toastAchievement, setToastAchievement] = useState<Achievement | null>(null);
+  const [earnedAchievements, setEarnedAchievements] = useState<string[]>(() => {
+    try {
+      const raw = localStorage.getItem('phantom-achievements');
+      return raw ? JSON.parse(raw) as string[] : [];
+    } catch { return []; }
+  });
+  const [dialoguesWatched, setDialoguesWatched] = useState(0);
   const { transition, startTransition } = useTransition();
   const audioStarted = useRef(false);
   const [hasSave] = useState(() => {
@@ -77,6 +89,8 @@ export default function PhantomGame() {
         if (ch && !state.learning.completedChallenges.includes(ch.id)) {
           setPendingChallengeId(ch.id);
         }
+        // Check achievements
+        setTimeout(checkAchievements, 100);
       }
     });
     return unsub;
@@ -95,6 +109,30 @@ export default function PhantomGame() {
   }, [currentArea, isPlaying, saveGame]);
 
   useEffect(() => () => stopAudio(), []);
+
+  // Check achievements whenever relevant state changes
+  const checkAchievements = useCallback(() => {
+    const state = useGameStore.getState();
+    const stats: AchievementStats = {
+      collectiblesFound: state.collectedItems.length,
+      challengesCompleted: state.learning.completedChallenges.length,
+      challengesPassed: state.learning.completedChallenges.length, // simplified
+      totalScore: state.learning.totalScore,
+      actsCompleted: state.currentAct,
+      dialoguesWatched,
+      vocabLearned: ENGLISH_CHALLENGES
+        .filter((ch) => state.learning.completedChallenges.includes(ch.id))
+        .reduce((sum, ch) => sum + ch.vocab.length, 0),
+    };
+    const newAchievements = checkNewAchievements(stats, earnedAchievements);
+    if (newAchievements.length > 0) {
+      const first = newAchievements[0];
+      const updated = [...earnedAchievements, ...newAchievements.map((a) => a.id)];
+      setEarnedAchievements(updated);
+      try { localStorage.setItem('phantom-achievements', JSON.stringify(updated)); } catch { /* ignore */ }
+      setToastAchievement(first);
+    }
+  }, [earnedAchievements, dialoguesWatched]);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') {
@@ -284,14 +322,14 @@ export default function PhantomGame() {
           onComplete={() => {
             const challengeId = activeDialogue.challengeId;
             setActiveDialogue(null);
+            setDialoguesWatched((d) => d + 1);
+            setTimeout(checkAchievements, 100);
             // Chain to English challenge if dialogue has one
             if (challengeId) {
-              const { learning } = useGameStore.getState();
-              if (!learning.completedChallenges.includes(challengeId)) {
-                import('./core/english-challenges').then(({ ENGLISH_CHALLENGES }) => {
-                  const ch = ENGLISH_CHALLENGES.find((c) => c.id === challengeId);
-                  if (ch) setActiveChallenge(ch);
-                });
+              const { learning: lr } = useGameStore.getState();
+              if (!lr.completedChallenges.includes(challengeId)) {
+                const ch = ENGLISH_CHALLENGES.find((c) => c.id === challengeId);
+                if (ch) setActiveChallenge(ch);
               }
             }
           }}
@@ -305,9 +343,17 @@ export default function PhantomGame() {
           onComplete={(passed) => {
             useGameStore.getState().completeChallenge(activeChallenge.id, passed);
             setActiveChallenge(null);
+            setTimeout(checkAchievements, 100);
           }}
         />
       )}
+
+      <FlashcardReview open={flashcardsOpen} onClose={() => setFlashcardsOpen(false)} />
+
+      <AchievementToast
+        achievement={toastAchievement}
+        onDone={() => setToastAchievement(null)}
+      />
 
       <Transition transition={transition} />
 
@@ -330,6 +376,9 @@ export default function PhantomGame() {
           </button>
           <button onClick={() => setInventoryOpen(true)} style={menuBtnStyle}>
             📖 收集日记
+          </button>
+          <button onClick={() => setFlashcardsOpen(true)} style={menuBtnStyle}>
+            🎓 复习单词
           </button>
           <button
             onClick={() => { togglePause(); resetGame(); }}
