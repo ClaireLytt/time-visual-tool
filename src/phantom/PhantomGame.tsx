@@ -306,7 +306,11 @@ export default function PhantomGame() {
             {([1, 2, 3, 4, 5] as ActId[]).map((act) => (
               <button
                 key={act}
-                onClick={() => { resetGame(); doStart(act); }}
+                onClick={() => {
+                  resetGame();
+                  try { localStorage.removeItem('phantom-save'); } catch { /* */ }
+                  doStart(act);
+                }}
                 style={{
                   ...menuBtnStyle,
                   width: 'auto',
