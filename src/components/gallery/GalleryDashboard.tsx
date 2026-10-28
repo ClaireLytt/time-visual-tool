@@ -204,31 +204,6 @@ function MagnifierImage({ painting, showXray }: { painting: Painting; showXray: 
   )
 }
 
-/* ═══════════════════════════════════════════
-   Human scale
-   ═══════════════════════════════════════════ */
-function HumanScale({ realSize }: { realSize: { widthCm: number; heightCm: number } }) {
-  const S = 60 / 170
-  return (
-    <div className="flex items-end gap-2 justify-center mt-3">
-      <div className="flex flex-col items-center">
-        <svg width="16" height={60} viewBox="0 0 16 60" fill="none" aria-hidden="true">
-          <circle cx="8" cy="4" r="4" fill="rgba(255,255,255,0.4)" />
-          <rect x="5" y="9" width="6" height="22" rx="3" fill="rgba(255,255,255,0.3)" />
-          <rect x="3" y="31" width="4" height="24" rx="2" fill="rgba(255,255,255,0.25)" />
-          <rect x="9" y="31" width="4" height="24" rx="2" fill="rgba(255,255,255,0.25)" />
-        </svg>
-        <span className="text-[8px] text-white/30 mt-0.5">170cm</span>
-      </div>
-      <div className="flex flex-col items-center">
-        <div className="border border-white/30 rounded-sm bg-white/5"
-          style={{ width: Math.max(8, Math.min(realSize.widthCm * S, 120)), height: Math.max(8, Math.min(realSize.heightCm * S, 80)) }}
-        />
-        <span className="text-[8px] text-white/30 mt-0.5">{realSize.heightCm}×{realSize.widthCm}cm</span>
-      </div>
-    </div>
-  )
-}
 
 /* ═══════════════════════════════════════════
    Painting modal — with prev/next navigation
@@ -341,7 +316,6 @@ function PaintingModal({ painting, onClose, isZh, onPrev, onNext, isFav, onToggl
             </div>
           )}
 
-          {painting.realSize && <HumanScale realSize={painting.realSize} />}
 
           {/* Related paintings */}
           <RelatedPaintings current={painting} isZh={isZh} onSelect={onSelectRelated} />
