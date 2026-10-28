@@ -7,7 +7,11 @@ TimeVisual — a React 18 + TypeScript + Tailwind + Vite productivity app with F
 ## Build & Test
 - 不允许运行/metr-finish
 - 不允许出现选择题 你直接选择一个最合适的方案
-- 不要chong
+- 不要重复问我同一个问题 你自己做最佳决定
+- 可以改代码 但不允许删除现有的代码文件
+- 不允许运行任何rm -f的命令
+- 不允许自动merge pr
+- 及时ship更新pr
 
 - `cmd /c "npm run dev"` — start dev server (auto-opens browser)
 - `npx tsc --noEmit` — type-check

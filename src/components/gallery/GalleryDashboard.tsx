@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import { GALLERY_ROOMS } from '../../constants/gallery'
 import { ARTISTS } from '../../constants/artists'
@@ -561,10 +562,42 @@ function ToolbarMenu({ isZh, achievementCount, onRandom, onTimeline, onQuiz, onP
 
 function GalleryDashboard({ onBack }: { onBack?: () => void } = {}) {
   const { i18n } = useTranslation()
-  const [roomIndex, setRoomIndex] = useState(0)
-  const [selectedPainting, setSelectedPainting] = useState<Painting | null>(null)
+  const navigate = useNavigate()
+  const params = useParams<{ roomId?: string; paintingId?: string }>()
+
+  // Resolve initial room/painting from URL params
+  const initialRoomIdx = useMemo(() => {
+    if (!params.roomId) return 0
+    const idx = GALLERY_ROOMS.findIndex(r => r.id === params.roomId)
+    return idx >= 0 ? idx : 0
+  }, [params.roomId])
+
+  const initialPainting = useMemo(() => {
+    if (!params.paintingId) return null
+    const allPaintings = GALLERY_ROOMS.flatMap(r => r.paintings)
+    return allPaintings.find(p => p.id === params.paintingId) || null
+  }, [params.paintingId])
+
+  const [roomIndex, setRoomIndex] = useState(initialRoomIdx)
+  const [selectedPainting, setSelectedPainting] = useState<Painting | null>(initialPainting)
   const [transitioning, setTransitioning] = useState(false)
   const [slideDir, setSlideDir] = useState(0)
+
+  // Sync URL when room changes
+  const updateUrl = useCallback((rIdx: number, painting?: Painting | null) => {
+    const r = GALLERY_ROOMS[rIdx]
+    if (painting) {
+      navigate(`/gallery/${r.id}/${painting.id}`, { replace: true })
+    } else {
+      navigate(`/gallery/${r.id}`, { replace: true })
+    }
+  }, [navigate])
+
+  // Wrapper: select/deselect painting with URL sync
+  const selectPainting = useCallback((p: Painting | null) => {
+    setSelectedPainting(p)
+    updateUrl(roomIndex, p)
+  }, [roomIndex, updateUrl])
 
   const room = GALLERY_ROOMS[roomIndex]
   const isZh = i18n.language === 'zh'
@@ -620,15 +653,23 @@ function GalleryDashboard({ onBack }: { onBack?: () => void } = {}) {
     const pi = Math.floor(Math.random() * GALLERY_ROOMS[ri].paintings.length)
     setSlideDir(ri > roomIndex ? 1 : -1)
     setRoomIndex(ri)
-    setTimeout(() => setSelectedPainting(GALLERY_ROOMS[ri].paintings[pi]), 400)
-  }, [roomIndex])
+    setTimeout(() => {
+      const p = GALLERY_ROOMS[ri].paintings[pi]
+      setSelectedPainting(p)
+      updateUrl(ri, p)
+    }, 400)
+  }, [roomIndex, updateUrl])
 
   const goToRoom = useCallback((index: number, dir: number) => {
     if (transitioning) return
     setSlideDir(dir)
     setTransitioning(true)
-    setTimeout(() => { setRoomIndex(index); setTransitioning(false) }, 500)
-  }, [transitioning])
+    setTimeout(() => {
+      setRoomIndex(index)
+      setTransitioning(false)
+      updateUrl(index)
+    }, 500)
+  }, [transitioning, updateUrl])
 
   // Swipe support
   const swipeHandlers = useSwipe(
@@ -654,12 +695,12 @@ function GalleryDashboard({ onBack }: { onBack?: () => void } = {}) {
   const modalPaintingIndex = selectedPainting ? room.paintings.findIndex(p => p.id === selectedPainting.id) : -1
   const goToPrevPainting = useCallback(() => {
     if (modalPaintingIndex <= 0) return
-    setSelectedPainting(room.paintings[modalPaintingIndex - 1])
-  }, [modalPaintingIndex, room.paintings])
+    selectPainting(room.paintings[modalPaintingIndex - 1])
+  }, [modalPaintingIndex, room.paintings, selectPainting])
   const goToNextPainting = useCallback(() => {
     if (modalPaintingIndex >= room.paintings.length - 1) return
-    setSelectedPainting(room.paintings[modalPaintingIndex + 1])
-  }, [modalPaintingIndex, room.paintings])
+    selectPainting(room.paintings[modalPaintingIndex + 1])
+  }, [modalPaintingIndex, room.paintings, selectPainting])
 
   return (
     <div className="fixed inset-0 z-30 flex flex-col" style={{ background: '#2c3e50' }}
@@ -727,7 +768,7 @@ function GalleryDashboard({ onBack }: { onBack?: () => void } = {}) {
             initial={{ opacity: 0, x: slideDir * 120 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -slideDir * 120 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}>
             {room.paintings.map((p, i) => (
-              <WallPainting key={p.id} painting={p} layout={layouts[i]} onSelect={setSelectedPainting} index={i} />
+              <WallPainting key={p.id} painting={p} layout={layouts[i]} onSelect={selectPainting} index={i} />
             ))}
           </motion.div>
         </AnimatePresence>
@@ -791,10 +832,10 @@ function GalleryDashboard({ onBack }: { onBack?: () => void } = {}) {
       {/* Modal */}
       <AnimatePresence>
         {selectedPainting && (
-          <PaintingModal painting={selectedPainting} onClose={() => setSelectedPainting(null)}
+          <PaintingModal painting={selectedPainting} onClose={() => selectPainting(null)}
             isZh={isZh} onPrev={goToPrevPainting} onNext={goToNextPainting}
             isFav={isFav(selectedPainting.id)} onToggleFav={() => toggleFav(selectedPainting.id)}
-            onSelectRelated={setSelectedPainting} />
+            onSelectRelated={selectPainting} />
         )}
       </AnimatePresence>
 
@@ -803,14 +844,14 @@ function GalleryDashboard({ onBack }: { onBack?: () => void } = {}) {
         {showAchievements && <AchievementPanel isZh={isZh} stats={achievements.stats} onClose={() => setShowAchievements(false)} />}
       </AnimatePresence>
       <AnimatePresence>
-        {showTimeline && <GlobalTimeline isZh={isZh} onSelect={(p) => { setShowTimeline(false); setSelectedPainting(p) }} onClose={() => setShowTimeline(false)} />}
+        {showTimeline && <GlobalTimeline isZh={isZh} onSelect={(p) => { setShowTimeline(false); selectPainting(p) }} onClose={() => setShowTimeline(false)} />}
       </AnimatePresence>
       <AnimatePresence>
         {showQuiz && <PaintingQuiz isZh={isZh} onClose={() => setShowQuiz(false)} onCorrect={() => achievements.trackQuiz(true)} />}
       </AnimatePresence>
 
       <AnimatePresence>
-        {showMap && <WorldMap isZh={isZh} onSelect={(p) => { setShowMap(false); setSelectedPainting(p) }} onClose={() => setShowMap(false)} />}
+        {showMap && <WorldMap isZh={isZh} onSelect={(p) => { setShowMap(false); selectPainting(p) }} onClose={() => setShowMap(false)} />}
       </AnimatePresence>
       <AnimatePresence>
         {showCompare && <PaintingComparison isZh={isZh} onClose={() => setShowCompare(false)} />}
