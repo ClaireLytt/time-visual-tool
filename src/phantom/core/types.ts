@@ -135,11 +135,22 @@ export interface LearningProgress {
 
 // ── Dialogue System ──
 
+export interface DialogueChoice {
+  label: string;
+  labelEn: string;
+  /** Lines to show after this choice */
+  response: DialogueLine[];
+  /** Optional: different challenge if this choice is picked */
+  challengeId?: string;
+}
+
 export interface DialogueLine {
   speaker: string;
   text: string;
   textEn?: string;
   mood?: 'neutral' | 'angry' | 'sad' | 'fearful' | 'tender' | 'desperate' | 'triumphant';
+  /** If set, show choices instead of advancing to next line */
+  choices?: DialogueChoice[];
 }
 
 export interface DialogueScene {

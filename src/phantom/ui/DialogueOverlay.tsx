@@ -1,6 +1,6 @@
 /**
  * DialogueOverlay — cinematic dialogue scenes with typewriter effect.
- * Shows character portraits, dialogue lines with optional English translations.
+ * Supports branching choices and bilingual display (CN/EN).
  */
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { DialogueScene, DialogueLine } from '../core/types';
@@ -30,18 +30,23 @@ const MOOD_EMOJI: Record<string, string> = {
 };
 
 export default function DialogueOverlay({ scene, onComplete }: Props) {
+  // Flatten lines: start with scene.lines, insert choice responses when picked
+  const [allLines, setAllLines] = useState<DialogueLine[]>(scene.lines);
   const [lineIdx, setLineIdx] = useState(0);
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const line = scene.lines[lineIdx];
-  const isLast = lineIdx >= scene.lines.length - 1;
+  const [showChoices, setShowChoices] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const line = allLines[lineIdx];
+  const isLast = lineIdx >= allLines.length - 1;
 
   // Typewriter effect
   useEffect(() => {
     if (!line) return;
     setDisplayedText('');
     setIsTyping(true);
+    setShowChoices(false);
     let i = 0;
     const text = line.text;
     const interval = setInterval(() => {
@@ -50,29 +55,51 @@ export default function DialogueOverlay({ scene, onComplete }: Props) {
       if (i >= text.length) {
         clearInterval(interval);
         setIsTyping(false);
+        // If this line has choices, show them after typing
+        if (line.choices && line.choices.length > 0) {
+          setShowChoices(true);
+        }
       }
     }, 35);
-    timerRef.current = interval as unknown as ReturnType<typeof setTimeout>;
+    timerRef.current = interval;
     return () => clearInterval(interval);
   }, [lineIdx, line]);
 
   const advance = useCallback(() => {
     if (isTyping) {
       // Skip to full text
-      if (timerRef.current) clearInterval(timerRef.current as unknown as ReturnType<typeof setInterval>);
-      setDisplayedText(line.text);
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (line) setDisplayedText(line.text);
       setIsTyping(false);
+      if (line?.choices && line.choices.length > 0) {
+        setShowChoices(true);
+      }
       return;
     }
+    // Don't advance if showing choices — wait for player to pick one
+    if (showChoices) return;
+
     if (isLast) {
       onComplete();
     } else {
       setLineIdx((i) => i + 1);
     }
-  }, [isTyping, isLast, onComplete, line]);
+  }, [isTyping, isLast, onComplete, line, showChoices]);
+
+  const handleChoice = useCallback((choiceIdx: number) => {
+    if (!line?.choices) return;
+    const choice = line.choices[choiceIdx];
+    // Insert the choice's response lines after the current line
+    const before = allLines.slice(0, lineIdx + 1);
+    const after = allLines.slice(lineIdx + 1);
+    setAllLines([...before, ...choice.response, ...after]);
+    setShowChoices(false);
+    setLineIdx((i) => i + 1);
+  }, [line, lineIdx, allLines]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      if (showChoices) return; // Don't advance via keyboard when choices are shown
       if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
         advance();
@@ -80,7 +107,7 @@ export default function DialogueOverlay({ scene, onComplete }: Props) {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [advance]);
+  }, [advance, showChoices]);
 
   if (!line) return null;
 
@@ -89,14 +116,14 @@ export default function DialogueOverlay({ scene, onComplete }: Props) {
 
   return (
     <div
-      onClick={advance}
+      onClick={showChoices ? undefined : advance}
       style={{
         position: 'fixed', inset: 0,
         background: 'rgba(10,9,8,0.85)',
         display: 'flex', flexDirection: 'column',
         justifyContent: 'flex-end',
         zIndex: 120,
-        cursor: 'pointer',
+        cursor: showChoices ? 'default' : 'pointer',
         animation: 'dlgFadeIn 0.3s ease-out',
       }}
     >
@@ -138,11 +165,11 @@ export default function DialogueOverlay({ scene, onComplete }: Props) {
           minHeight: '2em',
         }}>
           {displayedText}
-          {isTyping && <span style={{ animation: 'dlgBlink 0.5s infinite' }}>▌</span>}
+          {isTyping && <span style={{ animation: 'dlgBlink 0.5s infinite' }}>{'▌'}</span>}
         </p>
 
         {/* English translation (shown after typing completes) */}
-        {!isTyping && line.textEn && (
+        {!isTyping && line.textEn && !showChoices && (
           <p style={{
             fontFamily: 'Georgia, serif',
             fontSize: '0.78rem',
@@ -155,18 +182,68 @@ export default function DialogueOverlay({ scene, onComplete }: Props) {
           </p>
         )}
 
+        {/* Choices */}
+        {showChoices && line.choices && (
+          <div style={{
+            display: 'flex', flexDirection: 'column', gap: '0.5rem',
+            marginTop: '0.8rem',
+            animation: 'dlgFadeIn 0.4s ease-out',
+          }}>
+            {line.choices.map((choice, i) => (
+              <button
+                key={i}
+                onClick={(e) => { e.stopPropagation(); handleChoice(i); }}
+                style={{
+                  fontFamily: 'Georgia, serif',
+                  fontSize: '0.85rem',
+                  padding: '0.6rem 1rem',
+                  background: 'rgba(197,165,90,0.06)',
+                  border: '1px solid rgba(197,165,90,0.2)',
+                  borderRadius: 6,
+                  color: '#c5a55a',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  lineHeight: 1.5,
+                  transition: 'background 0.2s, border-color 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  (e.target as HTMLElement).style.background = 'rgba(197,165,90,0.12)';
+                  (e.target as HTMLElement).style.borderColor = 'rgba(197,165,90,0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  (e.target as HTMLElement).style.background = 'rgba(197,165,90,0.06)';
+                  (e.target as HTMLElement).style.borderColor = 'rgba(197,165,90,0.2)';
+                }}
+              >
+                {choice.label}
+                <span style={{
+                  display: 'block',
+                  fontSize: '0.7rem',
+                  color: '#6a5a48',
+                  fontStyle: 'italic',
+                  marginTop: '0.15rem',
+                }}>
+                  {choice.labelEn}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Progress and hint */}
-        <div style={{
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          marginTop: '0.8rem',
-        }}>
-          <span style={{ fontSize: '0.65rem', color: '#4a3a2e' }}>
-            {lineIdx + 1} / {scene.lines.length}
-          </span>
-          <span style={{ fontSize: '0.65rem', color: '#4a3a2e' }}>
-            {isTyping ? 'Click to skip' : (isLast ? 'Click to continue' : 'Click for next')}
-          </span>
-        </div>
+        {!showChoices && (
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            marginTop: '0.8rem',
+          }}>
+            <span style={{ fontSize: '0.65rem', color: '#4a3a2e' }}>
+              {lineIdx + 1} / {allLines.length}
+            </span>
+            <span style={{ fontSize: '0.65rem', color: '#4a3a2e' }}>
+              {isTyping ? 'Click to skip' : (isLast ? 'Click to continue' : 'Click for next')}
+            </span>
+          </div>
+        )}
       </div>
 
       <style>{`

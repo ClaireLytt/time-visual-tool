@@ -90,7 +90,36 @@ export const DIALOGUE_SCENES: DialogueScene[] = [
     lines: [
       { speaker: 'Christine', text: '我必须离开这里。拉乌尔在等我。', textEn: 'I must leave this place. Raoul is waiting for me.', mood: 'desperate' },
       { speaker: 'Phantom', text: '你要走？你怎么可以走？我为你做了一切！', textEn: 'You\'re leaving? How can you leave? I have done everything for you!', mood: 'desperate' },
-      { speaker: 'Christine', text: '你是我的老师，不是我的囚禁。', textEn: 'You are my teacher, not my captor.', mood: 'sad' },
+      {
+        speaker: 'Christine', text: '（你如何回应？）', textEn: '(How do you respond?)', mood: 'neutral',
+        choices: [
+          {
+            label: '你是我的老师，不是我的囚禁。',
+            labelEn: 'You are my teacher, not my captor.',
+            response: [
+              { speaker: 'Phantom', text: '...老师？我以为我们之间不止于此。', textEn: '...teacher? I thought we were more than that.', mood: 'sad' },
+              { speaker: 'Christine', text: '音乐将我们联系在一起。但我的心属于另一个人。', textEn: 'Music connects us. But my heart belongs to another.', mood: 'sad' },
+            ],
+          },
+          {
+            label: '我很感激你教我的一切。',
+            labelEn: 'I am grateful for everything you taught me.',
+            response: [
+              { speaker: 'Phantom', text: '…感激。（苦笑）这是比恨更残忍的词。', textEn: '...grateful. (bitter laugh) That word is crueler than hate.', mood: 'sad' },
+              { speaker: 'Christine', text: '我没有想伤害你…', textEn: 'I didn\'t mean to hurt you...', mood: 'sad' },
+            ],
+          },
+          {
+            label: '跟我一起离开这里。到外面的世界去。',
+            labelEn: 'Come with me. Leave this place. See the world above.',
+            response: [
+              { speaker: 'Phantom', text: '外面的世界？（摸着面具）你忘了这张脸吗？', textEn: 'The world above? (touches mask) Have you forgotten this face?', mood: 'angry' },
+              { speaker: 'Christine', text: '我没有忘记。但你值得阳光。', textEn: 'I haven\'t forgotten. But you deserve sunlight.', mood: 'tender' },
+              { speaker: 'Phantom', text: '...也许在另一个故事里。', textEn: '...perhaps in another story.', mood: 'sad' },
+            ],
+          },
+        ],
+      },
       { speaker: 'Phantom', text: '...go then. But remember — the Angel of Music is always listening.', textEn: '...go then. But remember — the Angel of Music is always listening.', mood: 'sad' },
       { speaker: 'Narrator', text: '暗门开启，露出一条通往屋顶的马道。冷风突然灌入。', mood: 'neutral' },
     ],
@@ -146,9 +175,37 @@ export const DIALOGUE_SCENES: DialogueScene[] = [
     triggerKey: 'kiss-scene',
     lines: [
       { speaker: 'Phantom', text: '你必须做出选择。他的命运在你手中。', textEn: 'You must make your choice. His fate is in your hands.', mood: 'desperate' },
-      { speaker: 'Christine', text: '你不是我的天使。你是一个人。一个孤独的、悲伤的、希望被爱的人。', textEn: 'You are not my angel. You are a man. A lonely, sad man who wished to be loved.', mood: 'sad' },
-      { speaker: 'Phantom', text: '...Christine...', mood: 'sad' },
-      { speaker: 'Narrator', text: '她吻了他。不是因为爱情，而是因为慈悲。因为理解。因为在那一刻，她看见了他。', mood: 'neutral' },
+      {
+        speaker: 'Christine', text: '（做出你的选择）', textEn: '(Make your choice)', mood: 'neutral',
+        choices: [
+          {
+            label: '亲吻他——用慈悲回应他的绝望',
+            labelEn: 'Kiss him — answer his despair with compassion',
+            response: [
+              { speaker: 'Narrator', text: '她吻了他。不是因为爱情，而是因为慈悲。因为理解。因为在那一刻，她看见了他。', textEn: 'She kissed him. Not from love, but from compassion. From understanding. In that moment, she truly saw him.', mood: 'neutral' },
+              { speaker: 'Phantom', text: '...你是第一个不因为我的脸而退缩的人。', textEn: '...you are the first who didn\'t recoil from my face.', mood: 'sad' },
+            ],
+          },
+          {
+            label: '告诉他真相——他值得被当作一个人对待',
+            labelEn: 'Tell him the truth — he deserves to be treated as a person',
+            response: [
+              { speaker: 'Christine', text: '你不是我的天使。你是一个人。一个孤独的、悲伤的、希望被爱的人。', textEn: 'You are not my angel. You are a man. A lonely, sad man who wished to be loved.', mood: 'sad' },
+              { speaker: 'Phantom', text: '...一个人。（长久的沉默）是的。只是一个人。', textEn: '...a man. (long silence) Yes. Just a man.', mood: 'sad' },
+              { speaker: 'Narrator', text: '她伸出手，轻轻碰了碰他没有面具的那一半脸。他闭上了眼睛。', textEn: 'She reached out and gently touched the unmasked half of his face. He closed his eyes.', mood: 'neutral' },
+            ],
+          },
+          {
+            label: '唱出他教给你的歌——用音乐回应音乐',
+            labelEn: 'Sing the song he taught you — answer music with music',
+            response: [
+              { speaker: 'Christine', text: 'Think of me, think of me fondly, when we\'ve said goodbye...', textEn: 'Think of me, think of me fondly, when we\'ve said goodbye...', mood: 'tender' },
+              { speaker: 'Phantom', text: '...（泪水无声地滑落）这首歌…是我教你的第一首歌。', textEn: '...(tears fall silently) That song... was the first song I taught you.', mood: 'sad' },
+              { speaker: 'Narrator', text: '他们的声音在地下室中回响，像是一首永远不会完结的二重唱。', textEn: 'Their voices echoed through the chamber, like a duet that would never truly end.', mood: 'neutral' },
+            ],
+          },
+        ],
+      },
       { speaker: 'Phantom', text: '走吧。带他走。忘了我。', textEn: 'Go. Take him and go. Forget me.', mood: 'sad' },
       { speaker: 'Phantom', text: '…但有时候，请想想我。', textEn: '...but sometimes, think of me.', mood: 'sad' },
       { speaker: 'Narrator', text: '他用披风盖住了所有的镜子，然后消失在黑暗中。只留下一个面具。', mood: 'neutral' },

@@ -38,9 +38,23 @@ function drawHotspotGlow(
   if (hotspot.type === 'collectible' && hotspot.collectibleId && collected.includes(hotspot.collectibleId)) {
     return; // already collected
   }
-  const pulse = 0.3 + 0.15 * Math.sin(time * 2);
   const cx = hotspot.x + hotspot.width / 2 - offsetX;
   const cy = hotspot.y + hotspot.height / 2;
+
+  if (hotspot.type === 'clue') {
+    // Softer teal glow for environment objects
+    const pulse = 0.12 + 0.06 * Math.sin(time * 1.5);
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, hotspot.width * 0.6);
+    grad.addColorStop(0, `rgba(138,175,176,${pulse})`);
+    grad.addColorStop(1, 'rgba(138,175,176,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, hotspot.width * 0.6, 0, Math.PI * 2);
+    ctx.fill();
+    return;
+  }
+
+  const pulse = 0.3 + 0.15 * Math.sin(time * 2);
   const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, hotspot.width * 0.8);
   grad.addColorStop(0, `rgba(255,220,120,${pulse})`);
   grad.addColorStop(1, 'rgba(255,220,120,0)');

@@ -13,6 +13,7 @@ import FlashcardReview from './ui/FlashcardReview';
 import WordScramble from './ui/WordScramble';
 import EnvDescriptionOverlay from './ui/EnvDescriptionOverlay';
 import ActRecap from './ui/ActRecap';
+import GameEnding from './ui/GameEnding';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
 import { ActId, DialogueScene, EnglishChallenge } from './core/types';
@@ -65,6 +66,7 @@ export default function PhantomGame() {
   const [scrambleOpen, setScrambleOpen] = useState(false);
   const [envDesc, setEnvDesc] = useState<EnvDescription | null>(null);
   const [showRecap, setShowRecap] = useState<ActId | null>(null);
+  const [showEnding, setShowEnding] = useState(false);
   const [toastAchievement, setToastAchievement] = useState<Achievement | null>(null);
   const [earnedAchievements, setEarnedAchievements] = useState<string[]>(() => {
     try {
@@ -95,6 +97,10 @@ export default function PhantomGame() {
         const ch = getChallengeForTrigger(itemId);
         if (ch && !state.learning.completedChallenges.includes(ch.id)) {
           setPendingChallengeId(ch.id);
+        }
+        // Check for game ending (final mask collected)
+        if (itemId === 'act5-mask') {
+          setTimeout(() => setShowEnding(true), 3000);
         }
         // Check achievements
         setTimeout(checkAchievements, 100);
@@ -373,6 +379,13 @@ export default function PhantomGame() {
         <ActRecap
           completedAct={showRecap}
           onContinue={() => setShowRecap(null)}
+        />
+      )}
+
+      {showEnding && (
+        <GameEnding
+          earnedAchievements={earnedAchievements}
+          onRestart={() => { setShowEnding(false); resetGame(); }}
         />
       )}
 
