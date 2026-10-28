@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import { GALLERY_ROOMS } from '../../constants/gallery'
 import { ARTISTS } from '../../constants/artists'
 import { PAINTING_EXTRAS } from '../../constants/paintingData'
+import { useAchievements, AchievementToast, AchievementPanel, GlobalTimeline, PaintingQuiz } from './GalleryExtras'
 import type { Painting } from '../../types/gallery'
 
 /* ═══════════════════════════════════════════
@@ -509,7 +510,36 @@ function GalleryDashboard() {
   const room = GALLERY_ROOMS[roomIndex]
   const isZh = i18n.language === 'zh'
   const layouts = LAYOUTS[roomIndex] || LAYOUTS[0]
-  const { toggle: toggleFav, isFav } = useFavorites()
+  const { toggle: toggleFav, isFav, favs } = useFavorites()
+  const achievements = useAchievements()
+  const [showAchievements, setShowAchievements] = useState(false)
+  const [showTimeline, setShowTimeline] = useState(false)
+  const [showQuiz, setShowQuiz] = useState(false)
+  const [newAchievement, setNewAchievement] = useState<{ icon: string; titleZh: string; titleEn: string } | null>(null)
+  const prevUnlockedCount = useRef(achievements.unlocked.length)
+
+  // Track room visits
+  const trackRoom = achievements.trackRoom
+  useEffect(() => { trackRoom(room.id) }, [room.id, trackRoom])
+
+  // Track painting views
+  const trackPainting = achievements.trackPainting
+  useEffect(() => {
+    if (selectedPainting) trackPainting(selectedPainting.id)
+  }, [selectedPainting, trackPainting])
+
+  // Sync favorites to achievements
+  const syncFavs = achievements.syncFavorites
+  useEffect(() => { syncFavs(favs) }, [favs, syncFavs])
+
+  // Detect new achievement unlocks
+  useEffect(() => {
+    if (achievements.unlocked.length > prevUnlockedCount.current) {
+      const newest = achievements.unlocked[achievements.unlocked.length - 1]
+      setNewAchievement(newest)
+    }
+    prevUnlockedCount.current = achievements.unlocked.length
+  }, [achievements.unlocked])
 
   // Inject animation styles once
   useEffect(() => {
@@ -617,12 +647,29 @@ function GalleryDashboard() {
 
         <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,0.5) 100%)' }} />
 
-        {/* Random explore button — bottom center */}
-        <button onClick={randomExplore}
-          className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 text-white/40 hover:text-white/70 text-xs tracking-wide transition-all cursor-pointer"
-          aria-label="Random painting">
-          🎲 {isZh ? '随机漫游' : 'Explore'}
-        </button>
+        {/* Bottom toolbar */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+          <button onClick={randomExplore}
+            className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 text-white/40 hover:text-white/70 text-xs tracking-wide transition-all cursor-pointer"
+            aria-label="Random painting">
+            🎲 {isZh ? '随机' : 'Random'}
+          </button>
+          <button onClick={() => setShowTimeline(true)}
+            className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 text-white/40 hover:text-white/70 text-xs tracking-wide transition-all cursor-pointer"
+            aria-label="Timeline">
+            📈 {isZh ? '时间线' : 'Timeline'}
+          </button>
+          <button onClick={() => setShowQuiz(true)}
+            className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 text-white/40 hover:text-white/70 text-xs tracking-wide transition-all cursor-pointer"
+            aria-label="Quiz">
+            🎯 {isZh ? '猜画' : 'Quiz'}
+          </button>
+          <button onClick={() => setShowAchievements(true)}
+            className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 text-white/40 hover:text-white/70 text-xs tracking-wide transition-all cursor-pointer"
+            aria-label="Achievements">
+            🏆 {achievements.unlocked.length}/{6}
+          </button>
+        </div>
       </div>
 
       {/* Zone 3: Info bar */}
@@ -641,6 +688,20 @@ function GalleryDashboard() {
             onSelectRelated={setSelectedPainting} />
         )}
       </AnimatePresence>
+
+      {/* Overlays: achievements, timeline, quiz */}
+      <AnimatePresence>
+        {showAchievements && <AchievementPanel isZh={isZh} stats={achievements.stats} onClose={() => setShowAchievements(false)} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showTimeline && <GlobalTimeline isZh={isZh} onSelect={(p) => { setShowTimeline(false); setSelectedPainting(p) }} onClose={() => setShowTimeline(false)} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showQuiz && <PaintingQuiz isZh={isZh} onClose={() => setShowQuiz(false)} onCorrect={() => achievements.trackQuiz(true)} />}
+      </AnimatePresence>
+
+      {/* Achievement toast */}
+      <AchievementToast achievement={newAchievement} isZh={isZh} onDone={() => setNewAchievement(null)} />
     </div>
   )
 }
