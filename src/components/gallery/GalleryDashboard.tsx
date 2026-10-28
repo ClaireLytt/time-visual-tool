@@ -167,8 +167,8 @@ const LAYOUTS: { x: string; y: string; rotate: number; scale: number }[][] = [
   // Renaissance — stately, centered weight
   [
     { x: '8%',  y: '5%',  rotate: 0,    scale: 1.05 },
-    { x: '30%', y: '0%',  rotate: -0.5, scale: 1.55 },
-    { x: '66%', y: '8%',  rotate: 0.8,  scale: 1.3 },
+    { x: '28%', y: '0%',  rotate: -0.5, scale: 1.5 },
+    { x: '62%', y: '8%',  rotate: 0.8,  scale: 1.2 },
   ],
 ]
 

@@ -66,11 +66,11 @@ function Header({ mode, onBack }: HeaderProps) {
   return (
     <>
       <header
-        className="bg-[#f4f1ea]/80 dark:bg-[#262b44]/80 backdrop-blur-xl backdrop-saturate-150 pt-[env(safe-area-inset-top)] sticky top-0 z-40"
+        className={`${mode === 'gallery' ? 'bg-[#0a0a0a]/95 text-white' : 'bg-[#f4f1ea]/80 dark:bg-[#262b44]/80'} backdrop-blur-xl backdrop-saturate-150 pt-[env(safe-area-inset-top)] sticky top-0 z-40`}
         style={{
-          borderBottom: `2px solid ${accent}4d`,
-          transition: 'border-color 400ms ease',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04)',
+          borderBottom: mode === 'gallery' ? '1px solid rgba(255,255,255,0.06)' : `2px solid ${accent}4d`,
+          transition: 'border-color 400ms ease, background 400ms ease',
+          boxShadow: mode === 'gallery' ? 'none' : '0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04)',
         }}
       >
         <div className="flex items-center gap-3" style={{ ...PAGE_CONTAINER_STYLE, paddingTop: 12, paddingBottom: 12 }}>
