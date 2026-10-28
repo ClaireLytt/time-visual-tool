@@ -47,9 +47,14 @@ function Typewriter({ text, speed = 35 }: { text: string; speed?: number }) {
    ═══════════════════════════════════════════ */
 function useNotes(paintingId: string) {
   const key = `gallery-note-${paintingId}`
-  const [note, setNote] = useState(() => {
-    try { return localStorage.getItem(key) || '' } catch { return '' }
-  })
+  const read = () => { try { return localStorage.getItem(key) || '' } catch { return '' } }
+  const [note, setNote] = useState(read)
+  // Re-sync when paintingId changes
+  const [prevKey, setPrevKey] = useState(key)
+  if (prevKey !== key) {
+    setPrevKey(key)
+    setNote(read())
+  }
   const save = useCallback((val: string) => {
     setNote(val)
     try { localStorage.setItem(key, val) } catch { /* */ }
