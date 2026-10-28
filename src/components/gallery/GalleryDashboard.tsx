@@ -97,9 +97,77 @@ function useSwipe(onLeft: () => void, onRight: () => void) {
 }
 
 /* ═══════════════════════════════════════════
+   X-ray composition overlay — golden ratio, rule of thirds
+   ═══════════════════════════════════════════ */
+function CompositionOverlay({ visible }: { visible: boolean }) {
+  if (!visible) return null
+  return (
+    <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      {/* Rule of thirds */}
+      <line x1="33.3" y1="0" x2="33.3" y2="100" stroke="rgba(201,168,76,0.4)" strokeWidth="0.3" />
+      <line x1="66.6" y1="0" x2="66.6" y2="100" stroke="rgba(201,168,76,0.4)" strokeWidth="0.3" />
+      <line x1="0" y1="33.3" x2="100" y2="33.3" stroke="rgba(201,168,76,0.4)" strokeWidth="0.3" />
+      <line x1="0" y1="66.6" x2="100" y2="66.6" stroke="rgba(201,168,76,0.4)" strokeWidth="0.3" />
+      {/* Golden spiral approximation */}
+      <path d="M 61.8 0 L 61.8 38.2 L 100 38.2" fill="none" stroke="rgba(255,200,100,0.3)" strokeWidth="0.3" />
+      <path d="M 61.8 38.2 L 38.2 38.2 L 38.2 100" fill="none" stroke="rgba(255,200,100,0.3)" strokeWidth="0.3" />
+      {/* Diagonals */}
+      <line x1="0" y1="0" x2="100" y2="100" stroke="rgba(255,255,255,0.15)" strokeWidth="0.2" strokeDasharray="2,2" />
+      <line x1="100" y1="0" x2="0" y2="100" stroke="rgba(255,255,255,0.15)" strokeWidth="0.2" strokeDasharray="2,2" />
+      {/* Center cross */}
+      <circle cx="50" cy="50" r="1" fill="none" stroke="rgba(201,168,76,0.5)" strokeWidth="0.3" />
+      {/* Power points */}
+      <circle cx="33.3" cy="33.3" r="0.8" fill="rgba(201,168,76,0.6)" />
+      <circle cx="66.6" cy="33.3" r="0.8" fill="rgba(201,168,76,0.6)" />
+      <circle cx="33.3" cy="66.6" r="0.8" fill="rgba(201,168,76,0.6)" />
+      <circle cx="66.6" cy="66.6" r="0.8" fill="rgba(201,168,76,0.6)" />
+    </svg>
+  )
+}
+
+/* ═══════════════════════════════════════════
+   Related paintings — same artist or same era
+   ═══════════════════════════════════════════ */
+function RelatedPaintings({ current, isZh, onSelect }: {
+  current: Painting; isZh: boolean; onSelect: (p: Painting) => void
+}) {
+  const related = useMemo(() => {
+    const all = GALLERY_ROOMS.flatMap(r => r.paintings)
+    // Same artist first, then same century
+    const sameArtist = all.filter(p => p.id !== current.id && p.artist === current.artist)
+    const currentCentury = Math.floor(Number(current.year) / 100)
+    const sameEra = all.filter(p => p.id !== current.id && p.artist !== current.artist && Math.floor(Number(p.year) / 100) === currentCentury)
+    return [...sameArtist, ...sameEra].slice(0, 3)
+  }, [current])
+
+  if (related.length === 0) return null
+
+  return (
+    <div className="mt-4">
+      <p className="text-[10px] text-white/25 uppercase tracking-widest mb-2">
+        {isZh ? '相关画作' : 'Related'}
+      </p>
+      <div className="flex gap-2 justify-center">
+        {related.map(p => (
+          <button key={p.id} onClick={() => onSelect(p)}
+            className="w-16 h-12 rounded overflow-hidden border border-white/10 hover:border-white/30 transition-all cursor-pointer relative group">
+            <div className="absolute inset-0" style={{ background: p.fallbackGradient }} />
+            <img src={p.imageUrl} alt={p.title} className="absolute inset-0 w-full h-full object-cover"
+              referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <span className="text-[8px] text-white/80 truncate px-1">{p.title}</span>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════
    Magnifier lens
    ═══════════════════════════════════════════ */
-function MagnifierImage({ painting }: { painting: Painting }) {
+function MagnifierImage({ painting, showXray }: { painting: Painting; showXray: boolean }) {
   const imgRef = useRef<HTMLDivElement>(null)
   const [lens, setLens] = useState<{ x: number; y: number; show: boolean }>({ x: 0, y: 0, show: false })
 
@@ -120,7 +188,8 @@ function MagnifierImage({ painting }: { painting: Painting }) {
         className="relative w-full max-h-[50vh] object-contain rounded" referrerPolicy="no-referrer"
         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
       />
-      {lens.show && (
+      <CompositionOverlay visible={showXray} />
+      {lens.show && !showXray && (
         <div className="absolute w-28 h-28 rounded-full border-2 border-white/20 pointer-events-none overflow-hidden"
           style={{ left: `${lens.x}%`, top: `${lens.y}%`, transform: 'translate(-50%, -50%)', boxShadow: '0 0 30px rgba(0,0,0,0.7)' }}
         >
@@ -162,13 +231,15 @@ function HumanScale({ realSize }: { realSize: { widthCm: number; heightCm: numbe
 /* ═══════════════════════════════════════════
    Painting modal — with prev/next navigation
    ═══════════════════════════════════════════ */
-function PaintingModal({ painting, onClose, isZh, onPrev, onNext, isFav, onToggleFav }: {
+function PaintingModal({ painting, onClose, isZh, onPrev, onNext, isFav, onToggleFav, onSelectRelated }: {
   painting: Painting; onClose: () => void; isZh: boolean
   onPrev: () => void; onNext: () => void
   isFav: boolean; onToggleFav: () => void
+  onSelectRelated: (p: Painting) => void
 }) {
   const [showBio, setShowBio] = useState(false)
   const [showNarration, setShowNarration] = useState(false)
+  const [showXray, setShowXray] = useState(false)
   const artist = ARTISTS[painting.artist]
   const extra = PAINTING_EXTRAS[painting.id]
   const { note, save: saveNote } = useNotes(painting.id)
@@ -198,7 +269,7 @@ function PaintingModal({ painting, onClose, isZh, onPrev, onNext, isFav, onToggl
         className="relative max-w-3xl w-full my-6"
         onClick={(e) => e.stopPropagation()}
       >
-        <MagnifierImage painting={painting} />
+        <MagnifierImage painting={painting} showXray={showXray} />
 
         <motion.div className="mt-4 text-center" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <h3 className="text-xl font-bold text-white tracking-wide">{painting.title}</h3>
@@ -223,6 +294,11 @@ function PaintingModal({ painting, onClose, isZh, onPrev, onNext, isFav, onToggl
                 {isZh ? '导览' : 'Tour'}
               </button>
             )}
+            <button onClick={() => setShowXray(!showXray)}
+              className={`text-xs px-2 py-0.5 rounded-full transition-all ${showXray ? 'bg-amber-400/20 text-amber-300' : 'bg-white/5 text-white/30 hover:text-white/60'}`}
+              aria-label="Composition overlay">
+              {isZh ? '构图' : 'X-ray'}
+            </button>
           </div>
 
           {/* AI narration — typewriter */}
@@ -264,6 +340,9 @@ function PaintingModal({ painting, onClose, isZh, onPrev, onNext, isFav, onToggl
           )}
 
           {painting.realSize && <HumanScale realSize={painting.realSize} />}
+
+          {/* Related paintings */}
+          <RelatedPaintings current={painting} isZh={isZh} onSelect={onSelectRelated} />
 
           {/* Personal notes */}
           <div className="mt-3 max-w-sm mx-auto">
@@ -558,7 +637,8 @@ function GalleryDashboard() {
         {selectedPainting && (
           <PaintingModal painting={selectedPainting} onClose={() => setSelectedPainting(null)}
             isZh={isZh} onPrev={goToPrevPainting} onNext={goToNextPainting}
-            isFav={isFav(selectedPainting.id)} onToggleFav={() => toggleFav(selectedPainting.id)} />
+            isFav={isFav(selectedPainting.id)} onToggleFav={() => toggleFav(selectedPainting.id)}
+            onSelectRelated={setSelectedPainting} />
         )}
       </AnimatePresence>
     </div>
