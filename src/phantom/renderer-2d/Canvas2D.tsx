@@ -94,6 +94,8 @@ export default function Canvas2D({ onTransition, onTriggerFired, onClueClick }: 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef(0);
   const cameraTargetRef = useRef(cameraX);
+  const camPosRef = useRef(cameraX);
+  const pickupBurstRef = useRef<{ x: number; y: number; t: number } | null>(null);
   const [hoveredHotspot, setHoveredHotspot] = useState<Hotspot | null>(null);
   const [ghostOpacity, setGhostOpacity] = useState(0);
   const [showThinkOfMe, setShowThinkOfMe] = useState(false);
@@ -115,7 +117,7 @@ export default function Canvas2D({ onTransition, onTriggerFired, onClueClick }: 
   const currentAct = useGameStore((s) => s.currentAct);
   const areas = getAreasForAct(currentAct);
   // Sync camera target when area changes
-  useEffect(() => { cameraTargetRef.current = 0; }, [currentArea]);
+  useEffect(() => { cameraTargetRef.current = 0; camPosRef.current = 0; }, [currentArea]);
 
   const baseArea = areas.find((a) => a.id === currentArea);
   // Merge environment hotspots into the area
@@ -132,10 +134,10 @@ export default function Canvas2D({ onTransition, onTriggerFired, onClueClick }: 
     if (!canvas) return null;
     const rect = canvas.getBoundingClientRect();
     return {
-      x: (e.clientX - rect.left) * (CANVAS_W / rect.width) + cameraX,
+      x: (e.clientX - rect.left) * (CANVAS_W / rect.width) + camPosRef.current,
       y: (e.clientY - rect.top) * (CANVAS_H / rect.height),
     };
-  }, [cameraX]);
+  }, []);
 
   // Click handler
   const handleClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -153,6 +155,11 @@ export default function Canvas2D({ onTransition, onTriggerFired, onClueClick }: 
         if (hs.type === 'collectible' && hs.collectibleId) {
           if (!collectedItems.includes(hs.collectibleId)) {
             collectItem(hs.collectibleId);
+            pickupBurstRef.current = {
+              x: hs.x + hs.width / 2,
+              y: hs.y + hs.height / 2,
+              t: performance.now() / 1000,
+            };
           }
         } else if (hs.type === 'clue') {
           onClueClick?.(hs.id);
@@ -293,15 +300,19 @@ export default function Canvas2D({ onTransition, onTriggerFired, onClueClick }: 
       const t = (now - startTime) / 1000;
       ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
 
-      // Smooth camera lerp
+      // Smooth camera lerp (use ref to avoid per-frame React re-renders)
       const target = cameraTargetRef.current;
-      if (Math.abs(cameraX - target) > 1) {
-        setCameraX(cameraX + (target - cameraX) * 0.12);
-      } else if (cameraX !== target) {
-        setCameraX(target);
+      if (Math.abs(camPosRef.current - target) > 1) {
+        camPosRef.current += (target - camPosRef.current) * 0.12;
+      } else {
+        camPosRef.current = target;
+      }
+      // Sync to zustand only when settled (not every frame)
+      if (Math.abs(cameraX - camPosRef.current) > 5) {
+        setCameraX(Math.round(camPosRef.current));
       }
 
-      const cam = cameraX;
+      const cam = camPosRef.current;
 
       // ── Act 1 areas (2.5D parallax) ──
       const mx = mouseRef.current.x;
@@ -349,6 +360,30 @@ export default function Canvas2D({ onTransition, onTriggerFired, onClueClick }: 
             const fxY = hs.y + hs.height / 2;
             drawCollectibleFx(ctx, hs.collectibleId, fxX, fxY, t);
           }
+        }
+      }
+
+      // ── Pickup burst particles ──
+      if (pickupBurstRef.current) {
+        const burst = pickupBurstRef.current;
+        const age = t - burst.t;
+        if (age < 1.2) {
+          const bx = burst.x - cam;
+          const by = burst.y;
+          for (let i = 0; i < 12; i++) {
+            const angle = (i / 12) * Math.PI * 2;
+            const dist = age * 80 + Math.sin(i * 2.7) * 20;
+            const px = bx + Math.cos(angle) * dist;
+            const py = by + Math.sin(angle) * dist - age * 30;
+            const alpha = Math.max(0, 1 - age / 1.2) * 0.6;
+            const size = (1 - age / 1.2) * 3;
+            ctx.fillStyle = `rgba(197,165,90,${alpha})`;
+            ctx.beginPath();
+            ctx.arc(px, py, size, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        } else {
+          pickupBurstRef.current = null;
         }
       }
 
