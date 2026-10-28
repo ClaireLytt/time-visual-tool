@@ -23,6 +23,8 @@ import IdiomCollection from './ui/IdiomCollection';
 import StoryTimeline from './ui/StoryTimeline';
 import ReviewQuiz from './ui/ReviewQuiz';
 import HelpGuide from './ui/HelpGuide';
+import PronunciationPractice from './ui/PronunciationPractice';
+import WritingJournal from './ui/WritingJournal';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
 import { ActId, DialogueScene, EnglishChallenge } from './core/types';
@@ -81,6 +83,8 @@ export default function PhantomGame() {
   const [timelineOpen, setTimelineOpen] = useState(false);
   const [quizOpen, setQuizOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [pronunciationOpen, setPronunciationOpen] = useState(false);
+  const [writingOpen, setWritingOpen] = useState(false);
   const [envDesc, setEnvDesc] = useState<EnvDescription | null>(null);
   const [showRecap, setShowRecap] = useState<ActId | null>(null);
   const [showEnding, setShowEnding] = useState(false);
@@ -499,6 +503,8 @@ export default function PhantomGame() {
       <StoryTimeline open={timelineOpen} onClose={() => setTimelineOpen(false)} />
       <ReviewQuiz open={quizOpen} onClose={() => setQuizOpen(false)} />
       <HelpGuide open={helpOpen} onClose={() => setHelpOpen(false)} />
+      <PronunciationPractice open={pronunciationOpen} onClose={() => setPronunciationOpen(false)} />
+      <WritingJournal open={writingOpen} onClose={() => setWritingOpen(false)} />
 
       {showRecap && (
         <ActRecap
@@ -582,6 +588,12 @@ export default function PhantomGame() {
               </button>
               <button onClick={() => setQuizOpen(true)} style={menuBtnStyle}>
                 🏆 综合测验
+              </button>
+              <button onClick={() => setPronunciationOpen(true)} style={menuBtnStyle}>
+                🔊 发音练习
+              </button>
+              <button onClick={() => setWritingOpen(true)} style={menuBtnStyle}>
+                ✍️ 写作练习
               </button>
             </div>
           </div>
