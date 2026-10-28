@@ -14,6 +14,11 @@ export const GALLERY_ROOMS: GalleryRoom[] = [
     floorLight: '#3a3530',
     floorDark: '#2a2520',
     ambientSound: 'bells',
+    era: { zh: '荷兰黄金时代 · 1600–1700', en: 'Dutch Golden Age · 1600–1700' },
+    roomStory: {
+      zh: '17世纪的荷兰，商业繁荣催生了艺术的黄金时代。画家们不再为教会服务，而是为新兴的中产阶级创作——日常生活第一次成为了画作的主角。',
+      en: 'In 17th-century Holland, commercial prosperity sparked an artistic golden age. Painters no longer served the church but created for a rising middle class — everyday life became the subject of art for the first time.',
+    },
     paintings: [
       {
         id: 'girl-pearl',
@@ -70,6 +75,11 @@ export const GALLERY_ROOMS: GalleryRoom[] = [
     floorLight: '#3c3538',
     floorDark: '#2c2528',
     ambientSound: 'piano',
+    era: { zh: '印象主义 · 1860–1920', en: 'Impressionism · 1860–1920' },
+    roomStory: {
+      zh: '印象派画家走出画室，在自然光下捕捉瞬间的色彩变化。他们用碎笔触和纯色并置取代了古典的平滑混合——被当时的学院派嘲笑，却改变了艺术的方向。',
+      en: 'Impressionists left the studio to capture fleeting color under natural light. They replaced classical smooth blending with broken brushstrokes and pure color juxtaposition — mocked by the academy, yet they changed the course of art.',
+    },
     paintings: [
       {
         id: 'starry-night',
@@ -126,6 +136,11 @@ export const GALLERY_ROOMS: GalleryRoom[] = [
     floorLight: '#38302a',
     floorDark: '#28201c',
     ambientSound: 'organ',
+    era: { zh: '文艺复兴 · 1400–1600', en: 'Renaissance · 1400–1600' },
+    roomStory: {
+      zh: '文艺复兴从佛罗伦萨开始，人类重新发现了古希腊罗马的美学。透视法、解剖学和明暗对比让绘画第一次拥有了深度——画布上的世界开始呼吸。',
+      en: 'The Renaissance began in Florence as humanity rediscovered Greco-Roman aesthetics. Perspective, anatomy, and chiaroscuro gave painting depth for the first time — the world on canvas began to breathe.',
+    },
     paintings: [
       {
         id: 'mona-lisa',

@@ -88,89 +88,7 @@ function HumanScale({ realSize }: { realSize: { widthCm: number; heightCm: numbe
 }
 
 /* ═══════════════════════════════════════════
-   Four-dimension review panel
-   Based on the Anthropic harness article's evaluator:
-   Design Quality · Originality · Craft · Functionality
-   ═══════════════════════════════════════════ */
-const DIMENSIONS = [
-  { key: 'design',      labelZh: '设计质量', labelEn: 'Design Quality',  icon: '◆' },
-  { key: 'originality', labelZh: '原创性',   labelEn: 'Originality',     icon: '✦' },
-  { key: 'craft',       labelZh: '工艺',     labelEn: 'Craft',           icon: '◈' },
-  { key: 'functionality', labelZh: '功能性', labelEn: 'Functionality',   icon: '⬡' },
-] as const
-
-function ReviewPanel({ paintingId, isZh }: { paintingId: string; isZh: boolean }) {
-  const [scores, setScores] = useState<Record<string, number>>(() => {
-    try {
-      const saved = localStorage.getItem(`gallery-review-${paintingId}`)
-      return saved ? JSON.parse(saved) : {}
-    } catch { return {} }
-  })
-
-  const setScore = useCallback((dim: string, val: number) => {
-    setScores(prev => {
-      const next = { ...prev, [dim]: val }
-      try { localStorage.setItem(`gallery-review-${paintingId}`, JSON.stringify(next)) } catch { /* */ }
-      return next
-    })
-  }, [paintingId])
-
-  const avg = useMemo(() => {
-    const vals = Object.values(scores)
-    return vals.length > 0 ? (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1) : '—'
-  }, [scores])
-
-  return (
-    <motion.div
-      className="mt-6 max-w-sm mx-auto"
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.4 }}
-    >
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="text-xs font-semibold tracking-widest uppercase text-white/40">
-          {isZh ? '四维评审' : 'Four-Dimension Review'}
-        </h4>
-        <span className="text-xs text-amber-400/70 font-mono">{avg}/5</span>
-      </div>
-      <div className="space-y-2">
-        {DIMENSIONS.map(dim => {
-          const val = scores[dim.key] || 0
-          return (
-            <div key={dim.key} className="flex items-center gap-3">
-              <span className="text-white/30 text-sm w-4 text-center">{dim.icon}</span>
-              <span className="text-[11px] text-white/50 w-16 shrink-0">
-                {isZh ? dim.labelZh : dim.labelEn}
-              </span>
-              <div className="flex gap-1 flex-1">
-                {[1, 2, 3, 4, 5].map(n => (
-                  <button
-                    key={n}
-                    onClick={() => setScore(dim.key, n)}
-                    className="h-6 flex-1 rounded-sm transition-all duration-200 cursor-pointer"
-                    style={{
-                      background: n <= val
-                        ? `rgba(201, 168, 76, ${0.3 + n * 0.14})`
-                        : 'rgba(255,255,255,0.04)',
-                      border: n <= val ? '1px solid rgba(201,168,76,0.3)' : '1px solid rgba(255,255,255,0.06)',
-                    }}
-                    aria-label={`${isZh ? dim.labelZh : dim.labelEn} ${n}/5`}
-                  />
-                ))}
-              </div>
-              <span className="text-[10px] text-white/30 w-4 text-right font-mono">
-                {val || '·'}
-              </span>
-            </div>
-          )
-        })}
-      </div>
-    </motion.div>
-  )
-}
-
-/* ═══════════════════════════════════════════
-   Painting detail modal — full screen
+   Painting detail modal
    ═══════════════════════════════════════════ */
 function PaintingModal({ painting, onClose, isZh }: { painting: Painting; onClose: () => void; isZh: boolean }) {
   return (
@@ -219,9 +137,6 @@ function PaintingModal({ painting, onClose, isZh }: { painting: Painting; onClos
           )}
 
           {painting.realSize && <HumanScale realSize={painting.realSize} />}
-
-          {/* Four-dimension review */}
-          <ReviewPanel paintingId={painting.id} isZh={isZh} />
         </motion.div>
 
         <button onClick={onClose}
@@ -235,26 +150,25 @@ function PaintingModal({ painting, onClose, isZh }: { painting: Painting; onClos
 
 /* ═══════════════════════════════════════════
    Free-form painting on the wall
-   Each painting has unique position, size, rotation
    ═══════════════════════════════════════════ */
 const LAYOUTS: { x: string; y: string; rotate: number; scale: number }[][] = [
   // Dutch Masters — asymmetric salon hang
   [
-    { x: '8%',  y: '12%', rotate: -1.5, scale: 1.15 },
-    { x: '38%', y: '6%',  rotate: 0.5,  scale: 1.4 },
-    { x: '72%', y: '14%', rotate: 1.2,  scale: 1.1 },
+    { x: '6%',  y: '5%',  rotate: -1.5, scale: 1.15 },
+    { x: '30%', y: '0%',  rotate: 0.5,  scale: 1.5 },
+    { x: '68%', y: '10%', rotate: 1.2,  scale: 1.15 },
   ],
   // Impressionism — airy, floating
   [
-    { x: '6%',  y: '8%',  rotate: -0.8, scale: 1.35 },
-    { x: '42%', y: '18%', rotate: 0,    scale: 1.2 },
-    { x: '74%', y: '5%',  rotate: 1.5,  scale: 1.0 },
+    { x: '5%',  y: '2%',  rotate: -0.8, scale: 1.4 },
+    { x: '38%', y: '12%', rotate: 0,    scale: 1.25 },
+    { x: '70%', y: '0%',  rotate: 1.5,  scale: 1.05 },
   ],
   // Renaissance — stately, centered weight
   [
-    { x: '10%', y: '10%', rotate: 0,    scale: 1.0 },
-    { x: '35%', y: '4%',  rotate: -0.5, scale: 1.5 },
-    { x: '70%', y: '15%', rotate: 0.8,  scale: 1.25 },
+    { x: '8%',  y: '5%',  rotate: 0,    scale: 1.05 },
+    { x: '30%', y: '0%',  rotate: -0.5, scale: 1.55 },
+    { x: '66%', y: '8%',  rotate: 0.8,  scale: 1.3 },
   ],
 ]
 
@@ -289,12 +203,10 @@ function WallPainting({ painting, layout, onSelect, index }: {
         className="absolute -inset-10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
         style={{ background: 'radial-gradient(ellipse at 50% 20%, rgba(255,240,200,0.08) 0%, transparent 70%)' }}
       />
-
-      {/* Shadow behind painting */}
+      {/* Shadow */}
       <div className="absolute inset-0 rounded" style={{
         boxShadow: '0 12px 48px rgba(0,0,0,0.7), 0 4px 12px rgba(0,0,0,0.5)',
       }} />
-
       {/* Painting */}
       <div className="relative overflow-hidden rounded bg-black" style={{ width: w, height: h }}>
         <div className="absolute inset-0" style={{ background: painting.fallbackGradient, opacity: imgLoaded ? 0 : 1, transition: 'opacity 0.6s' }} />
@@ -310,8 +222,7 @@ function WallPainting({ painting, layout, onSelect, index }: {
           />
         )}
       </div>
-
-      {/* Label — appears on hover */}
+      {/* Label on hover */}
       <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
         <p className="text-white/80 text-xs font-medium tracking-wide">{painting.title}</p>
         <p className="text-white/40 text-[10px] text-center">{painting.artist} · {painting.year}</p>
@@ -321,7 +232,89 @@ function WallPainting({ painting, layout, onSelect, index }: {
 }
 
 /* ═══════════════════════════════════════════
-   Main Gallery — full screen
+   Bottom info bar: story | timeline | palette
+   ═══════════════════════════════════════════ */
+function InfoBar({ room, isZh }: { room: typeof GALLERY_ROOMS[number]; isZh: boolean }) {
+  const years = room.paintings.map(p => Number(p.year))
+  const min = Math.min(...years) - 20
+  const max = Math.max(...years) + 20
+  const range = max - min
+
+  // Collect all unique palette colors from the room's paintings
+  const roomPalette = useMemo(() => {
+    const seen = new Set<string>()
+    const colors: string[] = []
+    room.paintings.forEach(p => {
+      p.palette?.forEach(c => {
+        if (!seen.has(c)) { seen.add(c); colors.push(c) }
+      })
+    })
+    return colors.slice(0, 8)
+  }, [room.paintings])
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: 0.5 }}
+      className="px-5 py-4 grid gap-4"
+      style={{
+        gridTemplateColumns: '1fr auto 1fr',
+        borderTop: '1px solid rgba(255,255,255,0.06)',
+      }}
+    >
+      {/* Left: room context story */}
+      <div className="min-w-0">
+        {room.era && (
+          <span className="block text-[10px] tracking-[0.15em] uppercase text-amber-600/50 mb-1.5 font-mono">
+            {isZh ? room.era.zh : room.era.en}
+          </span>
+        )}
+        {room.roomStory && (
+          <p className="text-xs leading-relaxed text-white/35 italic line-clamp-3">
+            {isZh ? room.roomStory.zh : room.roomStory.en}
+          </p>
+        )}
+      </div>
+
+      {/* Center: timeline */}
+      <div className="flex flex-col items-center justify-end gap-1 min-w-[160px]">
+        <div className="w-full h-px bg-white/10" />
+        <div className="flex justify-between w-full">
+          {room.paintings.map(p => {
+            const pct = ((Number(p.year) - min) / range) * 100
+            return (
+              <div key={p.id} className="flex flex-col items-center gap-1" style={{ marginLeft: `${pct * 0.3}%` }}>
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-400/70" />
+                <span className="text-[9px] text-white/40 font-mono">{p.year}</span>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Right: room palette */}
+      <div className="flex flex-col items-end justify-end gap-1.5">
+        <span className="text-[9px] tracking-[0.1em] uppercase text-white/20">
+          {isZh ? '展厅色谱' : 'Room Palette'}
+        </span>
+        <div className="flex gap-1.5">
+          {roomPalette.map((c, i) => (
+            <div
+              key={i}
+              className="w-3.5 h-3.5 rounded-full border border-white/8"
+              style={{ background: c }}
+              title={c}
+            />
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
+/* ═══════════════════════════════════════════
+   Main Gallery — full screen, three-zone
    ═══════════════════════════════════════════ */
 function GalleryDashboard() {
   const { i18n } = useTranslation()
@@ -359,48 +352,45 @@ function GalleryDashboard() {
 
   return (
     <div
-      className="fixed inset-0 z-30"
+      className="fixed inset-0 z-30 flex flex-col"
       style={{ top: 56, background: '#050505' }}
     >
-      {/* ── Full-screen black gallery — breaks out of Container entirely ── */}
-      <div className="relative w-full h-full overflow-hidden">
-        {/* Room title — top center */}
-        <div className="absolute top-4 left-0 right-0 z-20 text-center">
-          <AnimatePresence mode="wait">
-            <motion.h2
-              key={room.id}
-              className="text-sm font-medium tracking-[0.3em] uppercase text-white/50"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              transition={{ duration: 0.4 }}
+      {/* ── Zone 1: Room header ── */}
+      <div className="shrink-0 text-center pt-4 pb-1">
+        <AnimatePresence mode="wait">
+          <motion.h2
+            key={room.id}
+            className="text-sm font-medium tracking-[0.3em] uppercase text-white/50"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.4 }}
+          >
+            {isZh ? room.nameZh : room.name}
+          </motion.h2>
+        </AnimatePresence>
+        <div className="flex items-center justify-center gap-3 mt-2">
+          {GALLERY_ROOMS.map((r, i) => (
+            <button
+              key={r.id}
+              onClick={() => goToRoom(i, i > roomIndex ? 1 : -1)}
+              className="w-11 h-7 flex items-center justify-center"
+              aria-label={isZh ? r.nameZh : r.name}
             >
-              {isZh ? room.nameZh : room.name}
-            </motion.h2>
-          </AnimatePresence>
-
-          {/* Room dots */}
-          <div className="flex items-center justify-center gap-3 mt-2">
-            {GALLERY_ROOMS.map((r, i) => (
-              <button
-                key={r.id}
-                onClick={() => goToRoom(i, i > roomIndex ? 1 : -1)}
-                className="w-11 h-8 flex items-center justify-center"
-                aria-label={isZh ? r.nameZh : r.name}
-              >
-                <span className="block rounded-full transition-all duration-400"
-                  style={{
-                    width: i === roomIndex ? 18 : 5,
-                    height: 5,
-                    background: i === roomIndex ? '#c9a84c' : 'rgba(255,255,255,0.15)',
-                  }}
-                />
-              </button>
-            ))}
-          </div>
+              <span className="block rounded-full transition-all duration-300"
+                style={{
+                  width: i === roomIndex ? 18 : 5,
+                  height: 5,
+                  background: i === roomIndex ? '#c9a84c' : 'rgba(255,255,255,0.15)',
+                }}
+              />
+            </button>
+          ))}
         </div>
+      </div>
 
-        {/* Paintings — free-form positioned */}
+      {/* ── Zone 2: Painting canvas (flex-1, fills remaining space) ── */}
+      <div className="flex-1 relative overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={room.id}
@@ -422,7 +412,7 @@ function GalleryDashboard() {
           </motion.div>
         </AnimatePresence>
 
-        {/* Nav arrows — edges */}
+        {/* Nav arrows */}
         <button
           onClick={() => goToRoom((roomIndex - 1 + GALLERY_ROOMS.length) % GALLERY_ROOMS.length, -1)}
           className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/15 backdrop-blur-sm transition-all border border-white/10 cursor-pointer"
@@ -438,10 +428,19 @@ function GalleryDashboard() {
           <span className="text-lg text-white/50 hover:text-white">›</span>
         </button>
 
-        {/* Subtle vignette */}
+        {/* Vignette */}
         <div className="absolute inset-0 pointer-events-none" style={{
           background: 'radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,0.5) 100%)',
         }} />
+      </div>
+
+      {/* ── Zone 3: Bottom info bar ── */}
+      <div className="shrink-0">
+        <AnimatePresence mode="wait">
+          <motion.div key={room.id}>
+            <InfoBar room={room} isZh={isZh} />
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* Detail modal */}

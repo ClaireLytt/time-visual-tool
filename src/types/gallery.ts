@@ -35,4 +35,8 @@ export interface GalleryRoom {
   floorDark: string
   /** Ambient sound type */
   ambientSound?: 'bells' | 'piano' | 'organ'
+  /** Room-level era label */
+  era?: { zh: string; en: string }
+  /** Room-level background story */
+  roomStory?: { zh: string; en: string }
 }
