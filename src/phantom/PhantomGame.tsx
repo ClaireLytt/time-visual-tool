@@ -90,14 +90,20 @@ export default function PhantomGame() {
     catch { return false; }
   });
 
-  // Subscribe to collectible changes (skip initial load)
+  // Subscribe to collectible changes (only while actively playing)
   useEffect(() => {
-    let prevCount = useGameStore.getState().collectedItems.length;
-    let initialized = false;
-    // Wait a tick so loadGame doesn't trigger the overlay
-    setTimeout(() => { prevCount = useGameStore.getState().collectedItems.length; initialized = true; }, 100);
+    let prevCount = -1; // -1 = not yet synced
     const unsub = useGameStore.subscribe((state) => {
-      if (!initialized) return;
+      // Don't trigger overlays until game is playing and we've synced
+      if (!state.isPlaying) {
+        prevCount = -1;
+        return;
+      }
+      if (prevCount === -1) {
+        // First tick after game starts — sync count, don't show overlay
+        prevCount = state.collectedItems.length;
+        return;
+      }
       const count = state.collectedItems.length;
       if (count > prevCount) {
         prevCount = count;
@@ -115,7 +121,30 @@ export default function PhantomGame() {
           setTimeout(() => setShowEnding(true), 3000);
         }
         // Check achievements
-        setTimeout(checkAchievements, 100);
+        // Achievement check is deferred to avoid stale closure
+        setTimeout(() => {
+          // Re-read from store directly
+          const st = useGameStore.getState();
+          const earned = JSON.parse(localStorage.getItem('phantom-achievements') || '[]') as string[];
+          const achStats: AchievementStats = {
+            collectiblesFound: st.collectedItems.length,
+            challengesCompleted: st.learning.completedChallenges.length,
+            challengesPassed: st.learning.completedChallenges.length,
+            totalScore: st.learning.totalScore,
+            actsCompleted: st.currentAct,
+            dialoguesWatched: 0,
+            vocabLearned: ENGLISH_CHALLENGES
+              .filter((ch) => st.learning.completedChallenges.includes(ch.id))
+              .reduce((sum, ch) => sum + ch.vocab.length, 0),
+          };
+          const newA = checkNewAchievements(achStats, earned);
+          if (newA.length > 0) {
+            const updated = [...earned, ...newA.map((a) => a.id)];
+            setEarnedAchievements(updated);
+            try { localStorage.setItem('phantom-achievements', JSON.stringify(updated)); } catch { /* */ }
+            setToastAchievement(newA[0]);
+          }
+        }, 100);
       }
     });
     return unsub;

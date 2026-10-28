@@ -14,12 +14,12 @@ export default function AchievementToast({ achievement, onDone }: Props) {
 
   useEffect(() => {
     if (!achievement) return;
-    setVisible(true);
+    const show = requestAnimationFrame(() => setVisible(true));
     const t = setTimeout(() => {
       setVisible(false);
       setTimeout(onDone, 500);
     }, 3500);
-    return () => clearTimeout(t);
+    return () => { cancelAnimationFrame(show); clearTimeout(t); };
   }, [achievement, onDone]);
 
   if (!achievement) return null;

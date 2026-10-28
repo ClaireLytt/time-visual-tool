@@ -495,11 +495,6 @@ export function getChallengeForTrigger(triggerId: string): EnglishChallenge | un
 
 /** Get all challenges for a given act */
 export function getChallengesForAct(act: number): EnglishChallenge[] {
-  const actCollectibleIds = new Set<string>();
-  // We need to import dynamically to avoid circular deps, so use a prefix approach
-  const actPrefixes = [`act${act}-`];
-  return ENGLISH_CHALLENGES.filter((c) => {
-    const id = c.triggerId;
-    return id.startsWith(`act${act}-`) || actCollectibleIds.has(id);
-  });
+  const prefix = `act${act}-`;
+  return ENGLISH_CHALLENGES.filter((c) => c.triggerId.startsWith(prefix));
 }

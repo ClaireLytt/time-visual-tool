@@ -44,9 +44,11 @@ export default function DialogueOverlay({ scene, onComplete }: Props) {
   // Typewriter effect
   useEffect(() => {
     if (!line) return;
-    setDisplayedText('');
-    setIsTyping(true);
-    setShowChoices(false);
+    const frame = requestAnimationFrame(() => {
+      setDisplayedText('');
+      setIsTyping(true);
+      setShowChoices(false);
+    });
     let i = 0;
     const text = line.text;
     const interval = setInterval(() => {
@@ -62,7 +64,7 @@ export default function DialogueOverlay({ scene, onComplete }: Props) {
       }
     }, 35);
     timerRef.current = interval;
-    return () => clearInterval(interval);
+    return () => { cancelAnimationFrame(frame); clearInterval(interval); };
   }, [lineIdx, line]);
 
   const advance = useCallback(() => {
