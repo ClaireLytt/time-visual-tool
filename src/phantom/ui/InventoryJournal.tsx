@@ -194,7 +194,7 @@ export default function InventoryJournal({ open, onClose }: Props) {
                       {ch.source}
                     </p>
                     <p style={{ fontSize: '0.82rem', color: '#c5a55a', fontStyle: 'italic', margin: '0 0 0.2rem' }}>
-                      &quot;{ch.quote}&quot;
+                      {'"'}{ch.quote}{'"'}
                     </p>
                     <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginTop: '0.3rem' }}>
                       {ch.vocab.map((v) => (
@@ -219,7 +219,7 @@ export default function InventoryJournal({ open, onClose }: Props) {
                 )}
               </div>
             </>
-          )
+          )}
         </div>
 
         {/* Right page: selected item content or vocab summary */}
