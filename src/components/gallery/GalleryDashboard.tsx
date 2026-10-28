@@ -343,7 +343,7 @@ function PaintingModal({ painting, onClose, isZh, onPrev, onNext, isFav, onToggl
               value={note}
               onChange={(e) => saveNote(e.target.value)}
               placeholder={isZh ? '写下你的感想...' : 'Your thoughts...'}
-              className="w-full bg-white/3 border border-white/8 rounded-lg px-3 py-2 text-xs text-white/60 placeholder-white/20 resize-none focus:outline-none focus:border-white/20 transition-colors"
+              className="w-full bg-black/40 border border-white/6 rounded-lg px-3 py-2 text-xs text-white/60 placeholder-white/15 resize-none focus:outline-none focus:border-white/15 transition-colors"
               rows={2}
             />
           </div>
