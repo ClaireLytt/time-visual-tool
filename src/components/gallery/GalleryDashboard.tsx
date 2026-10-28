@@ -5,6 +5,7 @@ import { GALLERY_ROOMS } from '../../constants/gallery'
 import { ARTISTS } from '../../constants/artists'
 import { PAINTING_EXTRAS } from '../../constants/paintingData'
 import { useAchievements, AchievementToast, AchievementPanel, GlobalTimeline, PaintingQuiz } from './GalleryExtras'
+import { WorldMap, PaintingComparison, ColorWheel } from './GalleryViews'
 import type { Painting } from '../../types/gallery'
 
 /* ═══════════════════════════════════════════
@@ -515,6 +516,9 @@ function GalleryDashboard() {
   const [showAchievements, setShowAchievements] = useState(false)
   const [showTimeline, setShowTimeline] = useState(false)
   const [showQuiz, setShowQuiz] = useState(false)
+  const [showMap, setShowMap] = useState(false)
+  const [showCompare, setShowCompare] = useState(false)
+  const [showColorWheel, setShowColorWheel] = useState(false)
   const [newAchievement, setNewAchievement] = useState<{ icon: string; titleZh: string; titleEn: string } | null>(null)
   const prevUnlockedCount = useRef(achievements.unlocked.length)
 
@@ -664,6 +668,21 @@ function GalleryDashboard() {
             aria-label="Quiz">
             🎯 {isZh ? '猜画' : 'Quiz'}
           </button>
+          <button onClick={() => setShowMap(true)}
+            className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 text-white/40 hover:text-white/70 text-xs tracking-wide transition-all cursor-pointer"
+            aria-label="World map">
+            🌍
+          </button>
+          <button onClick={() => setShowCompare(true)}
+            className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 text-white/40 hover:text-white/70 text-xs tracking-wide transition-all cursor-pointer"
+            aria-label="Compare">
+            📐
+          </button>
+          <button onClick={() => setShowColorWheel(true)}
+            className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 text-white/40 hover:text-white/70 text-xs tracking-wide transition-all cursor-pointer"
+            aria-label="Color analysis">
+            🎨
+          </button>
           <button onClick={() => setShowAchievements(true)}
             className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 text-white/40 hover:text-white/70 text-xs tracking-wide transition-all cursor-pointer"
             aria-label="Achievements">
@@ -700,7 +719,16 @@ function GalleryDashboard() {
         {showQuiz && <PaintingQuiz isZh={isZh} onClose={() => setShowQuiz(false)} onCorrect={() => achievements.trackQuiz(true)} />}
       </AnimatePresence>
 
-      {/* Achievement toast */}
+      <AnimatePresence>
+        {showMap && <WorldMap isZh={isZh} onSelect={(p) => { setShowMap(false); setSelectedPainting(p) }} onClose={() => setShowMap(false)} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showCompare && <PaintingComparison isZh={isZh} onClose={() => setShowCompare(false)} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showColorWheel && <ColorWheel isZh={isZh} onClose={() => setShowColorWheel(false)} />}
+      </AnimatePresence>
+
       <AchievementToast achievement={newAchievement} isZh={isZh} onDone={() => setNewAchievement(null)} />
     </div>
   )
