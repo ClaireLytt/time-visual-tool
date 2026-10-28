@@ -2,7 +2,27 @@ import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'motion/react'
 import { GALLERY_ROOMS } from '../../constants/gallery'
+import { ARTISTS } from '../../constants/artists'
 import type { Painting } from '../../types/gallery'
+
+/* ═══════════════════════════════════════════
+   Favorites hook (localStorage)
+   ═══════════════════════════════════════════ */
+function useFavorites() {
+  const [favs, setFavs] = useState<string[]>(() => {
+    try { const s = localStorage.getItem('gallery-favorites'); return s ? JSON.parse(s) : [] }
+    catch { return [] }
+  })
+  const toggle = useCallback((id: string) => {
+    setFavs(prev => {
+      const next = prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]
+      try { localStorage.setItem('gallery-favorites', JSON.stringify(next)) } catch { /* */ }
+      return next
+    })
+  }, [])
+  const isFav = useCallback((id: string) => favs.includes(id), [favs])
+  return { favs, toggle, isFav }
+}
 
 /* ═══════════════════════════════════════════
    Touch swipe hook
@@ -94,20 +114,23 @@ function HumanScale({ realSize }: { realSize: { widthCm: number; heightCm: numbe
 /* ═══════════════════════════════════════════
    Painting modal — with prev/next navigation
    ═══════════════════════════════════════════ */
-function PaintingModal({ painting, onClose, isZh, onPrev, onNext }: {
+function PaintingModal({ painting, onClose, isZh, onPrev, onNext, isFav, onToggleFav }: {
   painting: Painting; onClose: () => void; isZh: boolean
   onPrev: () => void; onNext: () => void
+  isFav: boolean; onToggleFav: () => void
 }) {
-  // Keyboard nav within modal
+  const [showBio, setShowBio] = useState(false)
+  const artist = ARTISTS[painting.artist]
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-      if (e.key === 'ArrowLeft') onPrev()
-      if (e.key === 'ArrowRight') onNext()
+      if (e.key === 'Escape') { if (showBio) setShowBio(false); else onClose() }
+      if (!showBio && e.key === 'ArrowLeft') onPrev()
+      if (!showBio && e.key === 'ArrowRight') onNext()
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [onClose, onPrev, onNext])
+  }, [onClose, onPrev, onNext, showBio])
 
   return (
     <motion.div
@@ -127,7 +150,20 @@ function PaintingModal({ painting, onClose, isZh, onPrev, onNext }: {
 
         <motion.div className="mt-4 text-center" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <h3 className="text-xl font-bold text-white tracking-wide">{painting.title}</h3>
-          <p className="text-sm text-white/40 mt-1">{painting.artist} · {painting.year}</p>
+
+          {/* Artist name — clickable for bio */}
+          <p className="text-sm text-white/40 mt-1">
+            {artist ? (
+              <button onClick={() => setShowBio(true)} className="hover:text-amber-400/70 transition-colors underline underline-offset-2 decoration-white/20 cursor-pointer">
+                {painting.artist}
+              </button>
+            ) : painting.artist}
+            {' · '}{painting.year}
+            {/* Favorite button */}
+            <button onClick={onToggleFav} className="ml-2 text-base transition-transform hover:scale-110 inline-block" aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}>
+              {isFav ? '★' : '☆'}
+            </button>
+          </p>
 
           {painting.story && (
             <p className="text-sm text-white/50 mt-3 leading-relaxed max-w-lg mx-auto">
@@ -161,6 +197,22 @@ function PaintingModal({ painting, onClose, isZh, onPrev, onNext }: {
         <button onClick={(e) => { e.stopPropagation(); onNext() }}
           className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center text-white/50 hover:text-white transition-all"
           aria-label="Next painting">›</button>
+
+        {/* Artist bio popup */}
+        <AnimatePresence>
+          {showBio && artist && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
+              className="absolute bottom-4 left-4 right-4 bg-black/90 backdrop-blur-xl rounded-lg p-4 border border-white/10"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button onClick={() => setShowBio(false)} className="absolute top-2 right-2 text-white/40 hover:text-white text-sm" aria-label="Close bio">×</button>
+              <h4 className="text-sm font-bold text-white">{artist.name}</h4>
+              <p className="text-[11px] text-amber-400/60 mt-0.5">{artist.nationality} · {artist.born}–{artist.died}</p>
+              <p className="text-xs text-white/50 mt-2 leading-relaxed">{isZh ? artist.bio.zh : artist.bio.en}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </motion.div>
   )
@@ -286,6 +338,7 @@ function GalleryDashboard() {
   const room = GALLERY_ROOMS[roomIndex]
   const isZh = i18n.language === 'zh'
   const layouts = LAYOUTS[roomIndex] || LAYOUTS[0]
+  const { toggle: toggleFav, isFav } = useFavorites()
 
   const goToRoom = useCallback((index: number, dir: number) => {
     if (transitioning) return
@@ -340,7 +393,7 @@ function GalleryDashboard() {
         <div className="flex items-center justify-center gap-2 mt-1.5">
           {GALLERY_ROOMS.map((r, i) => (
             <button key={r.id} onClick={() => goToRoom(i, i > roomIndex ? 1 : -1)}
-              className="w-10 h-7 flex items-center justify-center" aria-label={isZh ? r.nameZh : r.name}>
+              className="w-11 h-11 flex items-center justify-center" aria-label={isZh ? r.nameZh : r.name}>
               <span className="block rounded-full transition-all duration-300"
                 style={{ width: i === roomIndex ? 16 : 4, height: 4, background: i === roomIndex ? '#c9a84c' : 'rgba(255,255,255,0.15)' }} />
             </button>
@@ -386,7 +439,8 @@ function GalleryDashboard() {
       <AnimatePresence>
         {selectedPainting && (
           <PaintingModal painting={selectedPainting} onClose={() => setSelectedPainting(null)}
-            isZh={isZh} onPrev={goToPrevPainting} onNext={goToNextPainting} />
+            isZh={isZh} onPrev={goToPrevPainting} onNext={goToNextPainting}
+            isFav={isFav(selectedPainting.id)} onToggleFav={() => toggleFav(selectedPainting.id)} />
         )}
       </AnimatePresence>
     </div>
