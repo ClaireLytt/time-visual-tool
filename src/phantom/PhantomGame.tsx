@@ -14,6 +14,7 @@ import WordScramble from './ui/WordScramble';
 import EnvDescriptionOverlay from './ui/EnvDescriptionOverlay';
 import ActRecap from './ui/ActRecap';
 import GameEnding from './ui/GameEnding';
+import SentenceBuilder from './ui/SentenceBuilder';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
 import { ActId, DialogueScene, EnglishChallenge } from './core/types';
@@ -64,6 +65,7 @@ export default function PhantomGame() {
   const [pendingChallengeId, setPendingChallengeId] = useState<string | null>(null);
   const [flashcardsOpen, setFlashcardsOpen] = useState(false);
   const [scrambleOpen, setScrambleOpen] = useState(false);
+  const [sentenceOpen, setSentenceOpen] = useState(false);
   const [envDesc, setEnvDesc] = useState<EnvDescription | null>(null);
   const [showRecap, setShowRecap] = useState<ActId | null>(null);
   const [showEnding, setShowEnding] = useState(false);
@@ -255,6 +257,36 @@ export default function PhantomGame() {
           点击场景移动视角 · 点击发光物品互动 · Tab 背包 · ESC 暂停
         </p>
 
+        {/* Learning stats on title screen */}
+        {(learning.totalScore > 0 || learning.completedChallenges.length > 0) && (
+          <div style={{
+            marginTop: '1rem', padding: '0.8rem 1.5rem',
+            background: 'rgba(255,255,255,0.02)',
+            border: '1px solid rgba(100,80,60,0.15)',
+            borderRadius: 6,
+            display: 'flex', gap: '1.5rem', justifyContent: 'center',
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: '1.1rem', color: '#c5a55a', margin: 0 }}>
+                {learning.totalScore}
+              </p>
+              <p style={{ fontSize: '0.6rem', color: '#4a3a2e', margin: 0 }}>Score</p>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: '1.1rem', color: '#8aafb0', margin: 0 }}>
+                {learning.completedChallenges.length}/{ENGLISH_CHALLENGES.length}
+              </p>
+              <p style={{ fontSize: '0.6rem', color: '#4a3a2e', margin: 0 }}>Challenges</p>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: '1.1rem', color: '#9a8a78', margin: 0 }}>
+                {learning.phrasesCollected?.length || 0}
+              </p>
+              <p style={{ fontSize: '0.6rem', color: '#4a3a2e', margin: 0 }}>Phrases</p>
+            </div>
+          </div>
+        )}
+
         <Transition transition={transition} />
       </div>
     );
@@ -370,10 +402,16 @@ export default function PhantomGame() {
         />
       )}
 
-      <EnvDescriptionOverlay desc={envDesc} onClose={() => setEnvDesc(null)} />
+      <EnvDescriptionOverlay desc={envDesc} onClose={() => {
+        if (envDesc) {
+          useGameStore.getState().collectPhrase(envDesc.id);
+        }
+        setEnvDesc(null);
+      }} />
 
       <FlashcardReview open={flashcardsOpen} onClose={() => setFlashcardsOpen(false)} />
       <WordScramble open={scrambleOpen} onClose={() => setScrambleOpen(false)} />
+      <SentenceBuilder open={sentenceOpen} onClose={() => setSentenceOpen(false)} />
 
       {showRecap && (
         <ActRecap
@@ -421,6 +459,9 @@ export default function PhantomGame() {
           </button>
           <button onClick={() => setScrambleOpen(true)} style={menuBtnStyle}>
             🧩 单词拼图
+          </button>
+          <button onClick={() => setSentenceOpen(true)} style={menuBtnStyle}>
+            📝 句子拼装
           </button>
           <button
             onClick={() => { togglePause(); resetGame(); }}

@@ -26,6 +26,7 @@ interface GameActions {
   /** English learning */
   completeChallenge: (challengeId: string, passed: boolean) => void;
   reviewVocab: (word: string) => void;
+  collectPhrase: (phraseId: string) => void;
 }
 
 interface LearningState {
@@ -39,6 +40,7 @@ const initialLearning: LearningProgress = {
   completedChallenges: [],
   vocabReviewed: {},
   totalScore: 0,
+  phrasesCollected: [],
 };
 
 const initialState: GameState = {
@@ -162,5 +164,15 @@ export const useGameStore = create<GameState & LearningState & GameActions>((set
     lp.vocabReviewed = { ...lp.vocabReviewed, [word]: (lp.vocabReviewed[word] || 0) + 1 };
     set({ learning: lp });
     saveLearning(lp);
+  },
+
+  collectPhrase: (phraseId) => {
+    const lp = { ...get().learning };
+    if (!lp.phrasesCollected.includes(phraseId)) {
+      lp.phrasesCollected = [...lp.phrasesCollected, phraseId];
+      lp.totalScore += 2; // small bonus for exploring
+      set({ learning: lp });
+      saveLearning(lp);
+    }
   },
 }));

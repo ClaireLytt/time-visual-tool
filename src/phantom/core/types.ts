@@ -131,6 +131,8 @@ export interface LearningProgress {
   completedChallenges: string[];
   vocabReviewed: Record<string, number>;
   totalScore: number;
+  /** Environment phrase IDs the player has seen */
+  phrasesCollected: string[];
 }
 
 // ── Dialogue System ──
