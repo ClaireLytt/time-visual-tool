@@ -63,7 +63,7 @@ async function launchBrowser() {
 
 // Runs inside the page: all DOM-level checks for the current screen.
 function pageChecks({ minTap }) {
-  const out = { smallTargets: [], overflow: [], bannedColors: [], a11y: [], dupIds: [] }
+  const out = { smallTargets: [], overflow: [], bannedColors: [], a11y: [], dupIds: [], brokenImages: [] }
 
   const visible = (el) => {
     const r = el.getBoundingClientRect()
@@ -177,7 +177,15 @@ function pageChecks({ minTap }) {
     }
   }
 
-  // 5. duplicate ids
+  // 5. broken images (loaded but naturalWidth === 0)
+  for (const img of document.querySelectorAll('img')) {
+    if (!visible(img) || img.getAttribute('aria-hidden') === 'true') continue
+    if (img.complete && img.naturalWidth === 0 && img.src && !img.src.startsWith('data:')) {
+      out.brokenImages.push(`${describe(img)} — src failed to load`)
+    }
+  }
+
+  // 6. duplicate ids
   const ids = {}
   for (const el of document.querySelectorAll('[id]')) ids[el.id] = (ids[el.id] || 0) + 1
   for (const [id, n] of Object.entries(ids)) if (n > 1) out.dupIds.push(`#${id} x${n}`)
@@ -260,6 +268,7 @@ async function main() {
       for (const d of res.bannedColors) add(mode, 'banned-color', 'error', d)
       for (const d of res.a11y) add(mode, 'a11y', 'warn', d)
       for (const d of res.dupIds) add(mode, 'dup-id', 'warn', d)
+      for (const d of res.brokenImages) add(mode, 'broken-image', 'error', d)
 
       await page.screenshot({ path: resolve(OUT_DIR, `${mode}.png`), fullPage: true })
       const n = findings.filter(f => f.mode === mode).length

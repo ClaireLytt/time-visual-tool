@@ -19,6 +19,11 @@ echo "  Pre-deploy verification"
 echo "═══════════════════════════════════════"
 echo ""
 
+# 0. Module wiring consistency
+info "Checking module wiring..."
+node scripts/check-modules.mjs || fail "Module wiring check failed"
+pass "Module wiring consistent"
+
 # 1. Lint
 info "Running lint..."
 npm run lint 2>&1 | tail -3
