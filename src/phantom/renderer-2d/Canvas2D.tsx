@@ -1,6 +1,7 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback, useState, useMemo } from 'react';
 import { useGameStore } from '../core/store';
 import { getAreasForAct } from '../core/constants';
+import { getEnvHotspotsForArea } from '../core/environment-descriptions';
 import { Hotspot } from '../core/types';
 import { createAct3State } from './acts/Act3MusicOfNight';
 import { drawCollectibleFx } from './collectible-fx';
@@ -72,9 +73,10 @@ function drawGhostAudience(ctx: CanvasRenderingContext2D, time: number, offsetX:
 interface Canvas2DProps {
   onTransition?: (type: 'fade' | 'mirror-portal', midpointFn: () => void) => void;
   onTriggerFired?: (triggerKey: string) => void;
+  onClueClick?: (hotspotId: string) => void;
 }
 
-export default function Canvas2D({ onTransition, onTriggerFired }: Canvas2DProps) {
+export default function Canvas2D({ onTransition, onTriggerFired, onClueClick }: Canvas2DProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef(0);
   const [hoveredHotspot, setHoveredHotspot] = useState<Hotspot | null>(null);
@@ -97,7 +99,14 @@ export default function Canvas2D({ onTransition, onTriggerFired }: Canvas2DProps
 
   const currentAct = useGameStore((s) => s.currentAct);
   const areas = getAreasForAct(currentAct);
-  const area = areas.find((a) => a.id === currentArea);
+  const baseArea = areas.find((a) => a.id === currentArea);
+  // Merge environment hotspots into the area
+  const area = useMemo(() => {
+    if (!baseArea) return undefined;
+    const envHotspots = getEnvHotspotsForArea(baseArea.id);
+    if (envHotspots.length === 0) return baseArea;
+    return { ...baseArea, hotspots: [...baseArea.hotspots, ...envHotspots] };
+  }, [baseArea]);
 
   /** Convert a mouse event to scene-space coordinates (accounts for canvas scale + camera offset) */
   const toSceneCoords = useCallback((e: React.MouseEvent<HTMLCanvasElement>): { x: number; y: number } | null => {
@@ -127,6 +136,9 @@ export default function Canvas2D({ onTransition, onTriggerFired }: Canvas2DProps
           if (!collectedItems.includes(hs.collectibleId)) {
             collectItem(hs.collectibleId);
           }
+        } else if (hs.type === 'clue') {
+          onClueClick?.(hs.id);
+          return;
         } else if (hs.type === 'passage' && hs.targetArea) {
           setArea(hs.targetArea);
         } else if (hs.type === 'trigger' && hs.triggerKey) {
@@ -220,7 +232,7 @@ export default function Canvas2D({ onTransition, onTriggerFired }: Canvas2DProps
     // Move camera toward click
     const targetX = Math.max(0, Math.min(clickX - VIEWPORT_W / 2, area.width - VIEWPORT_W));
     setCameraX(targetX);
-  }, [area, toSceneCoords, collectedItems, collectItem, triggeredEvents, triggerEvent, setArea, setCameraX, isPaused, onTriggerFired]);
+  }, [area, toSceneCoords, collectedItems, collectItem, triggeredEvents, triggerEvent, setArea, setCameraX, isPaused, onTriggerFired, onClueClick]);
 
   // Mouse move for hover detection
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {

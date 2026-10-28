@@ -10,11 +10,15 @@ import DialogueOverlay from './ui/DialogueOverlay';
 import EnglishChallengeModal from './ui/EnglishChallenge';
 import AchievementToast from './ui/AchievementToast';
 import FlashcardReview from './ui/FlashcardReview';
+import WordScramble from './ui/WordScramble';
+import EnvDescriptionOverlay from './ui/EnvDescriptionOverlay';
+import ActRecap from './ui/ActRecap';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
 import { ActId, DialogueScene, EnglishChallenge } from './core/types';
 import { getDialogueForTrigger } from './core/dialogues';
 import { getChallengeForTrigger, ENGLISH_CHALLENGES } from './core/english-challenges';
+import { getEnvDescription, EnvDescription } from './core/environment-descriptions';
 import { Achievement, checkNewAchievements, AchievementStats } from './core/achievements';
 
 const AREA_NAMES: Record<string, string> = {
@@ -58,6 +62,9 @@ export default function PhantomGame() {
   const [activeChallenge, setActiveChallenge] = useState<EnglishChallenge | null>(null);
   const [pendingChallengeId, setPendingChallengeId] = useState<string | null>(null);
   const [flashcardsOpen, setFlashcardsOpen] = useState(false);
+  const [scrambleOpen, setScrambleOpen] = useState(false);
+  const [envDesc, setEnvDesc] = useState<EnvDescription | null>(null);
+  const [showRecap, setShowRecap] = useState<ActId | null>(null);
   const [toastAchievement, setToastAchievement] = useState<Achievement | null>(null);
   const [earnedAchievements, setEarnedAchievements] = useState<string[]>(() => {
     try {
@@ -294,6 +301,15 @@ export default function PhantomGame() {
         onTriggerFired={(triggerKey) => {
           const dlg = getDialogueForTrigger(triggerKey);
           if (dlg) setActiveDialogue(dlg);
+          // Check for act-end triggers to show recap
+          if (triggerKey === 'act1-end') setTimeout(() => setShowRecap(1), 2000);
+          else if (triggerKey === 'act2-end') setTimeout(() => setShowRecap(2), 2000);
+          else if (triggerKey === 'act3-end') setTimeout(() => setShowRecap(3), 6000);
+          else if (triggerKey === 'act4-end') setTimeout(() => setShowRecap(4), 2000);
+        }}
+        onClueClick={(hotspotId) => {
+          const desc = getEnvDescription(hotspotId);
+          if (desc) setEnvDesc(desc);
         }}
       />
 
@@ -348,7 +364,17 @@ export default function PhantomGame() {
         />
       )}
 
+      <EnvDescriptionOverlay desc={envDesc} onClose={() => setEnvDesc(null)} />
+
       <FlashcardReview open={flashcardsOpen} onClose={() => setFlashcardsOpen(false)} />
+      <WordScramble open={scrambleOpen} onClose={() => setScrambleOpen(false)} />
+
+      {showRecap && (
+        <ActRecap
+          completedAct={showRecap}
+          onContinue={() => setShowRecap(null)}
+        />
+      )}
 
       <AchievementToast
         achievement={toastAchievement}
@@ -379,6 +405,9 @@ export default function PhantomGame() {
           </button>
           <button onClick={() => setFlashcardsOpen(true)} style={menuBtnStyle}>
             🎓 复习单词
+          </button>
+          <button onClick={() => setScrambleOpen(true)} style={menuBtnStyle}>
+            🧩 单词拼图
           </button>
           <button
             onClick={() => { togglePause(); resetGame(); }}
