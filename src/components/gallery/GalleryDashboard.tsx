@@ -662,11 +662,34 @@ function GalleryDashboard({ onBack }: { onBack?: () => void } = {}) {
   }, [modalPaintingIndex, room.paintings])
 
   return (
-    <div className="fixed inset-0 z-30 flex flex-col" style={{ background: '#050505' }}
+    <div className="fixed inset-0 z-30 flex flex-col" style={{ background: '#2c3e50' }}
       {...swipeHandlers}
     >
+      {/* Museum wall + checkered floor background */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: 'linear-gradient(180deg, #2a3a4a 0%, #344a5a 30%, #3a5060 50%, #2a3a48 65%, #1a1a1a 65%, #1a1a1a 100%)',
+      }} />
+      {/* Checkered floor */}
+      <div className="absolute bottom-0 left-0 right-0 pointer-events-none" style={{
+        height: '35%',
+        background: `
+          linear-gradient(45deg, #1a1a1a 25%, transparent 25%),
+          linear-gradient(-45deg, #1a1a1a 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, #1a1a1a 75%),
+          linear-gradient(-45deg, transparent 75%, #1a1a1a 75%)`,
+        backgroundSize: '48px 48px',
+        backgroundPosition: '0 0, 0 24px, 24px -24px, -24px 0px',
+        backgroundColor: '#252525',
+        opacity: 0.7,
+      }} />
+      {/* Floor fade — darker toward viewer */}
+      <div className="absolute bottom-0 left-0 right-0 pointer-events-none" style={{
+        height: '35%',
+        background: 'linear-gradient(0deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 50%, transparent 100%)',
+      }} />
+
       {/* Zone 1: Room header with back button */}
-      <div className="shrink-0 pt-[env(safe-area-inset-top)] relative">
+      <div className="shrink-0 pt-[env(safe-area-inset-top)] relative z-10">
         {/* Back button — top left */}
         {onBack && (
           <button onClick={onBack}
@@ -698,7 +721,7 @@ function GalleryDashboard({ onBack }: { onBack?: () => void } = {}) {
       </div>
 
       {/* Zone 2: Painting canvas */}
-      <div className="flex-1 relative overflow-hidden">
+      <div className="flex-1 relative overflow-hidden z-10">
         <AnimatePresence mode="wait">
           <motion.div key={room.id} className="absolute inset-0"
             initial={{ opacity: 0, x: slideDir * 120 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -slideDir * 120 }}
@@ -741,7 +764,7 @@ function GalleryDashboard({ onBack }: { onBack?: () => void } = {}) {
           </span>
         </button>
 
-        <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,0.5) 100%)' }} />
+        <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 50% 30%, transparent 30%, rgba(0,0,0,0.3) 100%)' }} />
 
         {/* Bottom toolbar — expandable menu */}
         <ToolbarMenu
@@ -759,7 +782,7 @@ function GalleryDashboard({ onBack }: { onBack?: () => void } = {}) {
       </div>
 
       {/* Zone 3: Info bar */}
-      <div className="shrink-0">
+      <div className="shrink-0 relative z-10">
         <AnimatePresence mode="wait">
           <motion.div key={room.id}><InfoBar room={room} isZh={isZh} /></motion.div>
         </AnimatePresence>

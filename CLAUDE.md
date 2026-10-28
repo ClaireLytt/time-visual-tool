@@ -5,6 +5,9 @@
 TimeVisual — a React 18 + TypeScript + Tailwind + Vite productivity app with Firebase backend.
 
 ## Build & Test
+- 不允许运行/metr-finish
+- 不允许出现选择题 你直接选择一个最合适的方案
+- 不要chong
 
 - `cmd /c "npm run dev"` — start dev server (auto-opens browser)
 - `npx tsc --noEmit` — type-check
