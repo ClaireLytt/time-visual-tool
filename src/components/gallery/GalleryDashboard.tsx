@@ -88,6 +88,88 @@ function HumanScale({ realSize }: { realSize: { widthCm: number; heightCm: numbe
 }
 
 /* ═══════════════════════════════════════════
+   Four-dimension review panel
+   Based on the Anthropic harness article's evaluator:
+   Design Quality · Originality · Craft · Functionality
+   ═══════════════════════════════════════════ */
+const DIMENSIONS = [
+  { key: 'design',      labelZh: '设计质量', labelEn: 'Design Quality',  icon: '◆' },
+  { key: 'originality', labelZh: '原创性',   labelEn: 'Originality',     icon: '✦' },
+  { key: 'craft',       labelZh: '工艺',     labelEn: 'Craft',           icon: '◈' },
+  { key: 'functionality', labelZh: '功能性', labelEn: 'Functionality',   icon: '⬡' },
+] as const
+
+function ReviewPanel({ paintingId, isZh }: { paintingId: string; isZh: boolean }) {
+  const [scores, setScores] = useState<Record<string, number>>(() => {
+    try {
+      const saved = localStorage.getItem(`gallery-review-${paintingId}`)
+      return saved ? JSON.parse(saved) : {}
+    } catch { return {} }
+  })
+
+  const setScore = useCallback((dim: string, val: number) => {
+    setScores(prev => {
+      const next = { ...prev, [dim]: val }
+      try { localStorage.setItem(`gallery-review-${paintingId}`, JSON.stringify(next)) } catch { /* */ }
+      return next
+    })
+  }, [paintingId])
+
+  const avg = useMemo(() => {
+    const vals = Object.values(scores)
+    return vals.length > 0 ? (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1) : '—'
+  }, [scores])
+
+  return (
+    <motion.div
+      className="mt-6 max-w-sm mx-auto"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.4 }}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <h4 className="text-xs font-semibold tracking-widest uppercase text-white/40">
+          {isZh ? '四维评审' : 'Four-Dimension Review'}
+        </h4>
+        <span className="text-xs text-amber-400/70 font-mono">{avg}/5</span>
+      </div>
+      <div className="space-y-2">
+        {DIMENSIONS.map(dim => {
+          const val = scores[dim.key] || 0
+          return (
+            <div key={dim.key} className="flex items-center gap-3">
+              <span className="text-white/30 text-sm w-4 text-center">{dim.icon}</span>
+              <span className="text-[11px] text-white/50 w-16 shrink-0">
+                {isZh ? dim.labelZh : dim.labelEn}
+              </span>
+              <div className="flex gap-1 flex-1">
+                {[1, 2, 3, 4, 5].map(n => (
+                  <button
+                    key={n}
+                    onClick={() => setScore(dim.key, n)}
+                    className="h-6 flex-1 rounded-sm transition-all duration-200 cursor-pointer"
+                    style={{
+                      background: n <= val
+                        ? `rgba(201, 168, 76, ${0.3 + n * 0.14})`
+                        : 'rgba(255,255,255,0.04)',
+                      border: n <= val ? '1px solid rgba(201,168,76,0.3)' : '1px solid rgba(255,255,255,0.06)',
+                    }}
+                    aria-label={`${isZh ? dim.labelZh : dim.labelEn} ${n}/5`}
+                  />
+                ))}
+              </div>
+              <span className="text-[10px] text-white/30 w-4 text-right font-mono">
+                {val || '·'}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </motion.div>
+  )
+}
+
+/* ═══════════════════════════════════════════
    Painting detail modal — full screen
    ═══════════════════════════════════════════ */
 function PaintingModal({ painting, onClose, isZh }: { painting: Painting; onClose: () => void; isZh: boolean }) {
@@ -137,6 +219,9 @@ function PaintingModal({ painting, onClose, isZh }: { painting: Painting; onClos
           )}
 
           {painting.realSize && <HumanScale realSize={painting.realSize} />}
+
+          {/* Four-dimension review */}
+          <ReviewPanel paintingId={painting.id} isZh={isZh} />
         </motion.div>
 
         <button onClick={onClose}
