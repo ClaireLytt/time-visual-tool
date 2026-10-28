@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'motion/react'
 import Header from './Header'
@@ -56,7 +57,15 @@ function validateMode(raw: unknown): AppMode | null {
 
 function AppShell() {
   const { t } = useTranslation()
+  const location = useLocation()
   const [mode, setMode] = useLocalStorage<AppMode>(APP_MODE_STORAGE_KEY, 'overview', validateMode)
+
+  // Direct-link routes: /gallery → gallery mode
+  useEffect(() => {
+    if (location.pathname === '/gallery' && mode !== 'gallery') {
+      setMode('gallery')
+    }
+  }, [location.pathname, mode, setMode])
 
   // Preload all module data so tab switches never show a spinner
   useTimeEntries()
