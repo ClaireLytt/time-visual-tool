@@ -20,6 +20,7 @@ export const ENGLISH_CHALLENGES: EnglishChallenge[] = [
         meaning: '吐灯',
         example: 'The great chandelier hung above the audience.',
         exampleZh: '巨大的吐灯悬挂在观众席上方。',
+        etymology: 'French "chandelle" (candle) → chandelier. Originally a candle holder.',
       },
       {
         word: 'catastrophe',
@@ -56,6 +57,7 @@ export const ENGLISH_CHALLENGES: EnglishChallenge[] = [
         meaning: '歌剧',
         example: 'The Paris Opera House is the setting of our story.',
         exampleZh: '巴黎歌剧院是我们故事的背景。',
+        etymology: 'Italian "opera" (work) from Latin "opus" (work). An opera is literally a "work" of music.',
       },
       {
         word: 'ghost',
@@ -162,6 +164,7 @@ export const ENGLISH_CHALLENGES: EnglishChallenge[] = [
         meaning: '幽灵，魅影',
         example: 'The Phantom lived beneath the opera house.',
         exampleZh: '魅影住在歌剧院下方。',
+        etymology: 'Greek "phantasma" (apparition) → Latin "phantasma" → French "fantôme" → English phantom.',
       },
       {
         word: 'melody',
@@ -430,6 +433,7 @@ export const ENGLISH_CHALLENGES: EnglishChallenge[] = [
         meaning: '化装舞会，伪装',
         example: 'Life itself was his masquerade.',
         exampleZh: '生活本身就是他的化装舞会。',
+        etymology: 'Italian "maschera" (mask) → Spanish "mascarada" → French "mascarade" → English masquerade.',
       },
       {
         word: 'parade',

@@ -102,6 +102,8 @@ export interface EnglishVocab {
   /** Example sentence from the opera context */
   example: string;
   exampleZh: string;
+  /** Word origin/etymology (optional) */
+  etymology?: string;
 }
 
 export type ChallengeType = 'translate' | 'fill-blank' | 'match';

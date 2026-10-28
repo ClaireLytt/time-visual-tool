@@ -3,6 +3,7 @@
  */
 import { useState, useEffect } from 'react';
 import { Achievement } from '../core/achievements';
+import { playAchievement } from '../audio/ui-sfx';
 
 interface Props {
   achievement: Achievement | null;
@@ -14,7 +15,7 @@ export default function AchievementToast({ achievement, onDone }: Props) {
 
   useEffect(() => {
     if (!achievement) return;
-    const show = requestAnimationFrame(() => setVisible(true));
+    const show = requestAnimationFrame(() => { setVisible(true); playAchievement(); });
     const t = setTimeout(() => {
       setVisible(false);
       setTimeout(onDone, 500);

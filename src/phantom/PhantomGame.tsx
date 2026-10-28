@@ -25,6 +25,7 @@ import ReviewQuiz from './ui/ReviewQuiz';
 import HelpGuide from './ui/HelpGuide';
 import PronunciationPractice from './ui/PronunciationPractice';
 import WritingJournal from './ui/WritingJournal';
+import MiniMap from './ui/MiniMap';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
 import { ActId, DialogueScene, EnglishChallenge } from './core/types';
@@ -439,12 +440,18 @@ export default function PhantomGame() {
         }}
       />
 
-      <p style={{
-        fontFamily: 'sans-serif', fontSize: '0.7rem', color: '#4a3a2e',
-        marginTop: '0.8rem', textAlign: 'center',
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        gap: '0.8rem', marginTop: '0.8rem',
       }}>
-        点击场景移动 · 点击发光物品 · Tab 背包 · M 地图 · H 帮助 · ESC 暂停
-      </p>
+        <MiniMap onClick={() => setMapOpen(true)} />
+        <p style={{
+          fontFamily: 'sans-serif', fontSize: '0.7rem', color: '#4a3a2e',
+          margin: 0,
+        }}>
+          点击场景移动 · Tab 背包 · M 地图 · H 帮助 · ESC 暂停
+        </p>
+      </div>
 
       <ParchmentOverlay itemId={viewingItem} onClose={() => {
         setViewingItem(null);

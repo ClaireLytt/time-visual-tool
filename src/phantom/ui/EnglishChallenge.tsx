@@ -4,6 +4,7 @@
  */
 import { useState, useCallback, useMemo } from 'react';
 import { EnglishChallenge as ChallengeData, EnglishVocab } from '../core/types';
+import { playCorrect, playWrong } from '../audio/ui-sfx';
 
 interface Props {
   challenge: ChallengeData;
@@ -32,11 +33,12 @@ export default function EnglishChallengeModal({ challenge, onComplete }: Props) 
       if (isCorrect) {
         setPassed(true);
         setPhase('result');
+        playCorrect();
       } else {
         setAttempts((a) => a + 1);
         if (attempts >= 0) setShowHint(true);
+        playWrong();
         if (attempts >= 2) {
-          // After 3 attempts, show correct answer
           setPassed(false);
           setPhase('result');
         }
@@ -360,6 +362,16 @@ function VocabCard({ vocab }: { vocab: EnglishVocab }) {
           {vocab.exampleZh}
         </p>
       </div>
+      {vocab.etymology && (
+        <p style={{
+          fontSize: '0.68rem', color: '#6a6a5a',
+          fontStyle: 'italic', margin: '0.5rem 0 0',
+          borderTop: '1px solid rgba(100,80,60,0.15)',
+          paddingTop: '0.4rem',
+        }}>
+          {'📜'} {vocab.etymology}
+        </p>
+      )}
     </div>
   );
 }

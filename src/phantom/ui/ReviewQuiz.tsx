@@ -8,6 +8,7 @@ import { ENGLISH_CHALLENGES } from '../core/english-challenges';
 import { getUnlockedIdioms } from '../core/idioms';
 import { useGameStore } from '../core/store';
 import { EnglishVocab } from '../core/types';
+import { playCorrect, playWrong } from '../audio/ui-sfx';
 
 interface Props {
   open: boolean;
@@ -156,7 +157,8 @@ export default function ReviewQuiz({ open, onClose }: Props) {
     setSelected(idx);
     setTotal((t) => t + 1);
     const isCorrect = idx === current.correctIdx;
-    if (isCorrect) setScore((s) => s + 1);
+    if (isCorrect) { setScore((s) => s + 1); playCorrect(); }
+    else { playWrong(); }
 
     // Track review for spaced repetition
     if (current.type === 'vocab-meaning' || current.type === 'vocab-word') {
