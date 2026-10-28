@@ -22,6 +22,7 @@ import DailyChallenge from './ui/DailyChallenge';
 import IdiomCollection from './ui/IdiomCollection';
 import StoryTimeline from './ui/StoryTimeline';
 import ReviewQuiz from './ui/ReviewQuiz';
+import HelpGuide from './ui/HelpGuide';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
 import { ActId, DialogueScene, EnglishChallenge } from './core/types';
@@ -79,6 +80,7 @@ export default function PhantomGame() {
   const [idiomsOpen, setIdiomsOpen] = useState(false);
   const [timelineOpen, setTimelineOpen] = useState(false);
   const [quizOpen, setQuizOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [envDesc, setEnvDesc] = useState<EnvDescription | null>(null);
   const [showRecap, setShowRecap] = useState<ActId | null>(null);
   const [showEnding, setShowEnding] = useState(false);
@@ -210,6 +212,9 @@ export default function PhantomGame() {
     if (e.key === 'm' || e.key === 'M') {
       setMapOpen((v) => !v);
     }
+    if (e.key === 'h' || e.key === 'H') {
+      setHelpOpen((v) => !v);
+    }
   }, [togglePause, inventoryOpen]);
 
   useEffect(() => {
@@ -225,7 +230,16 @@ export default function PhantomGame() {
       setArea(area || ACT_START_AREAS[act]);
     }
     setMusicArea(area || ACT_START_AREAS[act || 1]);
-    startTransition('curtain-rise', () => startGame(), 3000);
+    startTransition('curtain-rise', () => {
+      startGame();
+      // Show help on first ever play
+      try {
+        if (!localStorage.getItem('phantom-help-shown')) {
+          localStorage.setItem('phantom-help-shown', '1');
+          setTimeout(() => setHelpOpen(true), 1500);
+        }
+      } catch { /* ignore */ }
+    }, 3000);
   }, [setAct, setArea, startGame, startTransition]);
 
   // ── Intro text overlay ──
@@ -302,9 +316,22 @@ export default function PhantomGame() {
           </div>
         </div>
 
-        <p style={{ fontSize: '0.65rem', color: '#3a3028', marginTop: '1.5rem' }}>
-          点击场景移动视角 · 点击发光物品互动 · Tab 背包 · ESC 暂停
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginTop: '1.5rem' }}>
+          <p style={{ fontSize: '0.65rem', color: '#3a3028', margin: 0 }}>
+            点击场景移动视角 · 点击发光物品互动 · Tab 背包 · ESC 暂停
+          </p>
+          <button
+            onClick={() => setHelpOpen(true)}
+            style={{
+              fontFamily: 'Georgia, serif', fontSize: '0.65rem',
+              padding: '0.2rem 0.6rem', background: 'transparent',
+              border: '1px solid #3a3028', color: '#6a5a48',
+              borderRadius: 3, cursor: 'pointer',
+            }}
+          >
+            ? 帮助
+          </button>
+        </div>
 
         {/* Daily challenge on title screen */}
         <DailyChallenge onComplete={() => {}} />
@@ -339,6 +366,7 @@ export default function PhantomGame() {
           </div>
         )}
 
+        <HelpGuide open={helpOpen} onClose={() => setHelpOpen(false)} />
         <Transition transition={transition} />
       </div>
     );
@@ -407,7 +435,7 @@ export default function PhantomGame() {
         fontFamily: 'sans-serif', fontSize: '0.7rem', color: '#4a3a2e',
         marginTop: '0.8rem', textAlign: 'center',
       }}>
-        点击场景移动 · 点击发光物品 · Tab 背包 · M 地图 · ESC 暂停
+        点击场景移动 · 点击发光物品 · Tab 背包 · M 地图 · H 帮助 · ESC 暂停
       </p>
 
       <ParchmentOverlay itemId={viewingItem} onClose={() => {
@@ -470,6 +498,7 @@ export default function PhantomGame() {
       <IdiomCollection open={idiomsOpen} onClose={() => setIdiomsOpen(false)} />
       <StoryTimeline open={timelineOpen} onClose={() => setTimelineOpen(false)} />
       <ReviewQuiz open={quizOpen} onClose={() => setQuizOpen(false)} />
+      <HelpGuide open={helpOpen} onClose={() => setHelpOpen(false)} />
 
       {showRecap && (
         <ActRecap
@@ -557,12 +586,17 @@ export default function PhantomGame() {
             </div>
           </div>
 
-          <button
-            onClick={() => { togglePause(); resetGame(); }}
-            style={{ ...menuBtnStyle, color: '#8a6a5a', borderColor: '#3a2a22', marginTop: '1.2rem' }}
-          >
-            返回主菜单
-          </button>
+          <div style={{ display: 'flex', gap: '0.8rem', marginTop: '1.2rem' }}>
+            <button onClick={() => setHelpOpen(true)} style={{ ...menuBtnStyle, width: 'auto' }}>
+              ? 帮助
+            </button>
+            <button
+              onClick={() => { togglePause(); resetGame(); }}
+              style={{ ...menuBtnStyle, color: '#8a6a5a', borderColor: '#3a2a22' }}
+            >
+              返回主菜单
+            </button>
+          </div>
         </div>
       )}
     </div>
