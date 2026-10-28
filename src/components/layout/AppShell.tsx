@@ -62,7 +62,7 @@ function AppShell() {
 
   // Direct-link routes: /gallery → gallery mode
   useEffect(() => {
-    if (location.pathname === '/gallery' && mode !== 'gallery') {
+    if (location.pathname.startsWith('/gallery') && mode !== 'gallery') {
       setMode('gallery')
     }
   }, [location.pathname, mode, setMode])

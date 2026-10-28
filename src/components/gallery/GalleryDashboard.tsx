@@ -249,7 +249,7 @@ function PaintingModal({ painting, onClose, isZh, onPrev, onNext, isFav, onToggl
       className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
       onClick={onClose}
     >
-      <div className="absolute inset-0 bg-black/95 backdrop-blur-lg" />
+      <div className="absolute inset-0 bg-black backdrop-blur-lg" />
       <motion.div
         initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }}
         transition={{ type: 'spring', damping: 28, stiffness: 280 }}
@@ -333,7 +333,7 @@ function PaintingModal({ painting, onClose, isZh, onPrev, onNext, isFav, onToggl
               {painting.palette.map((c, i) => (
                 <div key={i} className="flex flex-col items-center gap-0.5">
                   <span className="w-5 h-5 rounded-full border border-white/10" style={{ background: c }} />
-                  <span className="text-[7px] text-white/20 font-mono">{c}</span>
+                  <span className="text-[8px] text-white/25 font-mono hidden sm:block">{c}</span>
                 </div>
               ))}
             </div>
@@ -436,7 +436,13 @@ function WallPainting({ painting, layout, onSelect, index }: {
           }} />
         <div className="absolute inset-[3px] rounded-sm" style={{ background: '#1a1610' }} />
         <div className={`relative overflow-hidden rounded-sm bg-black ${PAINTING_EXTRAS[painting.id]?.animClass || ''}`} style={{ width: w, height: h }}>
-        <div className="absolute inset-0" style={{ background: painting.fallbackGradient, opacity: imgLoaded ? 0 : 1, transition: 'opacity 0.6s' }} />
+        <div className="absolute inset-0" style={{ background: painting.fallbackGradient, opacity: imgLoaded ? 0 : 1, transition: 'opacity 0.6s' }}>
+          {!imgLoaded && (
+            <div className="absolute inset-0 flex items-end justify-center pb-2">
+              <span className="text-white/50 text-[9px] font-medium tracking-wide text-center px-1 drop-shadow">{painting.title}</span>
+            </div>
+          )}
+        </div>
         {!imgError && (
           <img src={painting.imageUrl} alt={`${painting.title} by ${painting.artist}`}
             className="absolute inset-0 w-full h-full object-cover"
@@ -762,7 +768,7 @@ function GalleryDashboard({ onBack }: { onBack?: () => void } = {}) {
             <button key={r.id} onClick={() => goToRoom(i, i > roomIndex ? 1 : -1)}
               className="w-11 h-11 flex items-center justify-center" aria-label={isZh ? r.nameZh : r.name}>
               <span className="block rounded-full transition-all duration-300"
-                style={{ width: i === roomIndex ? 16 : 4, height: 4, background: i === roomIndex ? '#c9a84c' : 'rgba(255,255,255,0.15)' }} />
+                style={{ width: i === roomIndex ? 20 : 6, height: 6, background: i === roomIndex ? '#c9a84c' : 'rgba(255,255,255,0.25)' }} />
             </button>
           ))}
         </div>
@@ -815,7 +821,10 @@ function GalleryDashboard({ onBack }: { onBack?: () => void } = {}) {
 
         <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 50% 30%, transparent 30%, rgba(0,0,0,0.3) 100%)' }} />
 
-        {/* Bottom toolbar — expandable menu */}
+      </div>
+
+      {/* Toolbar — outside overflow-hidden canvas so popup isn't clipped */}
+      <div className="absolute bottom-[40%] right-4 z-30">
         <ToolbarMenu
           isZh={isZh}
           achievementCount={achievements.unlocked.length}
@@ -835,6 +844,62 @@ function GalleryDashboard({ onBack }: { onBack?: () => void } = {}) {
         <AnimatePresence mode="wait">
           <motion.div key={room.id}><InfoBar room={room} isZh={isZh} /></motion.div>
         </AnimatePresence>
+      </div>
+
+      {/* Scroll indicator */}
+      <div className="shrink-0 relative z-10 flex justify-center pb-2">
+        <motion.div
+          animate={{ y: [0, 6, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+          className="text-white/20 text-xs"
+        >▼</motion.div>
+      </div>
+
+      {/* Zone 4: Scrollable content below the gallery */}
+      <div className="shrink-0 relative z-10 overflow-y-auto" style={{ maxHeight: '50vh', background: '#0a0a0a' }}>
+        <div className="px-5 py-6">
+          {/* Room paintings grid */}
+          <h3 className="text-xs font-medium tracking-[0.2em] uppercase text-white/30 mb-3">
+            {isZh ? `${room.nameZh} · 全部画作` : `${room.name} · All Paintings`}
+          </h3>
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            {room.paintings.map(p => {
+              const ex = PAINTING_EXTRAS[p.id]
+              return (
+                <button key={p.id} onClick={() => selectPainting(p)}
+                  className="text-left rounded-lg overflow-hidden border border-white/8 hover:border-amber-400/30 transition-all cursor-pointer bg-white/3">
+                  <div className="aspect-[4/3] relative">
+                    <div className="absolute inset-0" style={{ background: p.fallbackGradient }} />
+                    <img src={p.imageUrl} alt={p.title} className="absolute inset-0 w-full h-full object-cover"
+                      referrerPolicy="no-referrer" onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                    {isFav(p.id) && <span className="absolute top-1 right-1 text-xs">★</span>}
+                  </div>
+                  <div className="p-2">
+                    <p className="text-[11px] text-white/70 font-medium truncate">{p.title}</p>
+                    <p className="text-[10px] text-white/40 truncate">{p.artist} · {p.year}</p>
+                    {ex?.museum && <p className="text-[9px] text-white/25 truncate mt-0.5">📍 {ex.museum}</p>}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Quick stats */}
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            <div className="bg-white/3 rounded-lg p-3 text-center border border-white/5">
+              <p className="text-lg font-bold text-amber-400/70">{GALLERY_ROOMS.length}</p>
+              <p className="text-[10px] text-white/30">{isZh ? '展厅' : 'Rooms'}</p>
+            </div>
+            <div className="bg-white/3 rounded-lg p-3 text-center border border-white/5">
+              <p className="text-lg font-bold text-amber-400/70">{GALLERY_ROOMS.reduce((s, r) => s + r.paintings.length, 0)}</p>
+              <p className="text-[10px] text-white/30">{isZh ? '画作' : 'Paintings'}</p>
+            </div>
+            <div className="bg-white/3 rounded-lg p-3 text-center border border-white/5">
+              <p className="text-lg font-bold text-amber-400/70">{favs.length}</p>
+              <p className="text-[10px] text-white/30">{isZh ? '收藏' : 'Favorites'}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Modal */}
