@@ -7,6 +7,7 @@ import { PAINTING_EXTRAS } from '../../constants/paintingData'
 import { useAchievements, AchievementToast, AchievementPanel, GlobalTimeline, PaintingQuiz } from './GalleryExtras'
 import { WorldMap, PaintingComparison, ColorWheel } from './GalleryViews'
 import { PuzzleGame } from './PuzzleGame'
+import { usePaintingAudio, useVoiceNarration } from './PaintingAudio'
 import type { Painting } from '../../types/gallery'
 
 /* ═══════════════════════════════════════════
@@ -222,6 +223,8 @@ function PaintingModal({ painting, onClose, isZh, onPrev, onNext, isFav, onToggl
   const extra = PAINTING_EXTRAS[painting.id]
   const { note, save: saveNote } = useNotes(painting.id)
   const quoteText = extra?.quote ? (isZh ? extra.quote.zh : extra.quote.en) : ''
+  const audio = usePaintingAudio()
+  const voice = useVoiceNarration()
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -276,6 +279,19 @@ function PaintingModal({ painting, onClose, isZh, onPrev, onNext, isFav, onToggl
               className={`text-xs px-2 py-0.5 rounded-full transition-all ${showXray ? 'bg-amber-400/20 text-amber-300' : 'bg-white/5 text-white/30 hover:text-white/60'}`}
               aria-label="Composition overlay">
               {isZh ? '构图' : 'X-ray'}
+            </button>
+            <button onClick={() => audio.play(painting.id)}
+              className="text-xs px-2 py-0.5 rounded-full transition-all bg-white/5 text-white/30 hover:text-white/60"
+              aria-label="Play music">
+              ♪
+            </button>
+            <button onClick={() => {
+              const text = painting.story ? (isZh ? painting.story.zh : painting.story.en) : painting.title
+              voice.speak(text, isZh ? 'zh' : 'en')
+            }}
+              className="text-xs px-2 py-0.5 rounded-full transition-all bg-white/5 text-white/30 hover:text-white/60"
+              aria-label="Voice narration">
+              🔊
             </button>
           </div>
 
