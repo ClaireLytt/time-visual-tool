@@ -98,11 +98,11 @@ function WallPainting({ painting, onSelect, index }: {
     <motion.button
       onClick={() => onSelect(painting)}
       className="group cursor-pointer relative flex flex-col items-center"
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 40, scale: 0.9 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{
-        duration: 0.6,
-        delay: index * 0.15,
+        duration: 0.8,
+        delay: index * 0.2,
         ease: [0.23, 1, 0.32, 1] as [number, number, number, number],
       }}
       whileHover={{ scale: 1.04, y: -6 }}
@@ -423,7 +423,6 @@ function GalleryDashboard() {
   const [flashlight, setFlashlight] = useState(false)
   const [soundOn, setSoundOn] = useState(false)
   const galleryRef = useRef<HTMLDivElement>(null)
-  const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
 
   const room = GALLERY_ROOMS[roomIndex]
   const isZh = i18n.language === 'zh'
@@ -468,12 +467,9 @@ function GalleryDashboard() {
     return () => window.removeEventListener('keydown', handler)
   }, [roomIndex, selectedPainting, goToRoom])
 
-  // Day/night background
-  const bgStyle = isDark
-    ? 'linear-gradient(180deg, #0a0a0a 0%, #111 40%, #0d0d0d 100%)'
-    : 'linear-gradient(180deg, #f8f6f0 0%, #eae6dc 40%, #e0dcd4 100%)'
-  const dotActive = isDark ? '#c9a84c' : '#8a7a5a'
-  const dotInactive = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'
+  // Always dark — immersive gallery
+  const dotActive = '#c9a84c'
+  const dotInactive = 'rgba(255,255,255,0.2)'
 
   return (
     <div className="w-full -mx-4 sm:-mx-6">
@@ -482,7 +478,7 @@ function GalleryDashboard() {
         ref={galleryRef}
         className="relative w-full overflow-hidden"
         style={{
-          background: bgStyle,
+          background: '#0a0a0a',
           minHeight: 480,
           // Flashlight mask
           ...(flashlight ? {
@@ -496,11 +492,11 @@ function GalleryDashboard() {
           <AnimatePresence mode="wait">
             <motion.h2
               key={room.id}
-              className={`text-lg font-semibold tracking-widest uppercase ${isDark ? 'text-white/80' : 'text-gray-800'}`}
-              initial={{ opacity: 0, x: slideDir * 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -slideDir * 30 }}
-              transition={{ duration: 0.3 }}
+              className="text-lg font-semibold tracking-widest uppercase text-white/80"
+              initial={{ opacity: 0, x: slideDir * 40, filter: 'blur(4px)' }}
+              animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, x: -slideDir * 40, filter: 'blur(4px)' }}
+              transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] as [number, number, number, number] }}
             >
               {isZh ? room.nameZh : room.name}
             </motion.h2>
@@ -534,10 +530,10 @@ function GalleryDashboard() {
           <AnimatePresence mode="wait">
             <motion.div
               key={room.id}
-              initial={{ opacity: 0, x: slideDir * 80 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -slideDir * 80 }}
-              transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] as [number, number, number, number] }}
+              initial={{ opacity: 0, x: slideDir * 100, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -slideDir * 100, scale: 0.95 }}
+              transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] as [number, number, number, number] }}
               className="flex items-start justify-center gap-10 sm:gap-14 flex-wrap py-4"
             >
               {room.paintings.map((p, i) => (
@@ -573,14 +569,12 @@ function GalleryDashboard() {
         />
 
         {/* Vignette edges */}
-        {isDark && (
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: 'linear-gradient(90deg, rgba(0,0,0,0.3) 0%, transparent 15%, transparent 85%, rgba(0,0,0,0.3) 100%)',
-            }}
-          />
-        )}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'linear-gradient(90deg, rgba(0,0,0,0.3) 0%, transparent 15%, transparent 85%, rgba(0,0,0,0.3) 100%)',
+          }}
+        />
 
         {/* Control buttons — top right */}
         <div className="absolute top-3 right-3 z-20 flex gap-1.5">
@@ -589,7 +583,7 @@ function GalleryDashboard() {
             className={`w-9 h-9 rounded-full flex items-center justify-center text-sm transition-all ${
               flashlight
                 ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40'
-                : (isDark ? 'bg-white/5 text-white/40 border border-white/10' : 'bg-black/5 text-gray-400 border border-black/10')
+                : 'bg-white/5 text-white/40 border border-white/10'
             }`}
             aria-label="Flashlight mode"
             title={isZh ? '手电筒模式' : 'Flashlight mode'}
@@ -601,7 +595,7 @@ function GalleryDashboard() {
             className={`w-9 h-9 rounded-full flex items-center justify-center text-sm transition-all ${
               soundOn
                 ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40'
-                : (isDark ? 'bg-white/5 text-white/40 border border-white/10' : 'bg-black/5 text-gray-400 border border-black/10')
+                : 'bg-white/5 text-white/40 border border-white/10'
             }`}
             aria-label="Ambient sound"
             title={isZh ? '环境音' : 'Ambient sound'}
@@ -612,7 +606,7 @@ function GalleryDashboard() {
       </div>
 
       {/* Hint */}
-      <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'} text-center mt-2.5 px-4`}>
+      <p className="text-xs text-gray-500 text-center mt-2.5 px-4">
         ← → {isZh ? '方向键切换展厅 · 点击画作查看详情 · 🔦手电筒 · 🔊环境音' : 'switch rooms · click painting for details · 🔦flashlight · 🔊ambient'}
       </p>
 
