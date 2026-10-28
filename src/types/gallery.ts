@@ -4,17 +4,23 @@ export interface Painting {
   artist: string
   year: string
   imageUrl: string
-  /** Position on the wall: percentage from left */
+  /** Position on the wall: percentage from left (legacy, kept for type compat) */
   wallX: number
-  /** Position on the wall: percentage from top */
+  /** Position on the wall: percentage from top (legacy) */
   wallY: number
   /** Display width in px */
   width: number
   /** Display height in px */
   height: number
-  description?: string
   /** CSS gradient fallback when image can't load */
   fallbackGradient: string
+  /** Short story / background about the painting (zh + en) */
+  story?: { zh: string; en: string }
+  /** Real physical dimensions in cm */
+  realSize?: { widthCm: number; heightCm: number }
+  /** 5 dominant colors extracted from the painting */
+  palette?: string[]
+  description?: string
 }
 
 export interface GalleryRoom {
@@ -27,4 +33,6 @@ export interface GalleryRoom {
   /** Floor tile colors */
   floorLight: string
   floorDark: string
+  /** Ambient sound type */
+  ambientSound?: 'bells' | 'piano' | 'organ'
 }
