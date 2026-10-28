@@ -93,6 +93,7 @@ interface Canvas2DProps {
 export default function Canvas2D({ onTransition, onTriggerFired, onClueClick }: Canvas2DProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef(0);
+  const cameraTargetRef = useRef(cameraX);
   const [hoveredHotspot, setHoveredHotspot] = useState<Hotspot | null>(null);
   const [ghostOpacity, setGhostOpacity] = useState(0);
   const [showThinkOfMe, setShowThinkOfMe] = useState(false);
@@ -113,6 +114,9 @@ export default function Canvas2D({ onTransition, onTriggerFired, onClueClick }: 
 
   const currentAct = useGameStore((s) => s.currentAct);
   const areas = getAreasForAct(currentAct);
+  // Sync camera target when area changes
+  useEffect(() => { cameraTargetRef.current = 0; }, [currentArea]);
+
   const baseArea = areas.find((a) => a.id === currentArea);
   // Merge environment hotspots into the area
   const area = useMemo(() => {
@@ -243,9 +247,9 @@ export default function Canvas2D({ onTransition, onTriggerFired, onClueClick }: 
       }
     }
 
-    // Move camera toward click
+    // Move camera toward click (smooth lerp via target ref)
     const targetX = Math.max(0, Math.min(clickX - VIEWPORT_W / 2, area.width - VIEWPORT_W));
-    setCameraX(targetX);
+    cameraTargetRef.current = targetX;
   }, [area, toSceneCoords, collectedItems, collectItem, triggeredEvents, triggerEvent, setArea, setCameraX, isPaused, onTriggerFired, onClueClick]);
 
   // Mouse move for hover detection
@@ -288,6 +292,14 @@ export default function Canvas2D({ onTransition, onTriggerFired, onClueClick }: 
     function draw(now: number) {
       const t = (now - startTime) / 1000;
       ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+
+      // Smooth camera lerp
+      const target = cameraTargetRef.current;
+      if (Math.abs(cameraX - target) > 1) {
+        setCameraX(cameraX + (target - cameraX) * 0.12);
+      } else if (cameraX !== target) {
+        setCameraX(target);
+      }
 
       const cam = cameraX;
 

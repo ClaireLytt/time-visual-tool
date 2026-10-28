@@ -28,6 +28,7 @@ import WritingJournal from './ui/WritingJournal';
 import MiniMap from './ui/MiniMap';
 import MemoryMatch from './ui/MemoryMatch';
 import ListeningDictation from './ui/ListeningDictation';
+import AreaNameToast from './ui/AreaNameToast';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
 import { ActId, DialogueScene, EnglishChallenge } from './core/types';
@@ -443,6 +444,8 @@ export default function PhantomGame() {
           if (desc) setEnvDesc(desc);
         }}
       />
+
+      <AreaNameToast />
 
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center',
