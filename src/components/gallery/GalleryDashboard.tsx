@@ -358,12 +358,12 @@ function GalleryDashboard() {
   }, [roomIndex, selectedPainting, goToRoom])
 
   return (
-    <div className="w-full -mx-4 sm:-mx-6" style={{ marginTop: -16 }}>
-      {/* ── Full-screen black gallery ── */}
-      <div
-        className="relative w-full overflow-hidden"
-        style={{ background: '#050505', height: 'calc(100vh - 56px)', minHeight: 500 }}
-      >
+    <div
+      className="fixed inset-0 z-30"
+      style={{ top: 56, background: '#050505' }}
+    >
+      {/* ── Full-screen black gallery — breaks out of Container entirely ── */}
+      <div className="relative w-full h-full overflow-hidden">
         {/* Room title — top center */}
         <div className="absolute top-4 left-0 right-0 z-20 text-center">
           <AnimatePresence mode="wait">
