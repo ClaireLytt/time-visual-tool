@@ -425,9 +425,16 @@ function WallPainting({ painting, layout, onSelect, index }: {
       aria-label={`${painting.title} by ${painting.artist}`}
     >
       <div className="absolute -inset-10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse at 50% 20%, rgba(255,240,200,0.08) 0%, transparent 70%)' }} />
-      <div className="absolute inset-0 rounded" style={{ boxShadow: '0 12px 48px rgba(0,0,0,0.7), 0 4px 12px rgba(0,0,0,0.5)' }} />
-      <div className={`relative overflow-hidden rounded bg-black ${PAINTING_EXTRAS[painting.id]?.animClass || ''}`} style={{ width: w, height: h }}>
+        style={{ background: 'radial-gradient(ellipse at 50% 20%, rgba(255,240,200,0.12) 0%, transparent 70%)' }} />
+      {/* Gold museum frame */}
+      <div className="relative" style={{ padding: 6 }}>
+        <div className="absolute inset-0 rounded-sm"
+          style={{
+            background: 'linear-gradient(135deg, #c9a84c 0%, #f0d68a 20%, #c9a84c 40%, #a07830 60%, #c9a84c 80%, #f0d68a 100%)',
+            boxShadow: '0 8px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.2)',
+          }} />
+        <div className="absolute inset-[3px] rounded-sm" style={{ background: '#1a1610' }} />
+        <div className={`relative overflow-hidden rounded-sm bg-black ${PAINTING_EXTRAS[painting.id]?.animClass || ''}`} style={{ width: w, height: h }}>
         <div className="absolute inset-0" style={{ background: painting.fallbackGradient, opacity: imgLoaded ? 0 : 1, transition: 'opacity 0.6s' }} />
         {!imgError && (
           <img src={painting.imageUrl} alt={`${painting.title} by ${painting.artist}`}
@@ -438,7 +445,8 @@ function WallPainting({ painting, layout, onSelect, index }: {
           />
         )}
       </div>
-      <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+      </div>
+      <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
         <p className="text-white/80 text-xs font-medium tracking-wide">{painting.title}</p>
         <p className="text-white/40 text-[10px] text-center">{painting.artist} · {painting.year}</p>
       </div>
@@ -701,16 +709,36 @@ function GalleryDashboard({ onBack }: { onBack?: () => void } = {}) {
           </motion.div>
         </AnimatePresence>
 
-        {/* Nav arrows */}
+        {/* Doorway navigation */}
         <button onClick={() => goToRoom((roomIndex - 1 + GALLERY_ROOMS.length) % GALLERY_ROOMS.length, -1)}
-          className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/15 backdrop-blur-sm transition-all border border-white/10 cursor-pointer"
+          className="absolute left-2 bottom-0 z-20 group cursor-pointer flex flex-col items-center"
           aria-label={`Go to ${isZh ? prevRoom.nameZh : prevRoom.name}`}>
-          <span className="text-lg text-white/50">‹</span>
+          <div className="w-14 h-32 sm:w-16 sm:h-40 rounded-t-sm overflow-hidden relative"
+            style={{ background: 'linear-gradient(180deg, #0a0806 0%, #141210 60%, #1a1814 100%)', border: '2px solid #5a4a38', borderBottom: 'none', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.8), 0 0 12px rgba(0,0,0,0.4)' }}>
+            <div className="absolute inset-0 opacity-30 group-hover:opacity-60 transition-opacity duration-300"
+              style={{ background: 'radial-gradient(ellipse at 50% 80%, rgba(180,160,130,0.3) 0%, transparent 70%)' }} />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-xl text-white/30 group-hover:text-white/60 transition-colors">←</span>
+            </div>
+          </div>
+          <span className="text-[9px] text-white/30 group-hover:text-white/60 mt-1 transition-colors tracking-wide">
+            {isZh ? prevRoom.nameZh : prevRoom.name}
+          </span>
         </button>
         <button onClick={() => goToRoom((roomIndex + 1) % GALLERY_ROOMS.length, 1)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/15 backdrop-blur-sm transition-all border border-white/10 cursor-pointer"
+          className="absolute right-2 bottom-0 z-20 group cursor-pointer flex flex-col items-center"
           aria-label={`Go to ${isZh ? nextRoom.nameZh : nextRoom.name}`}>
-          <span className="text-lg text-white/50">›</span>
+          <div className="w-14 h-32 sm:w-16 sm:h-40 rounded-t-sm overflow-hidden relative"
+            style={{ background: 'linear-gradient(180deg, #0a0806 0%, #141210 60%, #1a1814 100%)', border: '2px solid #5a4a38', borderBottom: 'none', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.8), 0 0 12px rgba(0,0,0,0.4)' }}>
+            <div className="absolute inset-0 opacity-30 group-hover:opacity-60 transition-opacity duration-300"
+              style={{ background: 'radial-gradient(ellipse at 50% 80%, rgba(180,160,130,0.3) 0%, transparent 70%)' }} />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-xl text-white/30 group-hover:text-white/60 transition-colors">→</span>
+            </div>
+          </div>
+          <span className="text-[9px] text-white/30 group-hover:text-white/60 mt-1 transition-colors tracking-wide">
+            {isZh ? nextRoom.nameZh : nextRoom.name}
+          </span>
         </button>
 
         <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,0.5) 100%)' }} />
