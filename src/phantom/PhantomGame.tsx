@@ -17,6 +17,7 @@ import GameEnding from './ui/GameEnding';
 import SentenceBuilder from './ui/SentenceBuilder';
 import CharacterProfiles from './ui/CharacterProfiles';
 import ProgressMap from './ui/ProgressMap';
+import ReadingPassages from './ui/ReadingPassages';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
 import { ActId, DialogueScene, EnglishChallenge } from './core/types';
@@ -70,6 +71,7 @@ export default function PhantomGame() {
   const [sentenceOpen, setSentenceOpen] = useState(false);
   const [profilesOpen, setProfilesOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
+  const [readingOpen, setReadingOpen] = useState(false);
   const [envDesc, setEnvDesc] = useState<EnvDescription | null>(null);
   const [showRecap, setShowRecap] = useState<ActId | null>(null);
   const [showEnding, setShowEnding] = useState(false);
@@ -88,10 +90,14 @@ export default function PhantomGame() {
     catch { return false; }
   });
 
-  // Subscribe to collectible changes
+  // Subscribe to collectible changes (skip initial load)
   useEffect(() => {
     let prevCount = useGameStore.getState().collectedItems.length;
+    let initialized = false;
+    // Wait a tick so loadGame doesn't trigger the overlay
+    setTimeout(() => { prevCount = useGameStore.getState().collectedItems.length; initialized = true; }, 100);
     const unsub = useGameStore.subscribe((state) => {
+      if (!initialized) return;
       const count = state.collectedItems.length;
       if (count > prevCount) {
         prevCount = count;
@@ -421,6 +427,7 @@ export default function PhantomGame() {
       <SentenceBuilder open={sentenceOpen} onClose={() => setSentenceOpen(false)} />
       <CharacterProfiles open={profilesOpen} onClose={() => setProfilesOpen(false)} />
       <ProgressMap open={mapOpen} onClose={() => setMapOpen(false)} />
+      <ReadingPassages open={readingOpen} onClose={() => setReadingOpen(false)} />
 
       {showRecap && (
         <ActRecap
@@ -446,41 +453,62 @@ export default function PhantomGame() {
       {/* Pause overlay */}
       {isPaused && (
         <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)',
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)',
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
-          zIndex: 200, gap: '0.8rem',
+          zIndex: 200,
+          fontFamily: 'Georgia, serif',
         }}>
-          <h2 style={{
-            fontFamily: 'Georgia, serif', color: '#e0d8cc',
-            fontSize: '1.5rem', margin: '0 0 0.5rem',
-          }}>
+          <h2 style={{ color: '#e0d8cc', fontSize: '1.5rem', margin: '0 0 1rem' }}>
             暂停
           </h2>
-          <button onClick={() => togglePause()} style={menuBtnStyle}>
-            继续游戏
-          </button>
-          <button onClick={() => setInventoryOpen(true)} style={menuBtnStyle}>
-            📖 收集日记
-          </button>
-          <button onClick={() => setFlashcardsOpen(true)} style={menuBtnStyle}>
-            🎓 复习单词
-          </button>
-          <button onClick={() => setScrambleOpen(true)} style={menuBtnStyle}>
-            🧩 单词拼图
-          </button>
-          <button onClick={() => setSentenceOpen(true)} style={menuBtnStyle}>
-            📝 句子拼装
-          </button>
-          <button onClick={() => setProfilesOpen(true)} style={menuBtnStyle}>
-            🎭 人物档案
-          </button>
-          <button onClick={() => setMapOpen(true)} style={menuBtnStyle}>
-            🗺️ 探索地图
-          </button>
+
+          <div style={{
+            display: 'flex', gap: '2rem', flexWrap: 'wrap',
+            justifyContent: 'center', maxWidth: 500,
+          }}>
+            {/* Left column: Game */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', minWidth: 180 }}>
+              <p style={{ fontSize: '0.6rem', color: '#4a3a2e', letterSpacing: '0.15em', margin: '0 0 0.2rem' }}>
+                GAME
+              </p>
+              <button onClick={() => togglePause()} style={menuBtnStyle}>
+                ▶ 继续游戏
+              </button>
+              <button onClick={() => setInventoryOpen(true)} style={menuBtnStyle}>
+                📖 收集日记
+              </button>
+              <button onClick={() => setProfilesOpen(true)} style={menuBtnStyle}>
+                🎭 人物档案
+              </button>
+              <button onClick={() => setMapOpen(true)} style={menuBtnStyle}>
+                🗺️ 探索地图
+              </button>
+            </div>
+
+            {/* Right column: English Learning */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', minWidth: 180 }}>
+              <p style={{ fontSize: '0.6rem', color: '#4a3a2e', letterSpacing: '0.15em', margin: '0 0 0.2rem' }}>
+                ENGLISH
+              </p>
+              <button onClick={() => setFlashcardsOpen(true)} style={menuBtnStyle}>
+                🎓 复习单词
+              </button>
+              <button onClick={() => setScrambleOpen(true)} style={menuBtnStyle}>
+                🧩 单词拼图
+              </button>
+              <button onClick={() => setSentenceOpen(true)} style={menuBtnStyle}>
+                📝 句子拼装
+              </button>
+              <button onClick={() => setReadingOpen(true)} style={menuBtnStyle}>
+                📚 阅读理解
+              </button>
+            </div>
+          </div>
+
           <button
             onClick={() => { togglePause(); resetGame(); }}
-            style={{ ...menuBtnStyle, color: '#8a6a5a', borderColor: '#3a2a22' }}
+            style={{ ...menuBtnStyle, color: '#8a6a5a', borderColor: '#3a2a22', marginTop: '1.2rem' }}
           >
             返回主菜单
           </button>
