@@ -108,7 +108,7 @@ function AppShell() {
       case 'podcast': return <PodcastDashboard />
       case 'youtube': return <YouTubeDashboard />
       case 'ielts': return <IeltsDashboard />
-      case 'gallery': return <GalleryDashboard />
+      case 'gallery': return <GalleryDashboard onBack={() => setMode('overview')} />
       default: {
         const _exhaustive: never = mode
         console.warn(`Unhandled mode: ${_exhaustive}`)
@@ -129,7 +129,7 @@ function AppShell() {
       >
         {t('app.skipToContent')}
       </a>
-      <Header mode={mode} onBack={() => setMode('overview')} />
+      {mode !== 'gallery' && <Header mode={mode} onBack={() => setMode('overview')} />}
       <ErrorBoundary>
         <Container>
           <AnimatePresence initial={false}>

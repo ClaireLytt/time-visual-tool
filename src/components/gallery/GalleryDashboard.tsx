@@ -501,7 +501,7 @@ function InfoBar({ room, isZh }: { room: typeof GALLERY_ROOMS[number]; isZh: boo
 /* ═══════════════════════════════════════════
    Main Gallery
    ═══════════════════════════════════════════ */
-function GalleryDashboard() {
+function GalleryDashboard({ onBack }: { onBack?: () => void } = {}) {
   const { i18n } = useTranslation()
   const [roomIndex, setRoomIndex] = useState(0)
   const [selectedPainting, setSelectedPainting] = useState<Painting | null>(null)
@@ -603,17 +603,29 @@ function GalleryDashboard() {
   }, [modalPaintingIndex, room.paintings])
 
   return (
-    <div className="fixed inset-0 z-30 flex flex-col" style={{ top: 56, background: '#050505' }}
+    <div className="fixed inset-0 z-30 flex flex-col" style={{ background: '#050505' }}
       {...swipeHandlers}
     >
-      {/* Zone 1: Room header */}
-      <div className="shrink-0 text-center pt-3 pb-1">
-        <AnimatePresence mode="wait">
-          <motion.h2 key={room.id} className="text-sm font-medium tracking-[0.3em] uppercase text-white/50"
-            initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.4 }}>
-            {isZh ? room.nameZh : room.name}
-          </motion.h2>
-        </AnimatePresence>
+      {/* Zone 1: Room header with back button */}
+      <div className="shrink-0 pt-[env(safe-area-inset-top)] relative">
+        {/* Back button — top left */}
+        {onBack && (
+          <button onClick={onBack}
+            className="absolute left-3 top-[calc(env(safe-area-inset-top)+8px)] z-10 w-10 h-10 rounded-full bg-white/5 hover:bg-white/15 backdrop-blur-sm flex items-center justify-center text-white/50 hover:text-white transition-all border border-white/10"
+            aria-label={isZh ? '返回' : 'Back'}>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+            </svg>
+          </button>
+        )}
+
+        <div className="text-center pt-3 pb-1">
+          <AnimatePresence mode="wait">
+            <motion.h2 key={room.id} className="text-sm font-medium tracking-[0.3em] uppercase text-white/50"
+              initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.4 }}>
+              {isZh ? room.nameZh : room.name}
+            </motion.h2>
+          </AnimatePresence>
         <div className="flex items-center justify-center gap-2 mt-1.5">
           {GALLERY_ROOMS.map((r, i) => (
             <button key={r.id} onClick={() => goToRoom(i, i > roomIndex ? 1 : -1)}
@@ -622,6 +634,7 @@ function GalleryDashboard() {
                 style={{ width: i === roomIndex ? 16 : 4, height: 4, background: i === roomIndex ? '#c9a84c' : 'rgba(255,255,255,0.15)' }} />
             </button>
           ))}
+        </div>
         </div>
       </div>
 
