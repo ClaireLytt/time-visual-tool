@@ -68,7 +68,6 @@ export default function ProgressMap({ open, onClose }: Props) {
   const currentArea = useGameStore((s) => s.currentArea);
   const currentAct = useGameStore((s) => s.currentAct);
   const collectedItems = useGameStore((s) => s.collectedItems);
-  const triggeredEvents = useGameStore((s) => s.triggeredEvents);
 
   // Build map nodes
   const nodes = useMemo<MapNode[]>(() => {
@@ -102,7 +101,7 @@ export default function ProgressMap({ open, onClose }: Props) {
       getAreasForAct(act).forEach((a) => visited.add(a.id));
     }
     return visited;
-  }, [currentArea, currentAct, triggeredEvents]);
+  }, [currentArea, currentAct]);
 
   if (!open) return null;
 

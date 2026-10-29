@@ -257,6 +257,7 @@ export default function Canvas2D({ onTransition, onTriggerFired, onClueClick }: 
     // Move camera toward click (smooth lerp via target ref)
     const targetX = Math.max(0, Math.min(clickX - VIEWPORT_W / 2, area.width - VIEWPORT_W));
     cameraTargetRef.current = targetX;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [area, toSceneCoords, collectedItems, collectItem, triggeredEvents, triggerEvent, setArea, setCameraX, isPaused, onTriggerFired, onClueClick]);
 
   // Mouse move for hover detection
@@ -449,6 +450,7 @@ export default function Canvas2D({ onTransition, onTriggerFired, onClueClick }: 
 
     animRef.current = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(animRef.current);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentArea, cameraX, collectedItems, hoveredHotspot, ghostOpacity, showThinkOfMe, area]);
 
   return (

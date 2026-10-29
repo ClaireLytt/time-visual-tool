@@ -186,7 +186,7 @@ export default function ReviewQuiz({ open, onClose }: Props) {
     setSelected(null);
     setTimeLeft(diffConfig.quizTime);
     setGameOver(false);
-  }, []);
+  }, [diffConfig.quizTime]);
 
   if (!open) return null;
 

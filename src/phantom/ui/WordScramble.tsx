@@ -97,7 +97,7 @@ export default function WordScramble({ open, onClose }: Props) {
     setShowResult(null);
     setInput('');
     setScrambleSeed(Date.now());
-  }, []);
+  }, [diffConfig.scrambleTime]);
 
   if (!open) return null;
 
