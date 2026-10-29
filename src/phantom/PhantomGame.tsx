@@ -40,6 +40,7 @@ import { NPCConfig } from './core/types';
 import OrganMinigame from './ui/OrganMinigame';
 import GrammarPractice from './ui/GrammarPractice';
 import SpeakingPractice from './ui/SpeakingPractice';
+import VocabNetwork from './ui/VocabNetwork';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
 import { ActId, DialogueScene, EnglishChallenge } from './core/types';
@@ -533,6 +534,7 @@ export default function PhantomGame() {
       <NPCDialogue npc={activeNPC} onClose={() => setActiveNPC(null)} />
       <GrammarPractice open={ov.isOpen('grammar')} onClose={() => ov.close()} />
       <SpeakingPractice open={ov.isOpen('speaking')} onClose={() => ov.close()} />
+      <VocabNetwork open={ov.isOpen('vocabnet')} onClose={() => ov.close()} />
       <OrganMinigame
         open={organOpen}
         onComplete={() => {
@@ -682,6 +684,9 @@ export default function PhantomGame() {
               </button>
               <button onClick={() => ov.open('speaking')} style={menuBtnStyle}>
                 🎙️ 口语练习
+              </button>
+              <button onClick={() => ov.open('vocabnet')} style={menuBtnStyle}>
+                🕸️ 词汇网络
               </button>
             </div>
           </div>
