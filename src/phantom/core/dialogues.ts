@@ -2,7 +2,7 @@
  * Dialogue scenes — scripted conversations triggered at story moments.
  * Each scene can optionally chain into an English learning challenge.
  */
-import { DialogueScene } from './types';
+import { ActId, DialogueScene } from './types';
 
 export const DIALOGUE_SCENES: DialogueScene[] = [
   // ── Act 1: Think of Me ──
