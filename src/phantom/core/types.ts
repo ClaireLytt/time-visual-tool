@@ -62,6 +62,40 @@ export interface Collectible {
   icon?: string;
 }
 
+// ── NPC Dialogue Tree System ──
+
+export interface NPCTopic {
+  id: string;
+  /** Topic label shown in menu */
+  label: string;
+  labelEn: string;
+  /** NPC response lines */
+  response: DialogueLine[];
+  /** Unlocked after seeing these triggers (empty = always available) */
+  requireTriggers?: string[];
+  /** Optional English vocabulary taught in this topic */
+  vocabWord?: string;
+  vocabMeaning?: string;
+  /** Mark as seen after reading */
+  seen?: boolean;
+}
+
+export interface NPCConfig {
+  id: string;
+  name: string;
+  nameEn: string;
+  /** Which areas this NPC appears in */
+  areaIds: string[];
+  /** Hotspot position in each area */
+  positions: Record<string, { x: number; y: number }>;
+  /** Available conversation topics */
+  topics: NPCTopic[];
+  /** Greeting line before showing topics */
+  greeting: string;
+  greetingEn: string;
+  icon: string;
+}
+
 export type PhantomTier = 'ambient' | 'stirring' | 'watching' | 'stalking' | 'climax';
 
 export interface CharacterConfig {

@@ -34,6 +34,9 @@ import LearningStats from './ui/LearningStats';
 import VocabExport from './ui/VocabExport';
 import Certificate from './ui/Certificate';
 import SecretRooms from './ui/SecretRooms';
+import NPCDialogue from './ui/NPCDialogue';
+import { NPCS } from './core/npcs';
+import { NPCConfig } from './core/types';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
 import { ActId, DialogueScene, EnglishChallenge } from './core/types';
@@ -84,6 +87,7 @@ export default function PhantomGame() {
   const [activeChallenge, setActiveChallenge] = useState<EnglishChallenge | null>(null);
   const [pendingChallengeId, setPendingChallengeId] = useState<string | null>(null);
   const [envDesc, setEnvDesc] = useState<EnvDescription | null>(null);
+  const [activeNPC, setActiveNPC] = useState<NPCConfig | null>(null);
 
   // All overlay toggles consolidated into one hook (was 18 separate useState)
   const ov = useOverlays();
@@ -446,6 +450,10 @@ export default function PhantomGame() {
           const desc = getEnvDescription(hotspotId);
           if (desc) setEnvDesc(desc);
         }}
+        onNPCClick={(npcId) => {
+          const npc = NPCS.find((n) => n.id === npcId);
+          if (npc) setActiveNPC(npc);
+        }}
       />
 
       <AreaNameToast />
@@ -513,6 +521,8 @@ export default function PhantomGame() {
         }
         setEnvDesc(null);
       }} />
+
+      <NPCDialogue npc={activeNPC} onClose={() => setActiveNPC(null)} />
 
       <FlashcardReview open={ov.isOpen('flashcards')} onClose={() => ov.close()} />
       <WordScramble open={ov.isOpen('scramble')} onClose={() => ov.close()} />
