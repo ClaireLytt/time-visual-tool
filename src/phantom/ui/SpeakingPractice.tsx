@@ -87,9 +87,11 @@ function speak(text: string) {
   window.speechSynthesis.speak(u);
 }
 
-const SpeechRecognitionAPI = typeof window !== 'undefined'
-  ? ((window as Record<string, unknown>).SpeechRecognition || (window as Record<string, unknown>).webkitSpeechRecognition) as (new () => SpeechRecognition) | undefined
-  : undefined;
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const _win = typeof window !== 'undefined' ? (window as unknown as Record<string, any>) : undefined;
+const SpeechRecognitionAPI: (new () => any) | undefined =
+  _win ? (_win.SpeechRecognition || _win.webkitSpeechRecognition) : undefined;
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 type Phase = 'listen' | 'recording' | 'result';
 
@@ -98,7 +100,8 @@ export default function SpeakingPractice({ open, onClose }: Props) {
   const [phase, setPhase] = useState<Phase>('listen');
   const [transcript, setTranscript] = useState('');
   const [matchScore, setMatchScore] = useState(0);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null);
 
   const prompt = PROMPTS[promptIdx];
   const hasSR = !!SpeechRecognitionAPI;
@@ -114,7 +117,8 @@ export default function SpeakingPractice({ open, onClose }: Props) {
     sr.lang = 'en-US';
     sr.continuous = false;
     sr.interimResults = false;
-    sr.onresult = (e) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    sr.onresult = (e: any) => {
       const text = e.results[0][0].transcript;
       setTranscript(text);
       // Score: count matching keywords
