@@ -31,6 +31,7 @@ import ListeningDictation from './ui/ListeningDictation';
 import AreaNameToast from './ui/AreaNameToast';
 import LearningStats from './ui/LearningStats';
 import VocabExport from './ui/VocabExport';
+import Certificate from './ui/Certificate';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
 import { ActId, DialogueScene, EnglishChallenge } from './core/types';
@@ -95,6 +96,7 @@ export default function PhantomGame() {
   const [dictationOpen, setDictationOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const [certOpen, setCertOpen] = useState(false);
   const [envDesc, setEnvDesc] = useState<EnvDescription | null>(null);
   const [showRecap, setShowRecap] = useState<ActId | null>(null);
   const [showEnding, setShowEnding] = useState(false);
@@ -539,6 +541,7 @@ export default function PhantomGame() {
       <ListeningDictation open={dictationOpen} onClose={() => setDictationOpen(false)} />
       <LearningStats open={statsOpen} onClose={() => setStatsOpen(false)} earnedAchievements={earnedAchievements} />
       <VocabExport open={exportOpen} onClose={() => setExportOpen(false)} />
+      <Certificate open={certOpen} onClose={() => setCertOpen(false)} earnedAchievements={earnedAchievements} />
 
       {showRecap && (
         <ActRecap
@@ -603,6 +606,9 @@ export default function PhantomGame() {
               </button>
               <button onClick={() => setExportOpen(true)} style={menuBtnStyle}>
                 📋 导出词汇
+              </button>
+              <button onClick={() => setCertOpen(true)} style={menuBtnStyle}>
+                🏅 学习证书
               </button>
             </div>
 
