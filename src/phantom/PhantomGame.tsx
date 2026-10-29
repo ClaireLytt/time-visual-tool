@@ -26,6 +26,7 @@ import HelpGuide from './ui/HelpGuide';
 import PronunciationPractice from './ui/PronunciationPractice';
 import WritingJournal from './ui/WritingJournal';
 import MiniMap from './ui/MiniMap';
+import { useOverlays } from './ui/useOverlays';
 import MemoryMatch from './ui/MemoryMatch';
 import ListeningDictation from './ui/ListeningDictation';
 import AreaNameToast from './ui/AreaNameToast';
@@ -76,29 +77,14 @@ export default function PhantomGame() {
   } = useGameStore();
 
   const [viewingItem, setViewingItem] = useState<string | null>(null);
-  const [inventoryOpen, setInventoryOpen] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   const [activeDialogue, setActiveDialogue] = useState<DialogueScene | null>(null);
   const [activeChallenge, setActiveChallenge] = useState<EnglishChallenge | null>(null);
   const [pendingChallengeId, setPendingChallengeId] = useState<string | null>(null);
-  const [flashcardsOpen, setFlashcardsOpen] = useState(false);
-  const [scrambleOpen, setScrambleOpen] = useState(false);
-  const [sentenceOpen, setSentenceOpen] = useState(false);
-  const [profilesOpen, setProfilesOpen] = useState(false);
-  const [mapOpen, setMapOpen] = useState(false);
-  const [readingOpen, setReadingOpen] = useState(false);
-  const [idiomsOpen, setIdiomsOpen] = useState(false);
-  const [timelineOpen, setTimelineOpen] = useState(false);
-  const [quizOpen, setQuizOpen] = useState(false);
-  const [helpOpen, setHelpOpen] = useState(false);
-  const [pronunciationOpen, setPronunciationOpen] = useState(false);
-  const [writingOpen, setWritingOpen] = useState(false);
-  const [memoryOpen, setMemoryOpen] = useState(false);
-  const [dictationOpen, setDictationOpen] = useState(false);
-  const [statsOpen, setStatsOpen] = useState(false);
-  const [exportOpen, setExportOpen] = useState(false);
-  const [certOpen, setCertOpen] = useState(false);
   const [envDesc, setEnvDesc] = useState<EnvDescription | null>(null);
+
+  // All overlay toggles consolidated into one hook (was 18 separate useState)
+  const ov = useOverlays();
   const [showRecap, setShowRecap] = useState<ActId | null>(null);
   const [showEnding, setShowEnding] = useState(false);
   const [toastAchievement, setToastAchievement] = useState<Achievement | null>(null);
@@ -216,23 +202,23 @@ export default function PhantomGame() {
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') {
-      if (inventoryOpen) {
-        setInventoryOpen(false);
+      if (ov.isOpen('inventory')) {
+        ov.close();
       } else {
         togglePause();
       }
     }
     if (e.key === 'Tab') {
       e.preventDefault();
-      setInventoryOpen((v) => !v);
+      if (ov.openOverlay === 'inventory') ov.close(); else ov.open('inventory');
     }
     if (e.key === 'm' || e.key === 'M') {
-      setMapOpen((v) => !v);
+      if (ov.openOverlay === 'map') ov.close(); else ov.open('map');
     }
     if (e.key === 'h' || e.key === 'H') {
-      setHelpOpen((v) => !v);
+      if (ov.openOverlay === 'help') ov.close(); else ov.open('help');
     }
-  }, [togglePause, inventoryOpen]);
+  }, [togglePause, ov]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -253,11 +239,11 @@ export default function PhantomGame() {
       try {
         if (!localStorage.getItem('phantom-help-shown')) {
           localStorage.setItem('phantom-help-shown', '1');
-          setTimeout(() => setHelpOpen(true), 1500);
+          setTimeout(() => ov.open('help'), 1500);
         }
       } catch { /* ignore */ }
     }, 3000);
-  }, [setAct, setArea, startGame, startTransition]);
+  }, [setAct, setArea, startGame, startTransition, ov]);
 
   // ── Intro text overlay ──
   if (showIntro) {
@@ -342,7 +328,7 @@ export default function PhantomGame() {
             点击场景移动视角 · 点击发光物品互动 · Tab 背包 · ESC 暂停
           </p>
           <button
-            onClick={() => setHelpOpen(true)}
+            onClick={() => ov.open('help')}
             style={{
               fontFamily: 'Georgia, serif', fontSize: '0.65rem',
               padding: '0.2rem 0.6rem', background: 'transparent',
@@ -387,7 +373,7 @@ export default function PhantomGame() {
           </div>
         )}
 
-        <HelpGuide open={helpOpen} onClose={() => setHelpOpen(false)} />
+        <HelpGuide open={ov.isOpen('help')} onClose={() => ov.close()} />
         <Transition transition={transition} />
       </div>
     );
@@ -430,7 +416,7 @@ export default function PhantomGame() {
             </span>
           )}
           <button
-            onClick={() => setInventoryOpen(true)}
+            onClick={() => ov.open('inventory')}
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
               fontFamily: 'Georgia, serif', fontSize: '0.8rem', color: '#c5a55a',
@@ -466,7 +452,7 @@ export default function PhantomGame() {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         gap: '0.8rem', marginTop: '0.8rem',
       }}>
-        <MiniMap onClick={() => setMapOpen(true)} />
+        <MiniMap onClick={() => ov.open('map')} />
         <p style={{
           fontFamily: 'sans-serif', fontSize: '0.7rem', color: '#4a3a2e',
           margin: 0,
@@ -484,7 +470,7 @@ export default function PhantomGame() {
           setPendingChallengeId(null);
         }
       }} />
-      <InventoryJournal open={inventoryOpen} onClose={() => setInventoryOpen(false)} />
+      <InventoryJournal open={ov.isOpen('inventory')} onClose={() => ov.close()} />
 
       {/* Dialogue overlay */}
       {activeDialogue && (
@@ -526,23 +512,23 @@ export default function PhantomGame() {
         setEnvDesc(null);
       }} />
 
-      <FlashcardReview open={flashcardsOpen} onClose={() => setFlashcardsOpen(false)} />
-      <WordScramble open={scrambleOpen} onClose={() => setScrambleOpen(false)} />
-      <SentenceBuilder open={sentenceOpen} onClose={() => setSentenceOpen(false)} />
-      <CharacterProfiles open={profilesOpen} onClose={() => setProfilesOpen(false)} />
-      <ProgressMap open={mapOpen} onClose={() => setMapOpen(false)} />
-      <ReadingPassages open={readingOpen} onClose={() => setReadingOpen(false)} />
-      <IdiomCollection open={idiomsOpen} onClose={() => setIdiomsOpen(false)} />
-      <StoryTimeline open={timelineOpen} onClose={() => setTimelineOpen(false)} />
-      <ReviewQuiz open={quizOpen} onClose={() => setQuizOpen(false)} />
-      <HelpGuide open={helpOpen} onClose={() => setHelpOpen(false)} />
-      <PronunciationPractice open={pronunciationOpen} onClose={() => setPronunciationOpen(false)} />
-      <WritingJournal open={writingOpen} onClose={() => setWritingOpen(false)} />
-      <MemoryMatch open={memoryOpen} onClose={() => setMemoryOpen(false)} />
-      <ListeningDictation open={dictationOpen} onClose={() => setDictationOpen(false)} />
-      <LearningStats open={statsOpen} onClose={() => setStatsOpen(false)} earnedAchievements={earnedAchievements} />
-      <VocabExport open={exportOpen} onClose={() => setExportOpen(false)} />
-      <Certificate open={certOpen} onClose={() => setCertOpen(false)} earnedAchievements={earnedAchievements} />
+      <FlashcardReview open={ov.isOpen('flashcards')} onClose={() => ov.close()} />
+      <WordScramble open={ov.isOpen('scramble')} onClose={() => ov.close()} />
+      <SentenceBuilder open={ov.isOpen('sentence')} onClose={() => ov.close()} />
+      <CharacterProfiles open={ov.isOpen('profiles')} onClose={() => ov.close()} />
+      <ProgressMap open={ov.isOpen('map')} onClose={() => ov.close()} />
+      <ReadingPassages open={ov.isOpen('reading')} onClose={() => ov.close()} />
+      <IdiomCollection open={ov.isOpen('idioms')} onClose={() => ov.close()} />
+      <StoryTimeline open={ov.isOpen('timeline')} onClose={() => ov.close()} />
+      <ReviewQuiz open={ov.isOpen('quiz')} onClose={() => ov.close()} />
+      <HelpGuide open={ov.isOpen('help')} onClose={() => ov.close()} />
+      <PronunciationPractice open={ov.isOpen('pronunciation')} onClose={() => ov.close()} />
+      <WritingJournal open={ov.isOpen('writing')} onClose={() => ov.close()} />
+      <MemoryMatch open={ov.isOpen('memory')} onClose={() => ov.close()} />
+      <ListeningDictation open={ov.isOpen('dictation')} onClose={() => ov.close()} />
+      <LearningStats open={ov.isOpen('stats')} onClose={() => ov.close()} earnedAchievements={earnedAchievements} />
+      <VocabExport open={ov.isOpen('export')} onClose={() => ov.close()} />
+      <Certificate open={ov.isOpen('cert')} onClose={() => ov.close()} earnedAchievements={earnedAchievements} />
 
       {showRecap && (
         <ActRecap
@@ -590,25 +576,25 @@ export default function PhantomGame() {
               <button onClick={() => togglePause()} style={menuBtnStyle}>
                 ▶ 继续游戏
               </button>
-              <button onClick={() => setInventoryOpen(true)} style={menuBtnStyle}>
+              <button onClick={() => ov.open('inventory')} style={menuBtnStyle}>
                 📖 收集日记
               </button>
-              <button onClick={() => setProfilesOpen(true)} style={menuBtnStyle}>
+              <button onClick={() => ov.open('profiles')} style={menuBtnStyle}>
                 🎭 人物档案
               </button>
-              <button onClick={() => setMapOpen(true)} style={menuBtnStyle}>
+              <button onClick={() => ov.open('map')} style={menuBtnStyle}>
                 🗺️ 探索地图
               </button>
-              <button onClick={() => setTimelineOpen(true)} style={menuBtnStyle}>
+              <button onClick={() => ov.open('timeline')} style={menuBtnStyle}>
                 📜 故事时间线
               </button>
-              <button onClick={() => setStatsOpen(true)} style={menuBtnStyle}>
+              <button onClick={() => ov.open('stats')} style={menuBtnStyle}>
                 📊 学习统计
               </button>
-              <button onClick={() => setExportOpen(true)} style={menuBtnStyle}>
+              <button onClick={() => ov.open('export')} style={menuBtnStyle}>
                 📋 导出词汇
               </button>
-              <button onClick={() => setCertOpen(true)} style={menuBtnStyle}>
+              <button onClick={() => ov.open('cert')} style={menuBtnStyle}>
                 🏅 学习证书
               </button>
             </div>
@@ -618,41 +604,41 @@ export default function PhantomGame() {
               <p style={{ fontSize: '0.6rem', color: '#4a3a2e', letterSpacing: '0.15em', margin: '0 0 0.2rem' }}>
                 ENGLISH
               </p>
-              <button onClick={() => setFlashcardsOpen(true)} style={menuBtnStyle}>
+              <button onClick={() => ov.open('flashcards')} style={menuBtnStyle}>
                 🎓 复习单词
               </button>
-              <button onClick={() => setScrambleOpen(true)} style={menuBtnStyle}>
+              <button onClick={() => ov.open('scramble')} style={menuBtnStyle}>
                 🧩 单词拼图
               </button>
-              <button onClick={() => setSentenceOpen(true)} style={menuBtnStyle}>
+              <button onClick={() => ov.open('sentence')} style={menuBtnStyle}>
                 📝 句子拼装
               </button>
-              <button onClick={() => setReadingOpen(true)} style={menuBtnStyle}>
+              <button onClick={() => ov.open('reading')} style={menuBtnStyle}>
                 📚 阅读理解
               </button>
-              <button onClick={() => setIdiomsOpen(true)} style={menuBtnStyle}>
+              <button onClick={() => ov.open('idioms')} style={menuBtnStyle}>
                 💬 习语收集
               </button>
-              <button onClick={() => setQuizOpen(true)} style={menuBtnStyle}>
+              <button onClick={() => ov.open('quiz')} style={menuBtnStyle}>
                 🏆 综合测验
               </button>
-              <button onClick={() => setPronunciationOpen(true)} style={menuBtnStyle}>
+              <button onClick={() => ov.open('pronunciation')} style={menuBtnStyle}>
                 🔊 发音练习
               </button>
-              <button onClick={() => setWritingOpen(true)} style={menuBtnStyle}>
+              <button onClick={() => ov.open('writing')} style={menuBtnStyle}>
                 ✍️ 写作练习
               </button>
-              <button onClick={() => setMemoryOpen(true)} style={menuBtnStyle}>
+              <button onClick={() => ov.open('memory')} style={menuBtnStyle}>
                 🃏 记忆配对
               </button>
-              <button onClick={() => setDictationOpen(true)} style={menuBtnStyle}>
+              <button onClick={() => ov.open('dictation')} style={menuBtnStyle}>
                 🎧 听写练习
               </button>
             </div>
           </div>
 
           <div style={{ display: 'flex', gap: '0.8rem', marginTop: '1.2rem' }}>
-            <button onClick={() => setHelpOpen(true)} style={{ ...menuBtnStyle, width: 'auto' }}>
+            <button onClick={() => ov.open('help')} style={{ ...menuBtnStyle, width: 'auto' }}>
               ? 帮助
             </button>
             <button
