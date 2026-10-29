@@ -41,6 +41,7 @@ import OrganMinigame from './ui/OrganMinigame';
 import GrammarPractice from './ui/GrammarPractice';
 import SpeakingPractice from './ui/SpeakingPractice';
 import VocabNetwork from './ui/VocabNetwork';
+import LearningCalendar, { recordActivity } from './ui/LearningCalendar';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
 import { ActId, DialogueScene, EnglishChallenge } from './core/types';
@@ -519,6 +520,7 @@ export default function PhantomGame() {
           onComplete={(passed) => {
             useGameStore.getState().completeChallenge(activeChallenge.id, passed);
             setActiveChallenge(null);
+            recordActivity('challenge');
             setTimeout(checkAchievements, 100);
           }}
         />
@@ -535,6 +537,7 @@ export default function PhantomGame() {
       <GrammarPractice open={ov.isOpen('grammar')} onClose={() => ov.close()} />
       <SpeakingPractice open={ov.isOpen('speaking')} onClose={() => ov.close()} />
       <VocabNetwork open={ov.isOpen('vocabnet')} onClose={() => ov.close()} />
+      <LearningCalendar open={ov.isOpen('calendar')} onClose={() => ov.close()} />
       <OrganMinigame
         open={organOpen}
         onComplete={() => {
@@ -641,6 +644,9 @@ export default function PhantomGame() {
               </button>
               <button onClick={() => ov.open('secret')} style={menuBtnStyle}>
                 🔐 隐藏房间
+              </button>
+              <button onClick={() => ov.open('calendar')} style={menuBtnStyle}>
+                📅 学习日历
               </button>
             </div>
 
