@@ -38,6 +38,7 @@ import { ActId, DialogueScene, EnglishChallenge } from './core/types';
 import { getDialogueForTrigger } from './core/dialogues';
 import { getChallengeForTrigger, ENGLISH_CHALLENGES } from './core/english-challenges';
 import { getEnvDescription, EnvDescription } from './core/environment-descriptions';
+import { Z_PAUSE } from './core/z-index';
 import { Achievement, checkNewAchievements, AchievementStats } from './core/achievements';
 
 const AREA_NAMES: Record<string, string> = {
@@ -570,7 +571,7 @@ export default function PhantomGame() {
           position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)',
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
-          zIndex: 200,
+          zIndex: Z_PAUSE,
           fontFamily: 'Georgia, serif',
         }}>
           <h2 style={{ color: '#e0d8cc', fontSize: '1.5rem', margin: '0 0 1rem' }}>
