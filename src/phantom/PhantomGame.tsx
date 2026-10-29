@@ -42,6 +42,7 @@ import GrammarPractice from './ui/GrammarPractice';
 import SpeakingPractice from './ui/SpeakingPractice';
 import VocabNetwork from './ui/VocabNetwork';
 import LearningCalendar, { recordActivity } from './ui/LearningCalendar';
+import WeeklyChallenge from './ui/WeeklyChallenge';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
 import { ActId, DialogueScene, EnglishChallenge } from './core/types';
@@ -538,6 +539,7 @@ export default function PhantomGame() {
       <SpeakingPractice open={ov.isOpen('speaking')} onClose={() => ov.close()} />
       <VocabNetwork open={ov.isOpen('vocabnet')} onClose={() => ov.close()} />
       <LearningCalendar open={ov.isOpen('calendar')} onClose={() => ov.close()} />
+      <WeeklyChallenge open={ov.isOpen('weekly')} onClose={() => ov.close()} />
       <OrganMinigame
         open={organOpen}
         onComplete={() => {
@@ -693,6 +695,9 @@ export default function PhantomGame() {
               </button>
               <button onClick={() => ov.open('vocabnet')} style={menuBtnStyle}>
                 🕸️ 词汇网络
+              </button>
+              <button onClick={() => ov.open('weekly')} style={menuBtnStyle}>
+                📦 每周挑战
               </button>
             </div>
           </div>
