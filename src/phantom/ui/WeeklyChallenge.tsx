@@ -118,7 +118,7 @@ export default function WeeklyChallenge({ open, onClose }: Props) {
   const pack = WEEKLY_PACKS[weekIdx % WEEKLY_PACKS.length];
 
   const [qIdx, setQIdx] = useState(0);
-  const [selected, setSelected] = useState<number | null>(null);
+  const [selected, setSelected] = useState<number | undefined>(undefined);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
 
@@ -131,7 +131,7 @@ export default function WeeklyChallenge({ open, onClose }: Props) {
     else { playWrong(); }
     recordActivity('challenge');
     setTimeout(() => {
-      setSelected(null);
+      setSelected(undefined);
       if (qIdx >= pack.questions.length - 1) setFinished(true);
       else setQIdx((i) => i + 1);
     }, 1200);

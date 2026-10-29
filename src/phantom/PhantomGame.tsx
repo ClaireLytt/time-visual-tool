@@ -53,6 +53,26 @@ import { getEnvDescription, EnvDescription } from './core/environment-descriptio
 import { Z_HUD, Z_PAUSE } from './core/z-index';
 import { Achievement, checkNewAchievements, AchievementStats } from './core/achievements';
 
+/** Build achievement stats from current game state */
+function buildAchievementStats(dialoguesWatched: number): AchievementStats {
+  const s = useGameStore.getState();
+  return {
+    collectiblesFound: s.collectedItems.length,
+    challengesCompleted: s.learning.completedChallenges.length,
+    challengesPassed: s.learning.completedChallenges.length,
+    totalScore: s.learning.totalScore,
+    actsCompleted: s.currentAct,
+    dialoguesWatched,
+    vocabLearned: ENGLISH_CHALLENGES
+      .filter((ch) => s.learning.completedChallenges.includes(ch.id))
+      .reduce((sum, ch) => sum + ch.vocab.length, 0),
+    secretRoomsFound: s.collectedItems.filter((id) => id.startsWith('secret-')).length,
+    npcsTalkedTo: 0,
+    organCompleted: s.triggeredEvents.includes('evt-organ-complete'),
+    grammarScore: 0,
+  };
+}
+
 const AREA_NAMES: Record<string, string> = {
   'theater-audience': '观众席', 'theater-stage': '舞台', 'theater-backstage': '后台通道',
   'dressing-room': '化妆间', 'spiral-stairs': '螺旋石梯',
@@ -88,20 +108,20 @@ export default function PhantomGame() {
     learning,
   } = useGameStore();
 
-  const [viewingItem, setViewingItem] = useState<string | null>(null);
+  const [viewingItem, setViewingItem] = useState<string | undefined>(undefined);
   const [showIntro, setShowIntro] = useState(false);
-  const [activeDialogue, setActiveDialogue] = useState<DialogueScene | null>(null);
-  const [activeChallenge, setActiveChallenge] = useState<EnglishChallenge | null>(null);
-  const [pendingChallengeId, setPendingChallengeId] = useState<string | null>(null);
-  const [envDesc, setEnvDesc] = useState<EnvDescription | null>(null);
-  const [activeNPC, setActiveNPC] = useState<NPCConfig | null>(null);
+  const [activeDialogue, setActiveDialogue] = useState<DialogueScene | undefined>(undefined);
+  const [activeChallenge, setActiveChallenge] = useState<EnglishChallenge | undefined>(undefined);
+  const [pendingChallengeId, setPendingChallengeId] = useState<string | undefined>(undefined);
+  const [envDesc, setEnvDesc] = useState<EnvDescription | undefined>(undefined);
+  const [activeNPC, setActiveNPC] = useState<NPCConfig | undefined>(undefined);
   const [organOpen, setOrganOpen] = useState(false);
 
   // All overlay toggles consolidated into one hook (was 18 separate useState)
   const ov = useOverlays();
-  const [showRecap, setShowRecap] = useState<ActId | null>(null);
+  const [showRecap, setShowRecap] = useState<ActId | undefined>(undefined);
   const [showEnding, setShowEnding] = useState(false);
-  const [toastAchievement, setToastAchievement] = useState<Achievement | null>(null);
+  const [toastAchievement, setToastAchievement] = useState<Achievement | undefined>(undefined);
   const [earnedAchievements, setEarnedAchievements] = useState<string[]>(() => {
     try {
       const raw = localStorage.getItem('phantom-achievements');
@@ -151,23 +171,8 @@ export default function PhantomGame() {
         // Achievement check is deferred to avoid stale closure
         setTimeout(() => {
           // Re-read from store directly
-          const st = useGameStore.getState();
           const earned = JSON.parse(localStorage.getItem('phantom-achievements') || '[]') as string[];
-          const achStats: AchievementStats = {
-            collectiblesFound: st.collectedItems.length,
-            challengesCompleted: st.learning.completedChallenges.length,
-            challengesPassed: st.learning.completedChallenges.length,
-            totalScore: st.learning.totalScore,
-            actsCompleted: st.currentAct,
-            dialoguesWatched: 0,
-            vocabLearned: ENGLISH_CHALLENGES
-              .filter((ch) => st.learning.completedChallenges.includes(ch.id))
-              .reduce((sum, ch) => sum + ch.vocab.length, 0),
-            secretRoomsFound: st.collectedItems.filter((id) => id.startsWith('secret-')).length > 0 ? 1 : 0,
-            npcsTalkedTo: 0,
-            organCompleted: st.triggeredEvents.includes('evt-organ-complete'),
-            grammarScore: 0,
-          };
+          const achStats = buildAchievementStats(0);
           const newA = checkNewAchievements(achStats, earned);
           if (newA.length > 0) {
             const updated = [...earned, ...newA.map((a) => a.id)];
@@ -197,22 +202,7 @@ export default function PhantomGame() {
 
   // Check achievements whenever relevant state changes
   const checkAchievements = useCallback(() => {
-    const state = useGameStore.getState();
-    const stats: AchievementStats = {
-      collectiblesFound: state.collectedItems.length,
-      challengesCompleted: state.learning.completedChallenges.length,
-      challengesPassed: state.learning.completedChallenges.length, // simplified
-      totalScore: state.learning.totalScore,
-      actsCompleted: state.currentAct,
-      dialoguesWatched,
-      vocabLearned: ENGLISH_CHALLENGES
-        .filter((ch) => state.learning.completedChallenges.includes(ch.id))
-        .reduce((sum, ch) => sum + ch.vocab.length, 0),
-      secretRoomsFound: state.collectedItems.filter((id) => id.startsWith('secret-')).length > 0 ? 1 : 0,
-      npcsTalkedTo: 0,
-      organCompleted: state.triggeredEvents.includes('evt-organ-complete'),
-      grammarScore: 0,
-    };
+    const stats = buildAchievementStats(dialoguesWatched);
     const newAchievements = checkNewAchievements(stats, earnedAchievements);
     if (newAchievements.length > 0) {
       const first = newAchievements[0];
@@ -493,12 +483,12 @@ export default function PhantomGame() {
       </div>
 
       <ParchmentOverlay itemId={viewingItem} onClose={() => {
-        setViewingItem(null);
+        setViewingItem(undefined);
         // Show English challenge if one is queued
         if (pendingChallengeId) {
           const ch = getChallengeForTrigger(viewingItem || '');
           if (ch) setActiveChallenge(ch);
-          setPendingChallengeId(null);
+          setPendingChallengeId(undefined);
         }
       }} />
       <InventoryJournal open={ov.isOpen('inventory')} onClose={() => ov.close()} />
@@ -509,7 +499,7 @@ export default function PhantomGame() {
           scene={activeDialogue}
           onComplete={() => {
             const challengeId = activeDialogue.challengeId;
-            setActiveDialogue(null);
+            setActiveDialogue(undefined);
             setDialoguesWatched((d) => d + 1);
             setTimeout(checkAchievements, 100);
             // Chain to English challenge if dialogue has one
@@ -530,7 +520,7 @@ export default function PhantomGame() {
           challenge={activeChallenge}
           onComplete={(passed) => {
             useGameStore.getState().completeChallenge(activeChallenge.id, passed);
-            setActiveChallenge(null);
+            setActiveChallenge(undefined);
             recordActivity('challenge');
             setTimeout(checkAchievements, 100);
           }}
@@ -541,10 +531,10 @@ export default function PhantomGame() {
         if (envDesc) {
           useGameStore.getState().collectPhrase(envDesc.id);
         }
-        setEnvDesc(null);
+        setEnvDesc(undefined);
       }} />
 
-      <NPCDialogue npc={activeNPC} onClose={() => setActiveNPC(null)} />
+      <NPCDialogue npc={activeNPC} onClose={() => setActiveNPC(undefined)} />
       <GrammarPractice open={ov.isOpen('grammar')} onClose={() => ov.close()} />
       <SpeakingPractice open={ov.isOpen('speaking')} onClose={() => ov.close()} />
       <VocabNetwork open={ov.isOpen('vocabnet')} onClose={() => ov.close()} />
@@ -591,7 +581,7 @@ export default function PhantomGame() {
       {showRecap && (
         <ActRecap
           completedAct={showRecap}
-          onContinue={() => setShowRecap(null)}
+          onContinue={() => setShowRecap(undefined)}
         />
       )}
 
@@ -604,7 +594,7 @@ export default function PhantomGame() {
 
       <AchievementToast
         achievement={toastAchievement}
-        onDone={() => setToastAchievement(null)}
+        onDone={() => setToastAchievement(undefined)}
       />
 
       <Transition transition={transition} />

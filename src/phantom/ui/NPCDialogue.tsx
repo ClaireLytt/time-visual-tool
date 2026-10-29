@@ -22,7 +22,7 @@ export default function NPCDialogue({ npc, onClose }: Props) {
   const [phase, setPhase] = useState<Phase>('topics');
   const [currentLines, setCurrentLines] = useState<DialogueLine[]>([]);
   const [lineIdx, setLineIdx] = useState(0);
-  const [currentTopic, setCurrentTopic] = useState<NPCTopic | null>(null);
+  const [currentTopic, setCurrentTopic] = useState<NPCTopic | undefined>(undefined);
   const [seenTopics, setSeenTopics] = useState<Set<string>>(new Set());
 
   const topics = npc ? getAvailableTopics(npc, triggeredEvents) : [];
@@ -41,7 +41,7 @@ export default function NPCDialogue({ npc, onClose }: Props) {
       setLineIdx((i) => i + 1);
     } else {
       setPhase('topics');
-      setCurrentTopic(null);
+      setCurrentTopic(undefined);
     }
   }, [lineIdx, currentLines.length]);
 

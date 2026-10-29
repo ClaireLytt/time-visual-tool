@@ -15,7 +15,7 @@ interface Props {
 export default function GrammarPractice({ open, onClose }: Props) {
   const [topicIdx, setTopicIdx] = useState(0);
   const [qIdx, setQIdx] = useState(0);
-  const [selected, setSelected] = useState<number | null>(null);
+  const [selected, setSelected] = useState<number | undefined>(undefined);
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
   const [showExplanation, setShowExplanation] = useState(false);
@@ -38,7 +38,7 @@ export default function GrammarPractice({ open, onClose }: Props) {
   }, [selected, question.correctIdx]);
 
   const nextQuestion = useCallback(() => {
-    setSelected(null);
+    setSelected(undefined);
     setShowExplanation(false);
     if (qIdx < topic.questions.length - 1) {
       setQIdx((i) => i + 1);
@@ -54,7 +54,7 @@ export default function GrammarPractice({ open, onClose }: Props) {
   const switchTopic = useCallback((idx: number) => {
     setTopicIdx(idx);
     setQIdx(0);
-    setSelected(null);
+    setSelected(undefined);
     setShowExplanation(false);
   }, []);
 
