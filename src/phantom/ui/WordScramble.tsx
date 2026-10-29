@@ -5,6 +5,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { ENGLISH_CHALLENGES } from '../core/english-challenges';
 import { useGameStore } from '../core/store';
+import { getConfig } from '../core/difficulty';
 
 interface Props {
   open: boolean;
@@ -41,7 +42,8 @@ export default function WordScramble({ open, onClose }: Props) {
   const [solved, setSolved] = useState(0);
   const [total, setTotal] = useState(0);
   const [showResult, setShowResult] = useState<'correct' | 'wrong' | null>(null);
-  const [timeLeft, setTimeLeft] = useState(30);
+  const diffConfig = getConfig();
+  const [timeLeft, setTimeLeft] = useState(diffConfig.scrambleTime);
   const [gameOver, setGameOver] = useState(false);
   const [scrambleSeed, setScrambleSeed] = useState(() => Date.now());
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -90,7 +92,7 @@ export default function WordScramble({ open, onClose }: Props) {
   const restart = useCallback(() => {
     setSolved(0);
     setTotal(0);
-    setTimeLeft(30);
+    setTimeLeft(diffConfig.scrambleTime);
     setGameOver(false);
     setShowResult(null);
     setInput('');

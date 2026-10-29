@@ -41,6 +41,8 @@ const initialLearning: LearningProgress = {
   vocabReviewed: {},
   totalScore: 0,
   phrasesCollected: [],
+  combo: 0,
+  bestCombo: 0,
 };
 
 const initialState: GameState = {
@@ -152,8 +154,15 @@ export const useGameStore = create<GameState & LearningState & GameActions>((set
     const lp = { ...get().learning };
     if (!lp.completedChallenges.includes(challengeId)) {
       lp.completedChallenges = [...lp.completedChallenges, challengeId];
-      if (passed) lp.totalScore += 10;
-      else lp.totalScore += 3; // partial credit for trying
+      if (passed) {
+        lp.combo = (lp.combo || 0) + 1;
+        const comboBonus = Math.min(lp.combo - 1, 5); // max +5 bonus
+        lp.totalScore += 10 + comboBonus;
+        lp.bestCombo = Math.max(lp.bestCombo || 0, lp.combo);
+      } else {
+        lp.combo = 0;
+        lp.totalScore += 3;
+      }
     }
     set({ learning: lp });
     saveLearning(lp);

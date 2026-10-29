@@ -92,6 +92,9 @@ export default function LearningStats({ open, onClose, earnedAchievements }: Pro
           <StatCard value={String(phrasesCollected)} label="Phrases" icon={'🌿'} color="#7a9a8a" />
           <StatCard value={`${earnedAchievements.length}/${ACHIEVEMENTS.length}`} label="Badges" icon={'🏆'} color="#c5a55a" />
           <StatCard value={`~${estimatedMinutes}m`} label="Study Time" icon={'⏰'} color="#8aafb0" />
+          <StatCard value={String(learning.combo || 0)} label="Combo" icon={'🔥'} color="#c87a6a" />
+          <StatCard value={String(learning.bestCombo || 0)} label="Best Combo" icon={'🏅'} color="#c5a55a" />
+          <StatCard value={getDifficulty().toUpperCase()} label="Difficulty" icon={'⚙️'} color="#9a8a78" />
         </div>
 
         {/* Vocabulary mastery */}

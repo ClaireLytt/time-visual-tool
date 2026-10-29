@@ -9,6 +9,7 @@ import { getUnlockedIdioms } from '../core/idioms';
 import { useGameStore } from '../core/store';
 import { EnglishVocab } from '../core/types';
 import { playCorrect, playWrong } from '../audio/ui-sfx';
+import { getConfig } from '../core/difficulty';
 
 interface Props {
   open: boolean;
@@ -134,7 +135,8 @@ export default function ReviewQuiz({ open, onClose }: Props) {
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
-  const [timeLeft, setTimeLeft] = useState(60);
+  const diffConfig = getConfig();
+  const [timeLeft, setTimeLeft] = useState(diffConfig.quizTime);
   const [gameOver, setGameOver] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -182,7 +184,7 @@ export default function ReviewQuiz({ open, onClose }: Props) {
     setScore(0);
     setTotal(0);
     setSelected(null);
-    setTimeLeft(60);
+    setTimeLeft(diffConfig.quizTime);
     setGameOver(false);
   }, []);
 

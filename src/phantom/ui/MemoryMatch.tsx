@@ -6,6 +6,7 @@ import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { ENGLISH_CHALLENGES } from '../core/english-challenges';
 import { useGameStore } from '../core/store';
 import { playCorrect, playWrong } from '../audio/ui-sfx';
+import { getConfig } from '../core/difficulty';
 
 interface Props {
   open: boolean;
@@ -39,7 +40,8 @@ export default function MemoryMatch({ open, onClose }: Props) {
 
   // Pick 6 words for 12 cards (3x4 grid)
   const cards = useMemo<Card[]>(() => {
-    const words = allVocab.slice(0, 6);
+    const pairCount = Math.min(getConfig().memoryPairs, allVocab.length);
+    const words = allVocab.slice(0, pairCount);
     const cardList: Card[] = [];
     words.forEach((v, i) => {
       cardList.push({ id: i * 2, pairId: i, text: v.word, type: 'en' });

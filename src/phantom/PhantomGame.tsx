@@ -418,6 +418,14 @@ export default function PhantomGame() {
               🎓 {learning.totalScore}
             </span>
           )}
+          {(learning.combo || 0) >= 2 && (
+            <span style={{
+              fontFamily: 'Georgia, serif', fontSize: '0.7rem', color: '#c5a55a',
+              animation: 'comboGlow 1s ease infinite',
+            }}>
+              🔥 x{learning.combo}
+            </span>
+          )}
           <button
             onClick={() => setInventoryOpen(true)}
             style={{

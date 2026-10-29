@@ -138,6 +138,10 @@ export interface LearningProgress {
   totalScore: number;
   /** Environment phrase IDs the player has seen */
   phrasesCollected: string[];
+  /** Consecutive correct answers (for combo bonus) */
+  combo: number;
+  /** Best combo ever achieved */
+  bestCombo: number;
 }
 
 // ── Dialogue System ──
