@@ -276,6 +276,8 @@ export default function Canvas2D({ onTransition, onTriggerFired, onClueClick, on
                 };
                 requestAnimationFrame(animFade);
               }, 8000);
+            } else if (hs.triggerKey === 'eriks-mother' || hs.triggerKey === 'stargazing') {
+              // Secret area triggers — handled by PhantomGame dialogue system
             }
           }
         }
