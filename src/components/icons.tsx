@@ -140,3 +140,14 @@ export function WorkIcon({ className = 'w-8 h-8' }: IconProps) {
     </svg>
   )
 }
+
+export function GalleryIcon({ className = 'w-8 h-8' }: IconProps) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="2" y="3" width="20" height="14" rx="2" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2 17l5-5 3 3 4-4 8 6" />
+      <line x1="6" y1="21" x2="18" y2="21" />
+      <line x1="12" y1="17" x2="12" y2="21" />
+    </svg>
+  )
+}

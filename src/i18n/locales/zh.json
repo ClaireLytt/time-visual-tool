@@ -983,5 +983,12 @@
     "vocabEmpty": "还没有词汇记录",
     "vocabReviewDone": "复习完成！",
     "vocabBackToList": "返回词汇表"
+  },
+  "galleryApp": {
+    "title": "美术馆",
+    "hint": "← → 方向键或点击门廊切换展厅"
+  },
+  "modes": {
+    "gallery": "美术馆"
   }
 }

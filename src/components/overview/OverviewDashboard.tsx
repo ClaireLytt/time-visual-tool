@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { DailyPaintingCard } from '../gallery/DailyPainting'
 import { format, subDays } from 'date-fns'
 import { zhCN, enUS } from 'date-fns/locale'
 import { useTimeEntries } from '../../hooks/useTimeEntries'
@@ -246,6 +247,11 @@ function OverviewDashboard({ onNavigate }: OverviewDashboardProps) {
             )
           })}
         </div>
+      </Card>
+
+      {/* ── Gallery: daily painting ── */}
+      <Card mode="gallery" scene="🖼️ GALLERY" onClick={() => onNavigate('gallery')}>
+        <DailyPaintingCard onClick={() => onNavigate('gallery')} isZh={i18n.language === 'zh'} />
       </Card>
 
       {/* ── Streaks ── */}

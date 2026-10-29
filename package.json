@@ -10,6 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint src/",
+    "check-modules": "node scripts/check-modules.mjs",
+    "check-gallery": "node scripts/check-gallery-images.mjs",
     "format": "prettier --write src/",
     "predeploy-check": "bash scripts/pre-deploy-check.sh",
     "server": "npm --prefix server run dev",

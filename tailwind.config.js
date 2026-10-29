@@ -35,6 +35,7 @@ export default {
           podcast: '#b4879d',
           youtube: '#b28787',
           ielts: '#c28a80',
+          gallery: '#a39080',
         },
         clash: {
           red: '#e63946',
