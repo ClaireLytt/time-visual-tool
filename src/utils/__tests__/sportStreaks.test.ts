@@ -11,11 +11,11 @@ function computeStreaks(entries: SportEntry[], selectedDate: string) {
   let currentStreak = 0
   let checkDate = today
   if (!dateSet.has(today)) {
-    checkDate = format(subDays(new Date(today), 1), 'yyyy-MM-dd')
+    checkDate = format(subDays(new Date(today + 'T12:00:00'), 1), 'yyyy-MM-dd')
   }
   if (dateSet.has(checkDate)) {
     currentStreak = 1
-    let d = new Date(checkDate)
+    let d = new Date(checkDate + 'T12:00:00')
     while (true) {
       d = subDays(d, 1)
       const ds = format(d, 'yyyy-MM-dd')
@@ -32,7 +32,7 @@ function computeStreaks(entries: SportEntry[], selectedDate: string) {
     const ascending = [...sortedDates].reverse()
     let streak = 1
     for (let i = 1; i < ascending.length; i++) {
-      const diff = Math.round((new Date(ascending[i]).getTime() - new Date(ascending[i - 1]).getTime()) / 86400000)
+      const diff = Math.round((new Date(ascending[i] + 'T12:00:00').getTime() - new Date(ascending[i - 1] + 'T12:00:00').getTime()) / 86400000)
       if (diff === 1) {
         streak++
       } else {
