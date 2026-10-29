@@ -142,6 +142,108 @@ export const NPCS: NPCConfig[] = [
       },
     ],
   },
+  // ── Act 3-5 NPCs ──
+  {
+    id: 'phantom-npc',
+    name: '魅影',
+    nameEn: 'The Phantom',
+    icon: '🎭',
+    areaIds: ['lair', 'final-lair'],
+    positions: {
+      'lair': { x: 1100, y: 320 },
+      'final-lair': { x: 900, y: 350 },
+    },
+    greeting: '...you should not be here.',
+    greetingEn: '...you should not be here.',
+    topics: [
+      {
+        id: 'phantom-music',
+        label: '你的音乐很美',
+        labelEn: 'Your music is beautiful',
+        response: [
+          { speaker: 'Phantom', text: 'Music is the only language I was ever fluent in.', textEn: 'Music is the only language I was ever fluent in.', mood: 'sad' as const },
+          { speaker: 'Phantom', text: '人们听到我的音乐时会哭泣。但看到我的脸时也会哭泣——出于不同的原因。', textEn: 'People weep when they hear my music. They also weep when they see my face — for different reasons.', mood: 'sad' as const },
+        ],
+        vocabWord: 'fluent',
+        vocabMeaning: '流利的',
+      },
+      {
+        id: 'phantom-don-juan',
+        label: '《唐璐的胜利》是什么？',
+        labelEn: 'What is Don Juan Triumphant?',
+        requireTriggers: ['music-of-night-start'],
+        response: [
+          { speaker: 'Phantom', text: 'It is my life\'s work. Every note is a confession. Every chord is a memory.', textEn: 'It is my life\'s work. Every note is a confession. Every chord is a memory.', mood: 'tender' as const },
+          { speaker: 'Phantom', text: '当它终于上演的那天，世界会听到我的声音。不是作为鬼魂，而是作为作曲家。', textEn: 'When it is finally performed, the world will hear my voice. Not as a ghost, but as a composer.', mood: 'triumphant' as const },
+        ],
+        vocabWord: 'confession',
+        vocabMeaning: '忨悔/告白',
+      },
+    ],
+  },
+  {
+    id: 'christine-npc',
+    name: '克里斯汀',
+    nameEn: 'Christine',
+    icon: '🎵',
+    areaIds: ['rooftop', 'theater-performance'],
+    positions: {
+      'rooftop': { x: 800, y: 350 },
+      'theater-performance': { x: 700, y: 380 },
+    },
+    greeting: '你也来这里了…',
+    greetingEn: 'You\'re here too...',
+    topics: [
+      {
+        id: 'christine-angel',
+        label: '音乐天使是真的吗？',
+        labelEn: 'Is the Angel of Music real?',
+        response: [
+          { speaker: 'Christine', text: '我父亲说，当我准备好的时候，天使会来。', textEn: 'My father said when I was ready, the Angel would come.', mood: 'sad' as const },
+          { speaker: 'Christine', text: 'He came. But angels don\'t live in darkness. Angels don\'t weep.', textEn: 'He came. But angels don\'t live in darkness. Angels don\'t weep.', mood: 'sad' as const },
+        ],
+        vocabWord: 'guardian',
+        vocabMeaning: '守护者',
+      },
+      {
+        id: 'christine-choice',
+        label: '你会选择谁？',
+        labelEn: 'Who will you choose?',
+        requireTriggers: ['all-i-ask-start'],
+        response: [
+          { speaker: 'Christine', text: 'I don\'t choose between them. I choose between two worlds — the light above and the music below.', textEn: 'I don\'t choose between them. I choose between two worlds — the light above and the music below.', mood: 'tender' as const },
+          { speaker: 'Christine', text: '有时候，最残忍的选择是在两个你都爱的事物之间。', textEn: 'Sometimes the cruelest choice is between two things you love.', mood: 'sad' as const },
+        ],
+        vocabWord: 'dilemma',
+        vocabMeaning: '困境/两难',
+      },
+    ],
+  },
+  {
+    id: 'raoul-npc',
+    name: '拉乌尔',
+    nameEn: 'Raoul',
+    icon: '⚔️',
+    areaIds: ['rooftop'],
+    positions: {
+      'rooftop': { x: 500, y: 330 },
+    },
+    greeting: 'We must be careful. He is always watching.',
+    greetingEn: 'We must be careful. He is always watching.',
+    topics: [
+      {
+        id: 'raoul-plan',
+        label: '你有什么计划？',
+        labelEn: 'What is your plan?',
+        response: [
+          { speaker: 'Raoul', text: 'We perform his opera. We lure him out. And then — we end this.', textEn: 'We perform his opera. We lure him out. And then — we end this.', mood: 'neutral' as const },
+          { speaker: 'Raoul', text: '我不怕他。我只怕失去她。', textEn: 'I\'m not afraid of him. I\'m only afraid of losing her.', mood: 'tender' as const },
+        ],
+        vocabWord: 'lure',
+        vocabMeaning: '引诱/诱饵',
+      },
+    ],
+  },
 ];
 
 /** Get NPCs available in a specific area */
