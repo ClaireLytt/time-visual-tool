@@ -31,7 +31,14 @@ const FinanceEntryItem = memo(function FinanceEntryItem({ entry, onDelete, onEdi
 
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{displayName}</p>
-        <p className="text-xs text-gray-500 dark:text-gray-400">{categoryName}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          {categoryName}
+          {entry.luck != null && (
+            <span className="ml-1.5" title={t(`finance.blindBoxResult.${entry.luck}`)}>
+              {entry.luck === 'good' ? '🎁' : entry.luck === 'bad' ? '💸' : '⚖️'}
+            </span>
+          )}
+        </p>
       </div>
 
       <span className={`text-sm font-semibold shrink-0 ${isIncome ? 'text-mode-finance' : 'text-[#c47070]'}`}>
