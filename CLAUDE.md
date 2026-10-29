@@ -5,6 +5,13 @@
 TimeVisual — a React 18 + TypeScript + Tailwind + Vite productivity app with Firebase backend.
 
 ## Build & Test
+- 不允许运行/metr-finish
+- 不允许出现选择题 你直接选择一个最合适的方案
+- 不要重复问我同一个问题 你自己做最佳决定
+- 可以改代码 但不允许删除现有的代码文件
+- 不允许运行任何rm -f的命令
+- 不允许自动merge pr
+- 及时ship更新pr
 
 - `cmd /c "npm run dev"` — start dev server (auto-opens browser)
 - `npx tsc --noEmit` — type-check
@@ -45,63 +52,14 @@ silently. The app uses **HashRouter** (`#/app`, `#/login`, `#/register`).
 - Types: `src/types/*.ts`
 - i18n: `src/i18n/locales/zh.json` + `en.json`
 
-## Design / Color Rules
+## Design, Color, Canvas & TypeScript Rules
 
-### NO Blue-Purple (pure purple is allowed)
+→ See `CODING_STANDARDS.md` for full rules (design palette, canvas, TS pitfalls).
 
-**NEVER** use blue-purple/violet (hue ~235-265), bright blue-purple gradients, or purple-blue color schemes anywhere in the UI. **Pure purple (hue ~270-300) is allowed** when muted — the user approved it for the diary accent (e.g. `#b09cc4`).
-
-The overall palette is **Morandi / low-saturation**: muted warm grays, haze blue (雾霾蓝), gray-green, dusty tones:
-- Avatar backgrounds: solid `#8B9DAB` (muted gray-blue), not gradients
-- Neutral accents: `#7B929F`, `#9AABB5`, `#A3B5BF` range; ink/borders `#a39b8d`
-- Avoid: `blue-400 to purple-500` style gradients, any saturated `violet-*`/`indigo-*` (hue 235-265 with saturation > ~45%), high-saturation colors in general
-
-## Canvas Game Rules
-
-### Button Placement
-**NEVER** place interactive buttons at the browser viewport edge (e.g. `W - pad`, `0 + pad`). Buttons must be positioned **near related UI elements** — beside a panel, below a timer, inside a HUD cluster. Edge-positioned buttons are hard to tap on mobile and look disconnected from the game UI.
-
-### Emoji Rendering
-Canvas renders emoji as bitmaps that blend with the background. On dark backgrounds, emoji appear muddy/dark. **Always** draw an opaque white circle (`rgba(255,255,255, 0.85)`) behind each emoji before drawing it with `fillText`.
-
-## Common TypeScript Pitfalls (avoid these)
-
-### ES Target Compatibility
-Project target is **ES2020**. Do NOT use ES2022+ features:
-- ❌ `new Error('msg', { cause: err })` — use `Object.assign(new Error('msg'), { cause: err })`
-- ❌ `Array.at()`, `Object.hasOwn()` — use bracket access / `hasOwnProperty`
-
-### Motion / Framer Motion Types
-- `ease` must be a typed tuple, not a plain array:
-  - ❌ `ease: [0.25, 0.1, 0.25, 1]`
-  - ✅ `ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number]`
-
-### React Hook Imports
-- Every hook you use (`useState`, `useMemo`, `useCallback`, `useEffect`, `useRef`) **must** be in the import statement. Do NOT assume the previous import covers it.
-
-### Optional vs Nullable Fields
-- TypeScript `?:` fields are `T | undefined`, NOT `T | null`. When constructing objects with optional fields, use `undefined` (or omit the field), never `null`.
-
-### Unused Variables
-- `tsconfig` has `noUnusedLocals` and `noUnusedParameters` enabled. Any declared-but-unused variable is a build error. Remove it or use it.
-
-### ConfirmDialog Props
-- The shared `ConfirmDialog` component uses `confirmVariant`, NOT `variant`. Always check the actual prop name before using it:
-  - ❌ `<ConfirmDialog variant="danger" />`
-  - ✅ `<ConfirmDialog confirmVariant="danger" />`
-
-### Removing Props from Types
-- When deleting a prop from an interface/type, **also remove it from every call site**. Search all usages with grep before committing.
-
-### String vs Number in Charts
-- Firestore/form values are often `string`. Chart libraries (Recharts) expect `number`. Always convert with `Number()` or `parseFloat()` before passing to chart data.
-
-### Windows Shell: gh CLI Body Argument
-- `gh pr edit --body @- <<'EOF'` (Bash heredoc) does **NOT** work in Git Bash on Windows — `@-` becomes literal text.
-- ✅ Use PowerShell with `$body = @"..."@` variable, then `gh pr edit --body $body`.
+Key: **no blue-purple** (hue 235-265), Morandi low-saturation palette, ES2020 target, `ease` tuples need `as [number, number, number, number]`.
 
 ### Pre-Push Verification
-**ALWAYS** run `npm run predeploy-check` (or at minimum `npx tsc -b`) before pushing. IDE type-checking may miss errors that the strict CLI build catches.
+**ALWAYS** run `npm run predeploy-check` (or at minimum `npx tsc -b`) before pushing.
 
 ## Critical Rules
 
@@ -135,20 +93,10 @@ return <div>{entries.length === 0 ? <EmptyState /> : <EntryList />}</div>
 All module data hooks are preloaded in `AppShell.tsx` so that switching tabs is instant.
 When adding a new module, add its `use*Entries()` call to the preload block in AppShell.
 
-### Adding a New Module Checklist
+### Adding a New Module
 
-1. `src/types/{module}.ts` — types
-2. `src/constants/{module}.ts` — constants
-3. `src/hooks/use{Module}Entries.ts` — hook (useFirestore)
-4. `src/components/{module}/` — Dashboard, Form, Item, List components
-5. `src/components/icons.tsx` — add icon
-6. `src/i18n/locales/*.json` — add mode + module keys
-7. `src/types/index.ts` — add to `AppMode` union
-8. `src/components/layout/AppShell.tsx` — import, MODE_COLORS, validateMode, **preload hook**, switch case
-9. `src/components/layout/BottomTabBar.tsx` — add to TABS
-10. `src/components/layout/Header.tsx` — icon/title/subtitle/border
-11. `src/components/overview/OverviewDashboard.tsx` — add overview card
-12. `tailwind.config.js` — add `mode.{module}` color
+→ See `docs/new-module.md` for the full 12-step checklist.
+After wiring, run `npm run check-modules` to verify all registration points.
 
 ## Phantom Game Rules
 
@@ -193,6 +141,21 @@ dev-server issues, test failures, script bugs), record it in the `issue_recode/`
 4. Do this at the moment the problem is found, not batched at the end.
 
 ## Git & Commit Rules
+
+### Branch Policy
+
+**NEVER develop directly on `main`.** All new work must happen on a feature branch.
+
+| Branch | Purpose | Who merges |
+|--------|---------|-----------|
+| `main` | Production-ready code only. Protected. | PR merge only. |
+| `phantom` | Phantom of the Opera game development. | Merge to main via PR when milestone is complete. |
+| `feature/*` | Other new features. | Merge to main via PR. |
+
+**Before starting any work:**
+1. Check which branch you're on: `git branch --show-current`
+2. If on `main`, create or switch to the appropriate feature branch first
+3. Never commit directly to `main` — always use a Pull Request
 
 ### Auto-Commit After Every Change
 

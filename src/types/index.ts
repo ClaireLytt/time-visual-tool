@@ -28,7 +28,7 @@ export type ViewMode = 'day' | 'week' | 'month'
 
 export type ExtendedViewMode = ViewMode | 'year'
 
-export type AppMode = 'overview' | 'time' | 'finance' | 'eating' | 'diary' | 'sport' | 'habit' | 'todo' | 'study' | 'work' | 'podcast' | 'youtube' | 'ielts'
+export type AppMode = 'overview' | 'time' | 'finance' | 'eating' | 'diary' | 'sport' | 'habit' | 'todo' | 'study' | 'work' | 'podcast' | 'youtube' | 'ielts' | 'gallery'
 
 export interface DailyDataPoint {
   date: string

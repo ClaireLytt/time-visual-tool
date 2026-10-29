@@ -330,6 +330,33 @@ export function ExamHallScene({ className }: SceneProps) {
 }
 
 /** Map of mode to scene component */
+export function GalleryScene({ className }: SceneProps) {
+  return (
+    <svg {...svgProps(className)}>
+      {/* Wall */}
+      <rect x="0" y="0" width="64" height="40" fill="#2a2520" />
+      {/* Floor */}
+      <rect x="0" y="30" width="64" height="10" fill="#3a3530" />
+      {/* Checkered floor tiles */}
+      <rect x="0" y="30" width="8" height="5" fill="#2a2520" />
+      <rect x="16" y="30" width="8" height="5" fill="#2a2520" />
+      <rect x="32" y="30" width="8" height="5" fill="#2a2520" />
+      <rect x="48" y="30" width="8" height="5" fill="#2a2520" />
+      <rect x="8" y="35" width="8" height="5" fill="#2a2520" />
+      <rect x="24" y="35" width="8" height="5" fill="#2a2520" />
+      <rect x="40" y="35" width="8" height="5" fill="#2a2520" />
+      <rect x="56" y="35" width="8" height="5" fill="#2a2520" />
+      {/* Paintings */}
+      <rect x="4" y="6" width="12" height="16" fill="#c9a84c" />
+      <rect x="5" y="7" width="10" height="14" fill="#4a6a4a" />
+      <rect x="26" y="4" width="16" height="18" fill="#c9a84c" />
+      <rect x="27" y="5" width="14" height="16" fill="#3a4a6a" />
+      <rect x="50" y="8" width="10" height="12" fill="#c9a84c" />
+      <rect x="51" y="9" width="8" height="10" fill="#6a4a3a" />
+    </svg>
+  )
+}
+
 export const SCENE_COMPONENTS: Record<string, React.FC<SceneProps>> = {
   time: DungeonScene,
   finance: TreasureScene,
@@ -343,4 +370,5 @@ export const SCENE_COMPONENTS: Record<string, React.FC<SceneProps>> = {
   podcast: BardHallScene,
   youtube: TheaterScene,
   ielts: ExamHallScene,
+  gallery: GalleryScene,
 }

@@ -43,6 +43,9 @@ function App() {
       <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
       <Route path="/app" element={<ProtectedRoute />} />
       <Route path="/phantom" element={<Suspense fallback={<div style={{background:'#0a0908',minHeight:'100vh'}} />}><PhantomGame /></Suspense>} />
+      <Route path="/gallery" element={<ProtectedRoute />} />
+      <Route path="/gallery/:roomId" element={<ProtectedRoute />} />
+      <Route path="/gallery/:roomId/:paintingId" element={<ProtectedRoute />} />
       <Route path="/" element={<LandingPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

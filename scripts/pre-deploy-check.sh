@@ -19,6 +19,18 @@ echo "  Pre-deploy verification"
 echo "═══════════════════════════════════════"
 echo ""
 
+# 0. Module wiring consistency
+info "Checking module wiring..."
+node scripts/check-modules.mjs || fail "Module wiring check failed"
+pass "Module wiring consistent"
+
+# 0b. Gallery images
+if [ -f scripts/check-gallery-images.mjs ]; then
+  info "Checking gallery images..."
+  node scripts/check-gallery-images.mjs || fail "Gallery images missing"
+  pass "Gallery images present"
+fi
+
 # 1. Lint
 info "Running lint..."
 npm run lint 2>&1 | tail -3

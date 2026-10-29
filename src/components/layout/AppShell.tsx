@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'motion/react'
 import Header from './Header'
@@ -18,6 +19,7 @@ import WorkDashboard from '../work/WorkDashboard'
 import PodcastDashboard from '../podcast/PodcastDashboard'
 import YouTubeDashboard from '../youtube/YouTubeDashboard'
 import IeltsDashboard from '../ielts/IeltsDashboard'
+import GalleryDashboard from '../gallery/GalleryDashboard'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
 import { useTimeEntries } from '../../hooks/useTimeEntries'
 import { useFinanceEntries } from '../../hooks/useFinanceEntries'
@@ -46,6 +48,7 @@ const MODE_COLORS: Record<AppMode, { light: string; dark: string }> = {
   podcast:  { light: '#f2dde6', dark: '#28141e' },
   youtube:  { light: '#f0dede', dark: '#281414' },
   ielts:    { light: '#fdf2f5', dark: '#281418' },
+  gallery:  { light: '#eae6e0', dark: '#1c1a18' },
 }
 
 function validateMode(raw: unknown): AppMode | null {
@@ -54,7 +57,15 @@ function validateMode(raw: unknown): AppMode | null {
 
 function AppShell() {
   const { t } = useTranslation()
+  const location = useLocation()
   const [mode, setMode] = useLocalStorage<AppMode>(APP_MODE_STORAGE_KEY, 'overview', validateMode)
+
+  // Direct-link routes: /gallery → gallery mode
+  useEffect(() => {
+    if (location.pathname.startsWith('/gallery') && mode !== 'gallery') {
+      setMode('gallery')
+    }
+  }, [location.pathname, mode, setMode])
 
   // Preload all module data so tab switches never show a spinner
   useTimeEntries()
@@ -97,6 +108,7 @@ function AppShell() {
       case 'podcast': return <PodcastDashboard />
       case 'youtube': return <YouTubeDashboard />
       case 'ielts': return <IeltsDashboard />
+      case 'gallery': return <GalleryDashboard onBack={() => setMode('overview')} />
       default: {
         const _exhaustive: never = mode
         console.warn(`Unhandled mode: ${_exhaustive}`)
@@ -117,7 +129,7 @@ function AppShell() {
       >
         {t('app.skipToContent')}
       </a>
-      <Header mode={mode} onBack={() => setMode('overview')} />
+      {mode !== 'gallery' && <Header mode={mode} onBack={() => setMode('overview')} />}
       <ErrorBoundary>
         <Container>
           <AnimatePresence initial={false}>
