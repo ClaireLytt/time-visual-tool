@@ -43,6 +43,7 @@ import SpeakingPractice from './ui/SpeakingPractice';
 import VocabNetwork from './ui/VocabNetwork';
 import LearningCalendar, { recordActivity } from './ui/LearningCalendar';
 import WeeklyChallenge from './ui/WeeklyChallenge';
+import HighScores, { saveHighScore } from './ui/HighScores';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
 import { ActId, DialogueScene, EnglishChallenge } from './core/types';
@@ -143,6 +144,7 @@ export default function PhantomGame() {
         }
         // Check for game ending (final mask collected)
         if (itemId === 'act5-mask') {
+          saveHighScore();
           setTimeout(() => setShowEnding(true), 3000);
         }
         // Check achievements
@@ -161,6 +163,10 @@ export default function PhantomGame() {
             vocabLearned: ENGLISH_CHALLENGES
               .filter((ch) => st.learning.completedChallenges.includes(ch.id))
               .reduce((sum, ch) => sum + ch.vocab.length, 0),
+            secretRoomsFound: st.collectedItems.filter((id) => id.startsWith('secret-')).length > 0 ? 1 : 0,
+            npcsTalkedTo: 0,
+            organCompleted: st.triggeredEvents.includes('evt-organ-complete'),
+            grammarScore: 0,
           };
           const newA = checkNewAchievements(achStats, earned);
           if (newA.length > 0) {
@@ -202,6 +208,10 @@ export default function PhantomGame() {
       vocabLearned: ENGLISH_CHALLENGES
         .filter((ch) => state.learning.completedChallenges.includes(ch.id))
         .reduce((sum, ch) => sum + ch.vocab.length, 0),
+      secretRoomsFound: state.collectedItems.filter((id) => id.startsWith('secret-')).length > 0 ? 1 : 0,
+      npcsTalkedTo: 0,
+      organCompleted: state.triggeredEvents.includes('evt-organ-complete'),
+      grammarScore: 0,
     };
     const newAchievements = checkNewAchievements(stats, earnedAchievements);
     if (newAchievements.length > 0) {
@@ -540,6 +550,7 @@ export default function PhantomGame() {
       <VocabNetwork open={ov.isOpen('vocabnet')} onClose={() => ov.close()} />
       <LearningCalendar open={ov.isOpen('calendar')} onClose={() => ov.close()} />
       <WeeklyChallenge open={ov.isOpen('weekly')} onClose={() => ov.close()} />
+      <HighScores open={ov.isOpen('highscores')} onClose={() => ov.close()} />
       <OrganMinigame
         open={organOpen}
         onComplete={() => {
@@ -649,6 +660,9 @@ export default function PhantomGame() {
               </button>
               <button onClick={() => ov.open('calendar')} style={menuBtnStyle}>
                 📅 学习日历
+              </button>
+              <button onClick={() => ov.open('highscores')} style={menuBtnStyle}>
+                🏅 最高分
               </button>
             </div>
 
