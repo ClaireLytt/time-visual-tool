@@ -55,7 +55,7 @@ export default function SentenceBuilder({ open, onClose }: Props) {
   const [seed, setSeed] = useState(() => Date.now());
   const [selected, setSelected] = useState<number[]>([]);
   const [solved, setSolved] = useState(0);
-  const [showResult, setShowResult] = useState<'correct' | 'wrong' | null>(null);
+  const [showResult, setShowResult] = useState<'correct' | 'wrong' | undefined>(undefined);
 
   const current = sentences[sentIdx % sentences.length];
   const words = useMemo(
@@ -94,7 +94,7 @@ export default function SentenceBuilder({ open, onClose }: Props) {
     setSentIdx((i) => (i + 1) % sentences.length);
     setSeed(Date.now());
     setSelected([]);
-    setShowResult(null);
+    setShowResult(undefined);
   }, [sentences.length]);
 
   if (!open) return null;
@@ -236,7 +236,7 @@ export default function SentenceBuilder({ open, onClose }: Props) {
               <button onClick={checkSentence} style={btnStyle}>Check</button>
             )}
             {selected.length > 0 && showResult === 'wrong' && (
-              <button onClick={() => { setSelected([]); setShowResult(null); }} style={btnStyle}>
+              <button onClick={() => { setSelected([]); setShowResult(undefined); }} style={btnStyle}>
                 Reset
               </button>
             )}

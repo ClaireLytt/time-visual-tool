@@ -135,7 +135,7 @@ export default function ReviewQuiz({ open, onClose }: Props) {
   const [qIdx, setQIdx] = useState(0);
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
-  const [selected, setSelected] = useState<number | null>(null);
+  const [selected, setSelected] = useState<number | undefined>(undefined);
   const diffConfig = getConfig();
   const [timeLeft, setTimeLeft] = useState(diffConfig.quizTime);
   const [gameOver, setGameOver] = useState(false);
@@ -171,7 +171,7 @@ export default function ReviewQuiz({ open, onClose }: Props) {
 
     // Auto advance after 1s
     setTimeout(() => {
-      setSelected(null);
+      setSelected(undefined);
       if (qIdx >= questions.length - 1) {
         setGameOver(true);
       } else {
@@ -184,7 +184,7 @@ export default function ReviewQuiz({ open, onClose }: Props) {
     setQIdx(0);
     setScore(0);
     setTotal(0);
-    setSelected(null);
+    setSelected(undefined);
     setTimeLeft(diffConfig.quizTime);
     setGameOver(false);
   }, [diffConfig.quizTime]);

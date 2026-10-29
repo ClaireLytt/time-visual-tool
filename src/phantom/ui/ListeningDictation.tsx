@@ -41,7 +41,7 @@ export default function ListeningDictation({ open, onClose }: Props) {
 
   const [idx, setIdx] = useState(0);
   const [input, setInput] = useState('');
-  const [result, setResult] = useState<'correct' | 'close' | 'wrong' | null>(null);
+  const [result, setResult] = useState<'correct' | 'close' | 'wrong' | undefined>(undefined);
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
@@ -79,7 +79,7 @@ export default function ListeningDictation({ open, onClose }: Props) {
   const next = useCallback(() => {
     setIdx((i) => (i + 1) % sentences.length);
     setInput('');
-    setResult(null);
+    setResult(undefined);
     setShowAnswer(false);
   }, [sentences.length]);
 

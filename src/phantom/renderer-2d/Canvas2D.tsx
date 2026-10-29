@@ -111,7 +111,7 @@ export default function Canvas2D({ onTransition, onTriggerFired, onClueClick, on
   const cameraTargetRef = useRef(0);
   const camPosRef = useRef(0);
   const pickupBurstRef = useRef<{ x: number; y: number; t: number } | null>(null);
-  const [hoveredHotspot, setHoveredHotspot] = useState<Hotspot | null>(null);
+  const [hoveredHotspot, setHoveredHotspot] = useState<Hotspot | undefined>(undefined);
   const [ghostOpacity, setGhostOpacity] = useState(0);
   const [showThinkOfMe, setShowThinkOfMe] = useState(false);
 
