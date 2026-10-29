@@ -1,3 +1,4 @@
+import { Z_ENV_DESCRIPTION } from '../core/z-index';
 /**
  * EnvDescriptionOverlay — atmospheric text + English phrase when clicking
  * non-collectible environment objects. Light learning, no quiz required.
@@ -19,7 +20,7 @@ export default function EnvDescriptionOverlay({ desc, onClose }: Props) {
         position: 'fixed', inset: 0,
         background: 'rgba(0,0,0,0.7)',
         display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-        zIndex: 100, cursor: 'pointer',
+        zIndex: Z_ENV_DESCRIPTION, cursor: 'pointer',
         animation: 'envFadeIn 0.3s ease-out',
         paddingBottom: '10vh',
       }}

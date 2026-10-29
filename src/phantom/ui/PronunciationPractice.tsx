@@ -1,3 +1,4 @@
+import { Z_TOOL } from '../core/z-index';
 /**
  * PronunciationPractice — hear vocabulary words spoken aloud using
  * browser Text-to-Speech API. Practice listening and repeating.
@@ -81,7 +82,7 @@ export default function PronunciationPractice({ open, onClose }: Props) {
       <div onClick={onClose} style={{
         position: 'fixed', inset: 0, background: 'rgba(10,9,8,0.92)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        zIndex: 210, cursor: 'pointer', fontFamily: 'Georgia, serif',
+        zIndex: Z_TOOL, cursor: 'pointer', fontFamily: 'Georgia, serif',
       }}>
         <div style={{ color: '#6a5a48', fontSize: '0.95rem', textAlign: 'center' }}>
           <p style={{ fontSize: '2rem', margin: '0 0 0.5rem' }}>{'🔊'}</p>
@@ -106,7 +107,7 @@ export default function PronunciationPractice({ open, onClose }: Props) {
       position: 'fixed', inset: 0, background: 'rgba(10,9,8,0.94)',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
-      zIndex: 210, fontFamily: 'Georgia, serif',
+      zIndex: Z_TOOL, fontFamily: 'Georgia, serif',
     }}>
       <p style={{ fontSize: '0.7rem', color: '#6a5a48', letterSpacing: '0.15em', margin: '0 0 0.3rem' }}>
         PRONUNCIATION PRACTICE ({idx + 1}/{allVocab.length})

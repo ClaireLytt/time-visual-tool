@@ -1,3 +1,4 @@
+import { Z_ENGLISH_CHALLENGE } from '../core/z-index';
 /**
  * EnglishChallenge — modal that appears after collecting an item,
  * teaching English vocabulary and phrases from The Phantom of the Opera.
@@ -80,7 +81,7 @@ export default function EnglishChallengeModal({ challenge, onComplete }: Props) 
     position: 'fixed', inset: 0,
     background: 'rgba(10,9,8,0.92)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    zIndex: 150,
+    zIndex: Z_ENGLISH_CHALLENGE,
     animation: 'ecFadeIn 0.4s ease-out',
   };
 

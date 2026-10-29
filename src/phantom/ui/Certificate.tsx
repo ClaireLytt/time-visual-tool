@@ -1,3 +1,4 @@
+import { Z_TOOL } from '../core/z-index';
 /**
  * Certificate — generates a visual progress certificate that players
  * can screenshot and share. Shows their learning achievements.
@@ -42,7 +43,7 @@ export default function Certificate({ open, onClose, earnedAchievements }: Props
     <div
       onClick={onClose}
       style={{
-        position: 'fixed', inset: 0, zIndex: 210,
+        position: 'fixed', inset: 0, zIndex: Z_TOOL,
         background: 'rgba(10,9,8,0.94)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontFamily: 'Georgia, serif',

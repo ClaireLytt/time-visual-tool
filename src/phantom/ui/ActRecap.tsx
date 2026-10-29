@@ -1,3 +1,4 @@
+import { Z_ACT_RECAP } from '../core/z-index';
 /**
  * ActRecap — summary screen shown between acts.
  * Shows: story recap, words learned, collectibles found, achievements earned.
@@ -63,7 +64,7 @@ export default function ActRecap({ completedAct, onContinue }: Props) {
       position: 'fixed', inset: 0,
       background: 'linear-gradient(to bottom, #0a0908, #1a1816)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      zIndex: 160, fontFamily: 'Georgia, serif',
+      zIndex: Z_ACT_RECAP, fontFamily: 'Georgia, serif',
       animation: 'recapFadeIn 1s ease-out',
     }}>
       <div style={{

@@ -1,3 +1,4 @@
+import { Z_TOOL } from '../core/z-index';
 /**
  * LearningStats — detailed progress analytics dashboard.
  * Shows vocabulary mastery, challenge history, study time estimate,
@@ -53,7 +54,7 @@ export default function LearningStats({ open, onClose, earnedAchievements }: Pro
     <div
       onClick={onClose}
       style={{
-        position: 'fixed', inset: 0, zIndex: 210,
+        position: 'fixed', inset: 0, zIndex: Z_TOOL,
         background: 'rgba(10,9,8,0.94)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontFamily: 'Georgia, serif',

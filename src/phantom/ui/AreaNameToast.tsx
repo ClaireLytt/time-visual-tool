@@ -1,3 +1,4 @@
+import { Z_AREA_TOAST } from '../core/z-index';
 /**
  * AreaNameToast — cinematic area name display when entering a new area.
  * Fades in with the area name in both Chinese and English.
@@ -40,7 +41,7 @@ export default function AreaNameToast() {
   const isPlaying = useGameStore((s) => s.isPlaying);
   const [visible, setVisible] = useState(false);
   const [displayArea, setDisplayArea] = useState('');
-  const prevAreaRef = useRef(currentArea);
+  const prevAreaRef = useRef('');
 
   useEffect(() => {
     if (!isPlaying) return;
@@ -63,7 +64,7 @@ export default function AreaNameToast() {
       position: 'fixed',
       top: '35%', left: '50%',
       transform: 'translateX(-50%)',
-      zIndex: 15,
+      zIndex: Z_AREA_TOAST,
       pointerEvents: 'none',
       textAlign: 'center',
       animation: 'areaToastIn 0.8s ease-out',

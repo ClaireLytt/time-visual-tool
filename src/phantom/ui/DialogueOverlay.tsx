@@ -1,3 +1,4 @@
+import { Z_DIALOGUE } from '../core/z-index';
 /**
  * DialogueOverlay — cinematic dialogue scenes with typewriter effect.
  * Supports branching choices and bilingual display (CN/EN).
@@ -124,7 +125,7 @@ export default function DialogueOverlay({ scene, onComplete }: Props) {
         background: 'rgba(10,9,8,0.85)',
         display: 'flex', flexDirection: 'column',
         justifyContent: 'flex-end',
-        zIndex: 120,
+        zIndex: Z_DIALOGUE,
         cursor: showChoices ? 'default' : 'pointer',
         animation: 'dlgFadeIn 0.3s ease-out',
       }}

@@ -1,3 +1,4 @@
+import { Z_TOOL } from '../core/z-index';
 /**
  * SentenceBuilder — drag-to-reorder word tiles to form correct English sentences.
  * Uses quotes from the opera that the player has encountered.
@@ -103,7 +104,7 @@ export default function SentenceBuilder({ open, onClose }: Props) {
       <div onClick={onClose} style={{
         position: 'fixed', inset: 0, background: 'rgba(10,9,8,0.92)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        zIndex: 210, cursor: 'pointer',
+        zIndex: Z_TOOL, cursor: 'pointer',
       }}>
         <div style={{
           fontFamily: 'Georgia, serif', color: '#6a5a48',
@@ -131,7 +132,7 @@ export default function SentenceBuilder({ open, onClose }: Props) {
       position: 'fixed', inset: 0, background: 'rgba(10,9,8,0.94)',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
-      zIndex: 210, fontFamily: 'Georgia, serif',
+      zIndex: Z_TOOL, fontFamily: 'Georgia, serif',
     }}>
       <p style={{ fontSize: '0.7rem', color: '#6a5a48', letterSpacing: '0.15em', margin: '0 0 0.3rem' }}>
         SENTENCE BUILDER

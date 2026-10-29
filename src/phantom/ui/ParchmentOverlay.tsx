@@ -1,3 +1,4 @@
+import { Z_PARCHMENT } from '../core/z-index';
 import { useCallback, useMemo } from 'react';
 import { getAllCollectibles } from '../core/constants';
 import { useGameStore } from '../core/store';
@@ -34,7 +35,7 @@ export default function ParchmentOverlay({ itemId, onClose }: Props) {
         position: 'fixed', inset: 0,
         background: 'rgba(0,0,0,0.8)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        zIndex: 100, cursor: 'pointer',
+        zIndex: Z_PARCHMENT, cursor: 'pointer',
         animation: 'fadeIn 0.3s ease-out',
       }}
     >

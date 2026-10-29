@@ -1,3 +1,4 @@
+import { Z_TRANSITION } from '../core/z-index';
 import { TransitionState } from './useTransition';
 
 interface Props {
@@ -12,7 +13,7 @@ export default function Transition({ transition }: Props) {
   if (transition.type === 'mirror-portal') {
     return (
       <div style={{
-        position: 'fixed', inset: 0, zIndex: 150, pointerEvents: 'none',
+        position: 'fixed', inset: 0, zIndex: Z_TRANSITION, pointerEvents: 'none',
         background: fadingOut
           ? 'radial-gradient(circle at 70% 50%, rgba(200,220,255,0.5) 0%, rgba(0,0,0,0.9) 60%)'
           : 'radial-gradient(circle at 70% 50%, rgba(200,220,255,0.1) 0%, rgba(0,0,0,0.2) 80%)',
@@ -25,7 +26,7 @@ export default function Transition({ transition }: Props) {
   if (transition.type === 'curtain-rise') {
     return (
       <div style={{
-        position: 'fixed', inset: 0, zIndex: 150, pointerEvents: 'none',
+        position: 'fixed', inset: 0, zIndex: Z_TRANSITION, pointerEvents: 'none',
         display: 'flex', overflow: 'hidden',
       }}>
         <div style={{
@@ -65,7 +66,7 @@ export default function Transition({ transition }: Props) {
   // Default: fade to/from black
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 150, pointerEvents: 'none',
+      position: 'fixed', inset: 0, zIndex: Z_TRANSITION, pointerEvents: 'none',
       background: '#000',
       opacity: fadingOut ? 1 : 0,
       transition: 'opacity 0.7s ease-in-out',

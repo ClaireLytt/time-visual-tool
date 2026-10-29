@@ -1,3 +1,4 @@
+import { Z_ENDING } from '../core/z-index';
 /**
  * GameEnding — final screen shown after completing the game.
  * Displays full stats, ending text, and learned vocabulary summary.
@@ -42,7 +43,7 @@ export default function GameEnding({ earnedAchievements, onRestart }: Props) {
       position: 'fixed', inset: 0,
       background: '#0a0908',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      zIndex: 300, fontFamily: 'Georgia, serif',
+      zIndex: Z_ENDING, fontFamily: 'Georgia, serif',
       animation: 'endFadeIn 2s ease-out',
     }}>
       <div style={{

@@ -1,3 +1,4 @@
+import { Z_TOOL } from '../core/z-index';
 /**
  * FlashcardReview — review learned vocabulary as flip cards.
  * Accessible from the pause menu.
@@ -57,7 +58,7 @@ export default function FlashcardReview({ open, onClose }: Props) {
       <div onClick={onClose} style={{
         position: 'fixed', inset: 0, background: 'rgba(10,9,8,0.9)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        zIndex: 210, cursor: 'pointer',
+        zIndex: Z_TOOL, cursor: 'pointer',
       }}>
         <div style={{
           fontFamily: 'Georgia, serif', color: '#6a5a48',
@@ -78,7 +79,7 @@ export default function FlashcardReview({ open, onClose }: Props) {
       position: 'fixed', inset: 0, background: 'rgba(10,9,8,0.92)',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
-      zIndex: 210,
+      zIndex: Z_TOOL,
       fontFamily: 'Georgia, serif',
     }}>
       {/* Header */}

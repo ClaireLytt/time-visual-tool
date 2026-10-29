@@ -1,3 +1,4 @@
+import { Z_TOAST } from '../core/z-index';
 /**
  * AchievementToast — slide-in notification when a new achievement is earned.
  */
@@ -33,7 +34,7 @@ export default function AchievementToast({ achievement, onDone }: Props) {
       transform: `translateX(-50%) translateY(${visible ? '0' : '-80px'})`,
       opacity: visible ? 1 : 0,
       transition: 'transform 0.5s ease, opacity 0.5s ease',
-      zIndex: 250,
+      zIndex: Z_TOAST,
       pointerEvents: 'none',
     }}>
       <div style={{

@@ -18,6 +18,7 @@ export const Z_AREA_TOAST = 15;
 export const Z_PARCHMENT = 100;
 export const Z_ENV_DESCRIPTION = 100;
 export const Z_DIALOGUE = 120;
+export const Z_TRANSITION = 150;
 export const Z_ENGLISH_CHALLENGE = 150;
 export const Z_ACT_RECAP = 160;
 

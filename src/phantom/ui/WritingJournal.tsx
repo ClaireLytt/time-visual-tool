@@ -1,3 +1,4 @@
+import { Z_TOOL } from '../core/z-index';
 /**
  * WritingJournal — creative English writing prompts based on the Phantom story.
  * Entries are saved in localStorage. Encourages free-form English practice.
@@ -110,7 +111,7 @@ export default function WritingJournal({ open, onClose }: Props) {
     <div
       onClick={onClose}
       style={{
-        position: 'fixed', inset: 0, zIndex: 210,
+        position: 'fixed', inset: 0, zIndex: Z_TOOL,
         background: 'rgba(10,9,8,0.94)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontFamily: 'Georgia, serif',

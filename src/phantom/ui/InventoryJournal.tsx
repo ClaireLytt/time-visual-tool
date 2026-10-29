@@ -1,3 +1,4 @@
+import { Z_PAUSE } from '../core/z-index';
 import { useState, useMemo } from 'react';
 import { useGameStore } from '../core/store';
 import { getAllCollectibles, getCollectiblesForAct } from '../core/constants';
@@ -45,7 +46,7 @@ export default function InventoryJournal({ open, onClose }: Props) {
     <div
       onClick={onClose}
       style={{
-        position: 'fixed', inset: 0, zIndex: 180,
+        position: 'fixed', inset: 0, zIndex: Z_PAUSE,
         background: 'rgba(0,0,0,0.85)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         animation: 'fadeIn 0.3s ease-out',

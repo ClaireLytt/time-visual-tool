@@ -1,3 +1,4 @@
+import { Z_TOOL } from '../core/z-index';
 /**
  * StoryTimeline — visual chronological timeline of the Phantom story.
  * Fills in as the player progresses through acts. Bilingual.
@@ -124,7 +125,7 @@ export default function StoryTimeline({ open, onClose }: Props) {
     <div
       onClick={onClose}
       style={{
-        position: 'fixed', inset: 0, zIndex: 210,
+        position: 'fixed', inset: 0, zIndex: Z_TOOL,
         background: 'rgba(10,9,8,0.94)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontFamily: 'Georgia, serif',

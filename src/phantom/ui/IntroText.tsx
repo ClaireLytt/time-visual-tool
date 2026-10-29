@@ -1,3 +1,4 @@
+import { Z_PAUSE } from '../core/z-index';
 import { useState, useEffect } from 'react';
 
 interface Props {
@@ -37,7 +38,7 @@ export default function IntroText({ onComplete }: Props) {
     <div
       onClick={() => onComplete()}
       style={{
-        position: 'fixed', inset: 0, zIndex: 200,
+        position: 'fixed', inset: 0, zIndex: Z_PAUSE,
         background: '#000',
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',

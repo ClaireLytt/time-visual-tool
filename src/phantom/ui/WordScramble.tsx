@@ -1,3 +1,4 @@
+import { Z_TOOL } from '../core/z-index';
 /**
  * WordScramble — mini-game to unscramble vocabulary words.
  * Accessible from the pause menu. Uses learned vocabulary only.
@@ -106,7 +107,7 @@ export default function WordScramble({ open, onClose }: Props) {
       <div onClick={onClose} style={{
         position: 'fixed', inset: 0, background: 'rgba(10,9,8,0.92)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        zIndex: 210, cursor: 'pointer',
+        zIndex: Z_TOOL, cursor: 'pointer',
       }}>
         <div style={{
           fontFamily: 'Georgia, serif', color: '#6a5a48',
@@ -134,7 +135,7 @@ export default function WordScramble({ open, onClose }: Props) {
       position: 'fixed', inset: 0, background: 'rgba(10,9,8,0.94)',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
-      zIndex: 210, fontFamily: 'Georgia, serif',
+      zIndex: Z_TOOL, fontFamily: 'Georgia, serif',
     }}>
       {/* Header */}
       <div style={{
