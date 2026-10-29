@@ -37,6 +37,7 @@ import SecretRooms from './ui/SecretRooms';
 import NPCDialogue from './ui/NPCDialogue';
 import { NPCS } from './core/npcs';
 import { NPCConfig } from './core/types';
+import OrganMinigame from './ui/OrganMinigame';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
 import { ActId, DialogueScene, EnglishChallenge } from './core/types';
@@ -88,6 +89,7 @@ export default function PhantomGame() {
   const [pendingChallengeId, setPendingChallengeId] = useState<string | null>(null);
   const [envDesc, setEnvDesc] = useState<EnvDescription | null>(null);
   const [activeNPC, setActiveNPC] = useState<NPCConfig | null>(null);
+  const [organOpen, setOrganOpen] = useState(false);
 
   // All overlay toggles consolidated into one hook (was 18 separate useState)
   const ov = useOverlays();
@@ -440,6 +442,10 @@ export default function PhantomGame() {
         onTriggerFired={(triggerKey) => {
           const dlg = getDialogueForTrigger(triggerKey);
           if (dlg) setActiveDialogue(dlg);
+          // Organ minigame in Act 3
+          if (triggerKey === 'music-of-night-start') {
+            setTimeout(() => setOrganOpen(true), 3000);
+          }
           // Check for act-end triggers to show recap
           if (triggerKey === 'act1-end') setTimeout(() => setShowRecap(1), 2000);
           else if (triggerKey === 'act2-end') setTimeout(() => setShowRecap(2), 2000);
@@ -523,6 +529,14 @@ export default function PhantomGame() {
       }} />
 
       <NPCDialogue npc={activeNPC} onClose={() => setActiveNPC(null)} />
+      <OrganMinigame
+        open={organOpen}
+        onComplete={() => {
+          useGameStore.getState().triggerEvent('evt-organ-complete');
+          checkAchievements();
+        }}
+        onClose={() => setOrganOpen(false)}
+      />
 
       <FlashcardReview open={ov.isOpen('flashcards')} onClose={() => ov.close()} />
       <WordScramble open={ov.isOpen('scramble')} onClose={() => ov.close()} />
