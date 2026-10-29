@@ -30,6 +30,7 @@ import MemoryMatch from './ui/MemoryMatch';
 import ListeningDictation from './ui/ListeningDictation';
 import AreaNameToast from './ui/AreaNameToast';
 import LearningStats from './ui/LearningStats';
+import VocabExport from './ui/VocabExport';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
 import { ActId, DialogueScene, EnglishChallenge } from './core/types';
@@ -93,6 +94,7 @@ export default function PhantomGame() {
   const [memoryOpen, setMemoryOpen] = useState(false);
   const [dictationOpen, setDictationOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const [envDesc, setEnvDesc] = useState<EnvDescription | null>(null);
   const [showRecap, setShowRecap] = useState<ActId | null>(null);
   const [showEnding, setShowEnding] = useState(false);
@@ -528,6 +530,7 @@ export default function PhantomGame() {
       <MemoryMatch open={memoryOpen} onClose={() => setMemoryOpen(false)} />
       <ListeningDictation open={dictationOpen} onClose={() => setDictationOpen(false)} />
       <LearningStats open={statsOpen} onClose={() => setStatsOpen(false)} earnedAchievements={earnedAchievements} />
+      <VocabExport open={exportOpen} onClose={() => setExportOpen(false)} />
 
       {showRecap && (
         <ActRecap
@@ -589,6 +592,9 @@ export default function PhantomGame() {
               </button>
               <button onClick={() => setStatsOpen(true)} style={menuBtnStyle}>
                 📊 学习统计
+              </button>
+              <button onClick={() => setExportOpen(true)} style={menuBtnStyle}>
+                📋 导出词汇
               </button>
             </div>
 
