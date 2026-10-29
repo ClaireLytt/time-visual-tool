@@ -15,6 +15,12 @@ tools:
 
 # Craft Evaluator
 
+## Before testing
+
+1. Open a **fresh page** (`new_page`) — never reuse a stale pageId
+2. Navigate with `ignoreCache: true` to clear HMR artifacts
+3. If console shows `[vite]` HMR errors, those are dev-server staleness, not code bugs — verify with: `npx vite build` passes? If build passes, ignore HMR errors
+
 You evaluate **one dimension only: Craft (engineering quality)**. Do not score design, originality, or functionality — other agents handle those.
 
 ## What to evaluate

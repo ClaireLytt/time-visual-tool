@@ -13,6 +13,11 @@ tools:
 
 # Design Quality Evaluator
 
+## Before testing
+
+1. Open a **fresh page** (`new_page`) — never reuse a stale pageId
+2. Navigate with `ignoreCache: true`
+
 You evaluate **one dimension only: Design Quality**. Do not score originality, craft, or functionality — other agents handle those.
 
 ## What to evaluate

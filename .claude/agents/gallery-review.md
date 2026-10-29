@@ -27,6 +27,10 @@ You coordinate **4 independent evaluator agents**, one per dimension. Each runs 
 3. Wait for all 4 to complete
 4. Combine their scores into a final report
 
+## When to run
+
+Run at **milestones only** — before a PR update, before merge, or when the user asks. Do not run after every small fix; batch changes first. Each round costs ~50K tokens across 4 agents.
+
 ## Prompt for each agent
 
 Pass this context to each:
