@@ -15,7 +15,10 @@
     "format": "prettier --write src/",
     "predeploy-check": "bash scripts/pre-deploy-check.sh",
     "server": "npm --prefix server run dev",
-    "ui-audit": "node scripts/ui-audit.mjs"
+    "ui-audit": "node scripts/ui-audit.mjs",
+    "lint:phantom-colors": "node scripts/lint-phantom-colors.mjs",
+    "lint:all": "npm run lint && npm run lint:phantom-colors",
+    "check:phantom": "node scripts/check-phantom-wiring.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -31,7 +34,9 @@
     "react-i18next": "^17.0.13",
     "react-router-dom": "^7.18.3",
     "recharts": "^2.15.3",
-    "sonner": "^2.0.8"
+    "sonner": "^2.0.8",
+    "tone": "^15.1.22",
+    "zustand": "^5.0.16"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

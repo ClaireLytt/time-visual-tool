@@ -98,6 +98,29 @@ When adding a new module, add its `use*Entries()` call to the preload block in A
 → See `docs/new-module.md` for the full 12-step checklist.
 After wiring, run `npm run check-modules` to verify all registration points.
 
+## Phantom Game Rules
+
+### Lint Before Commit
+**Run `npx eslint src/phantom/ --ext .ts,.tsx --max-warnings 0`** before every commit that touches `src/phantom/`. This catches unused variables, setState-in-effects, and missing hook deps — the three most common fix-after-push mistakes in this module (3 occurrences in issue #5).
+
+### Z-Index: Use Constants, Not Raw Numbers
+Import from `src/phantom/core/z-index.ts`. Never write a raw `zIndex` number in a phantom UI component. Layers are ordered in that file; add new layers there. This prevents overlays rendering behind each other (FlashcardReview at 190 behind PauseMenu at 200 was caught in issue #5).
+
+### useRef Before useGameStore
+In Canvas2D and other components that destructure from `useGameStore`, declare all `useRef` calls **above** the destructure. Initializing a ref with a variable from `useGameStore` before it's declared causes `ReferenceError` at runtime (caught in commit 2b1efd1). Initialize refs with `0` or `null`, not with store values.
+
+### Zustand State in Animation Loops
+Never call `set*` (zustand state setters) inside `requestAnimationFrame` draw loops — it triggers React re-renders at 60fps. Use a mutable ref for the value inside the loop, and sync to zustand only when the value settles (e.g. `Math.abs(current - target) > threshold`). Caught in commit eca5126.
+
+### Rule Enforcement Table
+
+| Rule | Enforced by | Repeat? |
+|------|-------------|---------|
+| Lint before commit | `npx eslint --max-warnings 0` (manual, predeploy-check) | 3× |
+| Z-index constants | `src/phantom/core/z-index.ts` (architecture) | 2× |
+| useRef before useGameStore | Code review / CLAUDE.md rule | 1× |
+| No setState in rAF loop | Code review / CLAUDE.md rule | 1× |
+
 ## CLI Issue Recording
 
 **EVERY time a CLI script run hits a problem** (ui-audit findings/crash, predeploy-check failure,
