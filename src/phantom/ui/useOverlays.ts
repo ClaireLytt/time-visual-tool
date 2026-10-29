@@ -9,7 +9,7 @@ export type OverlayName =
   | 'inventory' | 'flashcards' | 'scramble' | 'sentence'
   | 'profiles' | 'map' | 'reading' | 'idioms' | 'timeline'
   | 'quiz' | 'help' | 'pronunciation' | 'writing'
-  | 'memory' | 'dictation' | 'stats' | 'export' | 'cert' | 'secret' | 'grammar';
+  | 'memory' | 'dictation' | 'stats' | 'export' | 'cert' | 'secret' | 'grammar' | 'speaking';
 
 export function useOverlays() {
   const [openOverlay, setOpenOverlay] = useState<OverlayName | null>(null);
