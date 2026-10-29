@@ -212,6 +212,32 @@ export const DIALOGUE_SCENES: DialogueScene[] = [
     ],
     challengeId: 'en-act5-mask',
   },
+
+  // ── Secret Areas (Act 6) ──
+  {
+    id: 'dlg-eriks-mother',
+    actId: 6 as ActId,
+    triggerKey: 'eriks-mother',
+    lines: [
+      { speaker: 'Narrator', text: '墙上挂着一幅小画。画中是一个年轻的女人，表情冷漠而美丽。', mood: 'neutral' },
+      { speaker: 'Phantom', text: '...mother.', textEn: '...mother.', mood: 'sad' },
+      { speaker: 'Phantom', text: '她从未拥抑过我。从未唱过摇篮曲。从未叫过我的名字。', textEn: 'She never held me. Never sang a lullaby. Never called my name.', mood: 'sad' },
+      { speaker: 'Phantom', text: 'But I forgive her. Because I understand now — fear is a cage that traps both the feared and the fearful.', textEn: 'But I forgive her. Because I understand now — fear is a cage that traps both the feared and the fearful.', mood: 'tender' },
+      { speaker: 'Narrator', text: '他伸出手，轻轻触碰了画框的边缘。然后转身离开。', mood: 'neutral' },
+    ],
+  },
+  {
+    id: 'dlg-stargazing',
+    actId: 6 as ActId,
+    triggerKey: 'stargazing',
+    lines: [
+      { speaker: 'Narrator', text: '屋顶花园上方，星空如钻石般闪耀。没有城市的灯光干扰，每一颗星都清晰可见。', mood: 'neutral' },
+      { speaker: 'Christine', text: 'Look at the stars... they\'re the same ones my father and I used to watch.', textEn: 'Look at the stars... they\'re the same ones my father and I used to watch.', mood: 'tender' },
+      { speaker: 'Raoul', text: '我们终于自由了。', textEn: 'We\'re finally free.', mood: 'tender' },
+      { speaker: 'Narrator', text: '但在远处，一个熟悉的旋律随风飘来。管风琴的声音——温柔而没有一丝恨意。', textEn: 'But in the distance, a familiar melody drifts on the wind. An organ\'s voice — gentle, without a trace of resentment.', mood: 'neutral' },
+      { speaker: 'Christine', text: '...he\'s still there. Still playing. Still singing.', textEn: '...he\'s still there. Still playing. Still singing.', mood: 'sad' },
+    ],
+  },
 ];
 
 /** Find a dialogue scene by trigger key */

@@ -33,6 +33,7 @@ import AreaNameToast from './ui/AreaNameToast';
 import LearningStats from './ui/LearningStats';
 import VocabExport from './ui/VocabExport';
 import Certificate from './ui/Certificate';
+import SecretRooms from './ui/SecretRooms';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
 import { ActId, DialogueScene, EnglishChallenge } from './core/types';
@@ -48,6 +49,7 @@ const AREA_NAMES: Record<string, string> = {
   'underground-tunnel': '地下隧道', 'underground-lake': '地下湖',
   'lair': '魅影的密室', 'rooftop': '歌剧院屋顶',
   'theater-performance': '剧场（演出）', 'final-lair': '地下湖密室', 'epilogue': '终章',
+  'eriks-study': '埃里克的书房', 'rooftop-garden': '屋顶花园', 'mirror-maze': '镜子迷宫',
 };
 
 const ACT_START_AREAS: Record<number, string> = {
@@ -529,6 +531,16 @@ export default function PhantomGame() {
       <LearningStats open={ov.isOpen('stats')} onClose={() => ov.close()} earnedAchievements={earnedAchievements} />
       <VocabExport open={ov.isOpen('export')} onClose={() => ov.close()} />
       <Certificate open={ov.isOpen('cert')} onClose={() => ov.close()} earnedAchievements={earnedAchievements} />
+      <SecretRooms
+        open={ov.isOpen('secret')}
+        onClose={() => ov.close()}
+        onEnterRoom={(areaId) => {
+          ov.close();
+          togglePause();
+          setAct(6 as ActId);
+          setArea(areaId);
+        }}
+      />
 
       {showRecap && (
         <ActRecap
@@ -596,6 +608,9 @@ export default function PhantomGame() {
               </button>
               <button onClick={() => ov.open('cert')} style={menuBtnStyle}>
                 🏅 学习证书
+              </button>
+              <button onClick={() => ov.open('secret')} style={menuBtnStyle}>
+                🔐 隐藏房间
               </button>
             </div>
 

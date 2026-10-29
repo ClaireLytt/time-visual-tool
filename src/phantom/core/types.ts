@@ -1,6 +1,6 @@
 // ── Domain types for Phantom of the Opera game ──
 
-export type ActId = 1 | 2 | 3 | 4 | 5;
+export type ActId = 1 | 2 | 3 | 4 | 5 | 6;
 
 export interface Area {
   id: string;
@@ -15,6 +15,20 @@ export interface Area {
   /** Passage to next area (null = no exit that direction) */
   exitRight?: string;
   exitLeft?: string;
+  /** If set, this area is hidden until the unlock condition is met */
+  secret?: {
+    /** Condition type */
+    type: 'collectibles' | 'trigger' | 'combo';
+    /** Min collectibles needed (for 'collectibles' type) */
+    minCollectibles?: number;
+    /** Trigger keys all needed (for 'trigger' type) */
+    requiredTriggers?: string[];
+    /** Specific item IDs all needed (for 'combo' type) */
+    requiredItems?: string[];
+    /** Hint shown when locked */
+    lockedHint?: string;
+    lockedHintEn?: string;
+  };
 }
 
 export interface Hotspot {
