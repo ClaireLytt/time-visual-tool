@@ -556,14 +556,164 @@ export const ACT5_COLLECTIBLES: Collectible[] = [
   },
 ];
 
+// ── Act 6: Secret Areas (Hidden Rooms & Easter Eggs) ──
+
+export const SECRET_AREAS: Area[] = [
+  {
+    id: 'eriks-study',
+    actId: 6,
+    name: '埃里克的书房',
+    background: '/phantom/assets/backgrounds/secret-study.png',
+    width: 2048,
+    secret: {
+      type: 'collectibles',
+      minCollectibles: 15,
+      lockedHint: '收集全部 15 件遗物后解锁',
+      lockedHintEn: 'Collect all 15 relics to unlock',
+    },
+    hotspots: [
+      {
+        id: 'secret-bookshelf',
+        x: 200, y: 250,
+        width: 120, height: 180,
+        type: 'collectible',
+        label: '书架上的密封信',
+        collectibleId: 'secret-letter',
+      },
+      {
+        id: 'secret-blueprint',
+        x: 800, y: 300,
+        width: 100, height: 80,
+        type: 'collectible',
+        label: '歌剧院建筑图纸',
+        collectibleId: 'secret-blueprint',
+      },
+      {
+        id: 'secret-music-box',
+        x: 1400, y: 350,
+        width: 60, height: 50,
+        type: 'collectible',
+        label: '隐藏的音乐盒',
+        collectibleId: 'secret-musicbox',
+      },
+      {
+        id: 'secret-portrait',
+        x: 1000, y: 150,
+        width: 80, height: 120,
+        type: 'trigger',
+        label: '母亲的画像',
+        triggerKey: 'eriks-mother',
+      },
+    ],
+  },
+  {
+    id: 'rooftop-garden',
+    actId: 6,
+    name: '屋顶花园',
+    background: '/phantom/assets/backgrounds/secret-garden.png',
+    width: 1536,
+    secret: {
+      type: 'combo',
+      requiredItems: ['act4-bouquet', 'act4-scarf', 'act4-carving'],
+      lockedHint: '收集屋顶全部 3 件物品后解锁',
+      lockedHintEn: 'Collect all 3 rooftop items to unlock',
+    },
+    hotspots: [
+      {
+        id: 'secret-rose',
+        x: 400, y: 350,
+        width: 50, height: 50,
+        type: 'collectible',
+        label: '永不凋零的红玫瑰',
+        collectibleId: 'secret-rose',
+      },
+      {
+        id: 'secret-starmap',
+        x: 900, y: 100,
+        width: 200, height: 150,
+        type: 'trigger',
+        label: '星空',
+        triggerKey: 'stargazing',
+      },
+    ],
+  },
+  {
+    id: 'mirror-maze',
+    actId: 6,
+    name: '镜子迷宫',
+    background: '/phantom/assets/backgrounds/secret-mirrors.png',
+    width: 2560,
+    secret: {
+      type: 'trigger',
+      requiredTriggers: ['act1-end', 'act3-end', 'kiss-scene'],
+      lockedHint: '完成全部三个“镜子”场景后解锁',
+      lockedHintEn: 'Complete all three "mirror" scenes to unlock',
+    },
+    hotspots: [
+      {
+        id: 'secret-true-face',
+        x: 1200, y: 280,
+        width: 80, height: 120,
+        type: 'collectible',
+        label: '真实的倒影',
+        collectibleId: 'secret-reflection',
+      },
+    ],
+  },
+];
+
+export const SECRET_COLLECTIBLES: Collectible[] = [
+  {
+    id: 'secret-letter',
+    actId: 6,
+    name: '埃里克的密封信',
+    description: '一封从未寄出的信，写给一个他从未谋面的人。',
+    contentZh: '"亲爱的父亲：\n\n我知道你从未见过我。我知道你甚至不知道我的存在。但我想让你知道，我建造了一座歌剧院。不是用砖石，而是用音乐。\n\n如果你能听到管风琴的声音，你会知道——我活过。"\n\n信纸的边缘已经发黄，墨水淡得几乎看不清。但每一个字都写得无比认真。',
+    areaId: 'eriks-study',
+  },
+  {
+    id: 'secret-blueprint',
+    actId: 6,
+    name: '歌剧院建筑图纸',
+    description: '埃里克亲手绘制的建筑设计图。',
+    contentZh: '精密的建筑图纸，用工程师的精确线条绘制。地下湖、秘密通道、机关门——每一个细节都标注得清清楚楚。\n\n图纸角落写着："E. — 建筑师、魔术师、音乐家"\n\n他不仅仅是住在这里——他建造了这里。',
+    areaId: 'eriks-study',
+  },
+  {
+    id: 'secret-musicbox',
+    actId: 6,
+    name: '年幼时的音乐盒',
+    description: '一个破旧的小音乐盒，与地下湖的那个不同。',
+    contentZh: '这个音乐盒比地下湖的那个更旧、更小。表面磨损严重，但旋转发条时，它播放的不是歌剧旋律——而是一首简单的摇篮曲。\n\n这是母亲给他的唯一礼物吗？还是他自己在马戏团里找到的？\n\n无论如何，他保存了一辈子。',
+    areaId: 'eriks-study',
+  },
+  {
+    id: 'secret-rose',
+    actId: 6,
+    name: '永不凋零的红玫瑰',
+    description: '屋顶花园里的一朵红玫瑰，在月光下绿放。',
+    contentZh: '在所有花朵都枯萎的屋顶花园里，这朵红玫瑰独自绿放。花瓣上没有露水，但摸上去温暖如刚被人触碰过。\n\n也许这就是魅影的魔法——让美丽的东西永远不会消失。',
+    areaId: 'rooftop-garden',
+  },
+  {
+    id: 'secret-reflection',
+    actId: 6,
+    name: '真实的倒影',
+    description: '镜子迷宫最深处的一面镜子。',
+    contentZh: '在无数镜子的反射之后，你终于找到了最后一面。\n\n但镜中不是你的倒影——是埃里克的。没有面具，没有披风。只是一个男人，看着你，眉头微轻抬起，仿佛在问：\n\n"你看见的是怪物，还是一个人？"\n\n镜面上慢慢出现一行字："Thank you for seeing me."',
+    areaId: 'mirror-maze',
+  },
+];
+
 // ── All acts data lookup ──
 
 const AREAS_BY_ACT: Record<number, Area[]> = {
   1: ACT1_AREAS, 2: ACT2_AREAS, 3: ACT3_AREAS, 4: ACT4_AREAS, 5: ACT5_AREAS,
+  6: SECRET_AREAS,
 };
 const COLLECTIBLES_BY_ACT: Record<number, Collectible[]> = {
   1: ACT1_COLLECTIBLES, 2: ACT2_COLLECTIBLES, 3: ACT3_COLLECTIBLES,
-  4: ACT4_COLLECTIBLES, 5: ACT5_COLLECTIBLES,
+  4: ACT4_COLLECTIBLES, 5: ACT5_COLLECTIBLES, 6: SECRET_COLLECTIBLES,
 };
 
 export function getAreasForAct(act: number): Area[] {
@@ -576,6 +726,34 @@ export function getCollectiblesForAct(act: number): Collectible[] {
 
 export function getAllCollectibles(): Collectible[] {
   return Object.values(COLLECTIBLES_BY_ACT).flat();
+}
+
+/** Check if a secret area is unlocked given current game state */
+export function isSecretUnlocked(
+  area: Area,
+  collectedItems: string[],
+  triggeredEvents: string[]
+): boolean {
+  if (!area.secret) return true; // not secret
+  const s = area.secret;
+  if (s.type === 'collectibles') {
+    return collectedItems.length >= (s.minCollectibles || 0);
+  }
+  if (s.type === 'trigger') {
+    return (s.requiredTriggers || []).every((t) => triggeredEvents.includes('evt-' + t));
+  }
+  if (s.type === 'combo') {
+    return (s.requiredItems || []).every((id) => collectedItems.includes(id));
+  }
+  return false;
+}
+
+/** Get all unlocked secret areas */
+export function getUnlockedSecretAreas(
+  collectedItems: string[],
+  triggeredEvents: string[]
+): Area[] {
+  return SECRET_AREAS.filter((a) => isSecretUnlocked(a, collectedItems, triggeredEvents));
 }
 
 export const PHANTOM_TIER_THRESHOLDS: Record<number, string> = {

@@ -33,6 +33,17 @@ import AreaNameToast from './ui/AreaNameToast';
 import LearningStats from './ui/LearningStats';
 import VocabExport from './ui/VocabExport';
 import Certificate from './ui/Certificate';
+import SecretRooms from './ui/SecretRooms';
+import NPCDialogue from './ui/NPCDialogue';
+import { NPCS } from './core/npcs';
+import { NPCConfig } from './core/types';
+import OrganMinigame from './ui/OrganMinigame';
+import GrammarPractice from './ui/GrammarPractice';
+import SpeakingPractice from './ui/SpeakingPractice';
+import VocabNetwork from './ui/VocabNetwork';
+import LearningCalendar, { recordActivity } from './ui/LearningCalendar';
+import WeeklyChallenge from './ui/WeeklyChallenge';
+import HighScores, { saveHighScore } from './ui/HighScores';
 import { initAudio, setArea as setMusicArea, setLayerCount, stopAudio } from './audio/MusicEngine';
 import { playPickup } from './audio/sfx';
 import { ActId, DialogueScene, EnglishChallenge } from './core/types';
@@ -42,12 +53,33 @@ import { getEnvDescription, EnvDescription } from './core/environment-descriptio
 import { Z_HUD, Z_PAUSE } from './core/z-index';
 import { Achievement, checkNewAchievements, AchievementStats } from './core/achievements';
 
+/** Build achievement stats from current game state */
+function buildAchievementStats(dialoguesWatched: number): AchievementStats {
+  const s = useGameStore.getState();
+  return {
+    collectiblesFound: s.collectedItems.length,
+    challengesCompleted: s.learning.completedChallenges.length,
+    challengesPassed: s.learning.completedChallenges.length,
+    totalScore: s.learning.totalScore,
+    actsCompleted: s.currentAct,
+    dialoguesWatched,
+    vocabLearned: ENGLISH_CHALLENGES
+      .filter((ch) => s.learning.completedChallenges.includes(ch.id))
+      .reduce((sum, ch) => sum + ch.vocab.length, 0),
+    secretRoomsFound: s.collectedItems.filter((id) => id.startsWith('secret-')).length,
+    npcsTalkedTo: 0,
+    organCompleted: s.triggeredEvents.includes('evt-organ-complete'),
+    grammarScore: 0,
+  };
+}
+
 const AREA_NAMES: Record<string, string> = {
   'theater-audience': '观众席', 'theater-stage': '舞台', 'theater-backstage': '后台通道',
   'dressing-room': '化妆间', 'spiral-stairs': '螺旋石梯',
   'underground-tunnel': '地下隧道', 'underground-lake': '地下湖',
   'lair': '魅影的密室', 'rooftop': '歌剧院屋顶',
   'theater-performance': '剧场（演出）', 'final-lair': '地下湖密室', 'epilogue': '终章',
+  'eriks-study': '埃里克的书房', 'rooftop-garden': '屋顶花园', 'mirror-maze': '镜子迷宫',
 };
 
 const ACT_START_AREAS: Record<number, string> = {
@@ -76,18 +108,20 @@ export default function PhantomGame() {
     learning,
   } = useGameStore();
 
-  const [viewingItem, setViewingItem] = useState<string | null>(null);
+  const [viewingItem, setViewingItem] = useState<string | undefined>(undefined);
   const [showIntro, setShowIntro] = useState(false);
-  const [activeDialogue, setActiveDialogue] = useState<DialogueScene | null>(null);
-  const [activeChallenge, setActiveChallenge] = useState<EnglishChallenge | null>(null);
-  const [pendingChallengeId, setPendingChallengeId] = useState<string | null>(null);
-  const [envDesc, setEnvDesc] = useState<EnvDescription | null>(null);
+  const [activeDialogue, setActiveDialogue] = useState<DialogueScene | undefined>(undefined);
+  const [activeChallenge, setActiveChallenge] = useState<EnglishChallenge | undefined>(undefined);
+  const [pendingChallengeId, setPendingChallengeId] = useState<string | undefined>(undefined);
+  const [envDesc, setEnvDesc] = useState<EnvDescription | undefined>(undefined);
+  const [activeNPC, setActiveNPC] = useState<NPCConfig | undefined>(undefined);
+  const [organOpen, setOrganOpen] = useState(false);
 
   // All overlay toggles consolidated into one hook (was 18 separate useState)
   const ov = useOverlays();
-  const [showRecap, setShowRecap] = useState<ActId | null>(null);
+  const [showRecap, setShowRecap] = useState<ActId | undefined>(undefined);
   const [showEnding, setShowEnding] = useState(false);
-  const [toastAchievement, setToastAchievement] = useState<Achievement | null>(null);
+  const [toastAchievement, setToastAchievement] = useState<Achievement | undefined>(undefined);
   const [earnedAchievements, setEarnedAchievements] = useState<string[]>(() => {
     try {
       const raw = localStorage.getItem('phantom-achievements');
@@ -130,25 +164,15 @@ export default function PhantomGame() {
         }
         // Check for game ending (final mask collected)
         if (itemId === 'act5-mask') {
+          saveHighScore();
           setTimeout(() => setShowEnding(true), 3000);
         }
         // Check achievements
         // Achievement check is deferred to avoid stale closure
         setTimeout(() => {
           // Re-read from store directly
-          const st = useGameStore.getState();
           const earned = JSON.parse(localStorage.getItem('phantom-achievements') || '[]') as string[];
-          const achStats: AchievementStats = {
-            collectiblesFound: st.collectedItems.length,
-            challengesCompleted: st.learning.completedChallenges.length,
-            challengesPassed: st.learning.completedChallenges.length,
-            totalScore: st.learning.totalScore,
-            actsCompleted: st.currentAct,
-            dialoguesWatched: 0,
-            vocabLearned: ENGLISH_CHALLENGES
-              .filter((ch) => st.learning.completedChallenges.includes(ch.id))
-              .reduce((sum, ch) => sum + ch.vocab.length, 0),
-          };
+          const achStats = buildAchievementStats(0);
           const newA = checkNewAchievements(achStats, earned);
           if (newA.length > 0) {
             const updated = [...earned, ...newA.map((a) => a.id)];
@@ -178,18 +202,7 @@ export default function PhantomGame() {
 
   // Check achievements whenever relevant state changes
   const checkAchievements = useCallback(() => {
-    const state = useGameStore.getState();
-    const stats: AchievementStats = {
-      collectiblesFound: state.collectedItems.length,
-      challengesCompleted: state.learning.completedChallenges.length,
-      challengesPassed: state.learning.completedChallenges.length, // simplified
-      totalScore: state.learning.totalScore,
-      actsCompleted: state.currentAct,
-      dialoguesWatched,
-      vocabLearned: ENGLISH_CHALLENGES
-        .filter((ch) => state.learning.completedChallenges.includes(ch.id))
-        .reduce((sum, ch) => sum + ch.vocab.length, 0),
-    };
+    const stats = buildAchievementStats(dialoguesWatched);
     const newAchievements = checkNewAchievements(stats, earnedAchievements);
     if (newAchievements.length > 0) {
       const first = newAchievements[0];
@@ -434,6 +447,10 @@ export default function PhantomGame() {
         onTriggerFired={(triggerKey) => {
           const dlg = getDialogueForTrigger(triggerKey);
           if (dlg) setActiveDialogue(dlg);
+          // Organ minigame in Act 3
+          if (triggerKey === 'music-of-night-start') {
+            setTimeout(() => setOrganOpen(true), 3000);
+          }
           // Check for act-end triggers to show recap
           if (triggerKey === 'act1-end') setTimeout(() => setShowRecap(1), 2000);
           else if (triggerKey === 'act2-end') setTimeout(() => setShowRecap(2), 2000);
@@ -443,6 +460,10 @@ export default function PhantomGame() {
         onClueClick={(hotspotId) => {
           const desc = getEnvDescription(hotspotId);
           if (desc) setEnvDesc(desc);
+        }}
+        onNPCClick={(npcId) => {
+          const npc = NPCS.find((n) => n.id === npcId);
+          if (npc) setActiveNPC(npc);
         }}
       />
 
@@ -462,12 +483,12 @@ export default function PhantomGame() {
       </div>
 
       <ParchmentOverlay itemId={viewingItem} onClose={() => {
-        setViewingItem(null);
+        setViewingItem(undefined);
         // Show English challenge if one is queued
         if (pendingChallengeId) {
           const ch = getChallengeForTrigger(viewingItem || '');
           if (ch) setActiveChallenge(ch);
-          setPendingChallengeId(null);
+          setPendingChallengeId(undefined);
         }
       }} />
       <InventoryJournal open={ov.isOpen('inventory')} onClose={() => ov.close()} />
@@ -478,7 +499,7 @@ export default function PhantomGame() {
           scene={activeDialogue}
           onComplete={() => {
             const challengeId = activeDialogue.challengeId;
-            setActiveDialogue(null);
+            setActiveDialogue(undefined);
             setDialoguesWatched((d) => d + 1);
             setTimeout(checkAchievements, 100);
             // Chain to English challenge if dialogue has one
@@ -499,7 +520,8 @@ export default function PhantomGame() {
           challenge={activeChallenge}
           onComplete={(passed) => {
             useGameStore.getState().completeChallenge(activeChallenge.id, passed);
-            setActiveChallenge(null);
+            setActiveChallenge(undefined);
+            recordActivity('challenge');
             setTimeout(checkAchievements, 100);
           }}
         />
@@ -509,8 +531,24 @@ export default function PhantomGame() {
         if (envDesc) {
           useGameStore.getState().collectPhrase(envDesc.id);
         }
-        setEnvDesc(null);
+        setEnvDesc(undefined);
       }} />
+
+      <NPCDialogue npc={activeNPC} onClose={() => setActiveNPC(undefined)} />
+      <GrammarPractice open={ov.isOpen('grammar')} onClose={() => ov.close()} />
+      <SpeakingPractice open={ov.isOpen('speaking')} onClose={() => ov.close()} />
+      <VocabNetwork open={ov.isOpen('vocabnet')} onClose={() => ov.close()} />
+      <LearningCalendar open={ov.isOpen('calendar')} onClose={() => ov.close()} />
+      <WeeklyChallenge open={ov.isOpen('weekly')} onClose={() => ov.close()} />
+      <HighScores open={ov.isOpen('highscores')} onClose={() => ov.close()} />
+      <OrganMinigame
+        open={organOpen}
+        onComplete={() => {
+          useGameStore.getState().triggerEvent('evt-organ-complete');
+          checkAchievements();
+        }}
+        onClose={() => setOrganOpen(false)}
+      />
 
       <FlashcardReview open={ov.isOpen('flashcards')} onClose={() => ov.close()} />
       <WordScramble open={ov.isOpen('scramble')} onClose={() => ov.close()} />
@@ -529,11 +567,21 @@ export default function PhantomGame() {
       <LearningStats open={ov.isOpen('stats')} onClose={() => ov.close()} earnedAchievements={earnedAchievements} />
       <VocabExport open={ov.isOpen('export')} onClose={() => ov.close()} />
       <Certificate open={ov.isOpen('cert')} onClose={() => ov.close()} earnedAchievements={earnedAchievements} />
+      <SecretRooms
+        open={ov.isOpen('secret')}
+        onClose={() => ov.close()}
+        onEnterRoom={(areaId) => {
+          ov.close();
+          togglePause();
+          setAct(6 as ActId);
+          setArea(areaId);
+        }}
+      />
 
       {showRecap && (
         <ActRecap
           completedAct={showRecap}
-          onContinue={() => setShowRecap(null)}
+          onContinue={() => setShowRecap(undefined)}
         />
       )}
 
@@ -546,7 +594,7 @@ export default function PhantomGame() {
 
       <AchievementToast
         achievement={toastAchievement}
-        onDone={() => setToastAchievement(null)}
+        onDone={() => setToastAchievement(undefined)}
       />
 
       <Transition transition={transition} />
@@ -597,6 +645,15 @@ export default function PhantomGame() {
               <button onClick={() => ov.open('cert')} style={menuBtnStyle}>
                 🏅 学习证书
               </button>
+              <button onClick={() => ov.open('secret')} style={menuBtnStyle}>
+                🔐 隐藏房间
+              </button>
+              <button onClick={() => ov.open('calendar')} style={menuBtnStyle}>
+                📅 学习日历
+              </button>
+              <button onClick={() => ov.open('highscores')} style={menuBtnStyle}>
+                🏅 最高分
+              </button>
             </div>
 
             {/* Right column: English Learning */}
@@ -633,6 +690,18 @@ export default function PhantomGame() {
               </button>
               <button onClick={() => ov.open('dictation')} style={menuBtnStyle}>
                 🎧 听写练习
+              </button>
+              <button onClick={() => ov.open('grammar')} style={menuBtnStyle}>
+                📏 语法练习
+              </button>
+              <button onClick={() => ov.open('speaking')} style={menuBtnStyle}>
+                🎙️ 口语练习
+              </button>
+              <button onClick={() => ov.open('vocabnet')} style={menuBtnStyle}>
+                🕸️ 词汇网络
+              </button>
+              <button onClick={() => ov.open('weekly')} style={menuBtnStyle}>
+                📦 每周挑战
               </button>
             </div>
           </div>

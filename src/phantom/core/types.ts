@@ -1,6 +1,6 @@
 // ── Domain types for Phantom of the Opera game ──
 
-export type ActId = 1 | 2 | 3 | 4 | 5;
+export type ActId = 1 | 2 | 3 | 4 | 5 | 6;
 
 export interface Area {
   id: string;
@@ -15,6 +15,20 @@ export interface Area {
   /** Passage to next area (null = no exit that direction) */
   exitRight?: string;
   exitLeft?: string;
+  /** If set, this area is hidden until the unlock condition is met */
+  secret?: {
+    /** Condition type */
+    type: 'collectibles' | 'trigger' | 'combo';
+    /** Min collectibles needed (for 'collectibles' type) */
+    minCollectibles?: number;
+    /** Trigger keys all needed (for 'trigger' type) */
+    requiredTriggers?: string[];
+    /** Specific item IDs all needed (for 'combo' type) */
+    requiredItems?: string[];
+    /** Hint shown when locked */
+    lockedHint?: string;
+    lockedHintEn?: string;
+  };
 }
 
 export interface Hotspot {
@@ -46,6 +60,40 @@ export interface Collectible {
   areaId: string;
   /** Icon/thumbnail path */
   icon?: string;
+}
+
+// ── NPC Dialogue Tree System ──
+
+export interface NPCTopic {
+  id: string;
+  /** Topic label shown in menu */
+  label: string;
+  labelEn: string;
+  /** NPC response lines */
+  response: DialogueLine[];
+  /** Unlocked after seeing these triggers (empty = always available) */
+  requireTriggers?: string[];
+  /** Optional English vocabulary taught in this topic */
+  vocabWord?: string;
+  vocabMeaning?: string;
+  /** Mark as seen after reading */
+  seen?: boolean;
+}
+
+export interface NPCConfig {
+  id: string;
+  name: string;
+  nameEn: string;
+  /** Which areas this NPC appears in */
+  areaIds: string[];
+  /** Hotspot position in each area */
+  positions: Record<string, { x: number; y: number }>;
+  /** Available conversation topics */
+  topics: NPCTopic[];
+  /** Greeting line before showing topics */
+  greeting: string;
+  greetingEn: string;
+  icon: string;
 }
 
 export type PhantomTier = 'ambient' | 'stirring' | 'watching' | 'stalking' | 'climax';

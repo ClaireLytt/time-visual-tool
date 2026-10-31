@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback, useState, useMemo } from 'react';
 import { useGameStore } from '../core/store';
 import { getAreasForAct } from '../core/constants';
 import { getEnvHotspotsForArea } from '../core/environment-descriptions';
+import { getNPCsForArea } from '../core/npcs';
 import { Hotspot } from '../core/types';
 import { createAct3State } from './acts/Act3MusicOfNight';
 import { drawCollectibleFx } from './collectible-fx';
@@ -54,6 +55,19 @@ function drawHotspotGlow(
     return;
   }
 
+  if (hotspot.type === 'character') {
+    // Warm muted glow for NPCs
+    const pulse = 0.15 + 0.08 * Math.sin(time * 1.2 + 1);
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, hotspot.width * 0.7);
+    grad.addColorStop(0, `rgba(176,144,144,${pulse})`);
+    grad.addColorStop(1, 'rgba(176,144,144,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, hotspot.width * 0.7, 0, Math.PI * 2);
+    ctx.fill();
+    return;
+  }
+
   const pulse = 0.3 + 0.15 * Math.sin(time * 2);
   const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, hotspot.width * 0.8);
   grad.addColorStop(0, `rgba(255,220,120,${pulse})`);
@@ -88,9 +102,10 @@ interface Canvas2DProps {
   onTransition?: (type: 'fade' | 'mirror-portal', midpointFn: () => void) => void;
   onTriggerFired?: (triggerKey: string) => void;
   onClueClick?: (hotspotId: string) => void;
+  onNPCClick?: (npcId: string) => void;
 }
 
-export default function Canvas2D({ onTransition, onTriggerFired, onClueClick }: Canvas2DProps) {
+export default function Canvas2D({ onTransition, onTriggerFired, onClueClick, onNPCClick }: Canvas2DProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef(0);
   const cameraTargetRef = useRef(0);
@@ -120,12 +135,23 @@ export default function Canvas2D({ onTransition, onTriggerFired, onClueClick }: 
   useEffect(() => { cameraTargetRef.current = 0; camPosRef.current = 0; }, [currentArea]);
 
   const baseArea = areas.find((a) => a.id === currentArea);
-  // Merge environment hotspots into the area
+  // Merge environment hotspots + NPC hotspots into the area
   const area = useMemo(() => {
     if (!baseArea) return undefined;
     const envHotspots = getEnvHotspotsForArea(baseArea.id);
-    if (envHotspots.length === 0) return baseArea;
-    return { ...baseArea, hotspots: [...baseArea.hotspots, ...envHotspots] };
+    const npcHotspots: Hotspot[] = getNPCsForArea(baseArea.id).map((npc) => {
+      const pos = npc.positions[baseArea.id] || { x: 500, y: 400 };
+      return {
+        id: 'npc-' + npc.id,
+        x: pos.x, y: pos.y,
+        width: 60, height: 80,
+        type: 'character' as const,
+        label: npc.name,
+      };
+    });
+    const extra = [...envHotspots, ...npcHotspots];
+    if (extra.length === 0) return baseArea;
+    return { ...baseArea, hotspots: [...baseArea.hotspots, ...extra] };
   }, [baseArea]);
 
   /** Convert a mouse event to scene-space coordinates (accounts for canvas scale + camera offset) */
@@ -163,6 +189,9 @@ export default function Canvas2D({ onTransition, onTriggerFired, onClueClick }: 
           }
         } else if (hs.type === 'clue') {
           onClueClick?.(hs.id);
+          return;
+        } else if (hs.type === 'character' && hs.id.startsWith('npc-')) {
+          onNPCClick?.(hs.id.replace('npc-', ''));
           return;
         } else if (hs.type === 'passage' && hs.targetArea) {
           setArea(hs.targetArea);
@@ -247,6 +276,8 @@ export default function Canvas2D({ onTransition, onTriggerFired, onClueClick }: 
                 };
                 requestAnimationFrame(animFade);
               }, 8000);
+            } else if (hs.triggerKey === 'eriks-mother' || hs.triggerKey === 'stargazing') {
+              // Secret area triggers — handled by PhantomGame dialogue system
             }
           }
         }
@@ -258,7 +289,8 @@ export default function Canvas2D({ onTransition, onTriggerFired, onClueClick }: 
     const targetX = Math.max(0, Math.min(clickX - VIEWPORT_W / 2, area.width - VIEWPORT_W));
     cameraTargetRef.current = targetX;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [area, toSceneCoords, collectedItems, collectItem, triggeredEvents, triggerEvent, setArea, setCameraX, isPaused, onTriggerFired, onClueClick]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [area, toSceneCoords, collectedItems, collectItem, triggeredEvents, triggerEvent, setArea, setCameraX, isPaused, onTriggerFired, onClueClick, onNPCClick]);
 
   // Mouse move for hover detection
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
