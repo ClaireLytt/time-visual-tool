@@ -118,7 +118,7 @@ const collectibleIds = [];
 while ((match = collectibleIdRegex.exec(constants)) !== null) {
   collectibleIds.push(match[1]);
 }
-check(collectibleIds.length === 15, `Total collectibles: ${collectibleIds.length} (expected 15)`);
+check(collectibleIds.length >= 15, `Total collectibles: ${collectibleIds.length} (expected >= 15, base 15 + secret)`);
 
 // Check ParchmentOverlay uses getAllCollectibles
 const parchment = read('ui/ParchmentOverlay.tsx');

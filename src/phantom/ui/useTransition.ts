@@ -9,7 +9,7 @@ export interface TransitionState {
 }
 
 export function useTransition() {
-  const [transition, setTransition] = useState<TransitionState | null>(null);
+  const [transition, setTransition] = useState<TransitionState | undefined>(undefined);
 
   const startTransition = useCallback((
     type: TransitionType,
@@ -21,7 +21,7 @@ export function useTransition() {
       onMidpoint();
       setTransition({ active: true, type, phase: 'in' });
     }, duration / 2);
-    setTimeout(() => setTransition(null), duration);
+    setTimeout(() => setTransition(undefined), duration);
   }, []);
 
   return { transition, startTransition };

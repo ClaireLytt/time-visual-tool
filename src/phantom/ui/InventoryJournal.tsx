@@ -25,7 +25,7 @@ export default function InventoryJournal({ open, onClose }: Props) {
   const learning = useGameStore((s) => s.learning);
   const [tab, setTab] = useState<JournalTab>('items');
   const [selectedAct, setSelectedAct] = useState<ActId>(1);
-  const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<string | undefined>(undefined);
 
   const actCollectibles = useMemo(
     () => getCollectiblesForAct(selectedAct),
@@ -115,7 +115,7 @@ export default function InventoryJournal({ open, onClose }: Props) {
                   return (
                     <button
                       key={act}
-                      onClick={() => { setSelectedAct(act); setSelectedItem(null); }}
+                      onClick={() => { setSelectedAct(act); setSelectedItem(undefined); }}
                       style={{
                         padding: '0.25rem 0.6rem',
                         fontSize: '0.7rem',

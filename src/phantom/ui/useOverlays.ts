@@ -9,13 +9,13 @@ export type OverlayName =
   | 'inventory' | 'flashcards' | 'scramble' | 'sentence'
   | 'profiles' | 'map' | 'reading' | 'idioms' | 'timeline'
   | 'quiz' | 'help' | 'pronunciation' | 'writing'
-  | 'memory' | 'dictation' | 'stats' | 'export' | 'cert';
+  | 'memory' | 'dictation' | 'stats' | 'export' | 'cert' | 'secret' | 'grammar' | 'speaking' | 'vocabnet' | 'calendar' | 'weekly' | 'highscores';
 
 export function useOverlays() {
-  const [openOverlay, setOpenOverlay] = useState<OverlayName | null>(null);
+  const [openOverlay, setOpenOverlay] = useState<OverlayName | undefined>(undefined);
 
   const open = useCallback((name: OverlayName) => setOpenOverlay(name), []);
-  const close = useCallback(() => setOpenOverlay(null), []);
+  const close = useCallback(() => setOpenOverlay(undefined), []);
   const isOpen = useCallback((name: OverlayName) => openOverlay === name, [openOverlay]);
 
   return { openOverlay, open, close, isOpen };

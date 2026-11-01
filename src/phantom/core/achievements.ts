@@ -20,6 +20,11 @@ export interface AchievementStats {
   actsCompleted: number;
   dialoguesWatched: number;
   vocabLearned: number;
+  /** V2 stats */
+  secretRoomsFound: number;
+  npcsTalkedTo: number;
+  organCompleted: boolean;
+  grammarScore: number;
 }
 
 export const ACHIEVEMENTS: Achievement[] = [
@@ -131,6 +136,56 @@ export const ACHIEVEMENTS: Achievement[] = [
     description: 'Watch 5 dialogue scenes',
     icon: '💬',
     condition: (s) => s.dialoguesWatched >= 5,
+  },
+
+  // ── V2 Achievements ──
+  {
+    id: 'secret-hunter',
+    name: 'Secret Hunter',
+    nameZh: '秘密猎人',
+    description: 'Discover a secret room',
+    icon: '🔓',
+    condition: (s) => s.secretRoomsFound >= 1,
+  },
+  {
+    id: 'master-explorer',
+    name: 'Master Explorer',
+    nameZh: '探索大师',
+    description: 'Discover all 3 secret rooms',
+    icon: '🗝️',
+    condition: (s) => s.secretRoomsFound >= 3,
+  },
+  {
+    id: 'socialite',
+    name: 'Socialite',
+    nameZh: '社交达人',
+    description: 'Talk to all 3 NPCs',
+    icon: '🧑‍🤝‍🧑',
+    condition: (s) => s.npcsTalkedTo >= 3,
+  },
+  {
+    id: 'virtuoso',
+    name: 'Virtuoso',
+    nameZh: '演奏大师',
+    description: 'Complete the organ puzzle',
+    icon: '🎹',
+    condition: (s) => s.organCompleted,
+  },
+  {
+    id: 'grammarian',
+    name: 'Grammarian',
+    nameZh: '语法学家',
+    description: 'Score 10+ in grammar exercises',
+    icon: '📝',
+    condition: (s) => s.grammarScore >= 10,
+  },
+  {
+    id: 'ultimate',
+    name: 'Ultimate Phantom',
+    nameZh: '终极魅影',
+    description: 'Earn 200+ total score',
+    icon: '💎',
+    condition: (s) => s.totalScore >= 200,
   },
 ];
 

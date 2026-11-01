@@ -42,7 +42,7 @@ export default function WordScramble({ open, onClose }: Props) {
   const [input, setInput] = useState('');
   const [solved, setSolved] = useState(0);
   const [total, setTotal] = useState(0);
-  const [showResult, setShowResult] = useState<'correct' | 'wrong' | null>(null);
+  const [showResult, setShowResult] = useState<'correct' | 'wrong' | undefined>(undefined);
   const diffConfig = getConfig();
   const [timeLeft, setTimeLeft] = useState(diffConfig.scrambleTime);
   const [gameOver, setGameOver] = useState(false);
@@ -74,7 +74,7 @@ export default function WordScramble({ open, onClose }: Props) {
     setScrambleSeed(Date.now());
     setWordIdx((i) => (i + 1) % allWords.length);
     setInput('');
-    setShowResult(null);
+    setShowResult(undefined);
   }, [allWords.length]);
 
   const check = useCallback(() => {
@@ -86,7 +86,7 @@ export default function WordScramble({ open, onClose }: Props) {
       setTimeout(nextWord, 800);
     } else {
       setShowResult('wrong');
-      setTimeout(() => setShowResult(null), 800);
+      setTimeout(() => setShowResult(undefined), 800);
     }
   }, [input, currentWord, nextWord]);
 
@@ -95,7 +95,7 @@ export default function WordScramble({ open, onClose }: Props) {
     setTotal(0);
     setTimeLeft(diffConfig.scrambleTime);
     setGameOver(false);
-    setShowResult(null);
+    setShowResult(undefined);
     setInput('');
     setScrambleSeed(Date.now());
   }, [diffConfig.scrambleTime]);

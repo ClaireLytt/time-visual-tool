@@ -14,7 +14,7 @@ interface Props {
 export default function CharacterProfiles({ open, onClose }: Props) {
   const triggeredEvents = useGameStore((s) => s.triggeredEvents);
   const unlocked = useMemo(() => getUnlockedBios(triggeredEvents), [triggeredEvents]);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | undefined>(undefined);
   const selectedBio = useMemo(
     () => unlocked.find((b) => b.id === selected),
     [selected, unlocked]

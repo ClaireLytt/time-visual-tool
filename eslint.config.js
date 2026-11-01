@@ -37,6 +37,12 @@ export default tseslint.config(
           selector: 'CallExpression[callee.name="useRef"][arguments.0.type="Identifier"][arguments.0.name=/^(cameraX|currentArea|currentAct|collectedItems|isPlaying|isPaused)$/]',
           message: 'Do not initialize useRef with a useGameStore value — it may not be declared yet. Use 0 or null. See CLAUDE.md "useRef Before useGameStore" rule.',
         },
+        // Rule 3: No useState<T | null>(null) — use undefined instead
+        // Evidence: 6 occurrences in V2, caught by code review (CODING_STANDARDS: Optional vs Nullable)
+        {
+          selector: 'CallExpression[callee.name="useState"] > Literal[value=null]',
+          message: 'Use undefined, not null, with useState. Optional fields are T | undefined per CODING_STANDARDS.md.',
+        },
       ],
     },
   },
